@@ -18,7 +18,7 @@
     "mcp": "firehose",
     "docs": {
       "repo": [
-        "packages/app/firehose-view-ui/spec/openapi.yaml"
+        "packages/platform/firehose-browser/spec/openapi.yaml"
       ]
     }
   },

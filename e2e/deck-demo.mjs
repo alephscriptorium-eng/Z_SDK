@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRoomSessionClient } from '@zeus/rooms';
-import { createScriptoriumServer } from '@zeus/scriptorium-server';
+import { createScriptoriumServer } from '@zeus/socket-server';
 import { startAll } from '@zeus/linea-system';
 import { createPlayerServer } from '../packages/app/player-ui/src/server.mjs';
 import {

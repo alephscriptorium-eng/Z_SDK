@@ -277,7 +277,7 @@ export function buildTopology(cards = {}) {
         card: cards.firehose || null
       },
       {
-        id: 'firehose-view-ui',
+        id: 'firehose-browser',
         port: firehoseUiPort,
         role: 'reader',
         coverage: 'Explorer microposts',
@@ -297,7 +297,7 @@ export function buildTopology(cards = {}) {
         'timeline-nodos',
         'report-nodo',
         'linea://cache/stats (lectura)',
-        `firehose-view-ui :${firehoseUiPort}`,
+        `firehose-browser :${firehoseUiPort}`,
         'readerchain'
       ]
     }

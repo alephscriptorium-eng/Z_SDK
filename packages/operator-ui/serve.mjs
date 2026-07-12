@@ -96,5 +96,5 @@ if (isMain) {
   );
   const ZEUS = defaultZeusConfig();
   const handle = await createOperatorUiServer({ port: PORT, zeus: ZEUS });
-  console.log(`\n🎛️  operator-ui (Angular) · :${handle.port} · session=${ZEUS.scriptoriumUrl}\n`);
+  console.log(`Serving at http://localhost:${PORT}`);
 }

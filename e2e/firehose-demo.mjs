@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import { resolveVolume, browseVolume } from '@zeus/presets-sdk';
 import { normalizeFirehosePost, browseCorpus, listPosts, getFirehoseStats } from '@zeus/linea-firehose';
-import { createFirehoseServer } from '../packages/app/firehose-view-ui/src/server.mjs';
+import { createFirehoseServer } from '../packages/platform/firehose-browser/src/server.mjs';
 
 const FIREHOSE_PORT = 13016;
 
@@ -65,7 +65,7 @@ try {
 
   console.log('7. GET /health...');
   const health = await fetchJson(`${base}/health`);
-  assert(health.service === 'firehose-view-ui', 'health service mismatch');
+  assert(health.service === 'firehose-browser', 'health service mismatch');
 
   console.log('8. GET /api/corpora...');
   const corpora = await fetchJson(`${base}/api/corpora`);

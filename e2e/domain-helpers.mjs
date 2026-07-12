@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { io as ioClient } from 'socket.io-client';
-import { createScriptoriumServer } from '@zeus/scriptorium-server';
+import { createScriptoriumServer } from '@zeus/socket-server';
 import { createPlayerServer } from '../packages/app/player-ui/src/server.mjs';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { safeClose, shutdownE2E } from './helpers.mjs';

@@ -3,7 +3,7 @@
  * Avoids hang when createPlayerServer runs without a live /runtime backend.
  */
 
-import { createScriptoriumServer } from '@zeus/scriptorium-server';
+import { createScriptoriumServer } from '@zeus/socket-server';
 
 /**
  * @param {import('../src/server.mjs').createPlayerServer} createPlayerServer

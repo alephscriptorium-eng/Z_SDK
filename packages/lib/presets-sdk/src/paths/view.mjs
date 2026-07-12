@@ -1,5 +1,5 @@
 /**
- * Shared relative paths and deep links for @zeus/view-ui.
+ * Shared relative paths and deep links for @zeus/cache-browser.
  */
 
 import { buildUiHref } from '../discovery/ui-mesh.mjs';

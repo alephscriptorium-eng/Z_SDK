@@ -17,7 +17,7 @@
   "zeus": {
     "role": "lib",
     "docs": {
-      "repo": ["packages/app/firehose-view-ui/spec/openapi.yaml"]
+      "repo": ["packages/platform/firehose-browser/spec/openapi.yaml"]
     }
   },
   "dependencies": {

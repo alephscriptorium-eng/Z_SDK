@@ -341,17 +341,17 @@ export const ZEUS_STOP_SERVICES = [
   'lineas',
   'editor-ui',
   'player-ui',
-  'player-ui-debug',
-  'view-ui',
+  'console-monitor',
+  'cache-browser',
   'firehose-mcp',
-  'firehose-view-ui',
+  'firehose-browser',
   'player-3d-ui',
   'player-debug-3d-ui',
   'operator-ui',
   'asyncapi-studio',
   'mcp-inspector',
   'zeus-docs',
-  'scriptorium-server'
+  'socket-server'
 ];
 
 /**
@@ -376,15 +376,15 @@ export function resolveStopServicePorts(serviceId) {
       return Object.values(mcp.lineas);
     case 'firehose-mcp':
       return [mcp.firehose.disk];
-    case 'player-ui-debug':
+    case 'console-monitor':
       return [mcp.playerDebug.monitor];
     case 'editor-ui':
       return [ui.editor.port];
     case 'player-ui':
       return [ui.player.port];
-    case 'view-ui':
+    case 'cache-browser':
       return [ui.view.port];
-    case 'firehose-view-ui':
+    case 'firehose-browser':
       return [ui.firehose.port];
     case 'player-3d-ui':
       return [ui.player3d.port];
@@ -392,7 +392,7 @@ export function resolveStopServicePorts(serviceId) {
       return [ui.debug3d.port];
     case 'operator-ui':
       return [ui.operator.port];
-    case 'scriptorium-server':
+    case 'socket-server':
       return [ui.scriptorium.port];
     case 'asyncapi-studio':
       return [spec.studio];
@@ -419,3 +419,5 @@ export function resolveStopTargets(serviceIds) {
   }
   return [...ports].sort((a, b) => a - b);
 }
+
+export { openBrowser } from '../shared/open-browser.mjs';

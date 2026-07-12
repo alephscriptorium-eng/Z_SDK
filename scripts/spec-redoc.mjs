@@ -21,8 +21,8 @@ const outDir = path.join(root, 'docs', 'public', 'api');
 const SPECS = [
   { slug: 'editor-ui', label: 'Editor UI', rel: 'packages/app/editor-ui/spec/openapi.yaml' },
   { slug: 'player-ui', label: 'Player UI (Tablero)', rel: 'packages/app/player-ui/spec/openapi.yaml' },
-  { slug: 'view-ui', label: 'View UI', rel: 'packages/app/view-ui/spec/openapi.yaml' },
-  { slug: 'firehose-view-ui', label: 'Firehose View UI', rel: 'packages/app/firehose-view-ui/spec/openapi.yaml' },
+  { slug: 'cache-browser', label: 'Cache Browser', rel: 'packages/platform/cache-browser/spec/openapi.yaml' },
+  { slug: 'firehose-browser', label: 'Firehose Browser', rel: 'packages/platform/firehose-browser/spec/openapi.yaml' },
   { slug: 'mcp-http', label: 'MCP HTTP Transport', rel: 'packages/lib/presets-sdk/spec/mcp-http.openapi.yaml' }
 ];
 

@@ -26,7 +26,7 @@
     "@zeus/http-contract": "*",
     "@zeus/presets-sdk": "*",
     "@zeus/room-client-browser": "*",
-    "@zeus/scriptorium-server": "*",
+    "@zeus/socket-server": "*",
     "@zeus/rooms": "*",
     "@zeus/session-domain": "*",
     "@zeus/session-protocol": "*",

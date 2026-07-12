@@ -20,7 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { io as ioClient } from 'socket.io-client';
 import { startAll } from '@zeus/linea-system';
-import { createScriptoriumServer } from '@zeus/scriptorium-server';
+import { createScriptoriumServer } from '@zeus/socket-server';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { createPlayerServer } from '../packages/app/player-ui/src/server.mjs';
 import { ServerRegistry, PresetStore, discoverServers } from '@zeus/presets-sdk';

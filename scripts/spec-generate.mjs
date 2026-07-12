@@ -11,8 +11,8 @@ import { buildMcpHttpSpec } from '../packages/lib/presets-sdk/spec/build.mjs';
 import { buildHorsePresetSpec } from '../packages/lib/presets-sdk/src/horse/build.mjs';
 import { buildEditorSpec } from '../packages/app/editor-ui/spec/build.mjs';
 import { buildPlayerSpec } from '../packages/app/player-ui/spec/build.mjs';
-import { buildViewSpec } from '../packages/app/view-ui/spec/build.mjs';
-import { buildFirehoseSpec } from '../packages/app/firehose-view-ui/spec/build.mjs';
+import { buildViewSpec } from '../packages/platform/cache-browser/spec/build.mjs';
+import { buildFirehoseSpec } from '../packages/platform/firehose-browser/spec/build.mjs';
 import { buildAllSpecs } from '@alephscript/mcp-core-sdk/spec';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -39,11 +39,11 @@ const generators = [
     build: buildPlayerSpec
   },
   {
-    rel: 'packages/app/view-ui/spec/openapi.yaml',
+    rel: 'packages/platform/cache-browser/spec/openapi.yaml',
     build: buildViewSpec
   },
   {
-    rel: 'packages/app/firehose-view-ui/spec/openapi.yaml',
+    rel: 'packages/platform/firehose-browser/spec/openapi.yaml',
     build: buildFirehoseSpec
   },
   {

@@ -5,7 +5,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRoomSessionClient } from '@zeus/rooms';
-import { createScriptoriumServer } from '@zeus/scriptorium-server';
+import { createScriptoriumServer } from '@zeus/socket-server';
 import { startFirehoseMcp } from '../packages/mcp/linea-firehose/src/start.mjs';
 import { createPlayerServer } from '../packages/app/player-ui/src/server.mjs';
 import { PresetStore } from '@zeus/presets-sdk';
@@ -69,7 +69,7 @@ try {
   console.log('5. REST /api/aleph/topology includes firehose...');
   const topo = await fetchJson(`${base}/api/aleph/topology`);
   assert(topo.nodes?.some((n) => n.id === 'firehose-mcp-server'), 'topology missing firehose-mcp-server');
-  assert(topo.nodes?.some((n) => n.id === 'firehose-view-ui'), 'topology missing firehose-view-ui');
+  assert(topo.nodes?.some((n) => n.id === 'firehose-browser'), 'topology missing firehose-browser');
 
   console.log('6. Room client domain:deck:load C + deck:resolved...');
   client = createRoomSessionClient({ scriptoriumUrl: RUNTIME_URL, validate: 'off' });

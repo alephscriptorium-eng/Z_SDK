@@ -11,7 +11,7 @@ const viewerRoots = [
   'packages/app/player-3d-ui/src',
   'packages/app/player-debug-3d-ui/assets/js',
   'packages/app/player-debug-3d-ui/src',
-  'packages/app/firehose-view-ui/src'
+  'packages/platform/firehose-browser/src'
 ];
 
 function collectSourceFiles(dir) {

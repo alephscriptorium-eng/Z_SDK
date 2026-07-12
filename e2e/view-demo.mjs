@@ -3,7 +3,7 @@
  */
 
 import { resolveLineasBasePath } from '@zeus/presets-sdk';
-import { createViewServer } from '../packages/app/view-ui/src/server.mjs';
+import { createViewServer } from '../packages/platform/cache-browser/src/server.mjs';
 
 const lineasBase = resolveLineasBasePath();
 
@@ -34,7 +34,7 @@ try {
 
   console.log('2. GET /health...');
   const health = await fetchJson(`${base}/health`);
-  assert(health.service === 'view-ui', 'health service mismatch');
+  assert(health.service === 'cache-browser', 'health service mismatch');
 
   console.log('3. GET /api/lineas...');
   const lineas = await fetchJson(`${base}/api/lineas`);

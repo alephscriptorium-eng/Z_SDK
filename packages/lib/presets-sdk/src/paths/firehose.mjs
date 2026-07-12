@@ -1,5 +1,5 @@
 /**
- * Shared relative paths and deep links for @zeus/firehose-view-ui.
+ * Shared relative paths and deep links for @zeus/firehose-browser.
  */
 
 import { buildUiHref } from '../discovery/ui-mesh.mjs';
