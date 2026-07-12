@@ -1,0 +1,587 @@
+openapi: 3.1.0
+info:
+  title: Zeus Firehose View UI API
+  version: 0.1.0
+  description: REST API for @zeus/firehose-view-ui corpus browser.
+servers:
+  - url: http://localhost:3016
+    description: firehose-view-ui default
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Service health
+      tags:
+        - system
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/config:
+    get:
+      operationId: config
+      summary: Extended app config (firehose shape)
+      tags:
+        - config
+      responses:
+        "200":
+          description: Extended app config (firehose shape)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/config_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/themes:
+    get:
+      operationId: theme.list
+      summary: List available themes
+      tags:
+        - theme
+      responses:
+        "200":
+          description: List available themes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme:
+    get:
+      operationId: theme.current
+      summary: Current theme name
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Current theme name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.current_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme/switch:
+    post:
+      operationId: theme.switch
+      summary: Switch active theme
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Switch active theme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.switch_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/theme.switch_body"
+  /api/corpora:
+    get:
+      operationId: corpora.list
+      summary: List firehose corpora
+      tags:
+        - browse
+      responses:
+        "200":
+          description: List firehose corpora
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/corpora.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/browse:
+    get:
+      operationId: browse
+      summary: Browse corpus directory
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Browse corpus directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/browse_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: corpus
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+  /api/file:
+    get:
+      operationId: file
+      summary: Read corpus file and set focus
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Read corpus file and set focus
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/file_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: corpus
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+  /api/posts:
+    get:
+      operationId: posts
+      summary: Micropost preview list
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Micropost preview list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/posts_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: corpus
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: recursive
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: number
+  /api/triage:
+    get:
+      operationId: triage
+      summary: Triage manifest
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Triage manifest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/triage_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-mcp-resource: firehose://triage
+  /api/stats:
+    get:
+      operationId: stats
+      summary: Firehose volume stats
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Firehose volume stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/stats_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-mcp-resource: firehose://stats
+  /api/focus:
+    get:
+      operationId: focus
+      summary: Current focus snapshot
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Current focus snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/focus_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/view/info:
+    get:
+      operationId: view.info
+      summary: Service metadata
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Service metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/view.info_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+components:
+  schemas:
+    health_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - status
+      additionalProperties: false
+    health_error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        error:
+          type: string
+        success:
+          type: boolean
+          const: false
+        code:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    config_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme: {}
+        discovery: {}
+        defaultCorpus:
+          type: string
+        branding: {}
+        volume: {}
+      required:
+        - theme
+      additionalProperties: false
+    theme.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        themes:
+          type: array
+          items: {}
+        current:
+          type: string
+      required:
+        - themes
+        - current
+      additionalProperties: false
+    theme.current_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        current:
+          type: string
+      required:
+        - current
+      additionalProperties: false
+    theme.switch_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme:
+          type: string
+          minLength: 1
+      required:
+        - theme
+      additionalProperties: false
+    theme.switch_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+        current:
+          type: string
+        previous:
+          type: string
+      additionalProperties: false
+    corpora.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        corpora:
+          type: array
+          items: {}
+      required:
+        - corpora
+      additionalProperties: false
+    browse_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        corpus:
+          type: string
+        path:
+          type: string
+        offset:
+          type: number
+        limit:
+          type: number
+      required:
+        - corpus
+      additionalProperties: false
+    browse_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    file_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        corpus:
+          type: string
+        path:
+          type: string
+      required:
+        - corpus
+        - path
+      additionalProperties: false
+    file_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties: {}
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
+    posts_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        corpus:
+          type: string
+        path:
+          type: string
+        recursive:
+          type: string
+        limit:
+          type: number
+        offset:
+          type: number
+      required:
+        - corpus
+      additionalProperties: false
+    posts_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    triage_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        manifest: {}
+      required:
+        - manifest
+      additionalProperties: false
+    stats_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    focus_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    view.info_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}

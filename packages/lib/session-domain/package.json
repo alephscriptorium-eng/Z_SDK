@@ -1,0 +1,21 @@
+{
+  "name": "@zeus/session-domain",
+  "version": "0.1.0",
+  "description": "SessionManifest v2 builder, deck compat projection, and domain state for Zeus L-session",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/tablero-core": "*",
+    "@zeus/ui-3d-kit": "*"
+  }
+}

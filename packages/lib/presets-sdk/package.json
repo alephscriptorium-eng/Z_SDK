@@ -1,0 +1,49 @@
+{
+  "name": "@zeus/presets-sdk",
+  "version": "0.1.0",
+  "description": "MCP catalog & presets SDK: discovery, extraction, preset persistence, volumes and HTTP routes",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./src/types.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./env": "./src/env/index.mjs",
+    "./docs": "./src/docs/index.mjs",
+    "./paths": "./src/paths/index.mjs",
+    "./discovery": "./src/discovery/index.mjs",
+    "./mcp": "./src/mcp/index.mjs",
+    "./volumes": "./src/volumes/index.mjs",
+    "./browse-core": "./src/volumes/browse-core.mjs",
+    "./anchor-grid": "./src/paths/anchor-grid.mjs",
+    "./presets/contract": "./src/presets/contract.mjs",
+    "./mcp/http-contract": "./src/mcp/http-contract.mjs",
+    "./horse": "./src/horse/index.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs",
+    "spec:generate": "node spec/generate.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib",
+    "docs": {
+      "package": [
+        "src/env/index.mjs"
+      ]
+    }
+  },
+  "dependencies": {
+    "@zeus/http-contract": "*",
+    "@zeus/ui-kit": "*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "archiver": "^7.0.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "swagger-ui-dist": "^5.29.0",
+    "yaml": "^2.8.0",
+    "zod": "^4.4.3"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
+    "lib": [
+      "ES2022",
+      "dom"
+    ],
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@zeus/threejs-ui-lib": [
+        "./dist/threejs-ui-lib"
+      ],
+      "threejs-ui-lib": [
+        "./dist/threejs-ui-lib"
+      ],
+      "@lib/*": [
+        "./projects/threejs-ui-lib/src/lib/*"
+      ]
+    },
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "client/**/*",
+    "server/**/*",
+    "shared/**/*",
+    "**/*.tsx",
+    "**/*.jsx",
+    "src/app/core/services/demo.service.ts",
+    "src/app/core/services/integration.service.ts",
+    "src/app/demo/demo-client.ts",
+    "src/app/shared/three/animation-controller.ts",
+    "src/app/shared/three/trajectory-manager.ts",
+    "src/test.ts"
+  ],
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
+  "references": [
+    {
+      "path": "./projects/threejs-ui-lib/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/threejs-ui-lib/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/dev-app/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/dev-app/tsconfig.spec.json"
+    }
+  ]
+}

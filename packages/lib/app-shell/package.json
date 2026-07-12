@@ -1,0 +1,29 @@
+{
+  "name": "@zeus/app-shell",
+  "version": "0.1.0",
+  "description": "Shared app bootstrap factories for Zeus UI packages",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./create-app-config": "./src/create-app-config.mjs",
+    "./create-theme-handler": "./src/create-theme-handler.mjs",
+    "./create-shell-views": "./src/create-shell-views.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs"
+  },
+  "zeus": {
+    "role": "lib",
+    "docs": {
+      "repo": [
+        "packages/app/player-ui/spec/openapi.yaml"
+      ]
+    }
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*",
+    "@zeus/ui-kit": "*"
+  },
+  "license": "AIPLv1"
+}

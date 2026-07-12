@@ -1,0 +1,625 @@
+openapi: 3.1.0
+info:
+  title: Zeus View UI (Cache Explorer) API
+  version: 0.1.0
+  description: REST API for @zeus/view-ui linea browser.
+servers:
+  - url: http://localhost:3015
+    description: view-ui default
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Service health
+      tags:
+        - system
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/config:
+    get:
+      operationId: config
+      summary: Extended app config (view-ui shape)
+      tags:
+        - config
+      responses:
+        "200":
+          description: Extended app config (view-ui shape)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/config_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/themes:
+    get:
+      operationId: theme.list
+      summary: List available themes
+      tags:
+        - theme
+      responses:
+        "200":
+          description: List available themes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme:
+    get:
+      operationId: theme.current
+      summary: Current theme name
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Current theme name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.current_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme/switch:
+    post:
+      operationId: theme.switch
+      summary: Switch active theme
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Switch active theme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.switch_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/theme.switch_body"
+  /api/lineas:
+    get:
+      operationId: lineas.list
+      summary: List lineas from volume
+      tags:
+        - browse
+      responses:
+        "200":
+          description: List lineas from volume
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/lineas.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/browse:
+    get:
+      operationId: browse
+      summary: Browse directory in linea
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Browse directory in linea
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/browse_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: linea
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+  /api/file:
+    get:
+      operationId: file
+      summary: Read file and set focus
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Read file and set focus
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/file_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: linea
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+  /api/stats:
+    get:
+      operationId: stats
+      summary: Cache stats (MCP + filesystem)
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Cache stats (MCP + filesystem)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/stats_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-mcp-resource: linea://cache/stats
+      parameters:
+        - name: linea
+          in: query
+          required: false
+          schema:
+            type: string
+  /api/anchors:
+    get:
+      operationId: anchors
+      summary: Anchor grid for linea
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Anchor grid for linea
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/anchors_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: linea
+          in: query
+          required: false
+          schema:
+            type: string
+  /api/focus:
+    get:
+      operationId: focus
+      summary: Current focus snapshot
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Current focus snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/focus_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/view/info:
+    get:
+      operationId: view.info
+      summary: Service metadata
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Service metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/view.info_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/view/wikitext-path:
+    get:
+      operationId: view.wikitext-path
+      summary: Resolve wikitext path for oldid
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Resolve wikitext path for oldid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/view.wikitext-path_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: linea
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: oldid
+          in: query
+          required: true
+          schema:
+            type: number
+components:
+  schemas:
+    health_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - status
+      additionalProperties: false
+    health_error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        error:
+          type: string
+        success:
+          type: boolean
+          const: false
+        code:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    config_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme: {}
+        discovery: {}
+        defaultLinea:
+          type: string
+        viewers: {}
+        branding: {}
+        player: {}
+        editor: {}
+      required:
+        - theme
+      additionalProperties: false
+    theme.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        themes:
+          type: array
+          items: {}
+        current:
+          type: string
+      required:
+        - themes
+        - current
+      additionalProperties: false
+    theme.current_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        current:
+          type: string
+      required:
+        - current
+      additionalProperties: false
+    theme.switch_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme:
+          type: string
+          minLength: 1
+      required:
+        - theme
+      additionalProperties: false
+    theme.switch_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+        current:
+          type: string
+        previous:
+          type: string
+      additionalProperties: false
+    lineas.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties:
+            lineas:
+              type: array
+              items: {}
+          required:
+            - lineas
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
+    browse_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+        path:
+          type: string
+        offset:
+          type: number
+        limit:
+          type: number
+      required:
+        - linea
+      additionalProperties: false
+    browse_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties: {}
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
+    file_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+        path:
+          type: string
+      required:
+        - linea
+        - path
+      additionalProperties: false
+    file_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties: {}
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
+    stats_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+      additionalProperties: false
+    stats_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    anchors_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+      additionalProperties: false
+    anchors_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties: {}
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
+    focus_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    view.info_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    view.wikitext-path_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+        oldid:
+          type: number
+      required:
+        - linea
+        - oldid
+      additionalProperties: false
+    view.wikitext-path_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties:
+            path:
+              type: string
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false

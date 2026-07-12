@@ -1,0 +1,32 @@
+{
+  "name": "@zeus/linea-system",
+  "version": "0.1.0",
+  "description": "MCP servers for DISK_02/LINEAS: espana trunk and wp/historia satellite",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./loader": "./src/loader.mjs"
+  },
+  "scripts": {
+    "start": "node src/start.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "mcp",
+    "mcp": "lineas"
+  },
+  "dependencies": {
+    "@zeus/http-contract": "*",
+    "@zeus/presets-sdk": "*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "yaml": "^2.8.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@zeus/test-utils": "*"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@zeus/ui-3d-kit",
+  "version": "0.1.0",
+  "description": "Vanilla ESM three.js component kit for Zeus 3D viewers (browser-safe src/, served raw via express.static + import maps)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./node": "./src/paths.node.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/game-engine": "*",
+    "three": "^0.170.0"
+  }
+}

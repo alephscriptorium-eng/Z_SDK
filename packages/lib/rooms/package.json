@@ -1,0 +1,22 @@
+{
+  "name": "@zeus/rooms",
+  "version": "0.1.0",
+  "description": "Scriptorium rooms client (E1 slot)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs"
+  },
+  "dependencies": {
+    "@alephscript/mcp-core-sdk": "^1.5.0",
+    "@zeus/session-protocol": "*",
+    "socket.io-client": "^4.8.1"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  }
+}

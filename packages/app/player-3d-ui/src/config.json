@@ -1,0 +1,29 @@
+{
+  "theme": {
+    "current": "Black-White-MCP"
+  },
+  "features": {},
+  "viewer": {
+    "sessionId": "default",
+    "scriptoriumUrl": null
+  },
+  "branding": {
+    "title": "Visor 3D",
+    "tag": "Scriptorium · Zeus SDK"
+  },
+  "debug": false,
+  "localNav": [
+    {
+      "href": "/",
+      "emoji": "🧊",
+      "text": "Visor 3D",
+      "pageKey": "viewer"
+    },
+    {
+      "href": "/health",
+      "emoji": "💓",
+      "text": "Health",
+      "pageKey": "health"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "features": {
+    "presetLibrary": true,
+    "mcpExplorer": true,
+    "themeSystem": true
+  },
+  "theme": {
+    "current": "Black-White-MCP"
+  },
+  "presets": {
+    "dataDir": "../../../data",
+    "library": "default",
+    "autoLoad": true
+  },
+  "ui": {
+    "language": "es",
+    "animations": true,
+    "darkMode": false
+  },
+  "debug": false
+}

@@ -1,0 +1,53 @@
+{
+  "theme": {
+    "current": "Black-White-MCP"
+  },
+  "lineas": {
+    "basePath": null
+  },
+  "lineaServers": {
+    "espana": {
+      "tronco": "linea-espana",
+      "satelite": "linea-wp-historia"
+    }
+  },
+  "defaultLinea": "espana",
+  "viewers": {
+    "handlers": [
+      {
+        "match": "basename",
+        "value": "fetch-priority-viaje1.json",
+        "viewer": "anchors-explorer"
+      },
+      {
+        "match": "basename",
+        "value": "wave-a-anchors.json",
+        "viewer": "anchors-explorer"
+      },
+      {
+        "match": "ext",
+        "value": ".json",
+        "viewer": "object-explorer"
+      },
+      {
+        "match": "ext",
+        "value": ".md",
+        "viewer": "markdown-preview"
+      },
+      {
+        "match": "ext",
+        "value": ".wikitext",
+        "viewer": "text-plain"
+      },
+      {
+        "match": "fallback",
+        "viewer": "text-plain"
+      }
+    ]
+  },
+  "branding": {
+    "title": "Cache Explorer",
+    "tag": "Scriptorium · Zeus SDK"
+  },
+  "debug": false
+}

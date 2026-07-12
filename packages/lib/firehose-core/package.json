@@ -1,0 +1,26 @@
+{
+  "name": "@zeus/firehose-core",
+  "version": "0.1.0",
+  "description": "Firehose volume browse, schema, and loader — pure library (no MCP server)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "scripts": {
+    "test": "echo 'sin tests' && exit 0"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./schema": "./src/schema.mjs",
+    "./loader": "./src/loader.mjs",
+    "./browse": "./src/browse.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib",
+    "docs": {
+      "repo": ["packages/app/firehose-view-ui/spec/openapi.yaml"]
+    }
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*"
+  }
+}

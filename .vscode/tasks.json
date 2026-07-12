@@ -1,0 +1,657 @@
+{
+  "version": "2.0.0",
+  "windows": {
+    "options": {
+      "shell": {
+        "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+        "args": ["-c"]
+      }
+    }
+  },
+  "options": {
+    "cwd": "${workspaceFolder}"
+  },
+  "presentation": {
+    "echo": true,
+    "reveal": "always",
+    "revealProblems": "onProblem",
+    "clear": false
+  },
+  "tasks": [
+    // presentation.group:
+    //   zeus-start  → servidores MCP/UI (splits en un panel)
+    //   zeus-debug  → monitor player-ui-debug (panel aparte)
+    //   zeus-stop   → operaciones de parada (panel compartido)
+    //   zeus-test   → tests (panel compartido)
+    //   zeus-spec   → specs (generate OpenAPI/AsyncAPI/Redoc + AsyncAPI Studio)
+    //   zeus-docs   → VitePress documentation portal
+
+    {
+      "label": "Start ▸ all",
+      "detail": "Arranca lineas + editor-ui + player-ui + view-ui + firehose-mcp + firehose-view-ui + player-ui-debug + scriptorium-server + visores 3D + operator-ui.",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Start ▸ lineas",
+        "Start ▸ editor-ui",
+        "Start ▸ player-ui",
+        "Start ▸ view-ui",
+        "Start ▸ firehose-mcp",
+        "Start ▸ firehose-view-ui",
+        "Start ▸ player-ui-debug",
+        "Start ▸ scriptorium-server",
+        "Start ▸ player-3d-ui",
+        "Start ▸ player-debug-3d-ui",
+        "Start ▸ operator-ui"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ cache-explorer",
+      "detail": "lineas + view-ui — navegador DISK_02/LINEAS (stats MCP opcionales).",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Start ▸ lineas",
+        "Start ▸ view-ui"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ firehose-explorer",
+      "detail": "firehose-mcp + firehose-view-ui — MCP disco + navegador DISK_01/FIREHOSE.",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Start ▸ firehose-mcp",
+        "Start ▸ firehose-view-ui"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ tablero-aleph",
+      "detail": "Seed presets ALEPH y luego lineas + player-ui + debug monitor en paralelo.",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Seed ▸ aleph-presets",
+        "Start ▸ tablero-servidores"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ tablero-servidores",
+      "detail": "Solo servidores: lineas + player-ui + player-ui-debug (sin seed).",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Start ▸ lineas",
+        "Start ▸ player-ui",
+        "Start ▸ player-ui-debug"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ solar-system",
+      "detail": "MCP servers sun/moon/earth.",
+      "type": "npm",
+      "script": "start:solar",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ lineas",
+      "detail": "MCP servers linea-espana/linea-wp-historia.",
+      "type": "npm",
+      "script": "start:lineas",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ editor-ui",
+      "detail": "Editor de presets.",
+      "type": "npm",
+      "script": "start:editor",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ player-ui",
+      "detail": "Tablero ALEPH · Mesa DJ.",
+      "type": "npm",
+      "script": "start:player",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ player-ui-debug",
+      "detail": "TOP console monitor + MCP server (socket/REST → player-ui).",
+      "type": "npm",
+      "script": "start:player-debug",
+      "isBackground": true,
+      "presentation": { "group": "zeus-debug", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ view-ui",
+      "detail": "Cache Explorer · navegador DISK_02/LINEAS.",
+      "type": "npm",
+      "script": "start:view",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ scriptorium-server",
+      "detail": "Scriptorium runtime · Socket.IO rooms (/runtime :3017) + Admin UI. Bridge local|remote.",
+      "type": "npm",
+      "script": "start:scriptorium-server",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ firehose-mcp",
+      "detail": "MCP firehose disco · browse corpus DISK_01.",
+      "type": "npm",
+      "script": "start:firehose-mcp",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ player-3d-ui",
+      "detail": "Visor 3D · escena vaivén-dos-nodos + HUD room (:3018).",
+      "type": "npm",
+      "script": "start:player-3d",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ player-debug-3d-ui",
+      "detail": "Debug 3D · tráfico radial de room (:3019).",
+      "type": "npm",
+      "script": "start:debug-3d",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ operator-ui",
+      "detail": "Operador Angular · hub de bots + HUD sesión (:3020). Requiere build previo.",
+      "type": "npm",
+      "script": "start:operator-ui",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ player-ui (room)",
+      "detail": "Tablero como MASTER de scriptorium.<sessionId> (transporte room-only).",
+      "type": "shell",
+      "command": "npm run start:player",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ dual-ui-smoke",
+      "detail": "Smoke en vivo: lineas + scriptorium + player room + player-3d + operator-ui. Luego npm run smoke:dual-ui.",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Start ▸ lineas",
+        "Start ▸ scriptorium-server",
+        "Start ▸ player-ui (room)",
+        "Start ▸ player-3d-ui",
+        "Start ▸ operator-ui"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start ▸ firehose-view-ui",
+      "detail": "Firehose Explorer · navegador DISK_01/FIREHOSE.",
+      "type": "npm",
+      "script": "start:firehose",
+      "isBackground": true,
+      "presentation": { "group": "zeus-start", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Seed ▸ aleph-presets",
+      "detail": "Carga presets ALEPH en el store local (una vez o tras cambios).",
+      "type": "npm",
+      "script": "seed:aleph",
+      "presentation": { "group": "zeus-start", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Stop ■ all",
+      "detail": "Detiene todos los procesos.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"Zeus: all stopped\" all",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ solar-system",
+      "detail": "Detiene servidores solar-system.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"solar-system stopped\" solar-system",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ lineas",
+      "detail": "Detiene servidores lineas.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"lineas stopped\" lineas",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ editor-ui",
+      "detail": "Detiene editor-ui.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"editor-ui stopped\" editor-ui",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ player-ui",
+      "detail": "Detiene player-ui.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"player-ui stopped\" player-ui",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ player-ui-debug",
+      "detail": "Detiene player-ui-debug (monitor TOP + MCP).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"player-ui-debug stopped\" player-ui-debug",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ view-ui",
+      "detail": "Detiene view-ui (Cache Explorer).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"view-ui stopped\" view-ui",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ firehose-mcp",
+      "detail": "Detiene firehose-mcp.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"firehose-mcp stopped\" firehose-mcp",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ firehose-view-ui",
+      "detail": "Detiene firehose-view-ui (Firehose Explorer).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"firehose-view-ui stopped\" firehose-view-ui",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ scriptorium-server",
+      "detail": "Detiene scriptorium-server (runtime rooms :3017).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"scriptorium-server stopped\" scriptorium-server",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ player-3d-ui",
+      "detail": "Detiene player-3d-ui (Visor 3D :3018).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"player-3d-ui stopped\" player-3d-ui",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ player-debug-3d-ui",
+      "detail": "Detiene player-debug-3d-ui (Debug 3D :3019).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"player-debug-3d-ui stopped\" player-debug-3d-ui",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ operator-ui",
+      "detail": "Detiene operator-ui (Operador :3020).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"operator-ui stopped\" operator-ui",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Spec ▸ generate-all",
+      "detail": "Regenera todos los YAML (OpenAPI + AsyncAPI) desde contratos Zod.",
+      "type": "npm",
+      "script": "spec:generate:all",
+      "presentation": { "group": "zeus-spec", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Spec ▸ generate-openapi",
+      "detail": "Regenera openapi.yaml (5 apps) + mcp-resources.md desde contratos zod.",
+      "type": "npm",
+      "script": "spec:generate:http",
+      "presentation": { "group": "zeus-spec", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Spec ▸ generate-asyncapi",
+      "detail": "Regenera asyncapi.yaml desde los schemas zod (code-first).",
+      "type": "npm",
+      "script": "spec:generate",
+      "presentation": { "group": "zeus-spec", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Spec ▸ generate-redoc",
+      "detail": "Genera HTML estático Redoc para las 5 specs OpenAPI REST (docs/public/api/).",
+      "type": "npm",
+      "script": "spec:redoc",
+      "presentation": { "group": "zeus-spec", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Spec ▸ asyncapi-studio",
+      "detail": "Editor/visor AsyncAPI de la spec /session.",
+      "type": "npm",
+      "script": "spec:studio",
+      "isBackground": true,
+      "presentation": { "group": "zeus-spec", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ asyncapi-studio",
+      "detail": "Detiene AsyncAPI Studio.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"AsyncAPI Studio stopped\" asyncapi-studio",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Spec ▸ mcp-inspector",
+      "detail": "MCP Inspector UI + proxy (ZEUS_PORT_INSPECTOR / ZEUS_PORT_INSPECTOR_PROXY).",
+      "type": "npm",
+      "script": "spec:inspector",
+      "isBackground": true,
+      "presentation": { "group": "zeus-spec", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ mcp-inspector",
+      "detail": "Detiene MCP Inspector (UI + proxy).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"MCP Inspector stopped\" mcp-inspector",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Docs ▸ dev (VitePress)",
+      "detail": "Portal de documentación con HMR (ZEUS_PORT_DOCS, default 3230).",
+      "type": "npm",
+      "script": "docs:dev",
+      "isBackground": true,
+      "presentation": { "group": "zeus-docs", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs ▸ build",
+      "detail": "Regenera YAML (OpenAPI + AsyncAPI), Redoc + AsyncAPI HTML, y build VitePress.",
+      "type": "npm",
+      "script": "docs:build",
+      "presentation": { "group": "zeus-docs", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop ■ Docs",
+      "detail": "Detiene el servidor VitePress de documentación.",
+      "type": "shell",
+      "command": "npm run stop:services -- \"Docs stopped\" zeus-docs",
+      "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Test ✓ test:http-contract",
+      "detail": "Core + MCP resource schema tests en @zeus/http-contract.",
+      "type": "shell",
+      "command": "npm run test:http-contract",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ smoke solar-system",
+      "detail": "node test/smoke.mjs en @zeus/solar-system.",
+      "type": "shell",
+      "command": "npm run test:solar",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ smoke lineas",
+      "detail": "node test/smoke.mjs en @zeus/linea-system.",
+      "type": "shell",
+      "command": "npm run test:lineas",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e catalog-demo",
+      "detail": "node e2e/demo.mjs (servidores + catálogo + preset).",
+      "type": "shell",
+      "command": "npm run e2e",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e deck-demo",
+      "detail": "node e2e/deck-demo.mjs (flujo DJ sobre lineas, room transport).",
+      "type": "shell",
+      "command": "npm run e2e:deck",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e deck-room",
+      "detail": "node e2e/deck-room-demo.mjs (paridad room G-E6.1–G-E6.4).",
+      "type": "shell",
+      "command": "npm run e2e:deck:room",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e player-3d",
+      "detail": "node e2e/player-3d-demo.mjs (visor 3D + room runtime).",
+      "type": "shell",
+      "command": "npm run e2e:player-3d",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e operator-ui",
+      "detail": "node e2e/operator-ui-demo.mjs (visor operador Angular + room runtime).",
+      "type": "shell",
+      "command": "npm run e2e:operator-ui",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ smoke dual-ui",
+      "detail": "Health scriptorium + player room + player-3d + operator-ui (requiere Start ▸ dual-ui-smoke).",
+      "type": "shell",
+      "command": "npm run smoke:dual-ui",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e dual-ui",
+      "detail": "node e2e/dual-ui-demo.mjs — cuatro servicios + selection:cast + cross-slice (G-DUI.0–3).",
+      "type": "shell",
+      "command": "npm run verify:dual-ui",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e tablero-aleph",
+      "detail": "node e2e/tablero-aleph-demo.mjs (puente A↔B + presets ALEPH).",
+      "type": "shell",
+      "command": "npm run e2e:tablero",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e view-ui",
+      "detail": "node e2e/view-demo.mjs (browse API + manifest + wikitext + anchors + focus).",
+      "type": "shell",
+      "command": "npm run e2e:view",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ smoke firehose-mcp",
+      "detail": "node test/smoke.mjs en @zeus/linea-firehose.",
+      "type": "shell",
+      "command": "npm run test:firehose-mcp",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e firehose-links",
+      "detail": "node e2e/firehose-links-demo.mjs (player firehose-links API).",
+      "type": "shell",
+      "command": "npm run e2e:firehose-links",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e firehose",
+      "detail": "node e2e/firehose-demo.mjs (browse DISK_01 + micropost normalize).",
+      "type": "shell",
+      "command": "npm run e2e:firehose",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e deck-room",
+      "detail": "node e2e/deck-room-demo.mjs (room transport G-E6 gates).",
+      "type": "shell",
+      "command": "npm run e2e:deck:room",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e player-3d",
+      "detail": "node e2e/player-3d-demo.mjs (visor 3D + room session).",
+      "type": "shell",
+      "command": "npm run e2e:player-3d",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ e2e bridge",
+      "detail": "node e2e/e2e-bridge.mjs (scriptorium remote bridge transparency).",
+      "type": "shell",
+      "command": "npm run e2e:bridge",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ smoke player-ui-debug",
+      "detail": "Smoke in-process del MCP monitor player-ui-debug.",
+      "type": "shell",
+      "command": "npm run test:player-debug",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ rooms",
+      "detail": "@zeus/rooms — createClient / connectAndJoin / master-room.",
+      "type": "shell",
+      "command": "npm run test:rooms",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ openapi-mcp-projector",
+      "detail": "@zeus/openapi-mcp-projector — OpenAPI → tools/resources/resource-templates.",
+      "type": "shell",
+      "command": "npm run test:openapi-mcp-projector",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ scriptorium-server",
+      "detail": "@zeus/scriptorium-server — arranque runtime :3017.",
+      "type": "shell",
+      "command": "npm run test:scriptorium-server",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ ui-3d-kit",
+      "detail": "@zeus/ui-3d-kit — core/puppet/stage/engine/adapter (browser-safe).",
+      "type": "shell",
+      "command": "npm run test:ui-3d-kit",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ player-3d-ui",
+      "detail": "@zeus/player-3d-ui — /health + /vendor/three + /kit servidos.",
+      "type": "shell",
+      "command": "npm run test:player-3d",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test ✓ player-debug-3d-ui",
+      "detail": "@zeus/player-debug-3d-ui — /health + /vendor/three + /kit servidos.",
+      "type": "shell",
+      "command": "npm run test:debug-3d",
+      "group": "test",
+      "presentation": { "group": "zeus-test", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}

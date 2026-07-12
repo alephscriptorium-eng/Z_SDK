@@ -1,0 +1,101 @@
+# Escena MVP: vaivén entre dos nodos
+# Estética: cyberpunk / Matrix — dos celdas unidas por un enlace de datos
+
+id: vaiven-dos-nodos
+version: 0.1.0
+displayName: "Vaivén · dos nodos"
+
+palette:
+  matrix_green: "#00ff41"
+  void_black: "#0a0a0f"
+  glitch_cyan: "#00d4ff"
+
+nodos:
+  - id: nodo-a
+    displayName: "Celda Alpha"
+    variant: node-minimal
+    bounds:
+      min: { x: 0, y: 0, z: -3 }
+      max: { x: 8, y: 3, z: 3 }
+    entrada: { x: 8, y: 0, z: 0, facing: 90 }
+    anclas: [ancla-a]
+    enlaces: [enlace-ab]
+
+  - id: nodo-b
+    displayName: "Celda Beta"
+    variant: node-minimal
+    bounds:
+      min: { x: 20, y: 0, z: -3 }
+      max: { x: 28, y: 3, z: 3 }
+    entrada: { x: 20, y: 0, z: 0, facing: -90 }
+    anclas: [ancla-b]
+    enlaces: [enlace-ab]
+
+enlaces:
+  - id: enlace-ab
+    displayName: "Tubo de enlace A↔B"
+    variant: link-grid
+    from: nodo-a
+    to: nodo-b
+    bidirectional: true
+    walkSpeed: 1.4
+    waypoints:
+      - { x: 8, y: 0, z: 0 }
+      - { x: 12, y: 0, z: 0 }
+      - { x: 16, y: 0, z: 0 }
+      - { x: 20, y: 0, z: 0 }
+
+anclas:
+  - id: ancla-a
+    displayName: "Terminal A"
+    parent: nodo-a
+    variant: anchor-chair
+    position: { x: 4, y: 0, z: 0 }
+    facing: 90
+    slot: sit
+
+  - id: ancla-b
+    displayName: "Terminal B"
+    parent: nodo-b
+    variant: anchor-chair
+    position: { x: 24, y: 0, z: 0 }
+    facing: -90
+    slot: sit
+
+# Estado inicial sugerido para un actor
+initial_state:
+  actorId: alephillo-robot
+  zone: nodo-a
+  anchorId: ancla-a
+  pose: sit
+  linkId: null
+  progress: null
+
+# Máquina del loop (documentación)
+loop:
+  - action: sit
+    anchor: ancla-a
+  - action: walk
+    link: enlace-ab
+    direction: a-to-b
+  - action: sit
+    anchor: ancla-b
+  - action: walk
+    link: enlace-ab
+    direction: b-to-a
+  - goto: 0
+
+# Mapeo visual → recursos (ver gamethings/recursos/)
+visuals:
+  nodo-a:
+    mesh: recursos/modelos/threejs/dungeon_warkarma.glb
+    note: "recorte AABB o instancia parcial"
+  nodo-b:
+    mesh: recursos/modelos/threejs/dungeon_warkarma.glb
+  enlace-ab:
+    procedural: recursos/scripts/generate-link-corridor.mjs
+    fallback_mesh: recursos/modelos/threejs/space_ship_hallway.glb
+  ancla-a:
+    mesh: recursos/modelos/threejs/SheenChair.glb
+  ancla-b:
+    mesh: recursos/modelos/threejs/SheenChair.glb

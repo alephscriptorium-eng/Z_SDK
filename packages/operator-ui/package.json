@@ -1,0 +1,62 @@
+{
+  "name": "@zeus/operator-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AIPLv1",
+  "description": "Angular gamified operator UI (tier-2), absorbed from gea-sdk threejs-gamify-ui (block-13). Hosts @zeus/threejs-ui-lib; renders the zeus session as a bot-hub via @zeus/operator-bridge. Isolated Angular workspace (own install + ng build → dist), NOT part of the zeus npm workspace.",
+  "main": "dist/index.js",
+  "files": [
+    "dist/**/*",
+    "projects/threejs-ui-lib/dist/**/*",
+    "scripts/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/escrivivir-co/zeus-sdk"
+  },
+  "scripts": {
+    "build": "ng build threejs-ui-lib",
+    "build:dev-app": "ng build dev-app",
+    "build:all": "npm run build && npm run build:dev-app",
+    "build:package": "npm run build:all && npm pack",
+    "pack": "npm pack",
+    "prepack": "npm run build:all",
+    "test": "ng test threejs-ui-lib",
+    "lint": "ng lint threejs-ui-lib",
+    "devapp": "ng serve dev-app"
+  },
+  "dependencies": {
+    "@zeus/operator-bridge": "file:../lib/operator-bridge",
+    "@zeus/room-client-browser": "file:../lib/room-client-browser",
+    "@zeus/session-protocol": "file:../lib/session-protocol",
+    "@zeus/ui-3d-kit": "file:../../lib/ui-3d-kit",
+    "@angular-devkit/build-angular": "^20.2.1",
+    "@angular/animations": "^20.2.3",
+    "@angular/cli": "^20.2.1",
+    "@angular/common": "^20.2.3",
+    "@angular/compiler": "^20.2.3",
+    "@angular/core": "^20.2.3",
+    "@angular/forms": "^20.2.3",
+    "@angular/platform-browser": "^20.2.3",
+    "@angular/platform-browser-dynamic": "^20.2.3",
+    "@angular/platform-server": "^20.2.3",
+    "@angular/router": "^20.2.3",
+    "@angular/ssr": "^20.2.1",
+    "express": "^5.1.0",
+    "rxjs": "^7.8.2",
+    "socket.io-client": "^4.8.1",
+    "three": "^0.170.0",
+    "tslib": "^2.3.0",
+    "zone.js": "^0.15.1"
+  },
+  "devDependencies": {
+    "@angular/build": "^20.2.1",
+    "@angular/compiler-cli": "^20.2.0",
+    "@types/express": "^5.0.1",
+    "@types/node": "^20.17.19",
+    "@types/three": "^0.179.0",
+    "ng-packagr": "^20.2.0",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@zeus/room-client-browser",
+  "version": "0.1.0",
+  "description": "Browser room-session client for scriptorium /runtime (SET_STATE + ROOM_MESSAGE)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./browser": "./browser/room-client.browser.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs"
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*",
+    "socket.io-client": "^4.8.1"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  }
+}

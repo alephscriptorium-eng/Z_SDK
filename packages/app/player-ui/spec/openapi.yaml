@@ -1,0 +1,791 @@
+openapi: 3.1.0
+info:
+  title: Zeus Player UI (Tablero ALEPH) API
+  version: 0.1.0
+  description: REST API for @zeus/player-ui deck tablero and ALEPH bridges.
+servers:
+  - url: http://localhost:3013
+    description: player-ui default
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Service health
+      tags:
+        - system
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/config:
+    get:
+      operationId: theme.config
+      summary: Public theme slice of app config
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Public theme slice of app config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.config_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/themes:
+    get:
+      operationId: theme.list
+      summary: List available themes
+      tags:
+        - theme
+      responses:
+        "200":
+          description: List available themes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme:
+    get:
+      operationId: theme.current
+      summary: Current theme name
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Current theme name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.current_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme/switch:
+    post:
+      operationId: theme.switch
+      summary: Switch active theme
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Switch active theme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.switch_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/theme.switch_body"
+  /api/presets:
+    get:
+      operationId: presets.list
+      summary: Preset summaries (flat array)
+      tags:
+        - presets
+      responses:
+        "200":
+          description: Preset summaries (flat array)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/presets.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-status: frozen
+  /api/aleph/config:
+    get:
+      operationId: aleph.config
+      summary: ALEPH tablero configuration
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: ALEPH tablero configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.config_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/aleph/view-links:
+    get:
+      operationId: aleph.view-links
+      summary: View links for deck A or B
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: View links for deck A or B
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.view-links_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: deckId
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - A
+              - B
+  /api/aleph/firehose-links:
+    get:
+      operationId: aleph.firehose-links
+      summary: Firehose explorer links from deck context
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: Firehose explorer links from deck context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.firehose-links_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters:
+        - name: corpus
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: file
+          in: query
+          required: false
+          schema:
+            type: string
+  /api/aleph/lineas:
+    get:
+      operationId: aleph.lineas
+      summary: Linea registry from volume
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: Linea registry from volume
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.lineas_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/aleph/anchors:
+    get:
+      operationId: aleph.anchors
+      summary: Anchor grid with MCP cache stats
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: Anchor grid with MCP cache stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.anchors_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-mcp-resource: linea://cache/stats
+      parameters:
+        - name: linea
+          in: query
+          required: false
+          schema:
+            type: string
+  /api/aleph/medicion/{casoId}:
+    get:
+      operationId: aleph.medicion
+      summary: Medicion case data
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: Medicion case data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.medicion_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/aleph/registros/{year}:
+    get:
+      operationId: aleph.registros
+      summary: WP registros for historical year (MCP passthrough)
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: WP registros for historical year (MCP passthrough)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.registros_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-mcp-resource: linea://registros/year/{year}
+      parameters:
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: number
+  /api/aleph/topology:
+    get:
+      operationId: aleph.topology
+      summary: MCP server cards topology
+      tags:
+        - aleph
+      responses:
+        "200":
+          description: MCP server cards topology
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aleph.topology_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-mcp-resource: server://card
+  /api/servers:
+    get:
+      operationId: servers.list
+      summary: Discovered MCP servers
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: Discovered MCP servers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/servers.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/debug/health:
+    get:
+      operationId: debug.health
+      summary: Debug monitor health (degraded when disabled)
+      tags:
+        - debug
+      responses:
+        "200":
+          description: Debug monitor health (degraded when disabled)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/debug.health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "503":
+          description: Debug monitor health (degraded when disabled)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/debug.health_503"
+      x-degraded-mode: returns 200 {available:false} when monitor disabled
+  /api/debug/snapshot:
+    get:
+      operationId: debug.snapshot
+      summary: Debug monitor full snapshot
+      tags:
+        - debug
+      responses:
+        "200":
+          description: Debug monitor full snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/debug.health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-degraded-mode: returns 200 {available:false} on proxy failure
+  /api/debug/at:
+    get:
+      operationId: debug.at
+      summary: Debug monitor snapshot at JSON path
+      tags:
+        - debug
+      responses:
+        "200":
+          description: Debug monitor snapshot at JSON path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/debug.health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-degraded-mode: returns 200 {available:false} on proxy failure
+      parameters:
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+components:
+  schemas:
+    health_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - status
+      additionalProperties: false
+    health_error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        error:
+          type: string
+        success:
+          type: boolean
+          const: false
+        code:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    theme.config_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme: {}
+      required:
+        - theme
+      additionalProperties: false
+    theme.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        themes:
+          type: array
+          items: {}
+        current:
+          type: string
+      required:
+        - themes
+        - current
+      additionalProperties: false
+    theme.current_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        current:
+          type: string
+      required:
+        - current
+      additionalProperties: false
+    theme.switch_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme:
+          type: string
+          minLength: 1
+      required:
+        - theme
+      additionalProperties: false
+    theme.switch_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+        current:
+          type: string
+        previous:
+          type: string
+      additionalProperties: false
+    presets.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+        required:
+          - id
+          - name
+        additionalProperties: false
+    aleph.config_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    aleph.view-links_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        deckId:
+          type: string
+          enum:
+            - A
+            - B
+      additionalProperties: false
+    aleph.view-links_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+        items:
+          type: array
+          items: {}
+      required:
+        - items
+      additionalProperties: {}
+    aleph.firehose-links_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        corpus:
+          type: string
+        path:
+          type: string
+        file:
+          type: string
+      additionalProperties: false
+    aleph.firehose-links_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    aleph.lineas_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties:
+            lineas:
+              type: array
+              items: {}
+          required:
+            - lineas
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
+    aleph.anchors_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+      additionalProperties: false
+    aleph.anchors_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        linea:
+          type: string
+        grid: {}
+      additionalProperties: {}
+    aleph.medicion_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties: {}
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
+    aleph.registros_params:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        year:
+          type: number
+      required:
+        - year
+      additionalProperties: false
+    __schema0:
+      type: object
+      properties:
+        year:
+          type: number
+        registros:
+          type: array
+          items: {}
+      additionalProperties: {}
+    __schema1:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    aleph.registros_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - anyOf:
+            - $ref: "#/components/schemas/__schema0"
+            - $ref: "#/components/schemas/__schema1"
+          description: linea://registros/year/{year}
+        - $ref: "#/components/schemas/__schema1"
+    aleph.topology_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    servers.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: array
+      items: {}
+    debug.health_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties:
+            available:
+              type: boolean
+              const: true
+          required:
+            - available
+          additionalProperties: {}
+        - type: object
+          properties:
+            available:
+              type: boolean
+              const: false
+            reason:
+              type: string
+          required:
+            - available
+          additionalProperties: false
+    debug.health_503:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        available:
+          type: boolean
+          const: false
+        reason:
+          type: string
+      required:
+        - available
+      additionalProperties: false
+    debug.at_query:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        path:
+          type: string
+      additionalProperties: false

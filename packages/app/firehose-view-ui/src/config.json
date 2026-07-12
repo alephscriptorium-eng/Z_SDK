@@ -1,0 +1,11 @@
+{
+  "theme": {
+    "current": "Black-White-MCP"
+  },
+  "defaultCorpus": "candidate",
+  "branding": {
+    "title": "Firehose Explorer",
+    "tag": "Scriptorium · Zeus SDK"
+  },
+  "debug": false
+}

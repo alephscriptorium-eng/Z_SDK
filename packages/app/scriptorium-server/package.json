@@ -1,0 +1,27 @@
+{
+  "name": "@zeus/scriptorium-server",
+  "version": "0.1.0",
+  "description": "Scriptorium Socket.io runtime server on :3017 (E2 slot)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "start": "node src/index.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "dependencies": {
+    "@alephscript/mcp-core-sdk": "^1.5.0",
+    "@socket.io/admin-ui": "^0.5.1",
+    "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.1"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "app"
+  }
+}

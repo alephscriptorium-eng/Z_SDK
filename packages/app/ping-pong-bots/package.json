@@ -1,0 +1,24 @@
+{
+  "name": "@zeus/ping-pong-bots",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo channel bots (ping/pong/rabbit/spider/horse) — session clients of scriptorium-server. Absorbed from gea-sdk/packages/ping-pong (block-11 GA-C); uses @zeus/rooms directly (rooms shim deleted).",
+  "scripts": {
+    "demo": "node launch.mjs",
+    "ping": "node run-one.mjs ping",
+    "pong": "node run-one.mjs pong",
+    "rabbit": "node run-one.mjs rabbit",
+    "spider": "node run-one.mjs spider",
+    "horse": "node run-one.mjs horse",
+    "test": "node --test test/*.mjs"
+  },
+  "zeus": {
+    "role": "app"
+  },
+  "dependencies": {
+    "@alephscript/mcp-core-sdk": "^1.5.0",
+    "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*"
+  }
+}

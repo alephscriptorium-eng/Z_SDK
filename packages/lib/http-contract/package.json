@@ -1,0 +1,26 @@
+{
+  "name": "@zeus/http-contract",
+  "version": "0.1.0",
+  "description": "HTTP REST contract core: RouteEntry manifests, zod envelopes, OpenAPI generation, route coverage, express validation middleware",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./express": "./src/middleware.mjs",
+    "./mcp-resources": "./src/mcp-resources/index.mjs",
+    "./spec": "./spec/mcp-resources.md"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs",
+    "spec:generate": "node spec/generate.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*",
+    "yaml": "^2.8.0",
+    "zod": "^4.4.3"
+  }
+}

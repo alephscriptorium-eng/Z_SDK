@@ -1,0 +1,1046 @@
+openapi: 3.1.0
+info:
+  title: Zeus Editor UI API
+  version: 0.1.0
+  description: REST API for @zeus/editor-ui preset library and MCP catalog.
+servers:
+  - url: http://localhost:3012
+    description: editor-ui default
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Service health
+      tags:
+        - system
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/config:
+    get:
+      operationId: theme.config
+      summary: Public theme slice of app config
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Public theme slice of app config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.config_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/themes:
+    get:
+      operationId: theme.list
+      summary: List available themes
+      tags:
+        - theme
+      responses:
+        "200":
+          description: List available themes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme:
+    get:
+      operationId: theme.current
+      summary: Current theme name
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Current theme name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.current_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/theme/switch:
+    post:
+      operationId: theme.switch
+      summary: Switch active theme
+      tags:
+        - theme
+      responses:
+        "200":
+          description: Switch active theme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/theme.switch_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/theme.switch_body"
+  /api/health:
+    get:
+      operationId: api.health
+      summary: API health
+      tags:
+        - system
+      responses:
+        "200":
+          description: API health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/settings:
+    get:
+      operationId: api.settings.get
+      summary: Read config sections
+      tags:
+        - settings
+      responses:
+        "200":
+          description: Read config sections
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.settings.get_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/settings/{section}:
+    put:
+      operationId: api.settings.put
+      summary: Update config section
+      tags:
+        - settings
+      responses:
+        "200":
+          description: Update config section
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.settings.put_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.settings.put_body"
+  /api/presets:
+    get:
+      operationId: api.presets.list
+      summary: List/search presets (canonical CRUD)
+      tags:
+        - presets
+      responses:
+        "200":
+          description: List/search presets (canonical CRUD)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.presets.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+    post:
+      operationId: api.presets.create
+      summary: Create preset
+      tags:
+        - presets
+      responses:
+        "201":
+          description: Create preset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.presets.create_201"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.presets.create_body"
+  /api/presets/{id}:
+    get:
+      operationId: api.presets.get
+      summary: Preset detail
+      tags:
+        - presets
+      responses:
+        "200":
+          description: Preset detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.presets.create_201"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+    put:
+      operationId: api.presets.update
+      summary: Update preset
+      tags:
+        - presets
+      responses:
+        "200":
+          description: Update preset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.presets.create_201"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.presets.update_body"
+    delete:
+      operationId: api.presets.delete
+      summary: Delete preset
+      tags:
+        - presets
+      responses:
+        "200":
+          description: Delete preset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.settings.put_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+  /api/presets/{id}/download:
+    get:
+      operationId: api.presets.download
+      summary: Download preset ZIP bundle
+      tags:
+        - presets
+      responses:
+        "200":
+          description: Download preset ZIP bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.presets.download_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+  /api/mcp/refresh:
+    post:
+      operationId: api.mcp.refresh
+      summary: Re-probe MCP discovery
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: Re-probe MCP discovery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.settings.put_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/mcp/servers:
+    get:
+      operationId: api.mcp.servers
+      summary: List MCP servers
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: List MCP servers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.mcp.servers_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/mcp/servers/{id}/content:
+    get:
+      operationId: api.mcp.servers.content
+      summary: Server tools/resources/prompts aggregate
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: Server tools/resources/prompts aggregate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.mcp.servers.content_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/mcp/servers/{id}/tools:
+    get:
+      operationId: api.mcp.servers.tools
+      summary: Server tools (search/category)
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: Server tools (search/category)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.mcp.servers.content_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/mcp/servers/{id}/resources:
+    get:
+      operationId: api.mcp.servers.resources
+      summary: Server resources (search/type)
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: Server resources (search/type)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.mcp.servers.content_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/mcp/servers/{id}/prompts:
+    get:
+      operationId: api.mcp.servers.prompts
+      summary: Server prompts (search/category)
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: Server prompts (search/category)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.mcp.servers.content_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/mcp/servers/{id}/resource-templates:
+    get:
+      operationId: api.mcp.servers.templates
+      summary: Server resource templates
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: Server resource templates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.mcp.servers.content_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+  /api/mcp/list:
+    get:
+      operationId: mcp.list
+      summary: Full MCP server catalog
+      tags:
+        - mcp
+        - presets
+      responses:
+        "200":
+          description: Full MCP server catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+      x-status: sdk-compat
+  /api/mcp/set:
+    post:
+      operationId: mcp.set
+      summary: Create or update preset by name
+      tags:
+        - mcp
+        - presets
+      responses:
+        "200":
+          description: Create or update preset by name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.set_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+      x-status: sdk-compat
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/mcp.set_body"
+  /api/mcp/presets:
+    get:
+      operationId: mcp.presets
+      summary: List preset summaries
+      tags:
+        - mcp
+        - presets
+      responses:
+        "200":
+          description: List preset summaries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.presets_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+      x-status: sdk-compat
+  /api/mcp/preset/{name}:
+    get:
+      operationId: mcp.preset-by-name
+      summary: Get full preset by name
+      tags:
+        - mcp
+        - presets
+      responses:
+        "200":
+          description: Get full preset by name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.preset-by-name_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+      x-status: sdk-compat
+  /api/mcp/preset/{id}:
+    delete:
+      operationId: mcp.preset-delete
+      summary: Delete preset by id
+      tags:
+        - mcp
+        - presets
+      responses:
+        "200":
+          description: Delete preset by id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.preset-delete_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.list_error"
+      x-status: sdk-compat
+components:
+  schemas:
+    health_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - status
+      additionalProperties: false
+    health_error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        error:
+          type: string
+        success:
+          type: boolean
+          const: false
+        code:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    theme.config_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme: {}
+      required:
+        - theme
+      additionalProperties: false
+    theme.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        themes:
+          type: array
+          items: {}
+        current:
+          type: string
+      required:
+        - themes
+        - current
+      additionalProperties: false
+    theme.current_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        current:
+          type: string
+      required:
+        - current
+      additionalProperties: false
+    theme.switch_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        theme:
+          type: string
+          minLength: 1
+      required:
+        - theme
+      additionalProperties: false
+    theme.switch_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+        current:
+          type: string
+        previous:
+          type: string
+      additionalProperties: false
+    api.health_error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: string
+        message:
+          type: string
+        details: {}
+      required:
+        - success
+        - error
+      additionalProperties: false
+    api.settings.get_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    api.settings.put_params:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        section:
+          type: string
+      required:
+        - section
+      additionalProperties: false
+    api.settings.put_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    api.settings.put_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+      required:
+        - success
+      additionalProperties: {}
+    api.presets.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        presets:
+          type: array
+          items: {}
+        pagination: {}
+      required:
+        - success
+        - presets
+      additionalProperties: false
+    api.presets.create_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+      additionalProperties: {}
+    api.presets.create_201:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        preset: {}
+      required:
+        - success
+        - preset
+      additionalProperties: false
+    api.presets.download_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: string
+      description: application/zip
+    api.presets.update_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    api.mcp.servers_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        servers:
+          type: array
+          items: {}
+      required:
+        - success
+      additionalProperties: false
+    api.mcp.servers.content_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    mcp.list_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        timestamp:
+          type: string
+        catalog:
+          type: array
+          items: {}
+        serversCount:
+          type: number
+        totalTools:
+          type: number
+        totalResources:
+          type: number
+        totalResourceTemplates:
+          type: number
+        totalPrompts:
+          type: number
+      required:
+        - success
+        - timestamp
+        - catalog
+        - serversCount
+        - totalTools
+        - totalResources
+        - totalPrompts
+      additionalProperties: false
+    mcp.list_error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: string
+        details: {}
+        timestamp:
+          type: string
+      required:
+        - success
+        - error
+      additionalProperties: false
+    mcp.set_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        category:
+          type: string
+        prompt:
+          type: string
+        items:
+          type: array
+          items: {}
+      required:
+        - name
+      additionalProperties: false
+    mcp.set_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        preset:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            itemsCount:
+              type: number
+            createdAt:
+              type: string
+          required:
+            - id
+            - name
+            - itemsCount
+          additionalProperties: false
+        timestamp:
+          type: string
+      required:
+        - success
+        - preset
+        - timestamp
+      additionalProperties: false
+    mcp.presets_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        presets:
+          type: array
+          items: {}
+        totalPresets:
+          type: number
+        timestamp:
+          type: string
+      required:
+        - success
+        - presets
+        - totalPresets
+        - timestamp
+      additionalProperties: false
+    mcp.preset-by-name_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        preset: {}
+        timestamp:
+          type: string
+      required:
+        - success
+        - preset
+        - timestamp
+      additionalProperties: false
+    mcp.preset-delete_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        timestamp:
+          type: string
+      required:
+        - success
+        - timestamp
+      additionalProperties: false

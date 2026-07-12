@@ -1,0 +1,13 @@
+node_modules/
+*.log
+.DS_Store
+!.env
+data/*
+!data/.gitkeep
+!data/seeds/
+!data/seeds/**
+VOLUMES/
+docs/public/api/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+.vitepress/cache

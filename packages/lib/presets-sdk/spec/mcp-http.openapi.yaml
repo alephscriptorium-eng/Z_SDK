@@ -1,0 +1,157 @@
+openapi: 3.1.0
+info:
+  title: Zeus MCP HTTP Transport
+  version: 0.1.0
+  description: Streamable HTTP MCP endpoints shared by @zeus MCP server packages.
+paths:
+  /mcp:
+    post:
+      operationId: mcp.post
+      summary: MCP JSON-RPC over Streamable HTTP
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: MCP JSON-RPC over Streamable HTTP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_body"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/mcp.post_body"
+    get:
+      operationId: mcp.get
+      summary: Method not allowed — use POST
+      tags:
+        - mcp
+      responses:
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+        "405":
+          description: Method not allowed — use POST
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.get_405"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+    delete:
+      operationId: mcp.delete
+      summary: Method not allowed — use POST
+      tags:
+        - mcp
+      responses:
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+        "405":
+          description: Method not allowed — use POST
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.get_405"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+  /mcp/health:
+    get:
+      operationId: mcp.health
+      summary: MCP server health for discovery
+      tags:
+        - mcp
+      responses:
+        "200":
+          description: MCP server health for discovery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.health_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/mcp.post_error"
+components:
+  schemas:
+    __schema0: {}
+    mcp.post_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties:
+        $ref: "#/components/schemas/__schema0"
+      description: JSON-RPC 2.0 MCP request/response
+    mcp.post_error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        error:
+          type: string
+        success:
+          type: boolean
+          const: false
+        code:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    mcp.get_405:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    mcp.health_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        status:
+          type: string
+        mode:
+          type: string
+        ready:
+          type: boolean
+      required:
+        - status
+      additionalProperties: false
