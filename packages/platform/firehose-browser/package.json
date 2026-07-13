@@ -20,9 +20,11 @@
   },
   "dependencies": {
     "@zeus/app-shell": "*",
+    "@zeus/arg-domain": "*",
     "@zeus/firehose-core": "*",
     "@zeus/http-contract": "*",
     "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*",
     "@zeus/test-utils": "*",
     "@zeus/ui-kit": "*",
     "cors": "^2.8.6",

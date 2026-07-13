@@ -445,14 +445,58 @@
       .then(function () { return renderTree(); })
       .then(showCurrentView)
       .catch(function (e) { showError(treeHost, e.message); });
+
+    let lastTrackTs = 0;
+    function startTrackPoller() {
+      const trackCfg = state.config?.track;
+      if (!trackCfg?.enabled || !trackCfg.focusUrl) return;
+      setInterval(function () {
+        fetchJson(trackCfg.focusUrl)
+          .then(function (focus) {
+            if (!focus?.ts || focus.ts === lastTrackTs) return;
+            lastTrackTs = focus.ts;
+            const resolved = focus.resolved;
+            if (!resolved?.path) return;
+            if (resolved.corpus && resolved.corpus !== corpusId) {
+              corpusId = resolved.corpus;
+              if (corpusNav) {
+                corpusNav.querySelectorAll('[data-corpus]').forEach(function (btn) {
+                  btn.classList.toggle('active', btn.dataset.corpus === corpusId);
+                });
+              }
+            }
+            if (resolved.mode) viewMode = resolved.mode;
+            syncModeRadios();
+            const parts = resolved.path.split('/');
+            let acc = '';
+            for (let i = 0; i < parts.length - 1; i++) {
+              acc = acc ? acc + '/' + parts[i] : parts[i];
+              EXPANDED.add(acc);
+            }
+            return renderTree().then(function () {
+              return openFile(resolved.path);
+            });
+          })
+          .catch(function () {});
+      }, 1000);
+    }
+    startTrackPoller();
   }
 
   document.addEventListener('DOMContentLoaded', function () {
     const q = parseQuery();
-    mountFirehoseBrowser({
-      corpusId: q.corpus || 'candidate',
-      filePath: q.path || '',
-      mode: q.mode || 'raw'
-    });
+    fetchJson('/api/config')
+      .then(function (config) {
+        mountFirehoseBrowser({
+          corpusId: q.corpus || config.defaultCorpus || 'candidate',
+          filePath: q.path || '',
+          mode: q.mode || 'raw',
+          config: config
+        });
+      })
+      .catch(function (err) {
+        const host = document.getElementById('firehose-tree-host');
+        if (host) host.innerHTML = '<p class="firehose-error">' + escapeHtml(err.message) + '</p>';
+      });
   });
 })(typeof window !== 'undefined' ? window : globalThis);

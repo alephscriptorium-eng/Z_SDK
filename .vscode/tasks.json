@@ -131,7 +131,7 @@
         "Start ▸ console-monitor",
         "Start ▸ socket-server",
         "Start ▸ player-3d-ui",
-        "Start ▸ player-debug-3d-ui",
+        "Start ▸ 3d-monitor",
         "Start ▸ operator-ui"
       ],
       "group": "build",
@@ -263,10 +263,10 @@
       "problemMatcher": []
     },
     {
-      "label": "Start ▸ player-debug-3d-ui",
-      "detail": "Debug 3D · tráfico radial de room.",
+      "label": "Start ▸ 3d-monitor",
+      "detail": "3D Monitor · portal de vistas (tráfico radial, ecosystem, bots-log).",
       "type": "npm",
-      "script": "start:debug-3d",
+      "script": "start:3d-monitor",
       "isBackground": true,
       "presentation": { "group": "zeus-start", "panel": "dedicated" },
       "problemMatcher": []
@@ -396,10 +396,10 @@
       "problemMatcher": []
     },
     {
-      "label": "Stop ■ player-debug-3d-ui",
-      "detail": "Detiene player-debug-3d-ui (Debug 3D :3019).",
+      "label": "Stop ■ 3d-monitor",
+      "detail": "Detiene 3d-monitor (3D Monitor :3019).",
       "type": "shell",
-      "command": "npm run stop:services -- \"player-debug-3d-ui stopped\" player-debug-3d-ui",
+      "command": "npm run stop:services -- \"3d-monitor stopped\" 3d-monitor",
       "presentation": { "group": "zeus-stop", "panel": "shared", "clear": true },
       "problemMatcher": []
     },

@@ -32,6 +32,8 @@ import { cacheView } from './views/cache_view.mjs';
 import { settingsView } from './views/settings_view.mjs';
 import { createBrowseRoutes } from './browse-routes.mjs';
 import { buildViewSpec } from '../spec/build.mjs';
+import { createArgTrackSubscriber, mountTrackFocusRoute } from './arg-track-subscriber.mjs';
+import { DEFAULT_ARG_ROOM } from '@zeus/arg-domain';
 
 /** @type {{ linea: string|null, path: string|null, viewer: string|null, name: string|null, summary: string|null }} */
 let currentFocus = {
@@ -73,6 +75,9 @@ export async function createViewServer(options = {}) {
 
   mcp.refresh().catch(() => {});
 
+  const trackActor = options.trackActor ?? process.env.ZEUS_ARG_TRACK_ACTOR ?? null;
+  const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? DEFAULT_ARG_ROOM;
+
   const app = express();
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json({ limit: '10mb' }));
@@ -85,7 +90,10 @@ export async function createViewServer(options = {}) {
       viewers: getViewersConfig(cfg),
       branding: cfg.branding,
       player: cfg.player,
-      editor: cfg.editor
+      editor: cfg.editor,
+      track: trackActor
+        ? { enabled: true, actor: trackActor, room: trackRoom, focusUrl: '/api/track/focus' }
+        : { enabled: false }
     })
   });
   app.use('/api', themeApi);
@@ -96,6 +104,19 @@ export async function createViewServer(options = {}) {
 
   mountSpecRoutes(app, { specs: { 'openapi.json': buildViewSpec } });
   mountSwaggerUi(app, { title: 'View UI API' });
+
+  let trackSubscriber = null;
+  if (trackActor) {
+    trackSubscriber = createArgTrackSubscriber({
+      actor: trackActor,
+      browserHint: 'cache-browser',
+      room: trackRoom
+    });
+    await trackSubscriber.start().catch((err) => {
+      console.warn('[cache-browser] arg:track subscriber no arrancó:', err.message);
+    });
+  }
+  mountTrackFocusRoute(app, trackSubscriber);
 
   app.use(
     '/api',
@@ -155,11 +176,12 @@ export async function createViewServer(options = {}) {
   });
 
   async function close() {
+    trackSubscriber?.stop();
     await mcp.close();
     await new Promise((resolve) => server.close(resolve));
   }
 
-  return { app, server, close, port, host, basePath, mcp, setFocus, getFocus: buildFocusSnapshot };
+  return { app, server, close, port, host, basePath, mcp, setFocus, getFocus: buildFocusSnapshot, trackSubscriber };
 }
 
 import { pathToFileURL } from 'node:url';

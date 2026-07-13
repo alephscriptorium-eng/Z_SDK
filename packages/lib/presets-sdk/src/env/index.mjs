@@ -58,8 +58,9 @@ export const DEFAULT_ZEUS_UI_MESH = {
   view: { host: 'localhost', port: 3015, path: '/', label: 'Cache', emoji: '📂' },
   firehose: { host: 'localhost', port: 3016, path: '/', label: 'Firehose', emoji: '🔥' },
   player3d: { host: 'localhost', port: 3018, path: '/', label: 'Visor 3D', emoji: '🧊' },
-  debug3d: { host: 'localhost', port: 3019, path: '/', label: 'Debug 3D', emoji: '🛰️' },
+  debug3d: { host: 'localhost', port: 3019, path: '/', label: '3D Monitor', emoji: '🛰️' },
   operator: { host: 'localhost', port: 3020, path: '/', label: 'Operador', emoji: '🎛️' },
+  argConsole: { host: 'localhost', port: 3021, path: '/', label: 'ARG Console', emoji: '🌊' },
   scriptorium: { host: 'localhost', port: 3017, path: '/runtime', label: 'Scriptorium', emoji: '📜' }
 };
 
@@ -72,6 +73,7 @@ const UI_PORT_ENV = {
   player3d: 'ZEUS_PORT_PLAYER_3D',
   debug3d: 'ZEUS_PORT_DEBUG_3D',
   operator: 'ZEUS_PORT_OPERATOR_UI',
+  argConsole: 'ZEUS_PORT_ARG_CONSOLE',
   scriptorium: 'ZEUS_PORT_SCRIPTORIUM'
 };
 
@@ -346,7 +348,7 @@ export const ZEUS_STOP_SERVICES = [
   'firehose-mcp',
   'firehose-browser',
   'player-3d-ui',
-  'player-debug-3d-ui',
+  '3d-monitor',
   'operator-ui',
   'asyncapi-studio',
   'mcp-inspector',
@@ -388,8 +390,10 @@ export function resolveStopServicePorts(serviceId) {
       return [ui.firehose.port];
     case 'player-3d-ui':
       return [ui.player3d.port];
-    case 'player-debug-3d-ui':
+    case '3d-monitor':
       return [ui.debug3d.port];
+    case 'arg-console':
+      return [ui.argConsole.port];
     case 'operator-ui':
       return [ui.operator.port];
     case 'socket-server':

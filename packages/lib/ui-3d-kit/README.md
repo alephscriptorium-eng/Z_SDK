@@ -7,7 +7,7 @@ nunca resuelve esos imports. Los módulos sin three (engine, adapter, walk-drive
 además unit-testables bajo `node --test`.
 
 Consumido por [`@zeus/player-3d-ui`](../../app/player-3d-ui) (escena vaivén +
-marionetas) y [`@zeus/player-debug-3d-ui`](../../app/player-debug-3d-ui) (escena radial).
+marionetas) y [`@zeus/3d-monitor`](../../platform/3d-monitor) (portal de vistas: escena radial, ecosystem, bots-log).
 
 ## API (resumen)
 

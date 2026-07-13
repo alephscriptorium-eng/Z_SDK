@@ -1,0 +1,22 @@
+{
+  "name": "@zeus/arg-demos",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CAUDAL — autoridad del ARG del delta (arg:state 10 Hz, arg:track, arg:ledger) y launcher de la demo de 3 visores (tablero + 2 jugadores) sobre @zeus/rooms + @zeus/arg-domain.",
+  "scripts": {
+    "demo": "node launch.mjs",
+    "authority": "node apps/authority/index.mjs"
+  },
+  "zeus": {
+    "role": "app"
+  },
+  "dependencies": {
+    "@zeus/arg-console": "*",
+    "@zeus/arg-domain": "*",
+    "@zeus/arg-feeds": "*",
+    "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*"
+  },
+  "license": "AIPLv1"
+}

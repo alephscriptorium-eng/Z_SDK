@@ -21,9 +21,11 @@
   },
   "dependencies": {
     "@zeus/app-shell": "*",
+    "@zeus/arg-domain": "*",
     "@zeus/http-contract": "*",
     "@zeus/linea-system": "*",
     "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*",
     "@zeus/test-utils": "*",
     "@zeus/ui-kit": "*",
     "cors": "^2.8.6",

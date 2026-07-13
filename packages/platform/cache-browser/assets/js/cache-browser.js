@@ -424,6 +424,35 @@
 
     updatePlayerLink();
 
+    let lastTrackTs = 0;
+    function startTrackPoller() {
+      const trackCfg = state.config?.track;
+      if (!trackCfg?.enabled || !trackCfg.focusUrl) return;
+      setInterval(function () {
+        fetchJson(trackCfg.focusUrl)
+          .then(function (focus) {
+            if (!focus?.ts || focus.ts === lastTrackTs) return;
+            lastTrackTs = focus.ts;
+            const resolved = focus.resolved;
+            if (!resolved?.path) return;
+            if (resolved.linea && resolved.linea !== lineaId) {
+              lineaId = resolved.linea;
+              lineaSelect.value = lineaId;
+            }
+            const parts = resolved.path.split('/');
+            let acc = '';
+            for (let i = 0; i < parts.length - 1; i++) {
+              acc = acc ? acc + '/' + parts[i] : parts[i];
+              EXPANDED.add(acc);
+            }
+            return renderTree().then(function () {
+              return openFile(resolved.path);
+            });
+          })
+          .catch(function () {});
+      }, 1000);
+    }
+
     loadLineas()
       .then(function () {
         return refreshCoverage();
@@ -452,6 +481,8 @@
       .catch(function (err) {
         showTreeError(err);
       });
+
+    startTrackPoller();
   }
 
   document.addEventListener('DOMContentLoaded', function () {

@@ -120,7 +120,7 @@ const APP_DEFAULTS = {
     port: DEFAULT_ZEUS_UI_MESH.debug3d.port,
     theme: DEFAULT_THEME,
     viewer: { sessionId: 'default', scriptoriumUrl: null },
-    branding: { title: 'Debug 3D', tag: 'Scriptorium · Zeus SDK' },
+    branding: { title: '3D Monitor', tag: 'Scriptorium · Zeus SDK' },
     debug: true
   },
   debug: {

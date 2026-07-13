@@ -1,6 +1,6 @@
 /**
  * E2E player-3d demo (visor 3D arco, cierre): socket-server + player-ui
- * (room MASTER) + player-3d-ui + player-debug-3d-ui, all on isolated ports.
+ * (room MASTER) + player-3d-ui + 3d-monitor, all on isolated ports.
  *
  * This is a Node e2e (no real browser): the 3D viewers are exercised at the
  * HTTP surface (health + server-rendered shell), and the session wiring is
@@ -9,7 +9,7 @@
  * Gates:
  *  - G-3D.1 shell: player-3d-ui GET /health → 200 ok, GET / shell carries the
  *    import map + #viewer-config + viewer-main entry.
- *  - G-3D.2 debug shell: player-debug-3d-ui GET /health → 200 ok.
+ *  - G-3D.2 monitor shell: 3d-monitor GET /health → 200 ok.
  *  - G-3D.3 selection:cast: a room client casts a `registro` selection; the
  *    master records it in snapshot.selections (last + byActor) and — when deck
  *    B resolves in this environment — reflects the target on decks.B.resolved.
@@ -30,7 +30,7 @@ import { createScriptoriumServer } from '@zeus/socket-server';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { createPlayerServer } from '../packages/app/player-ui/src/server.mjs';
 import { createPlayer3dServer } from '../packages/app/player-3d-ui/src/server.mjs';
-import { createDebug3dServer } from '../packages/app/player-debug-3d-ui/src/server.mjs';
+import { createMonitor3dServer } from '../packages/platform/3d-monitor/src/server.mjs';
 import { ServerRegistry, PresetStore, discoverServers } from '@zeus/presets-sdk';
 import {
   assert,
@@ -196,9 +196,9 @@ try {
     sessionId: SESSION_ID
   });
 
-  console.log('5. Starting player-3d-ui + player-debug-3d-ui...');
+  console.log('5. Starting player-3d-ui + 3d-monitor...');
   player3d = await createPlayer3dServer({ port: PLAYER_3D_PORT, host: 'localhost' });
-  debug3d = await createDebug3dServer({ port: DEBUG_3D_PORT, host: 'localhost' });
+  debug3d = await createMonitor3dServer({ port: DEBUG_3D_PORT, host: 'localhost' });
 
   /* ---------------- G-3D.1 player-3d shell ---------------- */
   console.log('6. [G-3D.1] player-3d-ui health + shell...');
@@ -216,14 +216,14 @@ try {
   assert(/viewer-main\.mjs/.test(shellHtml), 'player-3d shell missing viewer-main entry');
   console.log('   G-3D.1 OK: player-3d-ui health + shell (importmap + #viewer-config)');
 
-  /* ---------------- G-3D.2 debug-3d shell ---------------- */
-  console.log('7. [G-3D.2] player-debug-3d-ui health...');
+  /* ---------------- G-3D.2 3d-monitor shell ---------------- */
+  console.log('7. [G-3D.2] 3d-monitor health...');
   const healthDbg = await fetch(`http://localhost:${debug3d.port}/health`);
-  assert(healthDbg.status === 200, `debug-3d /health status ${healthDbg.status}`);
+  assert(healthDbg.status === 200, `3d-monitor /health status ${healthDbg.status}`);
   const healthDbgJson = await healthDbg.json();
-  assert(healthDbgJson.status === 'ok', 'debug-3d /health status not ok');
-  assert(healthDbgJson.service === 'player-debug-3d-ui', 'debug-3d /health service mismatch');
-  console.log('   G-3D.2 OK: player-debug-3d-ui health');
+  assert(healthDbgJson.status === 'ok', '3d-monitor /health status not ok');
+  assert(healthDbgJson.service === '3d-monitor', '3d-monitor /health service mismatch');
+  console.log('   G-3D.2 OK: 3d-monitor health');
 
   /* ---------------- G-3D.3 selection:cast ---------------- */
   console.log('8. Connecting room client (actor) to scriptorium.default...');

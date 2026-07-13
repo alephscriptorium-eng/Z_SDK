@@ -29,6 +29,8 @@ import { firehoseView } from './views/firehose_view.mjs';
 import { settingsView } from './views/settings_view.mjs';
 import { createBrowseRoutes } from './browse-routes.mjs';
 import { buildFirehoseSpec } from '../spec/build.mjs';
+import { createArgTrackSubscriber, mountTrackFocusRoute } from './arg-track-subscriber.mjs';
+import { DEFAULT_ARG_ROOM } from '@zeus/arg-domain';
 
 /** @type {{ corpus: string|null, path: string|null, mode: string|null, name: string|null, summary: string|null }} */
 let currentFocus = {
@@ -68,6 +70,8 @@ export async function createFirehoseServer(options = {}) {
   const themeApi = createThemeRoutes(themeHandler, getConfig, {
     extendConfig: (cfg) => {
       const volume = resolveVolume('firehose');
+      const trackActor = options.trackActor ?? process.env.ZEUS_ARG_TRACK_ACTOR ?? null;
+      const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? DEFAULT_ARG_ROOM;
       return {
         discovery: cfg.discovery,
         defaultCorpus: cfg.defaultCorpus,
@@ -77,7 +81,10 @@ export async function createFirehoseServer(options = {}) {
           label: volume.label,
           absPath: volume.absPath,
           readonly: volume.readonly
-        }
+        },
+        track: trackActor
+          ? { enabled: true, actor: trackActor, room: trackRoom, focusUrl: '/api/track/focus' }
+          : { enabled: false }
       };
     }
   });
@@ -89,6 +96,21 @@ export async function createFirehoseServer(options = {}) {
 
   mountSpecRoutes(app, { specs: { 'openapi.json': buildFirehoseSpec } });
   mountSwaggerUi(app, { title: 'Firehose View UI API' });
+
+  const trackActor = options.trackActor ?? process.env.ZEUS_ARG_TRACK_ACTOR ?? null;
+  const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? DEFAULT_ARG_ROOM;
+  let trackSubscriber = null;
+  if (trackActor) {
+    trackSubscriber = createArgTrackSubscriber({
+      actor: trackActor,
+      browserHint: 'firehose-browser',
+      room: trackRoom
+    });
+    await trackSubscriber.start().catch((err) => {
+      console.warn('[firehose-browser] arg:track subscriber no arrancó:', err.message);
+    });
+  }
+  mountTrackFocusRoute(app, trackSubscriber);
 
   app.use(
     '/api',
@@ -144,10 +166,11 @@ export async function createFirehoseServer(options = {}) {
   });
 
   async function close() {
+    trackSubscriber?.stop();
     await new Promise((resolve) => server.close(resolve));
   }
 
-  return { app, server, close, port, host, setFocus, getFocus: buildFocusSnapshot };
+  return { app, server, close, port, host, setFocus, getFocus: buildFocusSnapshot, trackSubscriber };
 }
 
 import { pathToFileURL } from 'node:url';

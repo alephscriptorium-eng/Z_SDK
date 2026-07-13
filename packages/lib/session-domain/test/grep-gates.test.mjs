@@ -9,8 +9,8 @@ const repoRoot = path.resolve(__dirname, '../../../..');
 const viewerRoots = [
   'packages/app/player-3d-ui/assets/js',
   'packages/app/player-3d-ui/src',
-  'packages/app/player-debug-3d-ui/assets/js',
-  'packages/app/player-debug-3d-ui/src',
+  'packages/platform/3d-monitor/assets/js',
+  'packages/platform/3d-monitor/src',
   'packages/platform/firehose-browser/src'
 ];
 

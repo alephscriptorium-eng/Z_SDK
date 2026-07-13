@@ -7,7 +7,8 @@
     "packages/lib/*",
     "packages/app/*",
     "packages/mcp/*",
-    "packages/platform/*"
+    "packages/platform/*",
+    "packages/arg/*"
   ],
   "engines": {
     "node": ">=18.0.0"
@@ -23,13 +24,19 @@
     "start:firehose-mcp": "npm run start -w @zeus/linea-firehose",
     "start:socket-server": "npm run start -w @zeus/socket-server",
     "start:player-3d": "npm run start -w @zeus/player-3d-ui",
-    "start:debug-3d": "npm run start -w @zeus/player-debug-3d-ui",
+    "start:3d-monitor": "npm run start -w @zeus/3d-monitor",
     "start:operator-ui": "node packages/operator-ui/serve.mjs",
     "start:v1-zeus": "echo 'Equivalent to VS Code task V1 Zeus ▸ start all — run in parallel terminals:' && echo '  npm run start:socket-server' && echo '  npm run start:console-monitor' && echo '  npm run start:cache-browser' && echo '  npm run start:firehose' && echo 'Or use VS Code: Terminal > Run Task > V1 Zeus ▸ start all'",
-    "start:all": "echo 'Equivalent to VS Code task Start ▸ all — run MCP/UI servers in parallel terminals:' && echo '  npm run start:lineas' && echo '  npm run start:editor' && echo '  npm run start:player' && echo '  npm run start:cache-browser' && echo '  npm run start:firehose-mcp' && echo '  npm run start:firehose' && echo '  npm run start:console-monitor' && echo '  npm run start:socket-server' && echo '  npm run start:player-3d' && echo '  npm run start:debug-3d' && echo '  npm run start:operator-ui' && echo 'Or use VS Code: Terminal > Run Task > Start ▸ all'",
+    "start:all": "echo 'Equivalent to VS Code task Start ▸ all — run MCP/UI servers in parallel terminals:' && echo '  npm run start:lineas' && echo '  npm run start:editor' && echo '  npm run start:player' && echo '  npm run start:cache-browser' && echo '  npm run start:firehose-mcp' && echo '  npm run start:firehose' && echo '  npm run start:console-monitor' && echo '  npm run start:socket-server' && echo '  npm run start:player-3d' && echo '  npm run start:3d-monitor' && echo '  npm run start:operator-ui' && echo 'Or use VS Code: Terminal > Run Task > Start ▸ all'",
 
     "demo:game": "npm run demo -w @zeus/game-demos",
     "demo:bots": "npm run demo -w @zeus/ping-pong-bots",
+    "demo:arg": "npm run demo -w @zeus/arg-demos",
+    "start:arg-console": "npm run start -w @zeus/arg-console",
+    "test:arg-domain": "npm test -w @zeus/arg-domain",
+    "test:arg-console": "npm test -w @zeus/arg-console",
+    "test:arg-feeds": "npm test -w @zeus/arg-feeds",
+    "test:arg": "npm run test:arg-domain && npm run test:arg-feeds && npm run test:arg-console",
 
     "test:sdk": "npm test -w @zeus/presets-sdk",
     "test:solar": "npm test -w @zeus/solar-system",
@@ -50,7 +57,7 @@
 
     
     "test:player-3d": "npm test -w @zeus/player-3d-ui",
-    "test:debug-3d": "npm test -w @zeus/player-debug-3d-ui",    
+    "test:3d-monitor": "npm test -w @zeus/3d-monitor",
     "test:bots": "npm test -w @zeus/ping-pong-bots",
 
 
@@ -89,7 +96,10 @@
     "e2e:domain:manifest": "node e2e/domain-manifest.mjs",
     "e2e:domain:map": "node e2e/domain-map.mjs",
     "e2e:domain:firehose": "node e2e/domain-firehose.mjs",
-    "e2e:domain:selection": "node e2e/domain-selection.mjs"
+    "e2e:domain:selection": "node e2e/domain-selection.mjs",
+    "e2e:arg": "node e2e/arg-demo.mjs",
+    "e2e:arg-feeds": "node e2e/arg-feeds-demo.mjs",
+    "e2e:arg-track": "node e2e/arg-track-demo.mjs"
   },
   "devDependencies": {
     "@alephscript/mcp-core-sdk": "^1.5.0",
