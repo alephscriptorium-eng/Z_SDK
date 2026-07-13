@@ -1,5 +1,5 @@
 /**
- * E2E deck room demo (visor 3D Fase 0): scriptorium-server + player-ui in
+ * E2E deck room demo (visor 3D Fase 0): socket-server + player-ui in
  * room transport mode (ZEUS_SESSION_TRANSPORT=room) with two raw socket.io
  * clients joined to scriptorium.default via CLIENT_REGISTER/CLIENT_SUSCRIBE.
  *
@@ -113,7 +113,7 @@ function createRoomClient(name) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 try {
-  console.log('1. Starting scriptorium-server (room runtime)...');
+  console.log('1. Starting socket-server (room runtime)...');
   scriptorium = await createScriptoriumServer({ port: SCRIPTORIUM_PORT, host: 'localhost', bridge: 'local' });
 
   console.log('2. Starting linea-system servers...');

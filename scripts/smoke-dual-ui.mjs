@@ -5,7 +5,7 @@
  *
  * Does not start servers — run VS Code **Start ▸ dual-ui-smoke** first, or:
  *   npm run start:lineas
- *   npm run start:scriptorium-server
+ *   npm run start:socket-server
  *   npm run start:player
  *   npm run start:player-3d
  *   npm run start:operator-ui
@@ -29,7 +29,7 @@ const ports = {
 /** @type {{ id: string, url: string, validate: (body: any) => boolean, required?: boolean }[]} */
 const targets = [
   {
-    id: 'scriptorium-server',
+    id: 'socket-server',
     url: `http://${host}:${ports.scriptorium}/health`,
     validate: (b) => b?.ok === true,
   },

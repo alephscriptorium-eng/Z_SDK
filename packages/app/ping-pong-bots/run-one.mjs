@@ -21,8 +21,6 @@ const apps = {
 };
 
 const spec = apps[role];
-// bots now live inside zeus-sdk (block-11 GA-C): packageRoot is
-// zeus-sdk/packages/app/ping-pong-bots → zeus-sdk root is 3 levels up.
 const zeusSdkRoot = join(packageRoot, '..', '..', '..');
 
 const child = spawn(process.execPath, [join(packageRoot, spec.path)], {

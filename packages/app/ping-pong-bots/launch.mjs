@@ -37,6 +37,7 @@ function pipeWithPrefix(label, stream, target) {
 }
 
 function startApp(label, role, extraEnv = {}) {
+  process.env.PING_SESSION_MODE = 1;
   const child = spawn(process.execPath, [join(packageRoot, 'run-one.mjs'), role], {
     cwd: zeusSdkRoot,
     env: { ...process.env, ...extraEnv },

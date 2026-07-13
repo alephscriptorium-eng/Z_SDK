@@ -76,6 +76,11 @@ export function createBrowserRoomClient(cfg) {
       socket.on(event, cb);
       return () => socket.off(event, cb);
     },
+    /** Listen to every inbound room event (catch-all). cb receives (event, ...args). Returns unsubscribe. */
+    onAny(cb) {
+      socket.onAny(cb);
+      return () => socket.offAny(cb);
+    },
     /** Emit a room channel event via ROOM_MESSAGE. */
     emit(event, data) {
       socket.emit('ROOM_MESSAGE', { event, room, data });

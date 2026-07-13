@@ -3,7 +3,7 @@
  *
  * Serves the built Angular host app (dist/public) behind its own route and
  * injects the live zeus session config as `window.__ZEUS__`, so the app's
- * ZeusSessionBridgeService connects to the running scriptorium-server.
+ * ZeusSessionBridgeService connects to the running socket-server.
  *
  * Build first: `npm run build:all` (lib + dev-app). Then: `node serve.mjs`.
  */

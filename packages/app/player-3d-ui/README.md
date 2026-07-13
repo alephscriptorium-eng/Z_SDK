@@ -35,7 +35,7 @@ npm start -w @zeus/player-3d-ui
 
 Necesita, para tener sesión viva:
 
-1. **scriptorium-server** (`npm run start:scriptorium-server`, :3017 `/runtime`).
+1. **socket-server** (`npm run start:socket-server`, :3017 `/runtime`).
 2. **player-ui en modo room** (`ZEUS_SESSION_TRANSPORT=room npm run start:player`),
    que es el MASTER de `scriptorium.<sessionId>` y emite los `SET_STATE`.
 

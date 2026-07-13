@@ -43,7 +43,7 @@ const restoreLineaPorts = applyE2eLineaPorts();
 process.env.ZEUS_SCRIPTORIUM_URL = `http://localhost:${SCRIPTORIUM_PORT}`;
 
 try {
-  console.log('1. Starting scriptorium-server...');
+  console.log('1. Starting socket-server...');
   scriptorium = await createScriptoriumServer({ port: SCRIPTORIUM_PORT, host: 'localhost', bridge: 'local' });
 
   console.log('2. Starting linea-system servers...');

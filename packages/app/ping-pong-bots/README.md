@@ -1,7 +1,7 @@
 # @zeus/ping-pong-bots
 
 Bots demo de canal (ping/pong/rabbit/spider/horse) que corren como **clientes de
-sesión** del scriptorium-server. Absorbidos desde `gea-sdk/packages/ping-pong`
+sesión** del socket-server. Absorbidos desde `gea-sdk/packages/ping-pong`
 (block-11 GA-C): ahora viven en el workspace de `zeus-sdk` y usan **`@zeus/rooms`
 directamente** — el shim `lib/rooms.mjs` fue eliminado.
 
@@ -56,7 +56,7 @@ romper su juego actual.
 - La room es única: en modo sesión toda la actividad (PING/PONG **y**
   `selection:cast`) ocurre en la **misma room del master**, resuelta con
   `ZEUS_SCRIPTORIUM_ROOM` (por defecto `scriptorium.default`). Los bots se
-  conectan al **scriptorium-server** (`ZEUS_SCRIPTORIUM_URL`, por defecto
+  conectan al **socket-server** (`ZEUS_SCRIPTORIUM_URL`, por defecto
   `http://localhost:3017` `/runtime`), no al servidor rooms remoto.
 - Cada bot cachea el último `SET_STATE {type:'session:state', snapshot}` que
   difunde el master, escoge una rev del **deck B**
@@ -73,7 +73,7 @@ romper su juego actual.
 
 ### Cómo arrancar
 
-Requiere **scriptorium-server** (`:3017`) y **player-ui en modo room** (el
+Requiere **socket-server** (`:3017`) y **player-ui en modo room** (el
 master de sesión) levantados, ambos en `zeus-sdk`. Luego, desde este paquete:
 
 ```bash
@@ -101,7 +101,7 @@ no emite selección.
 | `PING_INTERVAL_MS` | intervalo entre PINGs |
 | `PING_SESSION_MODE=1` | activa el modo sesión (opt-in) |
 | `ZEUS_SCRIPTORIUM_ROOM` | room de sesión (default `scriptorium.default`) |
-| `ZEUS_SCRIPTORIUM_URL` | scriptorium-server (default `http://localhost:3017`) |
+| `ZEUS_SCRIPTORIUM_URL` | socket-server (default `http://localhost:3017`) |
 | `ZEUS_SCRIPTORIUM_SECRET` | secreto de sesión (default `dev-secret`) |
 | `PING_SESSION_EVERY` | emitir selección cada N intercambios (default 1) |
 

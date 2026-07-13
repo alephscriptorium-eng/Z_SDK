@@ -24,8 +24,13 @@
     "start:socket-server": "npm run start -w @zeus/socket-server",
     "start:player-3d": "npm run start -w @zeus/player-3d-ui",
     "start:debug-3d": "npm run start -w @zeus/player-debug-3d-ui",
+    "start:operator-ui": "node packages/operator-ui/serve.mjs",
     "start:v1-zeus": "echo 'Equivalent to VS Code task V1 Zeus ▸ start all — run in parallel terminals:' && echo '  npm run start:socket-server' && echo '  npm run start:console-monitor' && echo '  npm run start:cache-browser' && echo '  npm run start:firehose' && echo 'Or use VS Code: Terminal > Run Task > V1 Zeus ▸ start all'",
     "start:all": "echo 'Equivalent to VS Code task Start ▸ all — run MCP/UI servers in parallel terminals:' && echo '  npm run start:lineas' && echo '  npm run start:editor' && echo '  npm run start:player' && echo '  npm run start:cache-browser' && echo '  npm run start:firehose-mcp' && echo '  npm run start:firehose' && echo '  npm run start:console-monitor' && echo '  npm run start:socket-server' && echo '  npm run start:player-3d' && echo '  npm run start:debug-3d' && echo '  npm run start:operator-ui' && echo 'Or use VS Code: Terminal > Run Task > Start ▸ all'",
+
+    "demo:game": "npm run demo -w @zeus/game-demos",
+    "demo:bots": "npm run demo -w @zeus/ping-pong-bots",
+
     "test:sdk": "npm test -w @zeus/presets-sdk",
     "test:solar": "npm test -w @zeus/solar-system",
     "test:lineas": "npm test -w @zeus/linea-system",
@@ -42,13 +47,14 @@
     "test:game-engine": "npm test -w @zeus/game-engine",
     "test:operator-bridge": "npm test -w @zeus/operator-bridge",
     "build:operator-ui": "npm --prefix packages/operator-ui install && npm --prefix packages/operator-ui run build:all",
-    "start:operator-ui": "node packages/operator-ui/serve.mjs",
-    "smoke:dual-ui": "node scripts/smoke-dual-ui.mjs",   
+
+    
     "test:player-3d": "npm test -w @zeus/player-3d-ui",
-    "test:debug-3d": "npm test -w @zeus/player-debug-3d-ui",
+    "test:debug-3d": "npm test -w @zeus/player-debug-3d-ui",    
     "test:bots": "npm test -w @zeus/ping-pong-bots",
-    "demo:game": "npm run demo -w @zeus/game-demos",
-    "demo:bots": "npm run demo -w @zeus/ping-pong-bots",
+
+
+
     "spec:generate": "npm run spec:generate -w @zeus/session-protocol",
     "spec:generate:http": "node scripts/spec-generate.mjs",
     "spec:generate:all": "npm run spec:generate:http && npm run spec:generate",

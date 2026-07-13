@@ -59,7 +59,7 @@ try {
     'aleph-wp-cache should include cache_wikitext tool'
   );
 
-  console.log('2. Starting scriptorium-server...');
+  console.log('2. Starting socket-server...');
   scriptorium = await createScriptoriumServer({ port: SCRIPTORIUM_PORT, host: 'localhost', bridge: 'local' });
 
   console.log('3. Starting linea-system...');

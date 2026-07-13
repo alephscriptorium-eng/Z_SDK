@@ -255,7 +255,7 @@
     },
     {
       "label": "Start ▸ player-3d-ui",
-      "detail": "Visor 3D · escena vaivén-dos-nodos + HUD room (:3018).",
+      "detail": "Visor 3D · escena vaivén-dos-nodos + HUD room.",
       "type": "npm",
       "script": "start:player-3d",
       "isBackground": true,
@@ -264,7 +264,7 @@
     },
     {
       "label": "Start ▸ player-debug-3d-ui",
-      "detail": "Debug 3D · tráfico radial de room (:3019).",
+      "detail": "Debug 3D · tráfico radial de room.",
       "type": "npm",
       "script": "start:debug-3d",
       "isBackground": true,

@@ -12,7 +12,7 @@ const SESSION_EVERY = Number(process.env.PING_SESSION_EVERY || 1); // cast every
 const sessionRoom = SESSION_MODE ? resolveSessionRoom(process.env.ZEUS_SESSION_ID || 'default') : null;
 
 // In session mode all activity (PING/PONG + selection:cast) happens on the
-// unified session room served by scriptorium-server, so bots and master meet.
+// unified session room served by socket-server, so bots and master meet.
 const client = SESSION_MODE
   ? createClient(USER, { ...scriptoriumConfig(), room: sessionRoom })
   : createClient(USER);

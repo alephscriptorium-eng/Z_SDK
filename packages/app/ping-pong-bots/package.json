@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Demo channel bots (ping/pong/rabbit/spider/horse) — session clients of scriptorium-server. Absorbed from gea-sdk/packages/ping-pong (block-11 GA-C); uses @zeus/rooms directly (rooms shim deleted).",
+  "description": "Demo channel bots (ping/pong/rabbit/spider/horse) — session clients of socket-server. Absorbed from gea-sdk/packages/ping-pong (block-11 GA-C); uses @zeus/rooms directly (rooms shim deleted).",
   "scripts": {
     "demo": "node launch.mjs",
+    "demo:session": "node run-session.mjs",
     "ping": "node run-one.mjs ping",
     "pong": "node run-one.mjs pong",
     "rabbit": "node run-one.mjs rabbit",

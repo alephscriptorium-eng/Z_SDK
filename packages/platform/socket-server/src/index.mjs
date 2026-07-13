@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * @zeus/socket-server — Socket.io runtime /runtime (E2).
+ * @zeus/socket-server — Socket.io runtime /runtime.
  */
 
 import { pathToFileURL } from 'node:url';

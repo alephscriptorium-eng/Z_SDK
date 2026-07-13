@@ -1,5 +1,5 @@
 /**
- * E2E operator-ui demo (block-13 closure): scriptorium-server + player-ui
+ * E2E operator-ui demo (block-13 closure): socket-server + player-ui
  * (room MASTER) + operator-ui HTTP shell, on isolated ports.
  *
  * Node e2e (no real browser): validates build artifact, HTTP surface,
@@ -113,7 +113,7 @@ try {
   assert(fs.statSync(mainBundle).size > 0, 'operator-ui main bundle is empty');
   console.log(`   G-OUI.0 OK: ${path.basename(mainBundle)}`);
 
-  console.log('2. Starting scriptorium-server (room runtime)...');
+  console.log('2. Starting socket-server (room runtime)...');
   scriptorium = await createScriptoriumServer({ port: SCRIPTORIUM_PORT, host: 'localhost', bridge: 'local' });
 
   console.log('3. Starting player-ui (room MASTER)...');

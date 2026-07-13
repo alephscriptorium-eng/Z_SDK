@@ -1,7 +1,7 @@
 /**
  * E2E dual-ui demo (block-15 closure): «dos UIs, un contrato».
  *
- * Starts scriptorium-server + player-ui (room MASTER) + player-3d-ui + operator-ui
+ * Starts socket-server + player-ui (room MASTER) + player-3d-ui + operator-ui
  * on isolated ports. Node e2e (no browser): health, selection:cast, and cross-slice
  * projection on the same snapshot.
  *
@@ -122,7 +122,7 @@ try {
   const mainBundle = findMainBundle();
   assert(fs.statSync(mainBundle).size > 0, 'operator-ui main bundle is empty');
 
-  console.log('2. Starting scriptorium-server (room runtime)...');
+  console.log('2. Starting socket-server (room runtime)...');
   scriptorium = await createScriptoriumServer({ port: SCRIPTORIUM_PORT, host: 'localhost', bridge: 'local' });
 
   console.log('3. Starting player-ui (room MASTER)...');

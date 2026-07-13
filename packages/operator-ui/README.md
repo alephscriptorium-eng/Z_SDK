@@ -85,7 +85,7 @@ VS Code: **Test ✓ e2e operator-ui**.
 
 ### Smoke manual
 
-Con `scriptorium-server` (:3017) y algún bot emitiendo (`@zeus/ping-pong-bots` en
+Con `socket-server` (:3017) y algún bot emitiendo (`@zeus/ping-pong-bots` en
 `PING_SESSION_MODE=1`) arriba:
 
 ```bash

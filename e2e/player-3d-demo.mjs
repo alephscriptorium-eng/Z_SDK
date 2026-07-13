@@ -1,5 +1,5 @@
 /**
- * E2E player-3d demo (visor 3D arco, cierre): scriptorium-server + player-ui
+ * E2E player-3d demo (visor 3D arco, cierre): socket-server + player-ui
  * (room MASTER) + player-3d-ui + player-debug-3d-ui, all on isolated ports.
  *
  * This is a Node e2e (no real browser): the 3D viewers are exercised at the
@@ -140,7 +140,7 @@ function pickRealOldid(deckB) {
 }
 
 try {
-  console.log('1. Starting scriptorium-server (room runtime)...');
+  console.log('1. Starting socket-server (room runtime)...');
   scriptorium = await createScriptoriumServer({ port: SCRIPTORIUM_PORT, host: 'localhost', bridge: 'local' });
 
   console.log('2. Starting linea-system servers...');

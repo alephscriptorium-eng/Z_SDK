@@ -23,7 +23,7 @@ npm run start:debug-3d             # desde zeus-sdk/  → http://localhost:3019
 npm start -w @zeus/player-debug-3d-ui
 ```
 
-Para ver tráfico necesita scriptorium-server (:3017 `/runtime`) y una sesión activa
+Para ver tráfico necesita socket-server (:3017 `/runtime`) y una sesión activa
 (player-ui en modo room como MASTER). Ver el README de `player-3d-ui` para el arranque
 completo.
 

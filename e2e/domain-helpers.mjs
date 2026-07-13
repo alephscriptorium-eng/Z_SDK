@@ -71,7 +71,7 @@ export async function startStack(ctx) {
   process.env.ZEUS_SCRIPTORIUM_URL = `http://localhost:${SCRIPTORIUM_PORT}`;
   delete process.env.ZEUS_SCRIPTORIUM_ROOM;
 
-  console.log('Starting scriptorium-server (programmatic)...');
+  console.log('Starting socket-server (programmatic)...');
   ctx.scriptorium = await createScriptoriumServer({
     port: SCRIPTORIUM_PORT,
     host: 'localhost',
