@@ -26,6 +26,7 @@
     //   zeus-spec   → specs (generate OpenAPI/AsyncAPI/Redoc + AsyncAPI Studio)
     //   zeus-docs   → VitePress documentation portal
     //   v1-zeus     → plataforma V1 (socket-server, console-monitor, cache-browser, firehose-browser)
+    //   arg         → demo CAUDAL (socket + authority + arg-console :3021)
 
     {
       "label": "V1 Zeus ▸ socket-server",
@@ -114,6 +115,32 @@
       "type": "shell",
       "command": "npm run stop:services -- \"firehose-browser stopped\" firehose-browser",
       "presentation": { "group": "v1-zeus", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "ARG ▸ start",
+      "detail": "Demo CAUDAL: socket + cache + firehose + autoridad + arg-console; abre 5 ventanas (tablero, 2 jugadores, cache, firehose).",
+      "type": "shell",
+      "command": "npm run demo:arg",
+      "isBackground": true,
+      "presentation": { "group": "arg", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARG ▸ stop",
+      "detail": "Detiene arg-console, cache-browser y firehose-browser. Termina también «ARG ▸ start» para authority + launcher.",
+      "type": "shell",
+      "command": "npm run stop:arg",
+      "presentation": { "group": "arg", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARG ▸ stop arg-console",
+      "detail": "Solo el portal 3D CAUDAL (:3021).",
+      "type": "shell",
+      "command": "npm run stop:services -- \"arg-console stopped\" arg-console",
+      "presentation": { "group": "arg", "panel": "shared", "clear": true },
       "problemMatcher": []
     },
 

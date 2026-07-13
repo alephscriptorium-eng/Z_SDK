@@ -23,7 +23,8 @@ import {
   readCorpusFile,
   listPosts,
   getFirehoseStats,
-  loadTriageManifest
+  loadTriageManifest,
+  corpusFileExists
 } from './firehose-bridge.mjs';
 import { firehoseView } from './views/firehose_view.mjs';
 import { settingsView } from './views/settings_view.mjs';
@@ -104,7 +105,11 @@ export async function createFirehoseServer(options = {}) {
     trackSubscriber = createArgTrackSubscriber({
       actor: trackActor,
       browserHint: 'firehose-browser',
-      room: trackRoom
+      room: trackRoom,
+      // WP-26: deep-links honestos — el focus solo es navegable si el
+      // fichero existe en el volumen; si no, queda ghost (cero ENOENT).
+      checkExists: (resolved) =>
+        corpusFileExists(resolved?.corpus, resolved?.path)
     });
     await trackSubscriber.start().catch((err) => {
       console.warn('[firehose-browser] arg:track subscriber no arrancó:', err.message);

@@ -30,7 +30,11 @@ const gamemap = {
   objetivo: {
     labeled: Number(process.env.ZEUS_ARG_GOAL_LABELED || 10),
     excavated: Number(process.env.ZEUS_ARG_GOAL_EXCAVATED || 2)
-  }
+  },
+  startPack: (process.env.ZEUS_ARG_START_PACK || 'aleph-tronco-puro,aleph-firehose-browse')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
 };
 
 const topology = buildCanteraTopology(deltaV0.cantera);

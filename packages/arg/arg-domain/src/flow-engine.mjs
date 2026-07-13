@@ -180,7 +180,9 @@ export function createFlowEngine(scene, firehoseFeed) {
       }
     },
 
-    /** Ríos compactos para arg:state (G-ARG.5): [[id, progress, state, label]]. */
+    /** Ríos compactos para arg:state (G-ARG.5): [[id, progress, state, label, uri]].
+     *  La uri (5º slot) alimenta el inspector HTML (WP-25): los MENSAJES del
+     *  cauce tienen que poder leerse fuera del canvas. */
     snapshot() {
       const riversOut = {};
       for (const [id, river] of Object.entries(rivers)) {
@@ -189,7 +191,8 @@ export function createFlowEngine(scene, firehoseFeed) {
             d.id,
             Math.round(d.progress * 1000) / 1000,
             d.label ? 'crystal' : d.state,
-            d.label ?? undefined
+            d.label ?? null,
+            d.ref?.uri ?? null
           ])
         };
       }

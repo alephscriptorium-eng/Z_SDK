@@ -446,15 +446,64 @@
       .then(showCurrentView)
       .catch(function (e) { showError(treeHost, e.message); });
 
+    // ---- franja de juego CAUDAL (WP-26): este navegador está enganchado ----
+    function shortFocusUri(uri, max) {
+      if (!uri) return '—';
+      const s = String(uri);
+      const limit = max || 46;
+      return s.length <= limit ? s : '…' + s.slice(-limit);
+    }
+
+    function ensureGameStrip(trackCfg) {
+      let strip = document.getElementById('caudal-game-strip');
+      if (strip) return strip;
+      strip = document.createElement('div');
+      strip.id = 'caudal-game-strip';
+      strip.className = 'caudal-strip';
+      strip.innerHTML =
+        '<span class="caudal-strip-brand">🌊 CAUDAL</span>' +
+        '<span>siguiendo a <strong>' + escapeHtml(trackCfg.actor || '?') + '</strong></span>' +
+        '<span>room ' + escapeHtml(trackCfg.room || '—') + '</span>' +
+        '<span id="caudal-strip-conn" class="caudal-strip-conn">○ conectando…</span>' +
+        '<span id="caudal-strip-focus" class="caudal-strip-focus">sin focus aún — juega y este navegador te seguirá</span>';
+      document.body.insertBefore(strip, document.body.firstChild);
+      return strip;
+    }
+
+    function updateGameStrip(focus) {
+      const conn = document.getElementById('caudal-strip-conn');
+      if (conn) {
+        const ok = Boolean(focus && focus.connected);
+        conn.textContent = ok ? '● conectado a la room' : '○ room desconectada';
+        conn.dataset.state = ok ? 'ok' : 'off';
+      }
+      const focusEl = document.getElementById('caudal-strip-focus');
+      if (focusEl && focus && focus.ts) {
+        const state = focus.state || 'ok';
+        const stateLabel =
+          state === 'ok' ? '✓'
+            : state === 'synthetic' ? '「sintético」 sin fichero'
+              : '👻 recurso aún no excavado/cacheado — juega para inflarlo';
+        focusEl.textContent =
+          'último focus: ' + shortFocusUri(focus.ref?.uri || focus.resolved?.path) + ' · ' + stateLabel;
+        focusEl.dataset.state = state;
+      }
+    }
+
     let lastTrackTs = 0;
     function startTrackPoller() {
       const trackCfg = state.config?.track;
       if (!trackCfg?.enabled || !trackCfg.focusUrl) return;
+      ensureGameStrip(trackCfg);
       setInterval(function () {
         fetchJson(trackCfg.focusUrl)
           .then(function (focus) {
+            updateGameStrip(focus);
             if (!focus?.ts || focus.ts === lastTrackTs) return;
             lastTrackTs = focus.ts;
+            // WP-26: deep-links honestos — ghost/sintético NO navega (la
+            // franja ya lo cuenta); así el árbol nunca muere con ENOENT.
+            if (focus.state && focus.state !== 'ok') return;
             const resolved = focus.resolved;
             if (!resolved?.path) return;
             if (resolved.corpus && resolved.corpus !== corpusId) {

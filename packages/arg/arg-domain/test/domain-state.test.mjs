@@ -49,11 +49,12 @@ test('bucle completo: join → cima → grifo → río → etiqueta → ledger �
   assert.equal(state.applyIntent(makeIntent('dos', 'join')).ok, true);
   assert.equal(actor(state, 'uno').nodeId, 'plaza');
 
-  // tap:set desde la plaza es inválido (no-op)
-  assert.equal(state.applyIntent(makeIntent('uno', 'tap:set', { tapId: 'grifo-a', aperture: 1 })).error, 'fuera_de_cima');
+  // tap:set sin contacto es inválido (no-op)
+  assert.equal(state.applyIntent(makeIntent('uno', 'tap:set', { tapId: 'grifo-a', aperture: 1 })).error, 'sin_contacto');
 
   walkTo(state, 'uno', 'terraza-a');
   walkTo(state, 'uno', 'cima-a');
+  assert.equal(state.applyIntent(makeIntent('uno', 'contact:request', { targetId: 'grifo-a' })).ok, true);
   assert.equal(state.applyIntent(makeIntent('uno', 'tap:set', { tapId: 'grifo-a', aperture: 1 })).ok, true);
 
   // dos baja al embarcadero y monta el río
@@ -126,6 +127,7 @@ test('snapshot compacto: cabe en presupuesto con carga (G-ARG.5)', () => {
   state.applyIntent(makeIntent('op', 'join'));
   walkTo(state, 'op', 'terraza-a');
   walkTo(state, 'op', 'cima-a');
+  state.applyIntent(makeIntent('op', 'contact:request', { targetId: 'grifo-a' }));
   state.applyIntent(makeIntent('op', 'tap:set', { tapId: 'grifo-a', aperture: 1 }));
   for (let i = 0; i < 600; i++) state.tick(0.1); // ~60 s de gotas
   const snap = state.snapshot('change', { fullMaze: true });

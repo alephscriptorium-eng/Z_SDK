@@ -113,3 +113,41 @@ Umbrales de desbloqueo (v1: fijos en gamemap): 5 etiquetas → preset
 `aleph-firehose-browse`; 3 excavaciones → preset de viajes de línea. La
 ficha deriva físicas: un preset puede subir `walkSpeed` o permitir nadar
 (v1: tabla simple `presetId → modificadores`).
+
+## UX-2 — Shell HTML (feedback de la primera partida real, 2026-07-13)
+
+**Ley del proyecto**: el 3D es el mapa y sus símbolos clickables; TODA la
+operativa, lectura y control vive en HTML fuera del canvas. Nunca "llenar el
+3D de mil cosas".
+
+1. **Stage responsivo** — el canvas ocupa el 100% del viewport disponible y
+   se redimensiona con el navegador (el `createSceneManager` ya tiene resize
+   observer; el contenedor no debe fijar ancho). Sin scroll horizontal nunca.
+2. **Paneles como ventanitas HTML manejables** — HUD/leyenda, ledger
+   («chat» del tablero), tracking, menú de contacto y panel de cloak son
+   ventanitas DOM con barra de título: **colapsables** (▸/▾) todas,
+   **arrastrables** la leyenda y el ledger. Estado (posición + colapso)
+   persiste en `localStorage` por vista.
+3. **Inspector de caudal y cantera** — click (raycast) sobre un símbolo 3D
+   abre su panel HTML:
+   - **grifo**: presión/apertura/estado + cola upstream y los mensajes ya en
+     cauce (uri, corpus, etiqueta, progreso); botones de apertura si hay
+     contacto abierto.
+   - **río/mar**: lista de gotas en vuelo / cristales y murk; click en una
+     gota → deep-link al firehose-browser.
+   - **cámara**: recurso (uri), estado `cached/ghost/digging`, deep-link al
+     cache-browser si procede.
+4. **Deep-links honestos** — solo se ofrece enlace si el recurso existe de
+   verdad: refs sintéticos se marcan `「sintético」` sin enlace; cámaras
+   `ghost` muestran «no excavado aún». El suscriptor de tracking de los
+   browsers comprueba existencia en disco antes de navegar y responde con
+   estado `ghost` en vez de dejar que la página muera con ENOENT.
+5. **Browsers en modo juego** — cache/firehose-browser con `?actor=` muestran
+   una franja superior de juego: actor seguido, conexión a la room y último
+   focus (con su estado). La relación juego ↔ browser tiene que ser visible,
+   no adivinada.
+6. **Contacto = operativa real** (con WP-11/12): el menú de contacto ejecuta
+   tools MCP y rutas REST reales de sujetos que implementen el protocolo
+   (bots rabbit/spider/horse, servidores linea/firehose, presets del
+   PresetStore); el feedback JSON-RPC vuelve al panel y como emote/efecto
+   del monigote. El inventario `Q` se llena del PresetStore real.

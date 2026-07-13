@@ -1,6 +1,6 @@
 /**
- * Demo CAUDAL de 3 visores: socket-server (si no está ya corriendo) +
- * autoridad + arg-console. Imprime las tres URLs (tablero + 2 jugadores).
+ * Demo CAUDAL: socket-server + cache/firehose browsers + autoridad +
+ * arg-console. Abre 5 ventanas del juego (tablero, 2 jugadores, cache, firehose).
  * Patrón heredado de game-demos/launch.mjs.
  */
 
@@ -9,7 +9,7 @@ import net from 'node:net';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadEnv, monorepoRoot } from './lib/load-env.mjs';
-import { resolveZeusUiPorts } from '@zeus/presets-sdk/env';
+import { openBrowser, resolveZeusUiPorts } from '@zeus/presets-sdk/env';
 
 const packageRoot = dirname(fileURLToPath(import.meta.url));
 loadEnv();
@@ -18,6 +18,10 @@ const HOST = process.env.ZEUS_HOST || 'localhost';
 const SOCKET_PORT = Number(process.env.ZEUS_PORT_SCRIPTORIUM || 3017);
 const CONSOLE_PORT = Number(process.env.ZEUS_PORT_ARG_CONSOLE || 3021);
 const ROOM = process.env.ZEUS_ARG_ROOM || 'ARG_DELTA';
+const ui = resolveZeusUiPorts();
+const CACHE_PORT = ui.view.port;
+const FIREHOSE_PORT = ui.firehose.port;
+const TRACK_ACTOR = process.env.ZEUS_ARG_TRACK_ACTOR || 'uno';
 
 const children = [];
 
@@ -36,25 +40,32 @@ function portOpen(port, host) {
   });
 }
 
-function pipeWithPrefix(label, stream, target) {
+function pipeWithPrefix(label, stream, target, { filter } = {}) {
   let buffer = '';
   stream.on('data', (chunk) => {
     buffer += chunk.toString();
     const lines = buffer.split('\n');
     buffer = lines.pop() ?? '';
     for (const line of lines) {
-      if (line.length > 0) target.write(`[${label}] ${line}\n`);
+      if (line.length === 0) continue;
+      if (filter?.(line)) continue;
+      target.write(`[${label}] ${line}\n`);
     }
   });
 }
 
-function startApp(label, appPath, extraEnv = {}) {
+function startApp(label, appPath, extraEnv = {}, opts = {}) {
+  const stdio = opts.quiet
+    ? ['inherit', 'ignore', 'pipe']
+    : ['inherit', 'pipe', 'pipe'];
   const child = spawn(process.execPath, [appPath], {
     cwd: monorepoRoot,
     env: { ...process.env, ...extraEnv },
-    stdio: ['inherit', 'pipe', 'pipe']
+    stdio
   });
-  pipeWithPrefix(label, child.stdout, process.stdout);
+  if (!opts.quiet) {
+    pipeWithPrefix(label, child.stdout, process.stdout);
+  }
   pipeWithPrefix(label, child.stderr, process.stderr);
   child.on('exit', (code, signal) => {
     if (signal) console.log(`[launch] ${label} terminó (${signal})`);
@@ -63,6 +74,21 @@ function startApp(label, appPath, extraEnv = {}) {
   });
   children.push(child);
   return child;
+}
+
+async function ensureService(label, port, appPath, extraEnv = {}) {
+  const already = await portOpen(port, HOST);
+  if (already) {
+    console.log(`[launch] ${label} ya corriendo en :${port} — lo reutilizo`);
+    return;
+  }
+  console.log(`[launch] levantando ${label} en :${port}`);
+  startApp(label, appPath, { ZEUS_OPEN_BROWSER: '0', ...extraEnv });
+  for (let i = 0; i < 40; i++) {
+    if (await portOpen(port, HOST)) return;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  console.warn(`[launch] ${label} no respondió en :${port} a tiempo`);
 }
 
 function shutdown(code = 0) {
@@ -88,12 +114,30 @@ if (socketAlready) {
   console.log(`[launch] socket-server ya corriendo en :${SOCKET_PORT} — lo reutilizo`);
 } else {
   console.log(`[launch] levantando socket-server en :${SOCKET_PORT}`);
-  startApp('socket', join(monorepoRoot, 'packages/platform/socket-server/src/index.mjs'));
+  startApp('socket', join(monorepoRoot, 'packages/platform/socket-server/src/index.mjs'), {}, { quiet: true });
   for (let i = 0; i < 40; i++) {
     if (await portOpen(SOCKET_PORT, HOST)) break;
     await new Promise((r) => setTimeout(r, 250));
   }
 }
+
+const browserEnv = {
+  ZEUS_ARG_ROOM: ROOM,
+  ZEUS_ARG_TRACK_ACTOR: TRACK_ACTOR
+};
+
+await ensureService(
+  'cache',
+  CACHE_PORT,
+  join(monorepoRoot, 'packages/platform/cache-browser/src/server.mjs'),
+  browserEnv
+);
+await ensureService(
+  'firehose',
+  FIREHOSE_PORT,
+  join(monorepoRoot, 'packages/platform/firehose-browser/src/server.mjs'),
+  browserEnv
+);
 
 startApp('authority', join(packageRoot, 'apps/authority/index.mjs'), {
   ZEUS_ARG_ROOM: ROOM,
@@ -101,29 +145,55 @@ startApp('authority', join(packageRoot, 'apps/authority/index.mjs'), {
 });
 
 setTimeout(() => {
+  startApp('tap-horse', join(packageRoot, 'apps/tap-horse/index.mjs'), {
+    ZEUS_ARG_ROOM: ROOM,
+    ZEUS_SCRIPTORIUM_URL: process.env.ZEUS_SCRIPTORIUM_URL || `http://${HOST}:${SOCKET_PORT}`
+  });
+}, 400);
+
+setTimeout(() => {
   startApp('console', join(monorepoRoot, 'packages/arg/arg-console/src/server.mjs'), {
     ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT),
-    ZEUS_ARG_ROOM: ROOM
+    ZEUS_ARG_ROOM: ROOM,
+    ZEUS_OPEN_BROWSER: '0'
   });
 }, 600);
 
-setTimeout(() => {
+setTimeout(async () => {
   const base = `http://${HOST}:${CONSOLE_PORT}`;
-  const ui = resolveZeusUiPorts();
-  const cacheBase = `http://${HOST}:${ui.view.port}`;
-  const firehoseBase = `http://${HOST}:${ui.firehose.port}`;
+  const cacheBase = `http://${HOST}:${CACHE_PORT}`;
+  const firehoseBase = `http://${HOST}:${FIREHOSE_PORT}`;
+
+  for (let i = 0; i < 40; i++) {
+    if (await portOpen(CONSOLE_PORT, HOST)) break;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+
+  const viewers = [
+    { label: '🗺️  tablero', url: `${base}/views/tablero` },
+    { label: '🧍 jugador 1', url: `${base}/views/jugador?actor=uno` },
+    { label: '🧍 jugador 2', url: `${base}/views/jugador?actor=dos` },
+    { label: '📂 cache-browser', url: `${cacheBase}/?actor=${TRACK_ACTOR}` },
+    { label: '🔥 firehose-browser', url: `${firehoseBase}/?actor=${TRACK_ACTOR}` }
+  ];
+
   console.log('');
-  console.log('[launch] ── los 3 visores ─────────────────────────────');
-  console.log(`[launch]   🗺️  tablero    → ${base}/views/tablero`);
-  console.log(`[launch]   🧍 jugador 1  → ${base}/views/jugador?actor=uno`);
-  console.log(`[launch]   🧍 jugador 2  → ${base}/views/jugador?actor=dos`);
-  console.log('[launch] ── navegadores con tracking (?actor=) ────────');
-  console.log(`[launch]   📂 cache-browser   → ${cacheBase}/?actor=uno`);
-  console.log(`[launch]   📂 cache (dos)     → ${cacheBase}/?actor=dos`);
-  console.log(`[launch]   🔥 firehose-browser → ${firehoseBase}/?actor=uno`);
-  console.log(`[launch]   🔥 firehose (dos)   → ${firehoseBase}/?actor=dos`);
-  console.log(`[launch]   (room ${ROOM} · levanta browsers con ZEUS_ARG_TRACK_ACTOR=uno|dos)`);
-  console.log(`[launch]   (room ${ROOM} · Ctrl+C para parar)`);
+  console.log('[launch] ── visores CAUDAL (5 ventanas) ───────────────');
+  for (const { label, url } of viewers) {
+    console.log(`[launch]   ${label} → ${url}`);
+  }
+  console.log(`[launch]   (room ${ROOM} · track actor=${TRACK_ACTOR} · Ctrl+C para parar)`);
   console.log('[launch] ──────────────────────────────────────────────');
   console.log('');
-}, 1800);
+
+  if (process.env.ZEUS_OPEN_BROWSER === '0') {
+    console.log('[launch] ZEUS_OPEN_BROWSER=0 — no abro navegador');
+    return;
+  }
+
+  console.log('[launch] abriendo visores en el navegador…');
+  for (const { url } of viewers) {
+    openBrowser(url);
+    await new Promise((r) => setTimeout(r, 400));
+  }
+}, 2200);

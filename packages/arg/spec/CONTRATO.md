@@ -124,6 +124,7 @@ llamadas tools/prompts van por HORSE entre los propios sujetos (P5).
 | `excavate`        | `corridorId, approval?`                  | solo desde cámara adyacente |
 | `contact:request` | `targetId`                               | requiere proximidad (radio de zona) |
 | `contact:close`   | `contactId`                              | |
+| `cloak:equip`     | `presetId, label?`                       | equipa ficha MCP en el actor |
 | `emote`           | `name`                                   | expresividad, sin física |
 
 ### Outbound (autoridad → room)
@@ -134,7 +135,7 @@ llamadas tools/prompts van por HORSE entre los propios sujetos (P5).
   sceneId, gamemapId,
   actors: { [id]: Actor },                 // compacto
   taps:   { [id]: {aperture,pressure,state} },
-  rivers: { [id]: { droplets:[[id,progress,state,label?]] } },  // arrays compactos
+  rivers: { [id]: { droplets:[[id,progress,state,label?,uri?]] } },  // arrays compactos (uri → inspector WP-25)
   sea:    { crystals, murk, murkCapacity, collapsed },
   maze:   { rev, changed?: {chambers,corridors} },  // rev + diff; full si rev=0
   contacts: { [id]: {a,b,state} },

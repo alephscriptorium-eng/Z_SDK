@@ -77,6 +77,7 @@
     "seed:aleph": "node scripts/seed-aleph-presets.mjs",
     "stop:services": "node scripts/stop-services.mjs",
     "stop:v1-zeus": "npm run stop:services -- \"V1 Zeus stopped\" socket-server console-monitor cache-browser firehose-browser",
+    "stop:arg": "npm run stop:services -- \"ARG stopped\" arg-console cache-browser firehose-browser",
     "stop:ports": "bash scripts/stop-ports.sh",
     "e2e": "node e2e/demo.mjs",
     "e2e:deck": "node e2e/deck-demo.mjs",
@@ -99,7 +100,9 @@
     "e2e:domain:selection": "node e2e/domain-selection.mjs",
     "e2e:arg": "node e2e/arg-demo.mjs",
     "e2e:arg-feeds": "node e2e/arg-feeds-demo.mjs",
-    "e2e:arg-track": "node e2e/arg-track-demo.mjs"
+    "e2e:arg-track": "node e2e/arg-track-demo.mjs",
+    "e2e:arg-horse": "node e2e/arg-horse-demo.mjs",
+    "e2e:arg-horse": "node e2e/arg-horse-demo.mjs"
   },
   "devDependencies": {
     "@alephscript/mcp-core-sdk": "^1.5.0",

@@ -79,6 +79,30 @@ export function resolveLineFilePath(line, relPath) {
 }
 
 /**
+ * ¿Existe de verdad en disco un fichero de línea? (WP-26, deep-links
+ * honestos). Nunca lanza: cualquier problema de resolución o fs ⇒ false.
+ *
+ * @param {string} basePath
+ * @param {string} lineaId
+ * @param {string} relPath
+ * @returns {Promise<boolean>}
+ */
+export async function lineFileExists(basePath, lineaId, relPath) {
+  try {
+    const data = await ensureLineaData(basePath);
+    if (data.error) return false;
+    const line = getLineaInstance(data, lineaId);
+    if (line.error) return false;
+    const resolved = resolveLineFilePath(line, relPath);
+    if (resolved.error) return false;
+    const stat = await fs.stat(resolved.absPath);
+    return stat.isFile();
+  } catch {
+    return false;
+  }
+}
+
+/**
  * @param {string} basePath
  */
 export async function listLineas(basePath) {

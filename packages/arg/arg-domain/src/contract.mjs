@@ -32,6 +32,7 @@ export const INTENTS = [
   'excavate',
   'contact:request',
   'contact:close',
+  'cloak:equip',
   'emote'
 ];
 

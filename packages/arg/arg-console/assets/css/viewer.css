@@ -7,10 +7,26 @@
   margin: 0;
 }
 
+/* WP-24: la zona jugable llena el viewport y se redimensiona con el
+   navegador — fuera el max-width del shell y el scroll horizontal. */
+body:has(.viewer-page) {
+  overflow-x: hidden;
+}
+
+body:has(.viewer-page) .main-content {
+  max-width: none;
+  padding: 10px 12px;
+  min-height: 0;
+}
+
+body:has(.viewer-page) .main-footer {
+  display: none;
+}
+
 .viewer-stage {
   position: relative;
   width: 100%;
-  height: calc(100vh - 180px);
+  height: calc(100vh - var(--header-height, 60px) - 20px);
   min-height: 420px;
   background: #05050a;
   border: 1px solid rgba(0, 212, 255, 0.25);
@@ -38,6 +54,20 @@
   font-size: 12px;
   line-height: 1.55;
   pointer-events: none;
+}
+
+/* HUD adoptado por su ventanita (WP-24): el panel manda en posición/borde. */
+.arg-panel .viewer-hud {
+  position: static;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  pointer-events: auto;
+}
+
+.arg-panel .viewer-hud .hud-title {
+  display: none; /* el título ya vive en la barra del panel */
 }
 
 .viewer-hud .hud-title {
@@ -148,29 +178,13 @@
   color: #6ad2ff;
 }
 
-/* ---- layout partido (stage + ledger DOM) ---- */
-
-.viewer-split {
-  display: flex;
-  gap: 12px;
-  align-items: stretch;
-}
-
-.viewer-split .viewer-stage {
-  flex: 1 1 auto;
-  min-width: 0;
-}
+/* ---- ledger DOM (WP-24: vive dentro de una ventanita sobre el stage) ---- */
 
 .view-log {
-  flex: 0 0 340px;
-  max-width: 340px;
-  height: calc(100vh - 180px);
-  min-height: 420px;
+  width: 340px;
+  max-width: 74vw;
+  max-height: 56vh;
   overflow-y: auto;
-  padding: 10px 12px;
-  background: rgba(10, 10, 18, 0.93);
-  border: 1px solid rgba(0, 212, 255, 0.25);
-  border-radius: 6px;
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
   line-height: 1.6;
@@ -190,9 +204,9 @@
   color: #d7fbe6;
 }
 
-/* ---- overlays CAUDAL (terminal) ---- */
+/* ---- ventanitas CAUDAL (panel.mjs · WP-24, estética terminal) ---- */
 
-.arg-overlay {
+.arg-panel {
   position: absolute;
   background: #0a0a12ee;
   border: 1px solid rgba(0, 212, 255, 0.45);
@@ -201,18 +215,89 @@
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
   line-height: 1.55;
-  padding: 12px 14px;
   z-index: 10;
+  max-width: min(420px, 86vw);
 }
 
-.arg-overlay .overlay-title {
+.arg-panel-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.18);
+  user-select: none;
+}
+
+.arg-panel.collapsed .arg-panel-bar {
+  border-bottom: none;
+}
+
+.arg-panel.draggable .arg-panel-bar {
+  cursor: move;
+  touch-action: none;
+}
+
+.arg-panel-title {
+  flex: 1 1 auto;
+  color: #00d4ff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arg-panel-toggle {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  border-radius: 3px;
+  color: #00d4ff;
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.2;
+  padding: 1px 6px;
+  cursor: pointer;
+}
+
+.arg-panel-toggle:hover {
+  background: rgba(0, 212, 255, 0.18);
+  color: #eaffff;
+}
+
+.arg-panel-body {
+  padding: 10px 12px;
+  max-height: 62vh;
+  overflow: auto;
+}
+
+.arg-panel.collapsed .arg-panel-body {
+  display: none;
+}
+
+/* posiciones por defecto de cada ventanita (arrastrarla las pisa) */
+.panel-hud { top: 12px; left: 12px; }
+.panel-ledger { top: 12px; right: 12px; }
+.panel-contact { top: 12px; right: 12px; min-width: 260px; }
+.panel-cloak { top: 20%; left: 50%; transform: translateX(-50%); min-width: 300px; border-color: rgba(255, 179, 71, 0.55); }
+.cloak-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; max-height: 220px; overflow-y: auto; }
+.cloak-item { text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.cloak-item-active { border-color: rgba(255, 179, 71, 0.85); background: rgba(255, 179, 71, 0.12); }
+.cloak-item-locked { opacity: 0.45; cursor: not-allowed; }
+.cloak-desc { font-size: 10px; color: #8aa; font-weight: normal; }
+.panel-track { left: 12px; right: 12px; bottom: 12px; max-width: none; border-color: rgba(255, 179, 71, 0.35); }
+.panel-inspector { right: 12px; bottom: 56px; width: 360px; }
+
+/* contenidos heredados de los overlays */
+.overlay-title {
   color: #00d4ff;
   font-weight: 600;
   margin-bottom: 8px;
   letter-spacing: 0.04em;
 }
 
-.arg-overlay .overlay-pre {
+.overlay-pre {
   margin: 6px 0;
   padding: 6px 8px;
   background: rgba(0, 0, 0, 0.4);
@@ -224,17 +309,96 @@
   overflow: auto;
 }
 
-.arg-overlay .overlay-muted {
+.overlay-muted {
   color: #7a8a80;
   font-size: 11px;
   margin: 6px 0;
 }
 
-.arg-overlay .overlay-hint {
+.overlay-hint {
   color: #ffb347;
   font-size: 10px;
   margin: 8px 0 0;
 }
+
+/* ---- inspector de caudal y cantera (WP-25) ---- */
+
+.insp-kv {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 3px 0;
+}
+
+.insp-kv > span:first-child {
+  color: #6ad2ff;
+  font-size: 11px;
+  min-width: 62px;
+}
+
+.insp-section {
+  margin: 10px 0 4px;
+  color: #ffb347;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px dashed rgba(255, 179, 71, 0.3);
+}
+
+.insp-bar {
+  flex: 1 1 auto;
+  height: 8px;
+  min-width: 70px;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.insp-bar-fill {
+  height: 100%;
+  background: #00ff88;
+  transition: width 0.2s linear;
+}
+
+.insp-bar-fill.warn { background: #ffaa00; }
+.insp-bar-fill.danger { background: #ff3344; }
+
+.insp-drop {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.08);
+  font-size: 11px;
+  color: #9fd8c8;
+  word-break: break-all;
+}
+
+.insp-drop-crystal .insp-drop-id { color: #b8fbff; }
+.insp-drop-spill .insp-drop-id,
+.insp-spill { color: #ff3344; }
+
+.insp-drop-id { color: #6ad2ff; }
+.insp-corpus { color: #ffd479; }
+.insp-label { color: #00ff41; }
+.insp-progress { color: #a8c0b2; }
+.insp-uri { color: #9fd8c8; }
+.insp-muted { color: #7a8a80; font-size: 11px; margin: 6px 0; }
+.insp-warn { color: #ff3344; font-size: 11px; margin: 6px 0; }
+.insp-synthetic { color: #7a8a80; letter-spacing: 0.05em; }
+
+.insp-link {
+  color: #00d4ff;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(0, 212, 255, 0.6);
+}
+
+.insp-link:hover { color: #eaffff; }
+
+.insp-state-ok { color: #00ff88; }
+.insp-state-burst { color: #ff3344; }
+.insp-state-cooldown { color: #ffaa00; }
+.insp-state-cached { color: #00d4ff; }
+.insp-state-ghost { color: #7a8a80; }
+.insp-state-digging { color: #ffb347; }
 
 .arg-btn {
   background: transparent;
@@ -266,53 +430,121 @@
   color: #ffe0b0;
 }
 
-/* menú de contacto: centrado a la derecha */
-.contact-menu {
-  top: 12px;
-  right: 12px;
-  min-width: 260px;
-  max-width: 340px;
-}
-
-.contact-menu .contact-live {
+/* contenidos del menú de contacto */
+.contact-live {
   color: #ffd479;
   margin-bottom: 8px;
 }
 
-.contact-menu .contact-tools {
+.contact-tools {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 2px;
 }
 
-/* panel de cloak: centrado */
-.cloak-panel {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 300px;
-  max-width: 420px;
-  border-color: rgba(255, 179, 71, 0.55);
+.contact-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0;
 }
 
-/* franja de tracking: pegada abajo, a lo ancho */
-.track-panel {
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  padding: 8px 12px;
-  border-color: rgba(255, 179, 71, 0.35);
-}
-
-.track-panel .track-title {
-  color: #ffb347;
+.contact-col-title {
   font-size: 10px;
   letter-spacing: 0.08em;
-  margin-bottom: 3px;
+  color: #7a8a80;
+  margin-bottom: 4px;
+  text-transform: uppercase;
 }
 
-.track-panel .track-line {
+.contact-item {
+  margin-bottom: 6px;
+}
+
+.contact-arg {
+  display: flex;
+  gap: 4px;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.contact-arg input {
+  width: 4rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid #3a5048;
+  color: #c8e6d8;
+  padding: 2px 4px;
+}
+
+.contact-rest {
+  margin: 6px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cloak-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.cloak-item-active {
+  border-color: #ffb347 !important;
+  color: #ffe0b0 !important;
+}
+
+.cloak-item-locked {
+  opacity: 0.45;
+}
+
+.cloak-desc {
+  display: block;
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.contact-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.contact-col-title {
+  color: #7a9a8a;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.contact-col-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.contact-tool-row {
+  margin-bottom: 4px;
+}
+
+.contact-rest {
+  margin-bottom: 8px;
+}
+
+.contact-item {
+  font-size: 11px;
+  text-align: left;
+}
+
+/* contenidos de la franja de tracking */
+.panel-track .arg-panel-body {
+  padding: 6px 12px 8px;
+}
+
+.track-line {
   color: #9fd8c8;
   font-size: 11px;
   white-space: nowrap;
@@ -320,7 +552,7 @@
   text-overflow: ellipsis;
 }
 
-.track-panel .track-lines {
+.track-lines {
   color: #7a8a80;
   font-size: 11px;
 }

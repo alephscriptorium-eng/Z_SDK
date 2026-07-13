@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { reduceArgIntent } from '../src/reducer.mjs';
 import { makeIntent } from '../src/contract.mjs';
+import { effectiveLinkSpeed, cloakModFor } from '../src/cloak-mods.mjs';
 
 function deepFreeze(obj) {
   for (const value of Object.values(obj)) {
@@ -12,7 +13,7 @@ function deepFreeze(obj) {
 }
 
 /** Vista mínima congelada: cualquier mutación del reducer lanzaría TypeError. */
-function makeView({ actorPatch = {}, droplet = null } = {}) {
+function makeView({ actorPatch = {}, droplet = null, contacts = {}, extraNodos = {}, extraEnlaces = {} } = {}) {
   const scene = {
     spawnNodeId: 'plaza',
     labelset: ['agora', 'memoria'],
@@ -24,11 +25,13 @@ function makeView({ actorPatch = {}, droplet = null } = {}) {
   const nav = {
     nodos: {
       plaza: { id: 'plaza', zone: 'terraza', position: { x: 0, y: 0, z: 0 } },
+      'mar-boya': { id: 'mar-boya', zone: 'mar', position: { x: 0, y: 0, z: 8 } },
       embarcadero: { id: 'embarcadero', zone: 'terraza', position: { x: 5, y: 0, z: 0 } },
       orilla: { id: 'orilla', zone: 'mar', position: { x: 10, y: 0, z: 0 } },
       cima: { id: 'cima', zone: 'cima', position: { x: 0, y: 10, z: -5 } },
       'camara-x': { id: 'camara-x', zone: 'cantera', position: { x: 20, y: 0, z: 0 } },
-      'camara-y': { id: 'camara-y', zone: 'cantera', position: { x: 24, y: 0, z: 0 } }
+      'camara-y': { id: 'camara-y', zone: 'cantera', position: { x: 24, y: 0, z: 0 } },
+      ...extraNodos
     },
     enlaces: {
       'plaza--embarcadero': {
@@ -38,7 +41,12 @@ function makeView({ actorPatch = {}, droplet = null } = {}) {
       'pasillo-xy': {
         id: 'pasillo-xy', from: 'camara-x', to: 'camara-y', medium: 'tierra', corridorId: 'pasillo-xy',
         waypoints: [{ x: 20, y: 0, z: 0 }, { x: 24, y: 0, z: 0 }], walkSpeed: 2
-      }
+      },
+      'plaza--mar': {
+        id: 'plaza--mar', from: 'plaza', to: 'mar-boya', medium: 'agua',
+        waypoints: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 8 }], walkSpeed: 1.5
+      },
+      ...extraEnlaces
     }
   };
   const actors = {
@@ -56,7 +64,7 @@ function makeView({ actorPatch = {}, droplet = null } = {}) {
     actors,
     taps: { 'grifo-t': { id: 'grifo-t', summitNodeId: 'cima' } },
     corridors: { 'pasillo-xy': { id: 'pasillo-xy', a: 'camara-x', b: 'camara-y', state: 'ghost' } },
-    contacts: {},
+    contacts: { ...contacts },
     dropletUnder: () => droplet,
     positionOf: (id) => actors[id]?.position ?? (id === 'grifo-t' ? nav.nodos.cima.position : null)
   };
@@ -134,17 +142,20 @@ test('label:cast: exige montado, etiqueta del labelset y gota bajo los pies', ()
   );
 });
 
-test('tap:set: exige presencia en la cima (v0) y apertura 0..1', () => {
+test('tap:set: exige contacto abierto con el grifo y apertura 0..1', () => {
   assert.equal(
     reduceArgIntent(makeView(), makeIntent('uno', 'tap:set', { tapId: 'grifo-t', aperture: 0.5 })).error,
-    'fuera_de_cima'
+    'sin_contacto'
   );
-  const enCima = makeView({ actorPatch: { nodeId: 'cima', zone: 'cima' } });
+  const withContact = makeView({
+    actorPatch: { nodeId: 'cima', zone: 'cima' },
+    contacts: { 'c-grifo-t--uno': { id: 'c-grifo-t--uno', a: 'grifo-t', b: 'uno', state: 'open' } }
+  });
   assert.equal(
-    reduceArgIntent(enCima, makeIntent('uno', 'tap:set', { tapId: 'grifo-t', aperture: 2 })).error,
+    reduceArgIntent(withContact, makeIntent('uno', 'tap:set', { tapId: 'grifo-t', aperture: 2 })).error,
     'apertura_invalida'
   );
-  const res = reduceArgIntent(enCima, makeIntent('uno', 'tap:set', { tapId: 'grifo-t', aperture: 0.6 }));
+  const res = reduceArgIntent(withContact, makeIntent('uno', 'tap:set', { tapId: 'grifo-t', aperture: 0.6 }));
   assert.deepEqual(res.ops, [{ op: 'tap:aperture', tapId: 'grifo-t', value: 0.6 }]);
 });
 
@@ -168,9 +179,39 @@ test('contact:request: por proximidad, id determinista e idempotente', () => {
   assert.equal(lejos.error, 'fuera_de_alcance');
 });
 
+test('cloak:equip: parchea cloak del actor', () => {
+  const view = makeView();
+  const res = reduceArgIntent(view, makeIntent('uno', 'cloak:equip', { presetId: 'aleph-tronco-puro', label: 'tronco' }));
+  assert.equal(res.ok, true);
+  assert.deepEqual(res.ops[0].patch.cloak, { presetId: 'aleph-tronco-puro', label: 'tronco' });
+  assert.equal(reduceArgIntent(view, makeIntent('uno', 'cloak:equip', {})).error, 'preset_requerido');
+});
+
+test('move por agua: nadar_no_permitido sin swimAllowed en cloak', () => {
+  assert.equal(
+    reduceArgIntent(
+      makeView({ actorPatch: { cloak: { presetId: 'aleph-tronco-puro', label: 'x' } } }),
+      makeIntent('uno', 'move', { nodeId: 'mar-boya' })
+    ).error,
+    'nadar_no_permitido'
+  );
+  const allowed = reduceArgIntent(
+    makeView({ actorPatch: { cloak: { presetId: 'aleph-firehose-browse', label: 'fh' } } }),
+    makeIntent('uno', 'move', { nodeId: 'mar-boya' })
+  );
+  assert.equal(allowed.ok, true);
+  assert.equal(allowed.ops[0].patch.pose, 'swim');
+});
+
 test('intents malformadas nunca lanzan: no-op con error', () => {
   const view = makeView();
   assert.equal(reduceArgIntent(view, null).error, 'actor_requerido');
   assert.equal(reduceArgIntent(view, { actorId: 'uno', intent: 'hackear' }).error, 'intent_desconocida');
   assert.equal(reduceArgIntent(view, makeIntent('nadie', 'move', { nodeId: 'plaza' })).error, 'actor_desconocido');
+});
+
+test('effectiveLinkSpeed: preset acelera el enlace', () => {
+  assert.equal(effectiveLinkSpeed(2, { cloak: { presetId: 'aleph-firehose-browse' } }), 2.5);
+  assert.equal(effectiveLinkSpeed(2, { cloak: null }), 2);
+  assert.equal(cloakModFor('aleph-firehose-browse').walkSpeed, 1.25);
 });

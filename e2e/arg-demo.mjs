@@ -108,15 +108,20 @@ const socket = io(`http://${HOST}:${SOCKET_PORT}/runtime`, {
 
 let lastState = null;
 const ledger = [];
+let lastHorseOffer = null;
 socket.on('arg:state', (data) => {
   lastState = data;
 });
 socket.on('arg:ledger', (data) => ledger.push(data));
+socket.on('HORSE', (data) => {
+  if (data?.method === 'offer') lastHorseOffer = data;
+});
 socket.on('ROOM_MESSAGE', (msg) => {
   const entries = Array.isArray(msg) ? msg : [msg];
   for (const entry of entries) {
     if (entry?.event === 'arg:state') lastState = entry.data;
     if (entry?.event === 'arg:ledger') ledger.push(entry.data);
+    if (entry?.event === 'HORSE' && entry.data?.method === 'offer') lastHorseOffer = entry.data;
   }
 });
 
@@ -167,13 +172,31 @@ try {
   await sleep(600);
   gate('G-ARG-E2E.3 no-op', lastState.taps['grifo-a'].aperture === 0, 'grifo sigue cerrado desde la plaza');
 
-  // G4 — subir a la cima y abrir el grifo
+  // G4 — subir a la cima, abrir contacto y operar el grifo
   await walkTo('uno', 'terraza-a');
   await walkTo('uno', 'cima-a');
+  intent('uno', 'contact:request', { targetId: 'grifo-a' });
+  await waitFor(() => {
+    const c = lastState?.contacts ?? {};
+    return Object.values(c).some((x) => x.state === 'open');
+  }, 5000, 'contacto grifo-a');
   intent('uno', 'tap:set', { tapId: 'grifo-a', aperture: 1 });
   await waitFor(() => lastState?.taps?.['grifo-a']?.aperture === 1, 5000, 'apertura');
   await waitFor(() => (lastState?.rivers?.['rio-a']?.droplets?.length ?? 0) > 0, 8000, 'gotas');
   gate('G-ARG-E2E.4 riada', true, `${lastState.rivers['rio-a'].droplets.length} gotas en rio-a`);
+
+  // G6 — cloak:equip reflejado en arg:state
+  intent('uno', 'cloak:equip', { presetId: 'aleph-tronco-puro', label: 'tronco' });
+  await waitFor(
+    () => lastState?.actors?.uno?.cloak?.presetId === 'aleph-tronco-puro',
+    5000,
+    'cloak equipado'
+  );
+  gate(
+    'G-ARG-E2E.6 cloak',
+    lastState.actors.uno.cloak?.presetId === 'aleph-tronco-puro',
+    lastState.actors.uno.cloak?.label ?? '—'
+  );
 
   // G5 — dos monta el río y etiqueta la primera gota que pise
   await walkTo('dos', 'terraza-a');
@@ -190,6 +213,13 @@ try {
     'G-ARG-E2E.5 etiqueta',
     ledger.some((e) => e.kind === 'label'),
     `ledger: ${ledger.map((e) => e.kind).join(', ') || 'vacío'}`
+  );
+
+  const presetsRes = await fetch(`http://${HOST}:${CONSOLE_PORT}/api/mcp/presets`);
+  gate(
+    'G-ARG-E2E.6b presets API',
+    presetsRes.ok && (await presetsRes.json()).presets?.some((p) => p.name === 'aleph-firehose-browse'),
+    `HTTP ${presetsRes.status}`
   );
 } catch (err) {
   gate('E2E', false, err.message);

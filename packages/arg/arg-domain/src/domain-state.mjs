@@ -10,14 +10,18 @@ import { createFlowEngine } from './flow-engine.mjs';
 import { createMazeEngine } from './maze-engine.mjs';
 import { reduceArgIntent } from './reducer.mjs';
 import { isIntentShaped, trackHintFor } from './contract.mjs';
+import { effectiveLinkSpeed } from './cloak-mods.mjs';
 
 const EMOTE_TTL_MS = 2500;
 /** El jinete surfea algo más rápido que el caudal: va adelantando gotas
  * (si no, la distancia a la gota más próxima quedaría congelada al embarcar). */
 const RIDER_SPEED_FACTOR = 1.15;
 
+export const DEFAULT_START_PACK = ['aleph-tronco-puro', 'aleph-firehose-browse'];
+
 export const DEFAULT_GAMEMAP = {
   id: 'gamemap-demo',
+  startPack: DEFAULT_START_PACK,
   objetivo: { labeled: 10, excavated: 2 }
 };
 
@@ -149,7 +153,8 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
         const link = nav.enlaces[actor.linkId];
         const dist = linkDistance(link.waypoints);
         const sign = actor.direction === 'a-to-b' ? 1 : -1;
-        actor.progress = Math.max(0, Math.min(1, actor.progress + (sign * link.walkSpeed * dt) / dist));
+        const speed = effectiveLinkSpeed(link.walkSpeed, actor);
+        actor.progress = Math.max(0, Math.min(1, actor.progress + (sign * speed * dt) / dist));
         const arrived =
           (actor.direction === 'a-to-b' && actor.progress >= 1) ||
           (actor.direction === 'b-to-a' && actor.progress <= 0);

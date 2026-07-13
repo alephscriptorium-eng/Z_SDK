@@ -17,16 +17,19 @@
  *                        las vistas importan contrato y escena, jamás
  *                        instancian motores como autoridad — G-ARG.1)
  *   /models            → GLBs canónicos (puppets tier 'puppet')
+ *   /api/mcp/*         → PresetStore read-only (WP-11/WP-12)
  *   /health            → { status: ok, views }
  *   /                  → portal (galería de vistas)
  *   /views/:id         → una vista registrada
  */
 
 import path from 'node:path';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import express from 'express';
 import cors from 'cors';
+import { ServerRegistry, PresetStore, countPresetItems } from '@zeus/presets-sdk';
 import { assetsDir as uiKitAssetsDir } from '@zeus/ui-kit';
 import { browserAssetsDir as roomClientAssetsDir } from '@zeus/room-client-browser';
 import { srcDir as uiKitSrcDir, modelsDir, getThreeDir } from '@zeus/ui-3d-kit/node';
@@ -40,6 +43,86 @@ import { portalView } from './views/portal.mjs';
 
 const require = createRequire(import.meta.url);
 
+const monorepoRoot = path.resolve(packageDir, '../../..');
+const defaultDataDir = path.join(monorepoRoot, 'data');
+const alephSeedsPath = path.join(defaultDataDir, 'seeds', 'aleph-presets.json');
+
+function seedAlephPresets(store) {
+  if (!fs.existsSync(alephSeedsPath)) {
+    console.warn(`[arg-console] seeds no encontrados: ${alephSeedsPath}`);
+    return;
+  }
+  const seeds = JSON.parse(fs.readFileSync(alephSeedsPath, 'utf8'));
+  for (const preset of seeds) {
+    const existing = store.getByName(preset.name);
+    if (existing) {
+      store.update(existing.id, {
+        description: preset.description,
+        category: preset.category,
+        prompt: preset.prompt,
+        items: preset.items
+      });
+    } else {
+      store.create(preset);
+    }
+  }
+}
+
+function mountReadOnlyPresetRoutes(app, { registry, store }) {
+  app.get('/api/mcp/list', async (_req, res) => {
+    try {
+      const catalog = await registry.buildCatalog();
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        catalog,
+        serversCount: catalog.length,
+        totalTools: catalog.reduce((sum, s) => sum + (s.tools?.length ?? 0), 0),
+        totalResources: catalog.reduce((sum, s) => sum + (s.resources?.length ?? 0), 0),
+        totalResourceTemplates: catalog.reduce((sum, s) => sum + (s.resourceTemplates?.length ?? 0), 0),
+        totalPrompts: catalog.reduce((sum, s) => sum + (s.prompts?.length ?? 0), 0)
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/mcp/presets', (_req, res) => {
+    try {
+      const presets = store.getAll().map((preset) => ({
+        id: preset.id,
+        name: preset.name,
+        description: preset.description,
+        category: preset.category,
+        itemsCount: countPresetItems(preset.items),
+        createdAt: preset.createdAt,
+        updatedAt: preset.updatedAt
+      }));
+      res.json({
+        success: true,
+        presets,
+        totalPresets: presets.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/mcp/preset/:name', (req, res) => {
+    try {
+      const preset = store.getByName(req.params.name);
+      if (!preset) {
+        res.status(404).json({ success: false, error: `Preset '${req.params.name}' not found` });
+        return;
+      }
+      res.json({ success: true, preset, timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+}
+
 function socketIoDistDir() {
   return path.dirname(require.resolve('socket.io-client/package.json')) + path.sep + 'dist';
 }
@@ -48,11 +131,17 @@ function socketIoDistDir() {
  * @param {object} [options]
  * @param {number} [options.port]
  * @param {string} [options.host]
+ * @param {string} [options.dataDir]
  */
 export async function createArgConsoleServer(options = {}) {
   const config = getConfig();
   const port = options.port ?? config.server.port;
   const host = options.host ?? config.server.host;
+  const dataDir = options.dataDir ?? defaultDataDir;
+
+  const registry = new ServerRegistry();
+  const store = new PresetStore({ dataDir });
+  seedAlephPresets(store);
 
   const app = express();
   app.use(cors({ origin: true, credentials: true }));
@@ -76,11 +165,14 @@ export async function createArgConsoleServer(options = {}) {
   app.use('/arg-domain', express.static(argDomainSrcDir));
   app.use('/models', express.static(modelsDir));
 
+  mountReadOnlyPresetRoutes(app, { registry, store });
+
   app.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
       service: 'arg-console',
       three: threeMounted,
+      presets: store.count(),
       views: viewRegistry.list().map((view) => view.id),
       timestamp: new Date().toISOString()
     });
@@ -133,7 +225,7 @@ export async function createArgConsoleServer(options = {}) {
     await new Promise((resolve) => server.close(resolve));
   }
 
-  return { app, server, close, port: boundPort, host };
+  return { app, server, close, port: boundPort, host, store, registry };
 }
 
 const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
@@ -141,6 +233,7 @@ const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv
 if (isMain) {
   const handle = await createArgConsoleServer();
   console.log(`arg-console corriendo en http://${handle.host}:${handle.port}`);
+  console.log(`  presets: ${handle.store.count()} en ${defaultDataDir}`);
   console.log(`  tablero → http://${handle.host}:${handle.port}/views/tablero`);
   console.log(`  jugador → http://${handle.host}:${handle.port}/views/jugador?actor=uno`);
 

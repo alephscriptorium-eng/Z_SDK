@@ -24,22 +24,22 @@ import {
   createDeltaStage,
   createRiverDroplets,
   createActorsLayer,
-  createIntentClient
+  createIntentClient,
+  createPanel,
+  createInspector,
+  isSyntheticUri,
+  createHorseClient,
+  renderContactMenu,
+  bindContactMenu,
+  setContactLive,
+  formatContactLive,
+  renderCloakInventory,
+  bindCloakInventory,
+  fetchPresetSummaries
 } from '../kit/index.mjs';
 
 const CAMERA_OFFSET = { x: 0, y: 6, z: 9 };
 const TRACK_MAX = 3;
-
-// ---- overlays DOM (estética terminal) --------------------------------------
-
-function makeOverlay(id, className) {
-  const el = document.createElement('div');
-  el.id = id;
-  el.className = `arg-overlay ${className}`;
-  el.hidden = true;
-  document.getElementById('viewer-stage').appendChild(el);
-  return el;
-}
 
 function shortUri(uri, max = 34) {
   if (!uri) return '—';
@@ -76,9 +76,36 @@ function main() {
   const room = connectRoom(cfg, { user: `jugador-${actorId}` });
   setText('hud-conn', '…');
   const intents = createIntentClient(room, actorId);
+  const horse = createHorseClient(room, actorId);
+  let presetSummaries = [];
 
-  // join idempotente en cada (re)conexión
-  room.getSocket().on('connect', () => intents.join());
+  async function loadPresets() {
+    try {
+      presetSummaries = await fetchPresetSummaries();
+    } catch (err) {
+      console.warn('[jugador] presets:', err);
+      presetSummaries = [];
+    }
+  }
+
+  function initialCloak() {
+    const name = cfg.startPack?.[0];
+    if (!name) return null;
+    return { presetId: name, label: name };
+  }
+
+  room.getSocket().on('connect', async () => {
+    await loadPresets();
+    const cloak = initialCloak();
+    intents.join(cloak ? { cloak } : {});
+    if (cloak) {
+      try {
+        await horse.fetchAndBroadcastOffer(cloak.presetId);
+      } catch (err) {
+        console.warn('[jugador] oferta HORSE inicial:', err);
+      }
+    }
+  });
 
   // ---- estado proyectado -------------------------------------------------------
   let lastSnap = null;
@@ -102,33 +129,155 @@ function main() {
     return { tap: best, dist: bestDist };
   }
 
-  // ---- overlays ----------------------------------------------------------------
-  const contactMenu = makeOverlay('contact-menu', 'contact-menu');
-  const cloakPanel = makeOverlay('cloak-panel', 'cloak-panel');
-  const trackPanel = makeOverlay('track-panel', 'track-panel');
-  trackPanel.hidden = false;
-  trackPanel.innerHTML = '<div class="track-title">⛓ tracking</div><div class="track-lines">— aún sin pisar ningún recurso —</div>';
+  // ---- ventanitas (WP-24): HUD/leyenda, contacto, cloak, tracking ------------
+  const hudPanel = createPanel({
+    id: 'hud',
+    title: `🚶 leyenda · ${actorId}`,
+    collapsible: true,
+    draggable: true,
+    view: cfg.view,
+    className: 'panel-hud'
+  });
+  hudPanel.adopt(document.getElementById('viewer-hud'));
+
+  const contactPanel = createPanel({
+    id: 'contact-menu',
+    title: '🤝 contacto',
+    collapsible: true,
+    view: cfg.view,
+    className: 'panel-contact'
+  });
+  contactPanel.el.hidden = true;
+  const contactMenu = contactPanel.body;
+
+  const cloakPanel = createPanel({
+    id: 'cloak-panel',
+    title: '🧥 cloak · inventario',
+    collapsible: true,
+    view: cfg.view,
+    className: 'panel-cloak'
+  });
+  cloakPanel.el.hidden = true;
+
+  const trackPanel = createPanel({
+    id: 'track-panel',
+    title: '⛓ tracking',
+    collapsible: true,
+    view: cfg.view,
+    className: 'panel-track'
+  });
+  trackPanel.body.innerHTML = '<div class="track-lines">— aún sin pisar ningún recurso —</div>';
+
+  // ---- inspector de caudal y cantera (WP-25) ---------------------------------
+  const inspector = createInspector({
+    stage,
+    pickables: delta.pickables,
+    scene: deltaV0,
+    cfg
+  });
 
   let cloakOpen = false;
 
-  function renderCloakPanel() {
-    if (!cloakOpen) { cloakPanel.hidden = true; return; }
+  async function renderCloakPanel() {
+    if (!cloakOpen) { cloakPanel.el.hidden = true; return; }
+    if (!presetSummaries.length) await loadPresets();
     const actor = ownActor();
-    const cloak = actor?.cloak ?? null;
-    cloakPanel.innerHTML = [
-      '<div class="overlay-title">🧥 CLOAK — inventario</div>',
-      cloak
-        ? `<pre class="overlay-pre">${JSON.stringify(cloak, null, 2)}</pre>`
-        : '<p class="overlay-muted">sin cloak equipado — vas desnudo por el delta</p>',
-      '<p class="overlay-muted">presets ampliables — WP-12</p>',
-      '<p class="overlay-hint">[Q] cerrar</p>'
-    ].join('');
-    cloakPanel.hidden = false;
+    cloakPanel.body.innerHTML = renderCloakInventory({
+      startPack: cfg.startPack ?? [],
+      equipped: actor?.cloak ?? null,
+      presets: presetSummaries
+    });
+    bindCloakInventory(cloakPanel.body, async (presetName) => {
+      intents.cloakEquip(presetName, presetName);
+      try {
+        await horse.fetchAndBroadcastOffer(presetName);
+      } catch (err) {
+        console.warn('[jugador] rebroadcast cloak:', err);
+      }
+      renderCloakPanel();
+    });
+    cloakPanel.el.hidden = false;
   }
 
   let currentContactId = null;
+  let currentContactPeer = null;
+  let contactBound = false;
 
-  function renderContactMenu() {
+  function updateContactLive(text) {
+    setContactLive(contactMenu, text);
+  }
+
+  function tapLiveLine(tapId) {
+    const live = lastSnap?.taps?.[tapId] ?? { aperture: 0, pressure: 0, state: 'ok' };
+    return `apertura ${Number(live.aperture).toFixed(2)} · presión ${Number(live.pressure).toFixed(2)}${live.state !== 'ok' ? ` · ${live.state.toUpperCase()}` : ''}`;
+  }
+
+  async function runHorseTool(peerId, name, args) {
+    updateContactLive(`⏳ ${name}…`);
+    try {
+      const msg = await horse.horseRpc(peerId, 'tools/call', { name, arguments: args });
+      updateContactLive(formatContactLive(msg));
+      intents.emote('thumbsUp');
+    } catch (err) {
+      updateContactLive(formatContactLive(null, err));
+    }
+  }
+
+  async function runHorsePrompt(peerId, name) {
+    updateContactLive(`⏳ prompt ${name}…`);
+    try {
+      const msg = await horse.horseRpc(peerId, 'prompts/get', { name, arguments: {} });
+      updateContactLive(formatContactLive(msg));
+    } catch (err) {
+      updateContactLive(formatContactLive(null, err));
+    }
+  }
+
+  async function runHorseResource(peerId, uri) {
+    updateContactLive(`⏳ read ${uri}…`);
+    try {
+      const msg = await horse.horseRpc(peerId, 'resources/read', { uri });
+      updateContactLive(formatContactLive(msg));
+    } catch (err) {
+      updateContactLive(formatContactLive(null, err));
+    }
+  }
+
+  async function runRestAction(actionId = 'list-presets') {
+    updateContactLive(`⏳ REST ${actionId}…`);
+    try {
+      let url = '/api/mcp/presets';
+      if (actionId === 'preset-aleph-tronco') url = '/api/mcp/preset/aleph-tronco-puro';
+      const res = await fetch(url);
+      const data = await res.json();
+      updateContactLive(JSON.stringify(data, null, 2));
+      if (data.success) intents.emote('thumbsUp');
+    } catch (err) {
+      updateContactLive(formatContactLive(null, err));
+    }
+  }
+
+  function mountContactMenu(peerId, offer, liveText) {
+    contactMenu.innerHTML = renderContactMenu(offer, {
+      liveText,
+      restActions: [{ id: 'list-presets', label: 'REST · listar presets' }]
+    });
+    bindContactMenu(contactMenu, {
+      onPrompt: (name) => runHorsePrompt(peerId, name),
+      onTool: (name, args) => runHorseTool(peerId, name, args),
+      onResource: (_name, uri) => runHorseResource(peerId, uri),
+      onRest: () => runRestAction('list-presets'),
+      onClose: () => {
+        if (currentContactId) intents.contactClose(currentContactId);
+        contactPanel.el.hidden = true;
+        contactBound = false;
+        currentContactPeer = null;
+      }
+    });
+    contactBound = true;
+  }
+
+  function renderContactMenuPanel() {
     const contacts = lastSnap?.contacts ?? {};
     let found = null;
     for (const [id, c] of Object.entries(contacts)) {
@@ -139,65 +288,59 @@ function main() {
     }
     if (!found) {
       currentContactId = null;
-      contactMenu.hidden = true;
+      currentContactPeer = null;
+      contactBound = false;
+      contactPanel.el.hidden = true;
       return;
     }
 
-    const isNew = found.id !== currentContactId;
+    const isNew = found.id !== currentContactId || found.other !== currentContactPeer;
     currentContactId = found.id;
+    currentContactPeer = found.other;
     const tapDef = deltaV0.taps[found.other];
+    const offer = horse.getOffer(found.other);
+    const presetLabel = offer?._meta?.preset?.name ?? found.other;
 
-    if (tapDef) {
-      const live = lastSnap?.taps?.[found.other] ?? { aperture: 0, pressure: 0, state: 'ok' };
-      if (isNew) {
+    contactPanel.setTitle(tapDef ? `⚙ contacto · ${found.other}` : `🤝 contacto · ${found.other}`);
+
+    if (isNew || !contactBound) {
+      if (!offer) {
         contactMenu.innerHTML = [
-          `<div class="overlay-title">⚙ CONTACTO · ${found.other}</div>`,
-          `<div class="contact-live" id="contact-live"></div>`,
-          '<div class="contact-tools">',
-          '  <span class="overlay-muted">tap.set_aperture:</span>',
-          ...[0, 0.3, 0.6, 1].map((v) => `  <button class="arg-btn" data-aperture="${v}">${v}</button>`),
-          '</div>',
+          `<div class="contact-live" id="contact-live">esperando oferta HORSE de ${found.other}…</div>`,
+          '<p class="overlay-muted">el peer debe estar en la room con HORSE activo</p>',
           '<button class="arg-btn arg-btn-close" data-close="1">cerrar contacto</button>'
         ].join('\n');
-        contactMenu.querySelectorAll('[data-aperture]').forEach((btn) => {
-          btn.addEventListener('click', () => intents.tapSet(found.other, Number(btn.dataset.aperture)));
-        });
-        contactMenu.querySelector('[data-close]').addEventListener('click', () => {
+        contactMenu.querySelector('[data-close]')?.addEventListener('click', () => {
           intents.contactClose(found.id);
-          contactMenu.hidden = true;
+          contactPanel.el.hidden = true;
         });
+        contactBound = false;
+      } else {
+        const liveText = tapDef ? tapLiveLine(found.other) : `oferta · ${presetLabel}`;
+        mountContactMenu(found.other, offer, liveText);
       }
-      const liveEl = contactMenu.querySelector('#contact-live');
-      if (liveEl) {
-        liveEl.textContent = `apertura ${Number(live.aperture).toFixed(2)} · presión ${Number(live.pressure).toFixed(2)}${live.state !== 'ok' ? ` · ${live.state.toUpperCase()}` : ''}`;
-      }
-    } else if (isNew) {
-      const otherActor = lastSnap?.actors?.[found.other];
-      contactMenu.innerHTML = [
-        `<div class="overlay-title">🤝 CONTACTO · ${found.other}</div>`,
-        `<pre class="overlay-pre">${JSON.stringify(otherActor?.cloak ?? null, null, 2)}</pre>`,
-        '<p class="overlay-muted">oferta HORSE — WP-11</p>',
-        '<button class="arg-btn arg-btn-close" data-close="1">cerrar contacto</button>'
-      ].join('\n');
-      contactMenu.querySelector('[data-close]').addEventListener('click', () => {
-        intents.contactClose(found.id);
-        contactMenu.hidden = true;
-      });
+    } else if (tapDef) {
+      updateContactLive(tapLiveLine(found.other));
     }
-    contactMenu.hidden = false;
+
+    contactPanel.el.hidden = false;
   }
 
   function renderTrackPanel() {
     const lines = tracks.map((t) => {
       const emoji = t.hint === 'firehose-browser' ? '🌊' : '🗿';
-      const resolved = resolveTrackRef(t.ref);
+      // WP-26: deep-links honestos — un ref sintético no vive en disco, sin enlace
+      const synthetic = isSyntheticUri(t.ref?.uri);
+      const resolved = synthetic ? null : resolveTrackRef(t.ref);
       const href = resolved ? buildTrackBrowserUrl(resolved, cfg.browsers, { actor: actorId }) : null;
       const openBtn = href
         ? ` <a class="arg-btn arg-btn-link" href="${href}" target="_blank" rel="noopener">abrir en navegador</a>`
-        : '';
+        : synthetic
+          ? ' <span class="insp-synthetic">「sintético」</span>'
+          : '';
       return `<div class="track-line">${emoji} ${t.zone} · ${t.ref?.kind ?? '?'} · ${shortUri(t.ref?.uri, 60)}${openBtn}</div>`;
     });
-    trackPanel.innerHTML = `<div class="track-title">⛓ tracking</div><div class="track-lines">${
+    trackPanel.body.innerHTML = `<div class="track-lines">${
       lines.length ? lines.join('') : '— aún sin pisar ningún recurso —'
     }</div>`;
   }
@@ -226,7 +369,8 @@ function main() {
     delta.applySnapshot(snap);
     droplets.applySnapshot(snap);
     actors.applySnapshot(snap);
-    renderContactMenu();
+    inspector.applySnapshot(snap);
+    renderContactMenuPanel();
     if (cloakOpen) renderCloakPanel();
     reflectHud();
   });
@@ -358,7 +502,11 @@ function main() {
         break;
       case 'KeyQ':
         cloakOpen = !cloakOpen;
-        renderCloakPanel();
+        if (cloakOpen) {
+          loadPresets().then(() => renderCloakPanel());
+        } else {
+          renderCloakPanel();
+        }
         break;
       case 'Digit1':
       case 'Digit2':
@@ -423,7 +571,9 @@ function main() {
 
   window.addEventListener('beforeunload', () => {
     clearInterval(watchdog);
+    horse.dispose();
     room.disconnect();
+    inspector.dispose();
     actors.dispose();
     droplets.dispose();
     stage.dispose();

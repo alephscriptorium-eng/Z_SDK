@@ -44,14 +44,23 @@ Referencias: [CONTRATO.md](CONTRATO.md), [UX.md](UX.md), [LORE.md](LORE.md).
 
 ## Fase 1 — Cloak MCP y navegadores reales (swarm)
 
-- **WP-11 · Contacto + menú de cloak** — `contact:request/close` en dominio;
-  overlay DOM 3 columnas (UX §menú) consumiendo oferta HORSE real
-  (`resolvePresetOffer`/`PresetHorseProxy` de presets-sdk). Grifo como
-  artilugio con cloak (tool `tap.set_aperture`). CA: e2e con bot horse:
-  contacto → oferta → tools/call → apertura cambia en arg:state.
-- **WP-12 · Inventario de presets** — menú `Q`, activar preset ⇒ actualizar
-  oferta HORSE + modificadores de físicas (tabla presetId→mods). CA: test
-  de derivación de físicas; e2e de re-broadcast de oferta.
+- **WP-11 · Contacto + menú de cloak (protocolo REAL)** — `contact:request/close`
+  en dominio; overlay DOM 3 columnas (UX §menú y §UX-2.6) consumiendo oferta
+  HORSE real (`resolvePresetOffer`/`PresetHorseProxy` de presets-sdk).
+  Sujetos reales a integrar, que YA existen: bots de `ping-pong-bots`
+  (ping/pong/rabbit/spider/horse + `horse-preset-hub`), servidores MCP
+  linea/firehose y rutas REST de presets (`/api/mcp/*`). Grifo como artilugio
+  con cloak (tool `tap.set_aperture`). El resultado JSON-RPC/REST vuelve al
+  panel de contacto y como emote/efecto del monigote. CA: e2e con bot horse
+  real — contacto → oferta → `tools/call` → apertura cambia en `arg:state`;
+  y una llamada REST real con feedback en panel.
+- **WP-12 · Inventario de presets (PresetStore real)** — menú `Q` se llena
+  del PresetStore (`GET /api/mcp/presets`, seeds `aleph-presets.json`) + los
+  del start pack del gamemap; activar preset ⇒ `cloak` del actor actualizada
+  (intent) + re-broadcast de oferta HORSE + modificadores de físicas (tabla
+  presetId→mods). Hoy el panel Q es stub y sale vacío porque `join` no envía
+  cloak. CA: test de derivación de físicas; e2e — activar preset se refleja
+  en `arg:state.actors[..].cloak` y en la oferta re-broadcast.
 - **WP-13 · arg:track → navegadores reales** — suscriptor **server-side** en
   firehose-browser y cache-browser (`@zeus/rooms` + `GET /api/track/focus`);
   página hace poll y navega con `openFile`. CA: e2e G-ARG-E2E.6 — actor en
@@ -63,6 +72,25 @@ Referencias: [CONTRATO.md](CONTRATO.md), [UX.md](UX.md), [LORE.md](LORE.md).
   `auto` sin MCP.
 - **WP-15 · Gates grep** — test estilo `grep-gates.test.mjs` con G-ARG.1..5.
   CA: gates rojos si se viola (probar con violación sintética).
+
+## Fase 1.5 — Shell HTML (feedback primera partida, UX §UX-2)
+
+- **WP-24 · Shell responsivo + ventanitas** — canvas 100% del viewport con
+  resize; HUD/leyenda, ledger, tracking, contacto y cloak como ventanitas
+  DOM con barra de título, colapsables (leyenda y ledger además arrastrables),
+  estado persistido en localStorage por vista. CA: sin scroll horizontal a
+  cualquier tamaño; colapso/posición sobreviven a un reload.
+- **WP-25 · Inspector de caudal y cantera** — raycast sobre símbolos 3D
+  (grifo, río, mar, cámara) abre panel HTML con los MENSAJES: gotas en cauce
+  (uri/corpus/label/progress), presión del grifo, cristales/murk del mar,
+  recurso y estado de la cámara. Click en gota/cámara → deep-link honesto.
+  CA: e2e — snapshot con gotas ⇒ el inspector lista sus uris.
+- **WP-26 · Browsers en modo juego + deep-links honestos** — franja de juego
+  en cache/firehose-browser (`?actor=`: actor, conexión, último focus); el
+  suscriptor de tracking comprueba existencia en disco antes de navegar y
+  expone estado `ghost` (nunca ENOENT crudo al usuario); los refs sintéticos
+  se marcan `「sintético」` sin enlace. CA: e2e — focus a ref inexistente ⇒
+  respuesta `ghost` y la página muestra «no excavado aún», cero ENOENT.
 
 ## Fase 2 — Juego completo (swarm)
 

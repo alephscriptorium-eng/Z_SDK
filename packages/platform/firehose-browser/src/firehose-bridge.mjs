@@ -2,6 +2,8 @@
  * Firehose browse bridge — delegates to @zeus/firehose-core.
  */
 
+import { stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
   listCorpora,
   browseCorpus,
@@ -11,7 +13,8 @@ import {
   loadPostFile,
   getCorpusConfig
 } from '@zeus/firehose-core';
-import { readVolumeFile, corpusRelPath } from '@zeus/presets-sdk';
+import { readVolumeFile, corpusRelPath, resolveVolume } from '@zeus/presets-sdk';
+import { sanitizeRelativePath } from '@zeus/presets-sdk/browse-core';
 
 export {
   listCorpora,
@@ -55,4 +58,27 @@ export async function readCorpusFile(corpusId, filePath) {
     data,
     content: result.content
   };
+}
+
+/**
+ * ¿Existe de verdad en el volumen firehose un fichero de corpus? (WP-26,
+ * deep-links honestos). Nunca lanza: corpus desconocido, path inválido o
+ * fs roto ⇒ false.
+ *
+ * @param {string} corpusId
+ * @param {string} filePath — relativo a la raíz del corpus
+ * @returns {Promise<boolean>}
+ */
+export async function corpusFileExists(corpusId, filePath) {
+  try {
+    const { corpus } = getCorpusConfig(corpusId);
+    const volumePath = sanitizeRelativePath(corpusRelPath(corpus.path, filePath));
+    if (!volumePath) return false;
+    const volume = resolveVolume('firehose');
+    if (volume.deferred) return false;
+    const fileStat = await stat(join(volume.absPath, volumePath));
+    return fileStat.isFile();
+  } catch {
+    return false;
+  }
 }

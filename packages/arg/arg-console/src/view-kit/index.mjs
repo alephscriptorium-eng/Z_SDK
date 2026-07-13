@@ -89,14 +89,14 @@ export function renderViewLayout(view, ctx) {
   const stageChildren = [canvas({ id: 'viewer-canvas' })];
   const hud = renderHud(view);
   if (hud) stageChildren.push(hud);
+  // WP-24: el log DOM vive DENTRO del stage — el entry de la vista lo adopta
+  // en una ventanita (panel.mjs) colapsable/arrastrable sobre el canvas.
+  if (view.logPanel) stageChildren.push(aside({ id: 'view-log', class: 'view-log' }));
 
   const stage = div({ id: 'viewer-stage', class: 'viewer-stage' }, ...stageChildren);
-  const body = view.logPanel
-    ? div({ class: 'viewer-split' }, stage, aside({ id: 'view-log', class: 'view-log' }))
-    : stage;
 
   const content = section({ class: 'viewer-page' },
-    body,
+    stage,
     script({ type: 'importmap' }, JSON.stringify(ctx.importMap)),
     script(
       { type: 'application/json', id: 'viewer-config' },

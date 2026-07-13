@@ -16,6 +16,10 @@
  *   river-droplets → gotas instanciadas con dead reckoning
  *   actors-layer   → puppets por actor (híbrido stick/GLB) + anillo de cloak
  *   intent-client  → arg:intent bien formados hacia la room
+ *   panel          → ventanitas HTML colapsables/arrastrables (WP-24)
+ *   inspector      → raycast de símbolos 3D → panel HTML de lectura (WP-25)
+ *   horse-client   → HORSE browser + rebroadcast de ofertas (WP-11/WP-12)
+ *   cloak-panel    → inventario Q de presets (WP-12)
  */
 
 export { createViewerScene } from './scene.mjs';
@@ -39,3 +43,30 @@ export { createDeltaStage } from './delta-stage.mjs';
 export { createRiverDroplets } from './river-droplets.mjs';
 export { createActorsLayer } from './actors-layer.mjs';
 export { createIntentClient } from './intent-client.mjs';
+export { createHorseClient, resolvePresetOfferBrowser } from './horse-client.mjs';
+export {
+  renderContactMenu,
+  bindContactMenu,
+  formatContactLive,
+  setContactLive
+} from './contact-render.mjs';
+export {
+  renderCloakInventory,
+  bindCloakInventory,
+  fetchPresetSummaries
+} from './cloak-panel.mjs';
+export {
+  createPanel,
+  panelStorageKey,
+  loadPanelState,
+  savePanelState,
+  clampToBounds
+} from './panel.mjs';
+export { createInspector } from './inspector.mjs';
+export {
+  renderInspector,
+  inspectorTitle,
+  renderDropletLine,
+  dropletDeepLink,
+  isSyntheticUri
+} from './inspector-render.mjs';

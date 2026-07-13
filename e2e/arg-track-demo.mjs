@@ -1,8 +1,12 @@
 /**
- * E2E WP-13: arg:track → cache-browser server-side subscriber.
+ * E2E WP-13 + WP-26: arg:track → subscribers server-side de los browsers.
  *
  *   G-ARG-E2E.6  mover actor a camara-0-2 → GET /api/track/focus resuelve
  *                path nodos/{year}/meta.json con hint cache-browser
+ *   G-ARG-E2E.7  focus a ref INEXISTENTE → state 'ghost' y NUNCA un ENOENT
+ *                crudo (CA WP-26)
+ *   G-ARG-E2E.8  ref sintético (firehose://synthetic/...) → state 'synthetic'
+ *                en firehose-browser (「sintético」, jamás navegable)
  *
  * Uso: npm run e2e:arg-track
  */
@@ -19,6 +23,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const HOST = 'localhost';
 const SOCKET_PORT = 13027;
 const CACHE_PORT = 13041;
+const FIREHOSE_PORT = 13042;
 const ROOM = 'ARG_TRACK_E2E';
 const SECRET = 'dev-secret';
 const ACTOR = 'uno';
@@ -90,7 +95,7 @@ const expectedResolved = resolveTrackRef(expectedRef);
 
 console.log('\n🌊 e2e arg:track · puertos aislados', { SOCKET_PORT, CACHE_PORT, ROOM }, '\n');
 
-spawnSync('bash', [join(root, 'scripts/stop-ports.sh'), 'e2e arg-track cleanup', String(SOCKET_PORT), String(CACHE_PORT)], {
+spawnSync('bash', [join(root, 'scripts/stop-ports.sh'), 'e2e arg-track cleanup', String(SOCKET_PORT), String(CACHE_PORT), String(FIREHOSE_PORT)], {
   cwd: root,
   stdio: 'ignore'
 });
@@ -102,9 +107,17 @@ startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mj
 startApp('cache', join(root, 'packages/platform/cache-browser/src/server.mjs'), {
   ZEUS_PORT_VIEW: String(CACHE_PORT),
   ZEUS_ARG_TRACK_ACTOR: ACTOR,
-  ZEUS_ARG_ROOM: ROOM
+  ZEUS_ARG_ROOM: ROOM,
+  ZEUS_OPEN_BROWSER: '0'
+});
+startApp('firehose', join(root, 'packages/platform/firehose-browser/src/server.mjs'), {
+  ZEUS_PORT_FIREHOSE: String(FIREHOSE_PORT),
+  ZEUS_ARG_TRACK_ACTOR: ACTOR,
+  ZEUS_ARG_ROOM: ROOM,
+  ZEUS_OPEN_BROWSER: '0'
 });
 await waitForHttp(`http://${HOST}:${CACHE_PORT}/health`);
+await waitForHttp(`http://${HOST}:${FIREHOSE_PORT}/health`);
 await sleep(800);
 
 let lastState = null;
@@ -181,6 +194,72 @@ try {
       focus.resolved?.browser === 'cache-browser' &&
       expectedResolved?.path === expectedPath,
     `path=${focus.resolved?.path} uri=${focus.ref?.uri}`
+  );
+
+  // WP-26: el focus siempre declara su estado (ok|ghost) — honesto con el disco
+  gate(
+    'WP-26 focus lleva state',
+    typeof focus.state === 'string' && ['ok', 'ghost'].includes(focus.state),
+    `state=${focus.state}`
+  );
+
+  // ---- G-ARG-E2E.7 (CA WP-26): ref inexistente ⇒ ghost, JAMÁS ENOENT --------
+  function fakeTrack(ref, hint) {
+    socket.emit('ROOM_MESSAGE', {
+      event: 'arg:track',
+      room: ROOM,
+      data: { v: 1, ts: Date.now(), actorId: ACTOR, zone: 'cantera', ref, hint }
+    });
+  }
+
+  const ghostUri = 'linea://nodo/9999';
+  fakeTrack({ kind: 'nodo', uri: ghostUri, index: 9999 }, 'cache-browser');
+
+  let ghostFocus = null;
+  let ghostRaw = '';
+  const ghostDeadline = Date.now() + 10000;
+  while (Date.now() < ghostDeadline) {
+    const res = await fetch(`http://${HOST}:${CACHE_PORT}/api/track/focus`);
+    ghostRaw = await res.text();
+    const data = JSON.parse(ghostRaw);
+    if (data?.ref?.uri === ghostUri) {
+      ghostFocus = data;
+      break;
+    }
+    await sleep(200);
+  }
+
+  gate(
+    'G-ARG-E2E.7 ref inexistente ⇒ state ghost',
+    ghostFocus?.state === 'ghost' && ghostFocus?.resolved?.path === 'nodos/9999/meta.json',
+    `state=${ghostFocus?.state} path=${ghostFocus?.resolved?.path}`
+  );
+  gate(
+    'G-ARG-E2E.7b cero ENOENT en la respuesta',
+    Boolean(ghostFocus) && !ghostRaw.includes('ENOENT'),
+    ghostRaw.slice(0, 120)
+  );
+
+  // ---- G-ARG-E2E.8 (CA WP-26): ref sintético ⇒ state synthetic --------------
+  const syntheticUri = 'firehose://synthetic/5/33#rio';
+  fakeTrack({ kind: 'micropost', uri: syntheticUri, corpus: 'synthetic', index: 33 }, 'firehose-browser');
+
+  let synthFocus = null;
+  const synthDeadline = Date.now() + 10000;
+  while (Date.now() < synthDeadline) {
+    const res = await fetch(`http://${HOST}:${FIREHOSE_PORT}/api/track/focus`);
+    const data = await res.json();
+    if (data?.ref?.uri === syntheticUri) {
+      synthFocus = data;
+      break;
+    }
+    await sleep(200);
+  }
+
+  gate(
+    'G-ARG-E2E.8 ref sintético ⇒ state synthetic (「sintético」 sin navegación)',
+    synthFocus?.state === 'synthetic',
+    `state=${synthFocus?.state}`
   );
 } catch (err) {
   gate('E2E', false, err.message);

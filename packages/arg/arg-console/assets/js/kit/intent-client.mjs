@@ -27,6 +27,7 @@ export function createIntentClient(room, actorId) {
     excavate: (corridorId) => send('excavate', { corridorId }),
     contactRequest: (targetId) => send('contact:request', { targetId }),
     contactClose: (contactId) => send('contact:close', { contactId }),
+    cloakEquip: (presetId, label) => send('cloak:equip', label ? { presetId, label } : { presetId }),
     emote: (name) => send('emote', { name })
   };
 }

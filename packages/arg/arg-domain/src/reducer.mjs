@@ -16,6 +16,7 @@
  */
 
 import { EMOTES, INTENTS } from './contract.mjs';
+import { cloakModFor } from './cloak-mods.mjs';
 
 function fail(error) {
   return { ok: false, error, ops: [] };
@@ -83,6 +84,9 @@ const HANDLERS = {
     const resolved = resolveLink(view, actor, intent);
     if (resolved.error) return fail(resolved.error);
     const { link, direction } = resolved;
+    if (link.medium === 'agua' && !cloakModFor(actor.cloak?.presetId).swimAllowed) {
+      return fail('nadar_no_permitido');
+    }
     if (link.corridorId && view.corridors[link.corridorId]?.state !== 'open') {
       return fail('pasillo_cerrado');
     }
@@ -152,8 +156,9 @@ const HANDLERS = {
     if (!Number.isFinite(aperture) || aperture < 0 || aperture > 1) return fail('apertura_invalida');
     const actor = view.actors[intent.actorId];
     if (!actor) return fail('actor_desconocido');
-    // v0: proximidad física (en WP-11 pasa a exigir contacto de cloak abierto).
-    if (actor.nodeId !== tap.summitNodeId) return fail('fuera_de_cima');
+    const [x, y] = [intent.actorId, intent.tapId].sort();
+    const contactId = `c-${x}--${y}`;
+    if (view.contacts[contactId]?.state !== 'open') return fail('sin_contacto');
     return okOps({ op: 'tap:aperture', tapId: tap.id, value: aperture });
   },
 
@@ -217,6 +222,19 @@ const HANDLERS = {
     if (!actor) return fail('actor_desconocido');
     if (!EMOTES.includes(intent.name)) return fail('emote_invalido');
     return okOps({ op: 'actor:patch', id: actor.id, patch: { emote: intent.name, emoteTs: intent.ts ?? null } });
+  },
+
+  'cloak:equip'(view, intent) {
+    const actor = view.actors[intent.actorId];
+    if (!actor) return fail('actor_desconocido');
+    const presetId = intent.presetId;
+    if (typeof presetId !== 'string' || !presetId) return fail('preset_requerido');
+    const label = intent.label ?? presetId;
+    return okOps({
+      op: 'actor:patch',
+      id: actor.id,
+      patch: { cloak: { presetId, label } }
+    });
   }
 };
 

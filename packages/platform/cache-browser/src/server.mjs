@@ -26,7 +26,8 @@ import {
   readLineFile,
   getCacheStats,
   buildAnchorsGrid,
-  resolveWikitextPath
+  resolveWikitextPath,
+  lineFileExists
 } from './browse-bridge.mjs';
 import { cacheView } from './views/cache_view.mjs';
 import { settingsView } from './views/settings_view.mjs';
@@ -110,7 +111,11 @@ export async function createViewServer(options = {}) {
     trackSubscriber = createArgTrackSubscriber({
       actor: trackActor,
       browserHint: 'cache-browser',
-      room: trackRoom
+      room: trackRoom,
+      // WP-26: deep-links honestos — el focus solo es navegable si el
+      // fichero existe en disco; si no, queda ghost (cero ENOENT).
+      checkExists: (resolved) =>
+        lineFileExists(basePath, resolved?.linea, resolved?.path)
     });
     await trackSubscriber.start().catch((err) => {
       console.warn('[cache-browser] arg:track subscriber no arrancó:', err.message);

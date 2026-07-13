@@ -19,7 +19,9 @@ import {
   createLogPanel,
   createDeltaStage,
   createRiverDroplets,
-  createActorsLayer
+  createActorsLayer,
+  createPanel,
+  createInspector
 } from '../kit/index.mjs';
 import { EVENTS } from '@zeus/arg-domain';
 
@@ -65,7 +67,37 @@ function main() {
   const delta = createDeltaStage(world, deltaV0);
   const droplets = createRiverDroplets(world, deltaV0);
   const actors = createActorsLayer(world);
+
+  // ---- ventanitas (WP-24): leyenda y ledger, arrastrables y colapsables ----
+  const hudPanel = createPanel({
+    id: 'hud',
+    title: '🗺️ leyenda · tablero',
+    collapsible: true,
+    draggable: true,
+    view: cfg.view,
+    className: 'panel-hud'
+  });
+  hudPanel.adopt(document.getElementById('viewer-hud'));
+
+  const ledgerPanel = createPanel({
+    id: 'ledger',
+    title: '📜 ledger del Notario',
+    collapsible: true,
+    draggable: true,
+    view: cfg.view,
+    className: 'panel-ledger'
+  });
+  ledgerPanel.adopt(document.getElementById('view-log'));
+
   const ledger = createLogPanel('view-log');
+
+  // ---- inspector de caudal y cantera (WP-25): click en un símbolo 3D ------
+  const inspector = createInspector({
+    stage,
+    pickables: delta.pickables,
+    scene: deltaV0,
+    cfg
+  });
 
   // ---- proyección de arg:state --------------------------------------------
   let lastStateAt = 0;
@@ -78,6 +110,7 @@ function main() {
     delta.applySnapshot(snap);
     droplets.applySnapshot(snap);
     actors.applySnapshot(snap);
+    inspector.applySnapshot(snap);
 
     setText('hud-drops', droplets.count());
     for (const [id, tap] of Object.entries(snap.taps ?? {})) {
@@ -131,6 +164,7 @@ function main() {
   window.addEventListener('beforeunload', () => {
     clearInterval(watchdog);
     room.disconnect();
+    inspector.dispose();
     actors.dispose();
     droplets.dispose();
     stage.dispose();

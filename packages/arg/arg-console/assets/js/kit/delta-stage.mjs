@@ -44,6 +44,9 @@ export function createDeltaStage(scene3d, deltaScene) {
   group.name = 'delta-stage';
   scene3d.add(group);
 
+  /** Símbolos clickables para el inspector (WP-25): userData = { kind, id }. */
+  const pickables = [];
+
   // ---- plataformas por nodo (wireframe, color por zone) -------------------
   for (const nodo of Object.values(deltaScene.nodos)) {
     const color = ZONE_COLORS[nodo.zone] ?? CIAN;
@@ -77,7 +80,9 @@ export function createDeltaStage(scene3d, deltaScene) {
     const summit = deltaScene.nodos[tap.summitNodeId].position;
     const tapGroup = new THREE.Group();
     tapGroup.position.set(summit.x, summit.y + 0.9, summit.z);
+    tapGroup.userData = { kind: 'tap', id: tap.id };
     group.add(tapGroup);
+    pickables.push(tapGroup);
 
     // válvula: toro horizontal + aguja que rota con la apertura
     const valve = new THREE.Mesh(
@@ -125,7 +130,9 @@ export function createDeltaStage(scene3d, deltaScene) {
       new THREE.TubeGeometry(curve, 40, 0.28, 5, false),
       new THREE.MeshBasicMaterial({ color: AGUA, wireframe: true, transparent: true, opacity: 0.14 })
     );
+    tube.userData = { kind: 'river', id: rio.id };
     group.add(tube);
+    pickables.push(tube);
   }
 
   // ---- mar: plano wireframe ondulado + islas de cristal ---------------------
@@ -140,7 +147,9 @@ export function createDeltaStage(scene3d, deltaScene) {
   });
   const sea = new THREE.Mesh(seaGeom, seaMat);
   sea.position.set(0, 0, 19); // z > 6, y ≈ 0
+  sea.userData = { kind: 'sea', id: 'mar' };
   group.add(sea);
+  pickables.push(sea);
 
   const ISLAS = [{ x: -4, z: 17 }, { x: 3, z: 20 }, { x: 0, z: 14 }];
   const islands = ISLAS.map((pos) => {
@@ -168,7 +177,9 @@ export function createDeltaStage(scene3d, deltaScene) {
     });
     const box = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.6), mat);
     box.position.set(chamber.position.x, chamber.position.y + 0.5, chamber.position.z);
+    box.userData = { kind: 'chamber', id: chamber.id };
     group.add(box);
+    pickables.push(box);
     chamberVisuals[chamber.id] = { mesh: box, mat, state: 'ghost' };
   }
 
@@ -210,6 +221,7 @@ export function createDeltaStage(scene3d, deltaScene) {
 
   return {
     group,
+    pickables,
 
     /** Proyecta un snapshot arg:state sobre la escena estática. */
     applySnapshot(snap) {

@@ -8,6 +8,7 @@
     ".": "./src/index.mjs",
     "./contract": "./src/contract.mjs",
     "./scenes/delta-v0": "./src/scenes/delta-v0.mjs",
+    "./scenes/tap-cloaks": "./src/scenes/tap-cloaks.mjs",
     "./node": "./src/node.mjs"
   },
   "scripts": {
@@ -15,9 +16,6 @@
   },
   "dependencies": {
     "@zeus/game-engine": "*"
-  },
-  "devDependencies": {
-    "@zeus/presets-sdk": "*"
   },
   "devDependencies": {
     "@zeus/presets-sdk": "*"

@@ -122,3 +122,21 @@ test('dropletUnder: encuentra la gota dentro de la ventana', () => {
   assert.equal(flow.dropletUnder('rio-t', d.progress + 0.05)?.id, d.id);
   assert.equal(flow.dropletUnder('rio-t', d.progress + 0.2), null);
 });
+
+test('snapshot compacto: la tupla de gota lleva uri (5º slot, WP-25)', () => {
+  const flow = makeEngine();
+  flow.setAperture('grifo-t', 1);
+  flow.tick(1);
+  const [d] = flow.droplets('rio-t');
+  const snap = flow.snapshot();
+  const [tuple] = snap.rivers['rio-t'].droplets;
+  assert.equal(tuple[0], d.id);
+  assert.equal(tuple[2], 'flowing');
+  assert.equal(tuple[3], null); // sin etiqueta
+  assert.equal(tuple[4], d.ref.uri); // la uri alimenta el inspector HTML
+  flow.labelDroplet('rio-t', d.id, 'agora', 'uno');
+  const [labeled] = flow.snapshot().rivers['rio-t'].droplets;
+  assert.equal(labeled[2], 'crystal');
+  assert.equal(labeled[3], 'agora');
+  assert.equal(labeled[4], d.ref.uri);
+});

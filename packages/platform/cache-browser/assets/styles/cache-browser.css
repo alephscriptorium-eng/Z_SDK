@@ -210,3 +210,40 @@
 #cache-ae-host {
   min-height: 240px;
 }
+
+/* ---- franja de juego CAUDAL (WP-26): browser enganchado al ARG ---- */
+
+.caudal-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  padding: 0.3rem 0.9rem;
+  background: #0a0a12ee;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.45);
+  color: #d7fbe6;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.caudal-strip-brand {
+  color: #00d4ff;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.caudal-strip-conn[data-state='ok'] { color: #00ff88; }
+.caudal-strip-conn[data-state='off'] { color: #ff3344; }
+
+.caudal-strip-focus {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #9fd8c8;
+}
+
+.caudal-strip-focus[data-state='ghost'],
+.caudal-strip-focus[data-state='synthetic'] { color: #ffb347; }
