@@ -1,7 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createArgDomainState, resolveFeeds, makeIntent, deltaV0 } from '../src/index.mjs';
+import { createArgDomainState, resolveFeeds, makeIntent, deltaV0, createFlowEngine } from '../src/index.mjs';
+
+/** Escena de estrés: ríos largos + grifos rápidos → muchas gotas en vuelo y mar lleno. */
+function stressScene() {
+  const longWp = [
+    { x: 0, y: 0, z: 0 },
+    { x: 400, y: 0, z: 0 }
+  ];
+  return {
+    ...deltaV0,
+    taps: {
+      'grifo-a': { ...deltaV0.taps['grifo-a'], spawnRate: 2.5, inflowRate: 0, releaseRate: 1 },
+      'grifo-b': { ...deltaV0.taps['grifo-b'], spawnRate: 2.5, inflowRate: 0, releaseRate: 1 }
+    },
+    rios: {
+      'rio-a': { ...deltaV0.rios['rio-a'], flowSpeed: 10, waypoints: longWp },
+      'rio-b': { ...deltaV0.rios['rio-b'], flowSpeed: 10, waypoints: longWp }
+    },
+    mar: { ...deltaV0.mar, murkCapacity: 10000 }
+  };
+}
 
 function makeState() {
   return createArgDomainState({
@@ -135,6 +155,50 @@ test('snapshot compacto: cabe en presupuesto con carga (G-ARG.5)', () => {
   assert.ok(bytes < 32 * 1024, `snapshot ${bytes} bytes ≥ 32 KB`);
   assert.equal(snap.sceneId, 'delta-v0');
   assert.ok(Object.keys(snap.rivers['rio-a'].droplets.length ? snap.rivers : snap.rivers).length);
+});
+
+test('budget G-ARG.5: pool mar lleno + 200 gotas de río < 32 KB', () => {
+  const scene = stressScene();
+  const feeds = resolveFeeds({ mode: 'synthetic', seed: 42 });
+  const flow = createFlowEngine(scene, feeds.firehose);
+  const { floating: maxF, sunken: maxS } = scene.mar.seaPoolMax;
+  const poolMax = maxF + maxS;
+
+  flow.setAperture('grifo-a', 1);
+  flow.setAperture('grifo-b', 1);
+
+  for (let i = 0; i < 8000; i++) {
+    flow.tick(0.05);
+    for (const d of flow.droplets('rio-a')) {
+      if (!d.label && flow.sea.droplets.filter((x) => x.state === 'floating').length < maxF) {
+        flow.labelDroplet('rio-a', d.id, 'agora');
+      }
+    }
+    const seaCount = flow.sea.droplets.length;
+    const riverCount = flow.droplets('rio-a').length + flow.droplets('rio-b').length;
+    if (seaCount >= poolMax && riverCount >= 200) {
+      flow.setAperture('grifo-a', 0);
+      flow.setAperture('grifo-b', 0);
+      break;
+    }
+  }
+
+  const flowSnap = flow.snapshot();
+  assert.ok(flowSnap.sea.droplets.length >= poolMax, `pool ${flowSnap.sea.droplets.length}/${poolMax}`);
+  const riverDroplets =
+    flowSnap.rivers['rio-a'].droplets.length + flowSnap.rivers['rio-b'].droplets.length;
+  assert.ok(riverDroplets >= 200, `solo ${riverDroplets} gotas en río`);
+
+  const state = createArgDomainState({
+    scene,
+    feeds,
+    gamemap: { id: 'gm-stress', objetivo: { labeled: 999, excavated: 999 } }
+  });
+  const baseSnap = state.snapshot('change');
+  const snap = { ...baseSnap, taps: flowSnap.taps, rivers: flowSnap.rivers, sea: flowSnap.sea };
+
+  const bytes = Buffer.byteLength(JSON.stringify(snap));
+  assert.ok(bytes < 32 * 1024, `snapshot ${bytes} bytes ≥ 32 KB`);
 });
 
 test('contacto: cerca del grifo en la cima abre contacto', () => {

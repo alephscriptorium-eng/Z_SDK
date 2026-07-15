@@ -14,7 +14,8 @@ import {
   buildCanteraTopology,
   buildNavGraph,
   reduceArgIntent,
-  LABEL_WINDOW
+  LABEL_WINDOW,
+  seaLayout
 } from '@zeus/arg-domain';
 
 const TOPOLOGY = buildCanteraTopology(deltaV0.cantera);
@@ -50,15 +51,25 @@ export function corridorsFrom(maze) {
 export function buildReducerView(state, maze) {
   const actors = state?.actors ?? {};
   const taps = state?.taps ?? {};
+  const seaDroplets = () => {
+    const tuples = state?.sea?.droplets ?? [];
+    return tuples.map(([id, label, uri, seq]) => ({
+      id,
+      label: label ?? null,
+      state: label ? 'floating' : 'sunken',
+      seq: seq ?? 0,
+      ref: uri ? { uri } : null
+    }));
+  };
   return {
     scene: deltaV0,
     nav: NAV,
     actors,
     taps,
+    sea: state?.sea ?? null,
     corridors: corridorsFrom(maze),
     contacts: state?.contacts ?? {},
     dropletUnder(riverId, progress) {
-      // rivers compactos (G-ARG.5): [[id, progress, state, label, uri]]
       const droplets = state?.rivers?.[riverId]?.droplets ?? [];
       let best = null;
       let bestDist = LABEL_WINDOW;
@@ -70,6 +81,10 @@ export function buildReducerView(state, maze) {
         }
       }
       return best;
+    },
+    seaDroplets,
+    seaDropletById(id) {
+      return seaDroplets().find((d) => d.id === id) ?? null;
     },
     positionOf(subjectId) {
       const actor = actors[subjectId];
@@ -129,5 +144,28 @@ export function summarizeState(state, actorId) {
     mar: state.sea ?? null,
     objetivo: state.objetivo ?? null,
     mazeRev: state.maze?.rev ?? null
+  };
+}
+
+/** Proyección del mar con clusters (player_observe what:'sea'). */
+export function projectSea(state) {
+  const sea = state?.sea ?? {};
+  const tuples = sea.droplets ?? [];
+  const droplets = tuples.map(([id, label, uri, seq]) => ({
+    dropletId: id,
+    label: label ?? null,
+    uri: uri ?? null,
+    seq,
+    state: label ? 'floating' : 'sunken'
+  }));
+  const layout = seaLayout(tuples, deltaV0.mar);
+  return {
+    crystals: sea.crystals ?? 0,
+    murk: sea.murk ?? 0,
+    murkCapacity: sea.murkCapacity ?? deltaV0.mar.murkCapacity,
+    collapsed: sea.collapsed ?? false,
+    clusters: layout.clusters,
+    droplets,
+    positions: layout.positions
   };
 }

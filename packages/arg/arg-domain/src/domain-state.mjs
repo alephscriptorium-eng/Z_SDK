@@ -71,9 +71,12 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
       nav,
       actors,
       taps: flow.taps,
+      sea: flow.sea,
       corridors: maze.corridors,
       contacts,
       dropletUnder: (riverId, prog) => flow.dropletUnder(riverId, prog),
+      seaDroplets: () => flow.sea.droplets,
+      seaDropletById: (id) => flow.seaDropletById(id),
       positionOf
     };
   }
@@ -96,6 +99,9 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
           break;
         case 'droplet:label':
           flow.labelDroplet(op.riverId, op.dropletId, op.label, op.actorId);
+          break;
+        case 'sea:salvage':
+          flow.salvage(op.dropletId, op.label, op.actorId);
           break;
         case 'corridor:excavate': {
           const external = feeds.externalDig === true;
@@ -201,7 +207,16 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
     for (const ev of flow.drainEvents()) {
       if (ev.kind === 'label') {
         progress.labeled += 1;
-        pushLedger('label', { actorId: ev.actorId, ref: ev.ref, detail: { label: ev.label, riverId: ev.riverId } });
+        pushLedger('label', {
+          actorId: ev.actorId,
+          ref: ev.ref,
+          detail: {
+            label: ev.label,
+            ...(ev.riverId ? { riverId: ev.riverId } : {}),
+            ...(ev.dropletId ? { dropletId: ev.dropletId } : {}),
+            ...(ev.salvage ? { salvage: true } : {})
+          }
+        });
       } else if (ev.kind === 'burst') {
         pushLedger('burst', { detail: { tapId: ev.tapId, riverId: ev.riverId } });
       } else if (ev.kind === 'collapse') {
@@ -244,7 +259,18 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
         return { ok: false, error: 'aprobacion_requerida' };
       }
       const result = reduceArgIntent(view(), payload);
-      if (result.ok) applyOps(result.ops);
+      if (result.ok) {
+        applyOps(result.ops);
+        if (result.trackCast?.ref) {
+          outTracks.push({
+            v: 1,
+            ts: Date.now(),
+            actorId: payload.actorId,
+            ref: result.trackCast.ref,
+            hint: 'firehose-browser'
+          });
+        }
+      }
       return { ok: result.ok, error: result.error ?? null };
     },
 

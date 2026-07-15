@@ -146,6 +146,27 @@ export function renderSeaInspector(ctx) {
     `<div class="insp-kv"><span>murk</span> ${renderBar((sea.murk ?? 0) / capacity)} <code>${sea.murk ?? 0}/${sea.murkCapacity ?? '—'}</code></div>`
   ];
   if (sea.collapsed) out.push('<p class="insp-warn">EL DELTA HA COLAPSADO — el mar traga las terrazas</p>');
+  const tuples = sea.droplets ?? [];
+  if (tuples.length) {
+    const floating = tuples.filter((t) => t[1]);
+    const sunken = tuples.filter((t) => !t[1]);
+    const labels = [...new Set(floating.map((t) => t[1]))].sort();
+    if (labels.length) {
+      out.push(`<div class="insp-section">clusters (${labels.length})</div>`);
+      for (const label of labels) {
+        const n = floating.filter((t) => t[1] === label).length;
+        out.push(`<div class="insp-drop"><span class="insp-label">«${escapeHtml(label)}»</span> · ${n} flotantes</div>`);
+      }
+    }
+    if (floating.length) {
+      out.push(`<div class="insp-section">flotantes (${floating.length})</div>`);
+      for (const t of floating) out.push(renderSeaDropletLine(t, ctx));
+    }
+    if (sunken.length) {
+      out.push(`<div class="insp-section">hundidas (${sunken.length})</div>`);
+      for (const t of sunken) out.push(renderSeaDropletLine(t, ctx));
+    }
+  }
   const arrivals = ctx.arrivals ?? [];
   if (arrivals.length) {
     out.push(`<div class="insp-section">últimas gotas llegadas (${arrivals.length})</div>`);
@@ -156,6 +177,15 @@ export function renderSeaInspector(ctx) {
     }
   }
   return out.join('');
+}
+
+function renderSeaDropletLine(tuple, ctx) {
+  const [id, label, uri] = tuple;
+  const href = dropletDeepLink(uri, ctx.browsers, ctx.actor);
+  const uriHtml = href
+    ? `<a class="insp-link" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(shortUri(uri))}</a>`
+    : `<span class="insp-uri">${escapeHtml(shortUri(uri))}</span>${isSyntheticUri(uri) ? ' <span class="insp-synthetic">「sintético」</span>' : ''}`;
+  return `<div class="insp-drop"><span class="insp-drop-id">${escapeHtml(id)}</span> · ${uriHtml}${label ? ` · <span class="insp-label">«${escapeHtml(label)}»</span>` : ''}</div>`;
 }
 
 /**

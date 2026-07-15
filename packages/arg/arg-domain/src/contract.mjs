@@ -33,7 +33,9 @@ export const INTENTS = [
   'contact:request',
   'contact:close',
   'cloak:equip',
-  'emote'
+  'emote',
+  'salvage',
+  'track:cast'
 ];
 
 export const POSES = ['idle', 'walk', 'ride', 'swim', 'sit', 'menu'];

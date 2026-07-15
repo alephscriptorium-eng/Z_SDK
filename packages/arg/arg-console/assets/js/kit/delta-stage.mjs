@@ -136,7 +136,11 @@ export function createDeltaStage(scene3d, deltaScene) {
   }
 
   // ---- mar: plano wireframe ondulado + islas de cristal ---------------------
-  const seaGeom = new THREE.PlaneGeometry(46, 26, 26, 15);
+  const marBounds = deltaScene.mar?.bounds ?? { center: { x: 0, y: 0, z: 19 }, width: 46, depth: 26 };
+  const seaWidth = marBounds.width ?? 46;
+  const seaDepth = marBounds.depth ?? 26;
+  const seaCenter = marBounds.center ?? { x: 0, y: 0, z: 19 };
+  const seaGeom = new THREE.PlaneGeometry(seaWidth, seaDepth, 26, 15);
   seaGeom.rotateX(-Math.PI / 2);
   const seaBase = seaGeom.attributes.position.array.slice(); // posiciones en reposo
   const seaMat = new THREE.MeshBasicMaterial({
@@ -146,7 +150,7 @@ export function createDeltaStage(scene3d, deltaScene) {
     opacity: 0.35
   });
   const sea = new THREE.Mesh(seaGeom, seaMat);
-  sea.position.set(0, 0, 19); // z > 6, y ≈ 0
+  sea.position.set(seaCenter.x, seaCenter.y, seaCenter.z);
   sea.userData = { kind: 'sea', id: 'mar' };
   group.add(sea);
   pickables.push(sea);

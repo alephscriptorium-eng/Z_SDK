@@ -41,6 +41,7 @@ export {
 export { createStickPuppet, colorForActorId } from './stick-puppet.mjs';
 export { createDeltaStage } from './delta-stage.mjs';
 export { createRiverDroplets } from './river-droplets.mjs';
+export { createSeaDroplets } from './sea-droplets.mjs';
 export { createActorsLayer } from './actors-layer.mjs';
 export { createIntentClient } from './intent-client.mjs';
 export { createHorseClient, resolvePresetOfferBrowser } from './horse-client.mjs';
@@ -55,6 +56,10 @@ export {
   bindCloakInventory,
   fetchPresetSummaries
 } from './cloak-panel.mjs';
+export {
+  renderSeaActionPanel,
+  bindSeaActionPanel
+} from './sea-action-panel.mjs';
 export {
   createPanel,
   panelStorageKey,

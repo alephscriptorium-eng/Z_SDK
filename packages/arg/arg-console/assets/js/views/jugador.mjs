@@ -35,7 +35,10 @@ import {
   formatContactLive,
   renderCloakInventory,
   bindCloakInventory,
-  fetchPresetSummaries
+  fetchPresetSummaries,
+  createSeaDroplets,
+  renderSeaActionPanel,
+  bindSeaActionPanel
 } from '../kit/index.mjs';
 
 const CAMERA_OFFSET = { x: 0, y: 6, z: 9 };
@@ -70,6 +73,7 @@ function main() {
 
   const delta = createDeltaStage(world, deltaV0);
   const droplets = createRiverDroplets(world, deltaV0);
+  const seaDroplets = createSeaDroplets(world, deltaV0);
   const actors = createActorsLayer(world);
 
   // ---- room + intents --------------------------------------------------------
@@ -167,6 +171,45 @@ function main() {
     className: 'panel-track'
   });
   trackPanel.body.innerHTML = '<div class="track-lines">— aún sin pisar ningún recurso —</div>';
+
+  const seaActionPanel = createPanel({
+    id: 'sea-action',
+    title: '🌊 gota del mar',
+    collapsible: true,
+    view: cfg.view,
+    className: 'panel-sea-action'
+  });
+  seaActionPanel.el.hidden = true;
+
+  let selectedSeaDroplet = null;
+
+  function canSalvageSea() {
+    const actor = ownActor();
+    if (!actor) return false;
+    if (actor.zone === 'mar') return true;
+    return ['orilla-mar', 'boya-1', 'boya-2'].includes(actor.nodeId);
+  }
+
+  function openSeaAction(dropletId) {
+    const tuples = lastSnap?.sea?.droplets ?? [];
+    const tuple = tuples.find(([id]) => id === dropletId);
+    if (!tuple) return;
+    const [id, label, uri] = tuple;
+    selectedSeaDroplet = { id, label, uri, state: label ? 'floating' : 'sunken' };
+    seaActionPanel.body.innerHTML = renderSeaActionPanel({
+      droplet: selectedSeaDroplet,
+      labelset: deltaV0.labelset,
+      canSalvage: canSalvageSea(),
+      browsers: cfg.browsers,
+      actor: actorId
+    });
+    bindSeaActionPanel(seaActionPanel.body, {
+      onSalvage: (lbl) => intents.salvage(dropletId, lbl),
+      onTrack: () => intents.trackCast(dropletId)
+    });
+    seaActionPanel.el.hidden = false;
+    seaActionPanel.setCollapsed(false, { persist: false });
+  }
 
   // ---- inspector de caudal y cantera (WP-25) ---------------------------------
   const inspector = createInspector({
@@ -368,6 +411,7 @@ function main() {
     setText('hud-conn', 'connected');
     delta.applySnapshot(snap);
     droplets.applySnapshot(snap);
+    seaDroplets.applySnapshot(snap);
     actors.applySnapshot(snap);
     inspector.applySnapshot(snap);
     renderContactMenuPanel();
@@ -528,6 +572,24 @@ function main() {
     }
   });
 
+  const seaRaycaster = new THREE.Raycaster();
+  const seaNdc = new THREE.Vector2();
+  const stageHost = document.getElementById('viewer-stage');
+  stageHost?.addEventListener('click', (ev) => {
+    if (ev.target !== stageHost.querySelector('canvas')) return;
+    const rect = ev.target.getBoundingClientRect();
+    seaNdc.set(
+      ((ev.clientX - rect.left) / rect.width) * 2 - 1,
+      -((ev.clientY - rect.top) / rect.height) * 2 + 1
+    );
+    seaRaycaster.setFromCamera(seaNdc, camera);
+    const hits = seaRaycaster.intersectObject(seaDroplets.mesh, false);
+    if (hits[0]) {
+      const pick = seaDroplets.resolvePick(hits[0]);
+      if (pick?.kind === 'seaDroplet') openSeaAction(pick.id);
+    }
+  });
+
   // ---- cámara chase ----------------------------------------------------------------
   const lookTarget = new THREE.Vector3();
 
@@ -557,6 +619,7 @@ function main() {
     elapsed += dt;
     delta.update(dt, elapsed);
     droplets.update(dt);
+    seaDroplets.update(dt, elapsed);
     actors.update(dt);
     chaseCamera(dt);
   });
@@ -576,6 +639,7 @@ function main() {
     inspector.dispose();
     actors.dispose();
     droplets.dispose();
+    seaDroplets.dispose();
     stage.dispose();
   });
 }

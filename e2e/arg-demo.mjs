@@ -109,10 +109,12 @@ const socket = io(`http://${HOST}:${SOCKET_PORT}/runtime`, {
 let lastState = null;
 const ledger = [];
 let lastHorseOffer = null;
+const tracks = [];
 socket.on('arg:state', (data) => {
   lastState = data;
 });
 socket.on('arg:ledger', (data) => ledger.push(data));
+socket.on('arg:track', (data) => tracks.push(data));
 socket.on('HORSE', (data) => {
   if (data?.method === 'offer') lastHorseOffer = data;
 });
@@ -122,6 +124,7 @@ socket.on('ROOM_MESSAGE', (msg) => {
     if (entry?.event === 'arg:state') lastState = entry.data;
     if (entry?.event === 'arg:ledger') ledger.push(entry.data);
     if (entry?.event === 'HORSE' && entry.data?.method === 'offer') lastHorseOffer = entry.data;
+    if (entry?.event === 'arg:track') tracks.push(entry.data);
   }
 });
 
@@ -143,6 +146,12 @@ function intent(actorId, name, args = {}) {
 async function walkTo(actorId, nodeId, timeoutMs = 30000) {
   intent(actorId, 'move', { nodeId });
   await waitFor(() => lastState?.actors?.[actorId]?.nodeId === nodeId, timeoutMs, `${actorId} → ${nodeId}`);
+}
+
+async function walkPath(actorId, ...nodeIds) {
+  for (const nodeId of nodeIds) {
+    await walkTo(actorId, nodeId);
+  }
 }
 
 try {
@@ -221,6 +230,54 @@ try {
     presetsRes.ok && (await presetsRes.json()).presets?.some((p) => p.name === 'aleph-firehose-browse'),
     `HTTP ${presetsRes.status}`
   );
+
+  // G-ARG-E2E.9 — salvage: gota hundida → flotante + ledger detail.salvage
+  await waitFor(() => lastState?.sea?.droplets?.some((d) => !d[1]), 35000, 'gota hundida en mar');
+  const sunkenTuple = lastState.sea.droplets.find((d) => !d[1]);
+  const sunkenId = sunkenTuple[0];
+  // Cerrar grifo para congelar murk mientras uno camina al mar
+  intent('uno', 'tap:set', { tapId: 'grifo-a', aperture: 0 });
+  await waitFor(() => lastState?.taps?.['grifo-a']?.aperture === 0, 5000, 'grifo cerrado');
+  await walkPath('uno', 'terraza-a', 'plaza', 'orilla-mar');
+  const murkBefore = lastState.sea.murk;
+  const crystalsBefore = lastState.sea.crystals;
+  intent('uno', 'salvage', { dropletId: sunkenId, label: 'memoria' });
+  await waitFor(() => ledger.some((e) => e.detail?.salvage === true), 8000, 'ledger salvage');
+  await waitFor(
+    () => lastState?.sea?.droplets?.some((d) => d[0] === sunkenId && d[1] === 'memoria'),
+    8000,
+    'gota flotante'
+  );
+  gate(
+    'G-ARG-E2E.9 salvage',
+    ledger.some((e) => e.kind === 'label' && e.detail?.salvage === true) &&
+      lastState.sea.droplets.some((d) => d[0] === sunkenId && d[1] === 'memoria') &&
+      lastState.sea.murk <= murkBefore - 0.99 &&
+      lastState.sea.crystals >= crystalsBefore + 1,
+    `murk ${murkBefore}→${lastState.sea.murk}, crystals ${crystalsBefore}→${lastState.sea.crystals}`
+  );
+
+  // track:cast — arg:track firehose-browser sin mutar contadores
+  const trackId = lastState.sea.droplets[0]?.[0];
+  const crystalsSnap = lastState.sea.crystals;
+  const murkSnap = lastState.sea.murk;
+  if (trackId) {
+    intent('uno', 'track:cast', { dropletId: trackId });
+    await waitFor(
+      () => tracks.some((t) => t.actorId === 'uno' && t.hint === 'firehose-browser'),
+      8000,
+      'arg:track'
+    );
+    gate(
+      'G-ARG-E2E.10 track:cast',
+      tracks.some((t) => t.actorId === 'uno' && t.hint === 'firehose-browser') &&
+        lastState.sea.crystals === crystalsSnap &&
+        lastState.sea.murk === murkSnap,
+      tracks.find((t) => t.actorId === 'uno')?.ref?.uri ?? '—'
+    );
+  } else {
+    gate('G-ARG-E2E.10 track:cast', false, 'sin gotas en mar');
+  }
 } catch (err) {
   gate('E2E', false, err.message);
 }

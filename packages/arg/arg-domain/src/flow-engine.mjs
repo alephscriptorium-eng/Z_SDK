@@ -15,6 +15,8 @@ const RESIDUAL_FLOW = 0.25;
 /** Ventana de progreso para "la gota bajo los pies" (etiquetar montado). */
 export const LABEL_WINDOW = 0.08;
 
+const DEFAULT_SEA_POOL_MAX = { floating: 96, sunken: 48 };
+
 export function createFlowEngine(scene, firehoseFeed) {
   const taps = {};
   for (const [id, def] of Object.entries(scene.taps)) {
@@ -33,18 +35,56 @@ export function createFlowEngine(scene, firehoseFeed) {
     rivers[id] = { def, distance: linkDistance(def.waypoints), droplets: [] };
   }
 
+  const seaPoolMax = { ...DEFAULT_SEA_POOL_MAX, ...(scene.mar.seaPoolMax ?? {}) };
   const sea = {
     crystals: 0,
     murk: 0,
     murkCapacity: scene.mar.murkCapacity,
-    collapsed: false
+    collapsed: false,
+    droplets: []
   };
 
   let dropletSeq = 0;
+  let seaSeq = 0;
   const events = [];
 
   function pushEvent(kind, payload) {
     events.push({ kind, ts: Date.now(), ...payload });
+  }
+
+  function countByState(state) {
+    return sea.droplets.filter((d) => d.state === state).length;
+  }
+
+  function enforcePoolLimits() {
+    while (countByState('floating') > seaPoolMax.floating) {
+      const oldest = sea.droplets
+        .filter((d) => d.state === 'floating')
+        .sort((a, b) => a.seq - b.seq)[0];
+      if (!oldest) break;
+      sea.droplets.splice(sea.droplets.indexOf(oldest), 1);
+      pushEvent('sea:consolidate', { dropletId: oldest.id, ref: oldest.ref, label: oldest.label });
+    }
+    while (countByState('sunken') > seaPoolMax.sunken) {
+      const oldest = sea.droplets
+        .filter((d) => d.state === 'sunken')
+        .sort((a, b) => a.seq - b.seq)[0];
+      if (!oldest) break;
+      sea.droplets.splice(sea.droplets.indexOf(oldest), 1);
+      pushEvent('sea:lost', { dropletId: oldest.id, ref: oldest.ref });
+    }
+  }
+
+  function addToSea(droplet, state, label) {
+    seaSeq += 1;
+    sea.droplets.push({
+      id: droplet.id,
+      ref: droplet.ref,
+      label: label ?? null,
+      state,
+      seq: seaSeq
+    });
+    enforcePoolLimits();
   }
 
   function riverSpeed(riverId) {
@@ -110,6 +150,7 @@ export function createFlowEngine(scene, firehoseFeed) {
       river.droplets.splice(river.droplets.indexOf(droplet), 1);
       if (droplet.label) {
         sea.crystals += 1;
+        addToSea(droplet, 'floating', droplet.label);
         Promise.resolve(firehoseFeed.commitLabel(droplet.ref, droplet.label)).catch((err) => {
           pushEvent('commit:error', {
             dropletId: droplet.id,
@@ -121,6 +162,7 @@ export function createFlowEngine(scene, firehoseFeed) {
         pushEvent('crystal', { dropletId: droplet.id, ref: droplet.ref, label: droplet.label });
       } else {
         sea.murk += 1;
+        addToSea(droplet, 'sunken', null);
         pushEvent('murk', { dropletId: droplet.id, ref: droplet.ref });
       }
     }
@@ -129,6 +171,7 @@ export function createFlowEngine(scene, firehoseFeed) {
   return {
     taps,
     sea,
+    seaPoolMax,
 
     setAperture(tapId, value) {
       const tap = taps[tapId];
@@ -147,6 +190,44 @@ export function createFlowEngine(scene, firehoseFeed) {
       droplet.label = label;
       pushEvent('label', { dropletId, riverId, label, actorId, ref: droplet.ref });
       return { ok: true, ref: droplet.ref };
+    },
+
+    /** Rescate de gota hundida (MAR.md §1) — API interna para el reducer WP-29. */
+    salvage(dropletId, label, actorId = null) {
+      if (sea.collapsed) return { ok: false, error: 'colapsado' };
+      const droplet = sea.droplets.find((d) => d.id === dropletId);
+      if (!droplet || droplet.state !== 'sunken') return { ok: false, error: 'gota_invalida' };
+      const murkBefore = sea.murk;
+      sea.murk = Math.max(0, sea.murk - 1);
+      if (sea.murk !== murkBefore - 1 && murkBefore > 0) {
+        // clamp defensivo activado — señal de bug en tests sintéticos
+        pushEvent('salvage:clamp', { dropletId, murkBefore, murkAfter: sea.murk });
+      }
+      sea.crystals += 1;
+      droplet.state = 'floating';
+      droplet.label = label;
+      Promise.resolve(firehoseFeed.commitLabel(droplet.ref, label)).catch((err) => {
+        pushEvent('commit:error', {
+          dropletId: droplet.id,
+          ref: droplet.ref,
+          label,
+          message: err?.message ?? String(err)
+        });
+      });
+      pushEvent('label', {
+        dropletId,
+        label,
+        actorId,
+        ref: droplet.ref,
+        salvage: true
+      });
+      pushEvent('crystal', { dropletId, ref: droplet.ref, label, salvage: true });
+      enforcePoolLimits();
+      return { ok: true, ref: droplet.ref };
+    },
+
+    seaDropletById(dropletId) {
+      return sea.droplets.find((d) => d.id === dropletId) ?? null;
     },
 
     riverSpeed,
@@ -211,7 +292,13 @@ export function createFlowEngine(scene, firehoseFeed) {
           crystals: sea.crystals,
           murk: Math.round(sea.murk * 100) / 100,
           murkCapacity: sea.murkCapacity,
-          collapsed: sea.collapsed
+          collapsed: sea.collapsed,
+          droplets: sea.droplets.map((d) => [
+            d.id,
+            d.label,
+            d.ref?.uri ?? null,
+            d.seq
+          ])
         }
       };
     },

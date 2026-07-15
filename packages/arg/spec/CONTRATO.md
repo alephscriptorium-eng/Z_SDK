@@ -126,6 +126,8 @@ llamadas tools/prompts van por HORSE entre los propios sujetos (P5).
 | `contact:close`   | `contactId`                              | |
 | `cloak:equip`     | `presetId, label?`                       | equipa ficha MCP en el actor |
 | `emote`           | `name`                                   | expresividad, sin física |
+| `salvage`         | `dropletId, label`                       | gota hundida + proximidad mar/orilla/boya |
+| `track:cast`      | `dropletId`                              | sin mutación; emite `arg:track` firehose |
 
 ### Outbound (autoridad → room)
 

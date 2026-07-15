@@ -28,6 +28,8 @@ export function createIntentClient(room, actorId) {
     contactRequest: (targetId) => send('contact:request', { targetId }),
     contactClose: (contactId) => send('contact:close', { contactId }),
     cloakEquip: (presetId, label) => send('cloak:equip', label ? { presetId, label } : { presetId }),
-    emote: (name) => send('emote', { name })
+    emote: (name) => send('emote', { name }),
+    salvage: (dropletId, label) => send('salvage', { dropletId, label }),
+    trackCast: (dropletId) => send('track:cast', { dropletId })
   };
 }

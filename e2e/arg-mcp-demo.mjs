@@ -154,7 +154,9 @@ try {
       healthDos.actor === 'dos' &&
       toolNames.includes('player_move') &&
       toolNames.includes('player_goto') &&
-      toolNames.includes('player_label'),
+      toolNames.includes('player_label') &&
+      toolNames.includes('player_salvage') &&
+      toolNames.includes('player_track'),
     `uno/dos connected · ${toolNames.filter((n) => n.startsWith('player_')).length} tools player_*`
   );
 
@@ -213,6 +215,48 @@ try {
     label.ok
       ? `ledger label seq ${label.evidencia.ledger.seq} · intentos ${label.evidencia.intentos}`
       : `join=${join2.error ?? 'ok'} goto=${goto2.error ?? 'ok'} ride=${ride.error ?? 'ok'} label=${label.error ?? 'ok'}`
+  );
+
+  // G-MCP.7 — C-17: player_salvage (mar con grifo abierto desde G-MCP.5)
+  await sleep(25000);
+  const seaObs = await callTool(MCP_UNO_PORT, 'player_observe', { what: 'sea' });
+  const sunken = seaObs.data?.droplets?.find((d) => d.label == null);
+  await callTool(MCP_UNO_PORT, 'player_tap_set', { tapId: 'grifo-a', aperture: 0 });
+  const cloak = await callTool(MCP_UNO_PORT, 'player_cloak_equip', { presetId: 'aleph-firehose-browse' });
+  const gotoSea = await callTool(MCP_UNO_PORT, 'player_goto', { nodeId: 'boya-1' });
+  const seaPre = await callTool(MCP_UNO_PORT, 'player_observe', { what: 'sea' });
+  const murk0 = seaPre.data?.murk;
+  const crystals0 = seaPre.data?.crystals ?? 0;
+  const salvage =
+    sunken?.dropletId &&
+    (await callTool(MCP_UNO_PORT, 'player_salvage', { dropletId: sunken.dropletId, label: 'memoria' }));
+  const seaAfter = await callTool(MCP_UNO_PORT, 'player_observe', { what: 'sea' });
+  gate(
+    'G-MCP.7 salvage (C-17)',
+    gotoSea.ok === true &&
+      cloak.ok === true &&
+      salvage?.ok === true &&
+      salvage.evidencia?.ledger?.detail?.salvage === true &&
+      seaAfter.data?.droplets?.some((d) => d.dropletId === sunken?.dropletId && d.label === 'memoria') &&
+      seaAfter.data?.murk <= murk0 - 0.99 &&
+      seaAfter.data?.crystals >= crystals0 + 1,
+    salvage?.ok
+      ? `droplet ${sunken.dropletId} · murk ${murk0}→${seaAfter.data?.murk}`
+      : `sin gota hundida o error ${salvage?.error ?? gotoSea.error}`
+  );
+
+  // G-MCP.8 — C-18: player_track
+  const trackTarget = seaAfter.data?.droplets?.[0]?.dropletId ?? sunken?.dropletId;
+  const track = trackTarget
+    ? await callTool(MCP_UNO_PORT, 'player_track', { dropletId: trackTarget })
+    : { ok: false };
+  const tracksObs = await callTool(MCP_UNO_PORT, 'player_observe', { what: 'tracks', n: 5 });
+  gate(
+    'G-MCP.8 track (C-18)',
+    track.ok === true &&
+      track.evidencia?.track?.hint === 'firehose-browser' &&
+      tracksObs.data?.some?.((t) => t.actorId === 'uno' && t.hint === 'firehose-browser'),
+    track.ok ? track.evidencia.track.ref?.uri ?? 'ok' : track.error ?? 'sin gota'
   );
 } catch (err) {
   gate('E2E MCP', false, err.message);

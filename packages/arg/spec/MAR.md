@@ -116,8 +116,14 @@ solo un `arg:track` a petición. Refs sintéticos siguen la regla `「sintético
 
 ## 5. Decisiones tomadas (ajustables al implementar)
 
-1. El rescate **decrementa murk**: convierte el mar en tablero de contrajuego.
-   Si desequilibra las rondas, quitar el decremento no rompe nada más.
+1. **CONFIRMADO (2026-07-15)** — el rescate decrementa murk (−1, clamp 0) y
+   suma crystals (+1): así el estado final es independiente del camino
+   (etiquetar en cauce ≡ verter y rescatar) y el mar es tablero de
+   contrajuego. Notas de implementación: (a) el clamp es defensivo — con las
+   reglas actuales `murk` nunca baja del nº de hundidas en el pool (las
+   riadas solo suman; cada hundida aportó exactamente +1); si un test ve el
+   clamp activarse, es un bug, no gameplay. (b) El colapso es cerrojo:
+   `salvage` solo es válido mientras `!collapsed`; rescatar no des-colapsa.
 2. Proximidad de `salvage` = zona mar o nodo orilla/boya cercano; NO se puede
    rescatar desde el tablero (dios-mapa mira, no juega).
 3. `track:cast` no muta dominio ni puntúa — es lectura dirigida.

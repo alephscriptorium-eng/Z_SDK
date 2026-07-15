@@ -19,6 +19,7 @@ import {
   createLogPanel,
   createDeltaStage,
   createRiverDroplets,
+  createSeaDroplets,
   createActorsLayer,
   createPanel,
   createInspector
@@ -66,6 +67,7 @@ function main() {
 
   const delta = createDeltaStage(world, deltaV0);
   const droplets = createRiverDroplets(world, deltaV0);
+  const seaDroplets = createSeaDroplets(world, deltaV0);
   const actors = createActorsLayer(world);
 
   // ---- ventanitas (WP-24): leyenda y ledger, arrastrables y colapsables ----
@@ -109,6 +111,7 @@ function main() {
     setText('hud-tick', snap.tick);
     delta.applySnapshot(snap);
     droplets.applySnapshot(snap);
+    seaDroplets.applySnapshot(snap);
     actors.applySnapshot(snap);
     inspector.applySnapshot(snap);
 
@@ -144,6 +147,7 @@ function main() {
     elapsed += dt;
     delta.update(dt, elapsed);
     droplets.update(dt);
+    seaDroplets.update(dt, elapsed);
     actors.update(dt);
   });
   stage.start();
@@ -167,6 +171,7 @@ function main() {
     inspector.dispose();
     actors.dispose();
     droplets.dispose();
+    seaDroplets.dispose();
     stage.dispose();
   });
 }

@@ -17,6 +17,9 @@
 
 import { EMOTES, INTENTS } from './contract.mjs';
 import { cloakModFor } from './cloak-mods.mjs';
+import { seaLayout } from './sea-layout.mjs';
+
+const SHORE_NODES = new Set(['orilla-mar', 'boya-1', 'boya-2']);
 
 function fail(error) {
   return { ok: false, error, ops: [] };
@@ -28,6 +31,24 @@ function okOps(...ops) {
 
 function distance(a, b) {
   return Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+}
+
+function seaLayoutPositions(view) {
+  const droplets = view.seaDroplets?.() ?? [];
+  return seaLayout(droplets, view.scene.mar).positions;
+}
+
+function actorNearSeaDroplet(view, actor, dropletId) {
+  const positions = seaLayoutPositions(view);
+  const pos = positions[dropletId];
+  if (!pos) return false;
+  if (actor.zone === 'mar') return true;
+  if (actor.nodeId && SHORE_NODES.has(actor.nodeId)) {
+    const nodePos = view.nav.nodos[actor.nodeId]?.position;
+    if (nodePos && distance(nodePos, pos) <= view.scene.contactRadius) return true;
+  }
+  if (actor.position && distance(actor.position, pos) <= view.scene.contactRadius) return true;
+  return false;
 }
 
 function resolveLink(view, actor, intent) {
@@ -235,6 +256,28 @@ const HANDLERS = {
       id: actor.id,
       patch: { cloak: { presetId, label } }
     });
+  },
+
+  salvage(view, intent) {
+    if (view.sea?.collapsed) return fail('mar_colapsado');
+    const actor = view.actors[intent.actorId];
+    if (!actor) return fail('actor_desconocido');
+    const droplet = view.seaDropletById?.(intent.dropletId);
+    if (!droplet || droplet.state !== 'sunken') return fail('gota_invalida');
+    if (!view.scene.labelset.includes(intent.label)) return fail('etiqueta_invalida');
+    if (!actorNearSeaDroplet(view, actor, intent.dropletId)) return fail('fuera_de_alcance');
+    return okOps(
+      { op: 'sea:salvage', dropletId: intent.dropletId, label: intent.label, actorId: actor.id },
+      { op: 'actor:score', id: actor.id, key: 'labeled' }
+    );
+  },
+
+  'track:cast'(view, intent) {
+    const actor = view.actors[intent.actorId];
+    if (!actor) return fail('actor_desconocido');
+    const droplet = view.seaDropletById?.(intent.dropletId);
+    if (!droplet) return fail('gota_invalida');
+    return { ok: true, ops: [], trackCast: { ref: droplet.ref } };
   }
 };
 

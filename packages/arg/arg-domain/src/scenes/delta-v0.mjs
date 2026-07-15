@@ -240,7 +240,12 @@ export const deltaV0 = {
   enlaces: ENLACES,
   taps: TAPS,
   rios: RIOS,
-  mar: { murkCapacity: 60 },
+  mar: {
+    murkCapacity: 60,
+    /** Plano del mar (paridad con delta-stage: 46×26 centrado en z=19). */
+    bounds: { center: { x: 0, y: 0, z: 19 }, width: 46, depth: 26 },
+    seaPoolMax: { floating: 96, sunken: 48 }
+  },
   cantera: CANTERA,
   /** Radio de proximidad para contact:request (unidades de mundo). */
   contactRadius: 3.5

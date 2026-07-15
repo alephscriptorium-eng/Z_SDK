@@ -16,4 +16,5 @@ export {
   createRng
 } from './feeds/synthetic.mjs';
 export { resolveTrackRef, buildTrackBrowserUrl } from './track.mjs';
+export { seaLayout } from './sea-layout.mjs';
 export { CLOAK_MODS, cloakModFor, cloakModsFor, effectiveLinkSpeed } from './cloak-mods.mjs';

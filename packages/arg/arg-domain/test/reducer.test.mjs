@@ -215,3 +215,84 @@ test('effectiveLinkSpeed: preset acelera el enlace', () => {
   assert.equal(effectiveLinkSpeed(2, { cloak: null }), 2);
   assert.equal(cloakModFor('aleph-firehose-browse').walkSpeed, 1.25);
 });
+
+function makeSeaView({ actorZone = 'mar', actorNodeId = 'orilla-mar', collapsed = false } = {}) {
+  const scene = {
+    spawnNodeId: 'plaza',
+    labelset: ['agora', 'memoria'],
+    contactRadius: 3.5,
+    mar: { bounds: { center: { x: 0, y: 0, z: 19 }, width: 46, depth: 26 } },
+    rios: {}
+  };
+  const nav = {
+    nodos: {
+      plaza: { id: 'plaza', zone: 'terraza', position: { x: 0, y: 0, z: 0 } },
+      'orilla-mar': { id: 'orilla-mar', zone: 'mar', position: { x: 0, y: 1, z: 7 } }
+    },
+    enlaces: {}
+  };
+  const droplets = [
+    { id: 'sd1', label: null, state: 'sunken', seq: 1, ref: { uri: 'firehose://synthetic/0/1', kind: 'micropost' } },
+    { id: 'fd1', label: 'agora', state: 'floating', seq: 2, ref: { uri: 'firehose://synthetic/0/2', kind: 'micropost' } }
+  ];
+  return {
+    scene,
+    nav,
+    actors: {
+      uno: {
+        id: 'uno',
+        zone: actorZone,
+        nodeId: actorNodeId,
+        position: nav.nodos[actorNodeId]?.position ?? { x: 0, y: 0, z: 0 },
+        score: { labeled: 0, excavated: 0 }
+      }
+    },
+    taps: {},
+    corridors: {},
+    contacts: {},
+    sea: { collapsed, murk: 1, crystals: 0 },
+    seaDroplets: () => droplets,
+    seaDropletById: (id) => droplets.find((d) => d.id === id) ?? null,
+    dropletUnder: () => null,
+    positionOf: (id) => nav.nodos[id]?.position ?? null
+  };
+}
+
+test('salvage: gota hundida + proximidad mar → sea:salvage + score', () => {
+  const view = makeSeaView();
+  const res = reduceArgIntent(view, makeIntent('uno', 'salvage', { dropletId: 'sd1', label: 'memoria' }));
+  assert.equal(res.ok, true);
+  assert.equal(res.ops.length, 2);
+  assert.equal(res.ops[0].op, 'sea:salvage');
+  assert.equal(res.ops[1].op, 'actor:score');
+});
+
+test('salvage: rechaza gota flotante, colapsado y fuera de alcance', () => {
+  assert.equal(
+    reduceArgIntent(makeSeaView(), makeIntent('uno', 'salvage', { dropletId: 'fd1', label: 'memoria' })).error,
+    'gota_invalida'
+  );
+  assert.equal(
+    reduceArgIntent(makeSeaView({ collapsed: true }), makeIntent('uno', 'salvage', { dropletId: 'sd1', label: 'memoria' }))
+      .error,
+    'mar_colapsado'
+  );
+  assert.equal(
+    reduceArgIntent(makeSeaView({ actorZone: 'terraza', actorNodeId: 'plaza' }), makeIntent('uno', 'salvage', {
+      dropletId: 'sd1',
+      label: 'memoria'
+    })).error,
+    'fuera_de_alcance'
+  );
+});
+
+test('track:cast: válido emite trackCast sin ops de dominio', () => {
+  const view = makeSeaView();
+  const before = JSON.stringify(view);
+  const res = reduceArgIntent(view, makeIntent('uno', 'track:cast', { dropletId: 'fd1' }));
+  assert.equal(res.ok, true);
+  assert.deepEqual(res.ops, []);
+  assert.equal(res.trackCast.ref.uri, 'firehose://synthetic/0/2');
+  assert.equal(before, JSON.stringify(view));
+  assert.equal(reduceArgIntent(view, makeIntent('uno', 'track:cast', { dropletId: 'nope' })).error, 'gota_invalida');
+});

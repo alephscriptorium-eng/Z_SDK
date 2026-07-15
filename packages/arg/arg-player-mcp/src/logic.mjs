@@ -18,7 +18,8 @@ import {
   explainIntent,
   compactActor,
   contactsOf,
-  summarizeState
+  summarizeState,
+  projectSea
 } from './projection.mjs';
 import { findPath } from './nav.mjs';
 import { readCasosMarkdown, listCasoIds, extractCaso } from './casos.mjs';
@@ -340,6 +341,71 @@ export function buildMcp(server, bridge, cfg) {
   );
 
   server.registerTool(
+    'player_salvage',
+    {
+      title: 'Rescatar gota hundida del mar',
+      description:
+        'Emite salvage y espera ledger kind "label" con detail.salvage === true. ' +
+        `Requiere proximidad (zona mar u orilla/boya). Labelset: ${deltaV0.labelset.join(', ')}.`,
+      inputSchema: {
+        dropletId: z.string().describe('Id de la gota hundida (player_observe what:sea).'),
+        label: z.string().describe(`Etiqueta de rescate (${deltaV0.labelset.join(' | ')}).`),
+        timeoutMs: z.number().optional()
+      }
+    },
+    async ({ dropletId, label, timeoutMs }) => {
+      const sinceSeq = bridge.maxLedgerSeq();
+      return jsonContent(
+        await confirmIntent(bridge, cfg, {
+          intent: 'salvage',
+          args: { dropletId, label },
+          timeoutMs,
+          done: () => {
+            const hit = bridge
+              .ledgerTail()
+              .find((e) => e.kind === 'label' && e.actorId === actor && e.seq > sinceSeq && e.detail?.salvage);
+            return hit ?? null;
+          },
+          evidence: (state, hit) => ({
+            ledger: hit ?? null,
+            score: compactActor(state, actor)?.score ?? null
+          })
+        })
+      );
+    }
+  );
+
+  server.registerTool(
+    'player_track',
+    {
+      title: 'Lanzar gota del mar al firehose-browser',
+      description:
+        'Emite track:cast y espera un arg:track propio con hint firehose-browser (sin mutar dominio).',
+      inputSchema: {
+        dropletId: z.string().describe('Id de gota en el mar.'),
+        timeoutMs: z.number().optional()
+      }
+    },
+    async ({ dropletId, timeoutMs }) => {
+      const sinceTs = Date.now();
+      return jsonContent(
+        await confirmIntent(bridge, cfg, {
+          intent: 'track:cast',
+          args: { dropletId },
+          timeoutMs,
+          done: () => {
+            const hit = bridge
+              .tracksTail()
+              .find((t) => t.actorId === actor && t.ts >= sinceTs - 500 && t.hint === 'firehose-browser');
+            return hit ?? null;
+          },
+          evidence: (state, track) => ({ track: track ?? null, actor: compactActor(state, actor) })
+        })
+      );
+    }
+  );
+
+  server.registerTool(
     'player_contact',
     {
       title: 'Abrir contacto con un sujeto o grifo',
@@ -580,7 +646,7 @@ export function buildMcp(server, bridge, cfg) {
         ledger: () => bridge.ledgerTail(n),
         tracks: () => bridge.tracksTail(n),
         taps: () => state?.taps ?? null,
-        sea: () => state?.sea ?? null,
+        sea: () => projectSea(state),
         objetivo: () => state?.objetivo ?? null,
         actors: () => state?.actors ?? null
       }[what]();
@@ -654,6 +720,14 @@ export function getResourceRegistry(bridge) {
           mar: state?.sea ?? { murkCapacity: deltaV0.mar.murkCapacity }
         };
       }
+    },
+    {
+      name: 'arg-sea',
+      uri: 'arg://sea',
+      title: 'Mar vivo — clusters y gotas',
+      mimeType: 'application/json',
+      description: 'Contadores del mar + clusters seaLayout + gotas flotantes/hundidas.',
+      read: () => projectSea(bridge.lastState())
     },
     {
       name: 'arg-ledger-tail',
