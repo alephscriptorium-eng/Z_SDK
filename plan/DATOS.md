@@ -175,3 +175,81 @@ al dramaturgo, no al engine.
   (pub), `ScriptoriumVps/PATTERN-DOCKER/` (VPS: Node-RED rooms + Verdaccio +
   Caddy; el pub comparte red Docker `oasis-pub-scriptorium_oasis_pub_net`),
   dossiers de layer2 en `aleph-scriptorium/sala/dossiers/dossier-layer2-bridge/`.
+
+## 8. Forces y cotas — la física que aporta el sistema
+
+Refinamiento del 2026-07-15 (ronda «forces», D-19). Además de las líneas
+(que traen los dramaturgos) el plano de datos tiene un tercer ingrediente,
+aportado por EL SISTEMA — admins y operadores —: **entropía narrativa
+acotada**. Como en §2, los formatos no se inventan: existen y están
+verificados.
+
+**Force** = corpus indexado que inyecta origen de mirada y lore en una
+ronda. Formalmente es pariente de la línea: raw (logs de agente) →
+segmentador → manifest + escenas `prompt/think/output` con anclas y
+cobertura 100% verificable (el segmentador que devuelve `ok: true` es un
+gate). La diferencia con una línea wiki: la fuente no es remota con
+autoridad, es corpus propio autocontenido. Su metadata de activación es
+declarativa (`force.json`): `viewpoint_origin`, `lore_hook`, `anchor_scene`,
+`activation_triggers`, `pairs_with`; y el registry agregado declara
+`session_budget` (máx. N forces activas, boot siempre ON) y exclusiones
+(pares que jamás se activan juntos, p. ej. el par mito/verificador).
+
+**Cotas** = dos corpus hermanos con rol especial que acotan el espacio donde
+las forces perturban: **sima** (cota inferior: ruptura, discrepancia,
+estados sin colapsar — el polo del COLAPSO de una ronda) y **cima** (cota
+superior: confluencia, objetividad sistémica — el polo de la VICTORIA). Dan
+cuerpo narrativo a los dos finales que el dominio ya contempla.
+
+Mapeo al vocabulario del SDK:
+
+| concepto force | concepto zeus |
+| -------------- | ------------- |
+| activar/desactivar una force | intent con rol `operator`/`dj`, asiento en ledger |
+| `session_budget` + `pairs_with` + exclusiones | validación del reducer / config de room (nunca prosa) |
+| escena ancla | track (deep-link a resource del corpus; no muta dominio) |
+| corpus de force/cota | volumen read-only en VOLUMES + MCP loader (mismo procedimiento que §3) |
+| registry de forces | entrada en volumes.json con provenance |
+
+Reglas duras:
+
+1. **Naming**: dentro de zeus se llaman **forces** — nunca «engines»
+   (colisión venenosa con `engine/*`).
+2. **Las forces concretas son DATOS, no código**: viajan por VOLUMES y
+   start packs de la games-library; `engine/*` solo conoce el FORMATO
+   force/cota (misma mecánica que la regla de los dos juegos: el formato
+   jamás nombra una force concreta — gate).
+3. **La entropía la aporta el sistema**: los intents de force son de rol
+   `operator`/`dj`; el jugador la experimenta, no la emite.
+
+**El corpus vive en casa** (importado y curado 2026-07-15): volumen
+`VOLUMES/DISK_03/FORCES` — 12 corpus (boot `main` + `force-a..g` +
+`force-xz/zx` + cotas `sima`/`cima`), 68 escenas, `registry.json` con las
+reglas de activación, formato v0 documentado en su README. Curación aplicada
+(ver `IMPORT_NOTES.md` del volumen): capa `trace` descartada (ruido de
+tool-use), `raw` no viaja (lo curado entra; provenance por `source_lines`),
+manifests unificados a un solo shape, IDs zeus, `pairs_with` con refs
+tipadas (`force:`/`cota:`/`boot:`/`linea:` — las `linea:*` pueden apuntar a
+líneas no montadas: conexión pendiente, no error). **El plan ya no depende
+de codebases externas para las forces**: los orígenes (registry
+`network-engine/engines/`, `sima-aleph/`, `cima-aleph/`; higiene del review
+ENGINE-XZZX ya aplicada en origen y verificada al importar) quedan como
+provenance histórica. DISK_03 viaja en git (excepción a la política de
+VOLUMES: corpus curado pequeño, ~1,3 MB de texto — los datos pesados de
+DISK_01/02 siguen gitignorados).
+
+**El dramaturgo trae sus propias forces.** Las forces son conversaciones
+capciosas indexadas: hilos que tocan un tema y avanzan enumerando los
+argumentos que en el juego crean la tensión — la visión de un tema a través
+de una force hace de la objetividad tierra inestable, y el juego reacciona
+según cada agente. El pipeline (que WP-U81 convierte en herramienta, aquí
+ensayado a mano): el dramaturgo **aporta sus contextos** (logs de
+conversación con intención argumental) al segmentador → escenas con anclas
+y cobertura; escribe su carta de activación (`force.json`: mirada, lore,
+triggers, pares) y sus **líneas de cota** (los máximos y mínimos de SU
+experiencia — el termómetro con el que el sistema sabe qué force activar y
+cuándo); valida contra el schema (WP-U80) y monta el volumen. DISK_03 es el
+fixture de referencia: si tu force valida donde validan estas, entra al
+mesh. Spec de juego multi-bloque sobre forces trenzadas (candidato de
+experiencia de dramaturgo, horizonte WP-U74):
+`transmedia-system/SCRIPTORIUM-CORE/ENGINE-XZZX/Juego-spec-plan.md`.

@@ -217,6 +217,20 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   matriz verdes; `git log --follow` conserva historia de los archivos movidos.
   **Demolición:** las carpetas `lib/ app/ platform/ mcp/ arg/` antiguas.
 
+- ⬜ **WP-U54 · Consumidores externos anónimos** *(dep U50, U10; D-18)* — el
+  registry es una frontera pública: cualquier tercero (runtime JS/TS, Bun,
+  Node) debe poder construir sobre `@zeus/*` sin hablar con nosotros. Los
+  paquetes publicables llevan **tipos `.d.ts`** (generados de los schemas
+  del protocolo) y docs de handshake para clientes externos
+  (`ZEUS_SCRIPTORIUM_URL`, auth `{token, room, user}`, eventos del
+  contrato). Smoke de consumo: un proyecto externo mínimo (fuera del
+  workspace, instalando SOLO del registry) se une a una room y emite un
+  intent tipado.
+  **CA:** smoke reproducible con evidencia (Node y Bun); tipos presentes en
+  los tarballs (`release:dry` los verifica); el handshake documentado en el
+  portal.
+  **Demolición:** n/a.
+
 - ⬜ **WP-U53 · Semver + release desde CI** *(dep U50, U03; ARQUITECTURA §5)*
   — adoptar **changesets** en el monorepo: bump semver por paquete,
   changelog generado, `npm publish` al registry propio desde CI (con el
@@ -269,12 +283,16 @@ con olas 2–5 salvo deps indicadas)
   cache, volumes.json) + **loader** de lectura generalizado desde
   `packages/mcp/linea-system` (nodo→secciones→registros, resolución por
   año/oldid). Unificar en el schema la cadena de curación
-  (`delta_status`/`labeled`/`editorialStatus` → un solo enum). Browser-safe
+  (`delta_status`/`labeled`/`editorialStatus` → un solo enum). Incluye la
+  familia **force/cota** de DATOS.md §8 (D-19): schema de `force.json`,
+  registry agregado con `session_budget`/exclusiones, corpus de escenas
+  con cobertura; cotas como corpus con rol `sima|cima`. Browser-safe
   el modelo; node-only el fs.
-  **CA:** los datos vivos de `VOLUMES/DISK_02/LINEAS` y `DISK_01/FIREHOSE`
-  validan contra los schemas sin tocarlos; linea-system y arg-feeds consumen
-  el kit (diff negativo); regla de los dos juegos respetada (el kit no nombra
-  juegos).
+  **CA:** los datos vivos de `VOLUMES/DISK_02/LINEAS`, `DISK_01/FIREHOSE` y
+  `DISK_03/FORCES` (fixture force/cota ya en el repo, formato v0 en su
+  README) validan contra los schemas sin tocarlos; linea-system y arg-feeds
+  consumen el kit (diff negativo); regla de los dos juegos respetada (el kit
+  no nombra juegos ni forces concretas).
   **Demolición:** el loader duplicado en linea-system.
 
 - ⬜ **WP-U81 · Herramientas de segmentación del dramaturgo** *(dep U80)* —
@@ -284,8 +302,14 @@ con olas 2–5 salvo deps indicadas)
   nodos.yaml de ejemplo, registry, carpetas), `segmentar` (historial →
   manifest con milestones por reglas), `conectar-satelite` (genera las
   instrucciones/config del MCP satélite y los remotos wiki/ATProto/SSB),
-  `fetch` (materializar snapshots con gate de aprobación). Starterkit
-  documentado: «crea tu línea en 30 minutos». Los pythons vivos siguen
+  `fetch` (materializar snapshots con gate de aprobación), y las dos del
+  lado force (D-19; proceso ensayado a mano en DISK_03 — su IMPORT_NOTES.md
+  es la spec informal): `segmentar-force` (contextos conversacionales del
+  dramaturgo → escenas prompt/think/output con anclas y cobertura; trace
+  fuera) y `crear-cotas` (autoría de las líneas de cota — los máximos y
+  mínimos de la experiencia, el termómetro de activación). Starterkits
+  documentados: «crea tu línea en 30 minutos» y «crea tu force en 30
+  minutos». Los pythons vivos siguen
   siendo válidos como referencia; no se portan línea a línea, se porta el
   contrato. **El contrato es el validador, la herramienta es cortesía**: el
   dramaturgo puede segmentar con sus herramientas base preferidas (python,
@@ -318,11 +342,40 @@ con olas 2–5 salvo deps indicadas)
   caso de vaciado por juego; scoring/ledger reflejan el ciclo.
   **Demolición:** n/a.
 
+- ⬜ **WP-U91 · Loader MCP del volumen FORCES** *(dep U80; D-19)* — el
+  volumen YA EXISTE: `VOLUMES/DISK_03/FORCES` importado y curado a mano el
+  2026-07-15 (12 corpus, 68 escenas, registry.json con activación, entrada
+  en volumes.json; formato v0 en su README — el import simuló la salida del
+  linea-kit). Lo que queda: (a) los schemas force/cota de U80 validan
+  DISK_03 sin tocarlo (el fixture ya está en el repo); (b) MCP loader
+  read-only hermano de linea-system (`force://{id}`, `force://{id}/
+  scene/…`, registry y cotas como resources; refs `linea:*` no montadas =
+  pendiente, no error).
+  **CA:** e2e — el volumen valida contra U80; un resource de escena ancla y
+  el registry con `session_budget` se leen por MCP; el loader no nombra
+  ninguna force concreta en código (gate).
+  **Demolición:** n/a (el corpus fuente original sigue en network-engine
+  como provenance histórica; zeus ya no depende de él).
+
+- ⬜ **WP-U92 · Intents de force: el sistema inyecta entropía** *(dep U91,
+  U30)* — el dominio gana `force:activate`/`force:deactivate` con roles
+  `operator`/`dj`: la autoridad valida contra el registry del volumen
+  (`session_budget`, `pairs_with`, exclusiones declaradas — las reglas
+  viven en los datos, el reducer solo las aplica) y asienta en ledger; las
+  escenas ancla de las forces activas se sirven como tracks. Cotas: el
+  estado de ronda expone su posición entre sima y cima (los polos
+  colapso/victoria ya existentes ganan corpus navegable como track).
+  **CA:** tests de reducer — activar una 3ª force = rechazo explicable por
+  dry-run; par excluido = rechazo; activación válida = asiento + track
+  navegable; delta y pozo consumen el mecanismo (regla de los dos juegos).
+  **Demolición:** n/a (adición al dominio).
+
 ## Ola 8 — Feeds federados (dep U80)
 
 - ⬜ **WP-U84 · Conector SSB → VOLUMES (Tribes y Parliament)** — exportador
   del log del pub OASIS (mensajes tipados `tribe*`, `parliament*`, votos —
-  modelos en DATOS.md §7) a **JSON en disco**: volumen `DISK_03/SSB` con
+  modelos en DATOS.md §7) a **JSON en disco**: volumen `DISK_04/SSB` (el
+  slot DISK_03 lo ocupa FORCES desde 2026-07-15) con
   entrada en volumes.json (readonly, provenance del pub), mismo procedimiento
   que firehose. Servidor MCP loader read-only hermano de linea-firehose.
   Files-first: el exportador es un proceso de sync, no un demonio nuevo del
@@ -431,32 +484,6 @@ clonados en [recursos/](recursos/README.md), decisión D-17)
   **Demolición:** el flujo copy-paste del módulo en nuestra adaptación (el
   fork original queda intacto en recursos/).
 
-## Ola 11 — El puente al mundo TS (diseño en [PUENTE.md](PUENTE.md); dep U50)
-
-- ⬜ **WP-U91 · @zeus consumible desde Bun/TS** *(dep U50, U10)* — el
-  protocolo cruza la frontera con tipado: `@zeus/protocol` (y los paquetes
-  que el gemelo pida) publican **`.d.ts`** generados de los schemas, y se
-  verifica el consumo real: proyecto Bun de humo que instala `@zeus/*` desde
-  el registry (`bunfig`/`.npmrc` con el scope) y se une a una room emitiendo
-  un intent tipado. Documentar el handshake para clientes externos
-  (`ZEUS_SCRIPTORIUM_URL`, auth `{token, room, user}` — lo mismo que su
-  Pub.Rooms espera).
-  **CA:** el smoke Bun corre en CI (o runbook ejecutado con evidencia);
-  tipos publicados en el tarball; sin cambios de runtime en mjs.
-  **Demolición:** n/a.
-
-- ⬜ **WP-U92 · Sembrar el plan gemelo en NETWORK-ENGINE** *(dep U91)* —
-  inicializar el programa del bridge EN SU repo y EN SU idioma (PUENTE.md
-  §3): dossier + epic AGILE + contexto LAYER_2 según su AOS, con el
-  bootstrap del scope `@zeus`, la feature `edge-zeus`, los spikes (relay,
-  Peer Card) y la regla de oro «construir desde el registry fresh». Se
-  entrega como PR/propuesta respetando su constitución (Bun, modos,
-  Markdown-First); su swarm implementa el lado TS — el nuestro no.
-  **CA:** el seed existe en su repo, pasa su DoD documental, y una sesión
-  de su AOS puede arrancar el epic sin contexto de nuestra conversación;
-  hallazgos para ellos anotados (package-lock legacy, hueco del relay).
-  **Demolición:** n/a (repo ajeno: propuesta, no imposición).
-
 ## Horizonte (post-refundación, no tomar aún)
 
 - **WP-U71 · VOLUMES p2p** — publicar/pinnear los volúmenes en una red
@@ -475,3 +502,10 @@ clonados en [recursos/](recursos/README.md), decisión D-17)
   puente Layer1↔Layer2 (mensajes de Tribes/Parliament fluyendo a rooms).
   Depende de spikes externos (SPIKE-10-OASIS-IDENTITY) — no se planifica
   aquí hasta que exista diseño cerrado.
+- **WP-U74 · Juego trenzado sobre forces (myth-maker/debunker)** — la spec
+  multi-bloque de `ENGINE-XZZX/Juego-spec-plan.md` (una force emite unidad
+  semántica → la contra-force responde → una tercera absorbe; la exclusión
+  del par pasa de rúbrica de prompt a regla del reducer) como experiencia
+  de dramaturgo sobre U86 + U91/U92. Mismo estatus que WP-U87: valida kits
+  y forces, no toca la regla de los dos juegos. No se toma hasta que U87
+  entregue su informe «qué faltó al editor/kits».

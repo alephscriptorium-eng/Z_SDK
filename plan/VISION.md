@@ -98,6 +98,8 @@ MCP de corpus. Habitan aquí operadores del sitio (operator-ui), DJs
 | **tronco** | la espina curada por un autor: nodos con tesis y rangos (formato `nodos.yaml` → manifest; ej. P01–P24 de Villacañas). |
 | **satélite** | conexión de un tronco a una fuente remota (historial WP por `oldid`, firehose ATProto, feed SSB), servida por un MCP loader read-only; el puente es `nodo-sections.json`. |
 | **segmentación** | trocear una fuente en nodos/registros/escenas con anclas y milestones. La hace el dramaturgo con el kit de línea; nosotros damos formatos y herramientas (DATOS.md §2). |
+| **force** | corpus indexado de entropía narrativa que inyecta EL SISTEMA (roles `operator`/`dj`), no el jugador: logs de agente segmentados en escenas con anclas + metadata de activación declarativa (`force.json`: triggers, `pairs_with`, escena ancla) + presupuesto por registry. ⚠️ Nunca llamarlas «engines» — colisión con `engine/*`. Detalle en DATOS.md §8. |
+| **cota** | corpus que acota el espacio de una ronda: **sima** (cota inferior — ruptura/discrepancia; el polo del colapso) y **cima** (cota superior — confluencia; el polo de la victoria). Formato hermano de la force, con rol `cota` en el registry (DATOS.md §8). |
 | **volumen** | dataset canónico en disco bajo un slot DISK, registrado en `volumes.json`, **compartido por todos los juegos del mesh**. Crece al cachear/curar; se vacía con CRUD por roles (DATOS.md §4). |
 | **vaciado** | la mitad olvidada del ciclo: liberar espacio. Duro para `operator`, jugable para `player`/`dj`; siempre con asiento en el ledger. |
 | **familias de feed** | las tres naturalezas de fuente: estática con autoridad (wiki), stream (ATProto), gossip & peers (SSB). Mismo procedimiento: JSON a disco + volumes.json + MCP loader (DATOS.md §3). |

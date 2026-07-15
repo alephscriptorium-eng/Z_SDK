@@ -6,7 +6,11 @@ data/*
 !data/.gitkeep
 !data/seeds/
 !data/seeds/**
-VOLUMES/
+# VOLUMES: DISK_01/02 son datos pesados de operador (gitignorados); DISK_03
+# es corpus curado pequeño y viaja con el repo (plan autocontenido, D-19)
+VOLUMES/*
+!VOLUMES/README.md
+!VOLUMES/volumes.json
 docs/public/api/
 docs/.vitepress/dist/
 docs/.vitepress/cache/

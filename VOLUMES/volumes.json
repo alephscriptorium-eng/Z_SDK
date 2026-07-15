@@ -1,0 +1,75 @@
+{
+  "root": ".",
+  "volumes": {
+    "firehose": {
+      "disk": "DISK_01",
+      "path": "DISK_01/FIREHOSE",
+      "readonly": true,
+      "label": "Firehose ONFALO",
+      "source": {
+        "remotePath": "${ZEUS_FIREHOSE_REMOTE_PATH}",
+        "syncedAt": "2026-07-09T18:37:46.183Z"
+      },
+      "corpora": [
+        {
+          "id": "candidate",
+          "path": "candidate",
+          "label": "Candidatos",
+          "files": 605
+        },
+        {
+          "id": "raw",
+          "path": "raw",
+          "label": "Raw",
+          "files": 4076
+        },
+        {
+          "id": "discarded",
+          "path": "discarded",
+          "label": "Descartados",
+          "files": 3706
+        },
+        {
+          "id": "labeled",
+          "path": "labeled",
+          "label": "Etiquetados",
+          "files": 0
+        }
+      ]
+    },
+    "lineas": {
+      "disk": "DISK_02",
+      "path": "DISK_02/LINEAS",
+      "readonly": true,
+      "label": "Lineas de poder",
+      "source": {
+        "migratedAt": "2026-07-09T19:50:00Z",
+        "legacyRemovedAt": "2026-07-09T19:50:00Z"
+      }
+    },
+    "forces": {
+      "disk": "DISK_03",
+      "path": "DISK_03/FORCES",
+      "readonly": true,
+      "label": "Forces y cotas (la fisica del sistema, D-19)",
+      "source": {
+        "importedAt": "2026-07-15",
+        "provenance": "network-engine: engines/ (registry 10) + sima-aleph/ + cima-aleph/; curado segun DISK_03/FORCES/IMPORT_NOTES.md (trace y raw no viajan)"
+      },
+      "corpora": [
+        {
+          "id": "forces",
+          "path": "forces",
+          "label": "Forces (boot main + 9 forces)",
+          "files": 163
+        },
+        {
+          "id": "cotas",
+          "path": "cotas",
+          "label": "Cotas sima/cima (polos colapso/victoria)",
+          "files": 46
+        }
+      ]
+    }
+  }
+}

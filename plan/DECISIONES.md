@@ -141,20 +141,43 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   peers (primera materialización del p2p de D-14, siempre validando contra
   manifests).
 
-- **D-18 · 2026-07-15 · El puente al mundo TS es federación, no fusión**
-  (por el usuario, «puro spinoff»; diseño en PUENTE.md, ola 11). zeus-sdk
-  sigue siendo mjs (aceptación del mundo OASIS); NETWORK-ENGINE sigue siendo
-  TS/Bun con su propia constitución (AOS). Tres tablones: **el registry como
-  frontera** (ellos consumen `@zeus/*` fresh desde Verdaccio; dirección
-  única — sus paquetes exportan `.ts` crudo y no se importan), **los cables
-  como idioma** (Socket.IO rooms + MCP Streamable HTTP, que ambos ya
-  hablan; nuestras rooms cubren el hueco de su relay), **los datos como
-  suelo** (formatos linea-kit/VOLUMES). El plan gemelo se siembra EN su repo
-  y EN su idioma (dossier + epic AGILE + AOS, WP-U92) y su swarm construye
-  el lado TS. Carambola estratégica: su gap declarado «orquestador de juego
-  no existe» lo cubre nuestra autoridad servida por room.
+- **D-18 · 2026-07-15 · Zeus publica para consumidores anónimos** (por el
+  usuario). El registry es una **frontera pública unidireccional**: terceros
+  construyen sobre `@zeus/*` (paquetes con tipos `.d.ts`, protocolo
+  documentado, handshake de rooms publicado) sin que Zeus sepa quiénes son
+  ni les publique nada a medida. Este plan **no nombra consumidores
+  concretos**: si un consumidor necesita algo, entra como issue/WP genérico
+  de la frontera (WP-U54). Corolario: zeus-sdk es y sigue siendo mjs — el
+  mundo que lo rodea (OASIS) es mjs; la frontera tipada basta para
+  cualquier otro runtime.
+
+- **D-19 · 2026-07-15 · Forces y cotas: la física del sistema** (por el
+  usuario; DATOS §8). Además de las líneas (dramaturgo), el plano de datos
+  gana la entropía que aporta EL SISTEMA: **forces** (corpus indexados de
+  logs de agente segmentados en escenas, con metadata de activación
+  declarativa y presupuesto por registry) acotadas por **sima/cima** (cotas
+  inferior/superior = polos colapso/victoria de una ronda). Formatos
+  adoptados de un corpus probado (registry de 10 forces + 2 cotas en
+  network-engine, cobertura verificable por segmentadores). Mapeo: activar
+  force = intent `operator`/`dj` con asiento en ledger; budget/pares/
+  exclusiones = validación del reducer; escenas ancla = tracks; corpus =
+  volúmenes read-only. Naming obligatorio: «force», jamás «engine»
+  (colisión con `engine/*`). Las forces concretas son datos (VOLUMES/start
+  packs de la games-library); `engine/*` solo conoce el formato — corolario
+  de la regla de los dos juegos, con gate. WPs: U80 (formatos), U91
+  (loader), U92 (intents); horizonte WP-U74 (juego trenzado).
+  **Ejecutado el mismo día**: corpus importado y curado a
+  `VOLUMES/DISK_03/FORCES` (12 corpus, 68 escenas; capa trace y raw fuera,
+  manifests unificados, IDs zeus, refs tipadas — ver IMPORT_NOTES.md del
+  volumen). El plan queda autocontenido: zeus ya no depende de codebases
+  externas para las forces. **DISK_03 viaja en git** como excepción a la
+  política de VOLUMES (corpus curado ~1,3 MB de texto; DISK_01/02 siguen
+  gitignorados); el slot SSB de WP-U84 pasa a DISK_04. El import simuló la
+  salida del linea-kit; WP-U81 lo convierte en herramienta
+  (`segmentar-force`, `crear-cotas`) para que el dramaturgo cree sus
+  forces desde sus propios contextos y sus líneas de cota.
 
 ## Abiertas (bloquean lo indicado)
 
-*(ninguna — todo el backlog hasta la ola 11 está desbloqueado; los horizontes
+*(ninguna — todo el backlog hasta la ola 10 está desbloqueado; los horizontes
 WP-U71/72/73 esperan evidencia o diseño externo)*
