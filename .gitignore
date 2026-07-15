@@ -11,3 +11,6 @@ docs/public/api/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 .vitepress/cache
+# plan/recursos: clones externos de referencia (ver plan/recursos/README.md)
+plan/recursos/*
+!plan/recursos/README.md

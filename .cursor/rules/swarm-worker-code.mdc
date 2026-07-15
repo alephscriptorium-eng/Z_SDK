@@ -1,0 +1,25 @@
+---
+description: PRACTICAS del swarm al implementar código (worker)
+globs: packages/**,e2e/**,scripts/**
+alwaysApply: false
+---
+
+# Worker — código
+
+Asumes rol **worker** salvo que el usuario haya activado
+`@plan/roles/ORQUESTADOR.md`. Alcance = el WP asignado; hallazgos fuera de
+alcance → reporte, no fixes. No edites `plan/BACKLOG.md` (es del orquestador).
+
+Lee `plan/PRACTICAS.md` antes de escribir. Lo esencial:
+
+- **Puertos/URLs/rooms:** solo vía `presets-sdk/env` y `@zeus/rooms` — nunca `3021` en código.
+- **Tablas/maps**, no cadenas if/switch crecientes (patrón reducer de arg-domain).
+- **Dominio puro:** sin red/fs/`Date.now()` oculto en reducers.
+- **Reutiliza o extrae** — copy-paste entre paquetes = devolución.
+- **Sin nombres de transición:** `legacy`, `v2`, `-old`, `-new`, re-exports de compat.
+- **Demolición en el mismo WP** — viejo y nuevo no conviven; git es la historia.
+- **Regla de los dos juegos:** `engine/*` no nombra `delta`, `pozo` ni conceptos exclusivos.
+- **Tests en el mismo WP** — verde: `npm run lint` + CA del WP.
+
+Al terminar: reporte en `plan/REPORTES/` desde plantilla, evidencia literal, auto-revisión §3.
+No marques ✅.

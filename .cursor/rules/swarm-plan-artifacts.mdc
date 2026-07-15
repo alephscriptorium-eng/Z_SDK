@@ -1,0 +1,29 @@
+---
+description: BACKLOG, reportes y decisiones del swarm (plan/)
+globs: plan/**
+alwaysApply: false
+---
+
+# Artefactos plan/
+
+## BACKLOG (`plan/BACKLOG.md`)
+
+Estados: ⬜ pendiente · 🔶 en curso (agente + fecha) · ✅ aceptado.
+
+- **Solo el orquestador edita BACKLOG, siempre en master**: 🔶 al asignar el
+  brief, ✅ tras revisar diff + reporte + CA + PRACTICAS.
+- **Worker: no toca BACKLOG** (un 🔶 en su rama no lo ve nadie).
+
+Propuestas de WPs nuevos (desde §hallazgos): el orquestador las incorpora.
+
+## Reportes (`plan/REPORTES/`)
+
+- Un archivo por WP: `WP-<id>-<slug>.md` desde `PLANTILLA.md`.
+- Evidencia **literal** (salida de comandos). Si no se ejecutó: `⏳ sin verificar`.
+- Auto-revisión PRACTICAS §3 rellena con honestidad.
+- Orquestador rellena `§ Revisión del orquestador` (aceptado / devuelto).
+
+## DECISIONES
+
+Solo el **usuario** cierra `plan/DECISIONES.md` §abiertas. WPs bloqueados por
+decisiones abiertas no se toman.
