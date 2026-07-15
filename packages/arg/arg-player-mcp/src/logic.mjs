@@ -693,7 +693,7 @@ export function getPromptRegistry(bridge) {
       description:
         'Devuelve los pasos de un caso de CASOS.md listos para ejecutar con los tools player_* de este servidor.',
       argsSchema: {
-        casoId: z.string().describe('Id del caso (C-01 … C-16, incluidas variantes C-02b/C-04b/C-12b).')
+        casoId: z.string().describe('Id del caso (p.ej. "C-01"; el índice completo y siempre al día vive en el resource arg://casos).')
       },
       render: ({ casoId }) => {
         const markdown = readCasosMarkdown();

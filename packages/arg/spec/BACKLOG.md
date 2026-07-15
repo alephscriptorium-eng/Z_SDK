@@ -144,8 +144,10 @@ WP-30 puede arrancar en paralelo con WP-29 contra fixtures.
 - **WP-32 · arg-player-mcp: mar jugable por agentes** — tools
   `player_salvage` (verificable vía ledger) y `player_track` (verificable vía
   `arg://tracks/tail`); `player_observe what:'sea'` con clusters; resource
-  `arg://sea`; CASOS C-17/C-18 con pasos MCP literales. CA: e2e arg-mcp —
-  cliente JSON-RPC ejecuta C-17 y C-18 contra la demo.
+  `arg://sea`. Los casos C-17/C-18 YA están redactados en CASOS.md (con test
+  de coherencia en casos.test.mjs) — no re-redactar: implementar los tools
+  hasta que los pasos pasen tal cual. CA: e2e arg-mcp — cliente JSON-RPC
+  ejecuta C-17 y C-18 contra la demo.
 
 ## Fase 2 — Juego completo (swarm)
 
