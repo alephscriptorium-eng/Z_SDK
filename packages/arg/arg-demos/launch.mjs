@@ -9,7 +9,7 @@ import net from 'node:net';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadEnv, monorepoRoot } from './lib/load-env.mjs';
-import { openBrowser, resolveZeusUiPorts } from '@zeus/presets-sdk/env';
+import { openBrowser, resolveZeusUiPorts, resolveZeusMcpPorts } from '@zeus/presets-sdk/env';
 
 const packageRoot = dirname(fileURLToPath(import.meta.url));
 loadEnv();
@@ -22,6 +22,7 @@ const ui = resolveZeusUiPorts();
 const CACHE_PORT = ui.view.port;
 const FIREHOSE_PORT = ui.firehose.port;
 const TRACK_ACTOR = process.env.ZEUS_ARG_TRACK_ACTOR || 'uno';
+const PLAYER_MCP_PORTS = resolveZeusMcpPorts().argPlayer; // uno :4121 · dos :4122
 
 const children = [];
 
@@ -151,6 +152,19 @@ setTimeout(() => {
   });
 }, 400);
 
+// Control MCP de jugadores: una instancia = un actor (uno/dos).
+setTimeout(() => {
+  for (const actor of Object.keys(PLAYER_MCP_PORTS)) {
+    startApp(`mcp-${actor}`, join(monorepoRoot, 'packages/arg/arg-player-mcp/src/start.mjs'), {
+      ZEUS_ARG_PLAYER_ACTOR: actor,
+      ZEUS_ARG_ROOM: ROOM,
+      ZEUS_SCRIPTORIUM_URL: process.env.ZEUS_SCRIPTORIUM_URL || `http://${HOST}:${SOCKET_PORT}`,
+      ZEUS_MCP_ARG_UNO: String(PLAYER_MCP_PORTS.uno),
+      ZEUS_MCP_ARG_DOS: String(PLAYER_MCP_PORTS.dos)
+    });
+  }
+}, 500);
+
 setTimeout(() => {
   startApp('console', join(monorepoRoot, 'packages/arg/arg-console/src/server.mjs'), {
     ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT),
@@ -183,6 +197,15 @@ setTimeout(async () => {
     console.log(`[launch]   ${label} → ${url}`);
   }
   console.log(`[launch]   (room ${ROOM} · track actor=${TRACK_ACTOR} · Ctrl+C para parar)`);
+  console.log('[launch] ──────────────────────────────────────────────');
+  console.log('');
+  console.log('[launch] ── 🎮 control MCP de jugadores ───────────────');
+  for (const [actor, port] of Object.entries(PLAYER_MCP_PORTS)) {
+    console.log(
+      `[launch]   ${actor} → http://${HOST}:${port}/mcp (health http://${HOST}:${port}/mcp/health)`
+    );
+  }
+  console.log('[launch]   playbook: packages/arg/spec/CASOS.md (resource arg://casos · prompt validar-caso)');
   console.log('[launch] ──────────────────────────────────────────────');
   console.log('');
 

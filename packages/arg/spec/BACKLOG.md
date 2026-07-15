@@ -92,6 +92,61 @@ Referencias: [CONTRATO.md](CONTRATO.md), [UX.md](UX.md), [LORE.md](LORE.md).
   se marcan `「sintético」` sin enlace. CA: e2e — focus a ref inexistente ⇒
   respuesta `ghost` y la página muestra «no excavado aún», cero ENOENT.
 
+- **WP-27 · arg-player-mcp (jugador como servidor MCP)** — un MCP por actor
+  (uno :4121, dos :4122, patrón `createStandardMcpServer`) que envuelve al
+  jugador: tools `player_join/move/goto/ride/label/contact/tap_set/excavate/
+  cloak_equip/observe` con **semántica verificable** (emite intent y espera
+  evidencia en `arg:state`/`arg:ledger`), resources `arg://player/state`,
+  `arg://scene`, `arg://casos`. Playbook `spec/CASOS.md`: casos C-01..C-16
+  con pasos MCP literales para el agente y qué observa el humano en cada
+  vista. Dos instancias en `demo:arg`. CA: e2e `arg-mcp` (6 gates) — un
+  cliente JSON-RPC ejecuta C-01/03/04b/05 y el label de C-08 vía MCP.
+
+## Fase 1.6 — Mar vivo (swarm) — diseño en [MAR.md](MAR.md)
+
+Orden: WP-28 desbloquea a los demás; WP-29 antes que WP-31/WP-32.
+WP-30 puede arrancar en paralelo con WP-29 contra fixtures.
+
+- **WP-28 · arg-domain: población del mar + sea-layout** — el flow-engine
+  deja de destruir gotas al llegar: pool acotado `sea.droplets` con estados
+  `floating` (etiquetada) / `sunken` (sin etiquetar), rescate (`salvage` op:
+  sunken→floating, murk−1, crystals+1, commitLabel, ledger `label` con
+  `detail.salvage`), overflow FIFO por seq (consolidate/lost, contadores
+  intactos). `sea-layout.mjs` puro browser-safe: clusters dinámicos por label
+  presente (nada hardcodeado), centroides en arco hacia el final del mar
+  (`marDef.bounds`, nuevo en delta-v0), phyllotaxis por llegada, hundidas
+  dispersas por hash(id) bajo superficie. Snapshot compacto
+  `sea.droplets:[[id,label,uri,seq]]`. CA: tests — llegada etiquetada/sin
+  etiquetar, salvage con clamp, overflow no toca contadores, mismo input ⇒
+  mismo layout, budget G-ARG.5 con pool lleno + 200 gotas de río.
+- **WP-29 · contrato + reducer: `salvage` y `track:cast`** — CONTRATO.md §2/§3
+  actualizado (MAR.md §2); handlers puros: `salvage` valida gota sunken,
+  label ∈ labelset y proximidad (zona mar u orilla/boya ≤ contactRadius de la
+  posición seaLayout); `track:cast` valida existencia y hace que la autoridad
+  emita `arg:track {hint:'firehose-browser'}` sin mutar dominio. CA: tests de
+  reducer válidos/inválidos (G-ARG.4); e2e — `track:cast` produce `arg:track`
+  del actor correcto.
+- **WP-30 · arg-console: sea-droplets + picking por instancia** — gemelo de
+  `river-droplets.mjs`: InstancedMesh con posiciones de seaLayout; flotantes
+  cristal con bobbing, hundidas tenues bajo la malla con animación de
+  hundimiento, ascenso+destello al rescatar; sprites de cluster dinámicos
+  (crear/retirar según labels presentes). Raycast con `instanceId` →
+  `{kind:'seaDroplet', id}` en pickables. Solo proyección (G-ARG.1). CA:
+  fixture con clusters ⇒ posiciones esperadas; picking resuelve dropletId;
+  inspector de mar lista clusters/flotantes/hundidas con uri.
+- **WP-31 · vista jugador: ventanita de acción del mar** — click en gota del
+  mar abre panel de acción (patrón cloak-panel, emite intents): botones del
+  labelset → `salvage` (solo si sunken y hay proximidad), «abrir en firehose»
+  → `track:cast` + deep-link honesto local (regla `「sintético」` de WP-26).
+  Inspector del tablero queda solo-lectura. CA: e2e — click en gota hundida +
+  botón etiqueta emite `salvage` correcto por socket; tras `arg:state` la gota
+  aparece flotante en su cluster y el ledger registra `detail.salvage`.
+- **WP-32 · arg-player-mcp: mar jugable por agentes** — tools
+  `player_salvage` (verificable vía ledger) y `player_track` (verificable vía
+  `arg://tracks/tail`); `player_observe what:'sea'` con clusters; resource
+  `arg://sea`; CASOS C-17/C-18 con pasos MCP literales. CA: e2e arg-mcp —
+  cliente JSON-RPC ejecuta C-17 y C-18 contra la demo.
+
 ## Fase 2 — Juego completo (swarm)
 
 - **WP-16 · Gamemaps y cues** — loader de gamemap (§2), cues temporales/por

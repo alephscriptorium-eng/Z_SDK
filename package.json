@@ -33,10 +33,13 @@
     "demo:bots": "npm run demo -w @zeus/ping-pong-bots",
     "demo:arg": "npm run demo -w @zeus/arg-demos",
     "start:arg-console": "npm run start -w @zeus/arg-console",
+    "start:arg-player-mcp": "npm run start -w @zeus/arg-player-mcp",
+    "start:arg-player-mcp:dos": "node packages/arg/arg-player-mcp/src/start.mjs --actor=dos",
     "test:arg-domain": "npm test -w @zeus/arg-domain",
     "test:arg-console": "npm test -w @zeus/arg-console",
     "test:arg-feeds": "npm test -w @zeus/arg-feeds",
-    "test:arg": "npm run test:arg-domain && npm run test:arg-feeds && npm run test:arg-console",
+    "test:arg-player-mcp": "npm test -w @zeus/arg-player-mcp",
+    "test:arg": "npm run test:arg-domain && npm run test:arg-feeds && npm run test:arg-console && npm run test:arg-player-mcp",
 
     "test:sdk": "npm test -w @zeus/presets-sdk",
     "test:solar": "npm test -w @zeus/solar-system",
@@ -102,7 +105,7 @@
     "e2e:arg-feeds": "node e2e/arg-feeds-demo.mjs",
     "e2e:arg-track": "node e2e/arg-track-demo.mjs",
     "e2e:arg-horse": "node e2e/arg-horse-demo.mjs",
-    "e2e:arg-horse": "node e2e/arg-horse-demo.mjs"
+    "e2e:arg-mcp": "node e2e/arg-mcp-demo.mjs"
   },
   "devDependencies": {
     "@alephscript/mcp-core-sdk": "^1.5.0",

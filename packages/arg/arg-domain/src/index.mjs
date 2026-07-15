@@ -16,3 +16,4 @@ export {
   createRng
 } from './feeds/synthetic.mjs';
 export { resolveTrackRef, buildTrackBrowserUrl } from './track.mjs';
+export { CLOAK_MODS, cloakModFor, cloakModsFor, effectiveLinkSpeed } from './cloak-mods.mjs';

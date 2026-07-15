@@ -37,7 +37,8 @@ export const DEFAULT_ZEUS_MCP = {
   solar: { sun: 4101, moon: 4102, earth: 4103 },
   lineas: { espana: 4111, wpHistoria: 4112 },
   firehose: { disk: 3008 },
-  playerDebug: { monitor: 3014 }
+  playerDebug: { monitor: 3014 },
+  argPlayer: { uno: 4121, dos: 4122 }
 };
 
 /** `group.key` → ZEUS_* override var. */
@@ -48,7 +49,9 @@ const MCP_PORT_ENV = {
   'lineas.espana': 'ZEUS_MCP_LINEA_ESPAN',
   'lineas.wpHistoria': 'ZEUS_MCP_LINEA_WP',
   'firehose.disk': 'ZEUS_MCP_FIREHOSE',
-  'playerDebug.monitor': 'ZEUS_PORT_PLAYER_DEBUG'
+  'playerDebug.monitor': 'ZEUS_PORT_PLAYER_DEBUG',
+  'argPlayer.uno': 'ZEUS_MCP_ARG_UNO',
+  'argPlayer.dos': 'ZEUS_MCP_ARG_DOS'
 };
 
 /** UI mesh defaults. */
@@ -197,9 +200,9 @@ export function mcpToUrls(host, mcp, opts = {}) {
   return urls.sort((a, b) => Number(a.split(':').pop()) - Number(b.split(':').pop()));
 }
 
-/** MCP catalog probe URLs — excludes infra-only groups (e.g. player-ui-debug monitor). */
+/** MCP catalog probe URLs — excludes infra-only groups (e.g. player-ui-debug monitor, arg-player wrappers). */
 export function mcpToDiscoveryUrls(host, mcp) {
-  return mcpToUrls(host, mcp, { excludeGroups: ['playerDebug'] });
+  return mcpToUrls(host, mcp, { excludeGroups: ['playerDebug', 'argPlayer'] });
 }
 
 /**
