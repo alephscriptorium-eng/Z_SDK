@@ -80,7 +80,7 @@
     "seed:aleph": "node scripts/seed-aleph-presets.mjs",
     "stop:services": "node scripts/stop-services.mjs",
     "stop:v1-zeus": "npm run stop:services -- \"V1 Zeus stopped\" socket-server console-monitor cache-browser firehose-browser",
-    "stop:arg": "npm run stop:services -- \"ARG stopped\" arg-console cache-browser firehose-browser",
+    "stop:arg": "npm run stop:services -- \"ARG stopped\" arg-console arg-player-mcp cache-browser firehose-browser",
     "stop:ports": "bash scripts/stop-ports.sh",
     "e2e": "node e2e/demo.mjs",
     "e2e:deck": "node e2e/deck-demo.mjs",

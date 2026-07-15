@@ -352,6 +352,8 @@ export const ZEUS_STOP_SERVICES = [
   'firehose-browser',
   'player-3d-ui',
   '3d-monitor',
+  'arg-console',
+  'arg-player-mcp',
   'operator-ui',
   'asyncapi-studio',
   'mcp-inspector',
@@ -397,6 +399,8 @@ export function resolveStopServicePorts(serviceId) {
       return [ui.debug3d.port];
     case 'arg-console':
       return [ui.argConsole.port];
+    case 'arg-player-mcp':
+      return Object.values(mcp.argPlayer);
     case 'operator-ui':
       return [ui.operator.port];
     case 'socket-server':

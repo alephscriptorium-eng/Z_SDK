@@ -115,6 +115,11 @@ async function shutdown() {
   process.exit(0);
 }
 
-process.on('SIGINT', () => {
-  shutdown();
-});
+// La autoridad no escucha en ningún puerto (es cliente de la room), así que las
+// herramientas que matan por puerto no la alcanzan: depende de que el launcher
+// le cascadee la señal. Escucha las dos.
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => {
+    shutdown();
+  });
+}

@@ -99,10 +99,16 @@ function shutdown(code = 0) {
   setTimeout(() => process.exit(code), 300);
 }
 
-process.on('SIGINT', () => {
-  console.log('\n[launch] parando demo…');
-  shutdown(0);
-});
+// SIGINT (Ctrl+C) y SIGTERM (herramientas: stop:arg, kill, TaskStop del harness).
+// Sin el handler de SIGTERM el launcher moría sin cascadear y dejaba los hijos
+// huérfanos en sus 6 puertos; el siguiente arranque los "reutilizaba" con estado
+// sucio (incluido un mar ya colapsado). Mismo patrón que el resto de servicios.
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => {
+    console.log(`\n[launch] parando demo… (${signal})`);
+    shutdown(0);
+  });
+}
 
 console.log('');
 console.log('┌────────────────────────────────────────────┐');

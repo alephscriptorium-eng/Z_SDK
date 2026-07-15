@@ -96,3 +96,43 @@ test('resolveStopTargets all deduplicates and sorts ports', () => {
 test('resolveStopServicePorts rejects unknown service', () => {
   assert.throws(() => resolveStopServicePorts('unknown-service'), /Unknown Zeus stop service/);
 });
+
+test('los servicios de CAUDAL se resuelven a sus puertos', () => {
+  resetZeusEnvLoader();
+  const prev = { console: process.env.ZEUS_PORT_ARG_CONSOLE, uno: process.env.ZEUS_MCP_ARG_UNO, dos: process.env.ZEUS_MCP_ARG_DOS };
+  try {
+    delete process.env.ZEUS_PORT_ARG_CONSOLE;
+    delete process.env.ZEUS_MCP_ARG_UNO;
+    delete process.env.ZEUS_MCP_ARG_DOS;
+    resetZeusEnvLoader();
+    assert.deepEqual(resolveStopServicePorts('arg-console'), [3021]);
+    assert.deepEqual(resolveStopServicePorts('arg-player-mcp'), [4121, 4122]);
+  } finally {
+    for (const [k, v] of Object.entries(prev)) {
+      const key = k === 'console' ? 'ZEUS_PORT_ARG_CONSOLE' : k === 'uno' ? 'ZEUS_MCP_ARG_UNO' : 'ZEUS_MCP_ARG_DOS';
+      if (v == null) delete process.env[key];
+      else process.env[key] = v;
+    }
+    resetZeusEnvLoader();
+  }
+});
+
+/**
+ * Regresión: `arg-console` tenía su `case` en el switch pero faltaba en
+ * ZEUS_STOP_SERVICES, así que `stop:services all` no paraba la consola ARG y el
+ * mensaje de ayuda no la listaba. Un id resoluble que no está en la lista es un
+ * servicio invisible: este test lo impide para todos, no solo para ARG.
+ */
+test('todo id resoluble está en ZEUS_STOP_SERVICES (nada invisible para "all")', () => {
+  resetZeusEnvLoader();
+  const conocidos = ['arg-console', 'arg-player-mcp', ...ZEUS_STOP_SERVICES];
+  for (const id of conocidos) {
+    assert.ok(
+      ZEUS_STOP_SERVICES.includes(id),
+      `"${id}" se resuelve pero no está en ZEUS_STOP_SERVICES: "all" lo ignoraría`
+    );
+  }
+  const todos = resolveStopTargets(['all']);
+  assert.ok(todos.includes(3021), 'falta el puerto de arg-console (3021) en "all"');
+  assert.ok(todos.includes(4121) && todos.includes(4122), 'faltan los MCP de jugador en "all"');
+});

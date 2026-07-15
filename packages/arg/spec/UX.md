@@ -24,8 +24,17 @@ Composición espacial (todo wireframe, fondo `0x05050a` heredado del kit):
   punto azul tenue; etiquetada = cristal facetado brillante; spill/riada =
   salpicadura roja que cae fuera del cauce.
 - **Mar**: plano de líneas ondulado; `murk` lo enturbia (opacidad/color),
-  los cristales forman islas que crecen. Colapso = el mar sube y traga
-  terrazas (shake + fade).
+  los cristales forman islas que crecen. Las gotas que llegan **persisten**:
+  las etiquetadas flotan formando clusters dinámicos por etiqueta y se
+  apelotonan hacia el final del mar; las sin etiquetar se hunden y quedan
+  rescatables con `salvage` ([MAR.md](MAR.md), fase 1.6). Colapso = el mar
+  sube y traga terrazas.
+  > ⚠️ **Entregado vs. planeado**: la subida del mar al colapsar es real
+  > (`delta-stage.mjs:284`, sube a `y=3.2`). El **shake de cámara y el fade
+  > son WP-19 (fase 2), SIN ENTREGAR** — hoy no hay temblor. Esta línea decía
+  > «(shake + fade)» a secas y CASOS.md lo copió como si el humano fuese a
+  > verlo, lo que hizo fallar una validación en 2026-07-15. Si añades UX aquí,
+  > marca qué está construido y qué es intención.
 - **Cantera**: cajas wireframe (cámaras) unidas por aristas (pasillos).
   Pasillo fantasma = línea discontinua gris; `digging` = pulso ámbar;
   abierto = línea sólida. Cámara cacheada emite un glow suave al pisarse.
