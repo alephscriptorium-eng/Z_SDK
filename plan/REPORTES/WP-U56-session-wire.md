@@ -155,4 +155,38 @@ sí.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17 (revisión; sin merge ni ✅ BACKLOG
+en este paso).
+
+### Verificado
+
+- Diff acotado al stack DJ (player-ui, socket-server, console-monitor,
+  ping-pong-bots, filtros residuales 3d-monitor) + reporte. Sin
+  `plan/BACKLOG.md`. Commits convencionales.
+- **CA greps** (re-ejecutados en worktree):
+  `rg session:state|session:error` y `['\"]session:` en stacks DJ →
+  **0 matches** (`rg_exit:1`).
+- **Unitarios:** `test:player-ui` 14 pass · `test:bots` 19 pass ·
+  `test:console-monitor` 10 pass.
+- **Gates:** `gates: OK (0 offenders)`.
+- Demolición allowlist/handlers alineada a `state`/`intent`/`ledger`/
+  `track`/`deck:error`; sin re-exports `session:*`.
+
+### e2e DJ (`npm run e2e:player-ui-dj`)
+
+- Worker reportó rojo G-U31.4/6 (`actor_desconocido`) y lo atribuyó a base.
+- Re-CA orquestador: **verde en master limpio** (G-U31.1…6 OK) y **verde en
+  `wp/u56-session-wire`** (mismo resultado). No es regresión estable del WP;
+  el rojo del reporte es flaky (race join→intent). **No bloquea.**
+- Cola: estabilizar e2e DJ / race `actor_desconocido` (candidato WP).
+
+### Hallazgos → cola (no bloquean)
+
+1. `e2e/domain-helpers.mjs` (y demos domain) siguen filtrando
+   `type === 'session:state'` — fuera del stack DJ; residual post-U31.
+2. Flake e2e DJ `actor_desconocido` (arriba).
+
+### Merge
+
+Listo para merge a master + ✅ BACKLOG por el orquestador en master (paso
+siguiente; no hecho aquí). Paralelo U80 sin conflicto esperado.
