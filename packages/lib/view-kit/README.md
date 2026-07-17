@@ -31,6 +31,8 @@ import {
 Dependencias browser (`three`, `@zeus/ui-3d-kit`, room-client) las resuelve
 el import-map / static del host — no Node.
 
+Consumidores actuales: `arg-console`, `3d-monitor`, `player-3d-ui`.
+
 ## Node
 
 ```js

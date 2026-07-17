@@ -26,13 +26,15 @@ import {
   createCounters,
   readViewerConfig,
   connectRoom,
+  createLabelSprite,
+  createGlowSprite
+} from '@zeus/view-kit';
+import {
   emitterOf,
   classifyRole,
   roleStyle,
-  createLabelSprite,
-  createGlowSprite,
   createPipeNetwork
-} from '../kit/index.mjs';
+} from '../monitor/index.mjs';
 
 const CENTER = new THREE.Vector3(0, 2.4, 0);
 const ORBIT_BY_ROLE = { master: 4.5, spider: 8.5, horse: 8.5, ping: 12.5, pong: 12.5, rabbit: 12.5, other: 10.5 };

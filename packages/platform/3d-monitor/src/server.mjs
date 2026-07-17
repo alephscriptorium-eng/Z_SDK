@@ -4,13 +4,14 @@
  * @zeus/3d-monitor server.
  *
  * Portal of 3D views over the scriptorium runtime (Express, server-rendered,
- * no bundler). Views live in src/views/registry.mjs on top of the view kit
- * (src/view-kit); each view's business logic is a browser entry under
+ * no bundler). Views live in src/views/registry.mjs on top of the SSR view
+ * kit (src/view-kit); each view's business logic is a browser entry under
  * /assets/js/views/. Serves:
  *   /assets            → ui-kit shell assets + own assets/
  *   /vendor/three      → node_modules/three
  *   /vendor/socket.io  → socket.io-client browser ESM dist
  *   /kit               → @zeus/ui-3d-kit browser-safe src/ (raw)
+ *   /view-kit          → @zeus/view-kit browser-safe src/ (raw)
  *   /models            → @zeus/ui-3d-kit assets/models (GLBs)
  *   /health            → { status: ok }
  *   /                  → portal (view gallery)
@@ -26,6 +27,7 @@ import { assetsDir as uiKitAssetsDir, createThemeRoutes } from '@zeus/ui-kit';
 import { browserAssetsDir as roomClientAssetsDir } from '@zeus/room-client-browser';
 import { createThemeHandler } from '@zeus/app-shell/create-theme-handler';
 import { srcDir, modelsDir, getThreeDir } from '@zeus/ui-3d-kit/node';
+import { srcDir as viewKitSrcDir } from '@zeus/view-kit/node';
 import { srcDir as gameEngineSrcDir } from '@zeus/game-engine/node';
 
 import {
@@ -85,6 +87,7 @@ export async function createMonitor3dServer(options = {}) {
   app.use('/vendor/socket.io', express.static(socketIoDistDir()));
 
   app.use('/kit', express.static(srcDir));
+  app.use('/view-kit', express.static(viewKitSrcDir));
   app.use('/game-engine', express.static(gameEngineSrcDir));
   app.use('/models', express.static(modelsDir));
 

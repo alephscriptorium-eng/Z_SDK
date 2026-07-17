@@ -4,8 +4,8 @@
  * every observed room event spawns a particle travelling from the emitter
  * marker toward the center via the ui-3d-kit TrajectoryManager.
  *
- * Business logic here; reusable elements (stage, HUD, ring, markers, room
- * wiring, channel classification) come from ../kit/.
+ * Business logic here; reusable stage/HUD/room come from @zeus/view-kit;
+ * ring/markers/channel classification from ../monitor/.
  */
 
 import * as THREE from 'three';
@@ -14,14 +14,16 @@ import {
   createViewerScene,
   setText,
   readViewerConfig,
-  connectRoom,
+  connectRoom
+} from '@zeus/view-kit';
+import {
   channelFor,
   emitterOf,
   createRingLayout,
   createHub,
   createMarker,
   colorForIndex
-} from '../kit/index.mjs';
+} from '../monitor/index.mjs';
 
 const CENTER = new THREE.Vector3(0, 0.5, 0);
 
