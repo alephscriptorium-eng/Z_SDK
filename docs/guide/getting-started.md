@@ -31,6 +31,9 @@ npm run demo:pozo             # pozo — autoridad + vista + MCP
 
 Overrides de puerto/host: `presets-sdk/env` (`resolveZeusUiPorts`, `resolveZeusMcpPorts`, `ZEUS_SCRIPTORIUM_URL`).
 
+Consumidor externo anónimo (tarballs, Node + Bun): `npm run smoke:external-consumer` —
+ver [Handshake externo](/guide/external-handshake).
+
 ## Verificación
 
 ```bash

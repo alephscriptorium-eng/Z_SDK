@@ -35,7 +35,8 @@ export default defineConfig({
         items: [
           { text: 'Arranque rápido', link: '/guide/getting-started' },
           { text: 'Mapa del monorepo', link: '/guide/layout' },
-          { text: 'Dos juegos (D-8)', link: '/guide/two-games' }
+          { text: 'Dos juegos (D-8)', link: '/guide/two-games' },
+          { text: 'Handshake externo', link: '/guide/external-handshake' }
         ]
       },
       {
