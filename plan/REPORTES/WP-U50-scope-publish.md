@@ -5,7 +5,7 @@
 | agente | worker (swarm chat WP-U50) |
 | fecha | 2026-07-17 |
 | rama | `wp/u50-scope-publish` |
-| commit(s) | `fb225f8 5e7034f ed042bc ` |
+| commit(s) | `ed042bc` `5e7034f` `fb225f8` `be368e0` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
