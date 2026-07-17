@@ -24,5 +24,6 @@
     "express": "^5.2.1",
     "hyperaxe": "^3.0.2",
     "socket.io-client": "^4.8.1"
-  }
+  },
+  "private": true
 }

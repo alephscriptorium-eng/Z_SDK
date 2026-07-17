@@ -23,5 +23,6 @@
   "license": "AIPLv1",
   "zeus": {
     "role": "app"
-  }
+  },
+  "private": true
 }

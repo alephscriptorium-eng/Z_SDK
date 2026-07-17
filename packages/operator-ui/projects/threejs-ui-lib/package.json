@@ -2,7 +2,13 @@
   "name": "@zeus/threejs-ui-lib",
   "version": "1.0.0",
   "description": "Angular Three.js operator hub UI (bot-hub visualization, block-13)",
-  "keywords": ["angular", "threejs", "ui", "zeus", "operator"],
+  "keywords": [
+    "angular",
+    "threejs",
+    "ui",
+    "zeus",
+    "operator"
+  ],
   "author": "escrivivir-co",
   "license": "MIT",
   "repository": {
@@ -19,5 +25,6 @@
     "@zeus/ui-3d-kit": "file:../../../lib/ui-3d-kit",
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "private": true
 }

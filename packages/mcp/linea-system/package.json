@@ -28,5 +28,6 @@
   },
   "devDependencies": {
     "@zeus/test-utils": "*"
-  }
+  },
+  "private": true
 }
