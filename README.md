@@ -34,9 +34,14 @@ npm run docs:dev                   # portal VitePress en :3230
 
 ```bash
 npm run lint
+npm run gates                      # PRACTICAS §5 (puertos, deps, nombres)
 npm run e2e:deck:room              # gates del transporte de sesión
 npm run verify:dual-ui             # dos UIs, un contrato (G-DUI.*)
 ```
+
+En GitHub (`alephscriptorium-eng/Z_SDK`), Actions corre `npm ci` + lint + gates
++ matriz de tests de paquetes en cada PR y en pushes a `main` / `wp/*`
+(sin publish; release es WP-U53).
 
 ## Licencia
 
