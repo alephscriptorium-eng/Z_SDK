@@ -5,7 +5,7 @@
 | agente | worker swarm (Cursor Grok) |
 | fecha | 2026-07-17 |
 | rama | `wp/u31-player-ui-dj` |
-| commit(s) | _(se rellenan tras commit)_ |
+| commit(s) | `0f6eae0` feat(player-ui)!: vista dj sobre room del juego; demuele session-* |
 | estado propuesto | listo para revisión |
 | push | **no intentado** (política swarm) |
 
