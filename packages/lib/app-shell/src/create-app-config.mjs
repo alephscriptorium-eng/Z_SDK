@@ -1,5 +1,9 @@
 /**
  * Shared app config factory for Zeus UI packages.
+ *
+ * `APP_DEFAULTS` is optional enrichment keyed by mesh/app id — not a closed
+ * whitelist. Unknown `appId`s work with `extraDefaults` + `defaultPort`
+ * (port from `resolveAppPort` when the id is in the UI mesh / APP_PORT_ENV).
  */
 
 import fs from 'node:fs';
@@ -19,8 +23,17 @@ import {
   DEFAULT_ZEUS_UI_MESH,
   DEFAULT_ZEUS_MCP
 } from '@zeus/presets-sdk/env';
+import { resolveScriptoriumSecret } from '@zeus/rooms';
 
-const VOLATILE_CONFIG_KEYS = ['server', 'discovery', 'player', 'editor', 'view', 'debugMonitor'];
+const VOLATILE_CONFIG_KEYS = [
+  'server',
+  'discovery',
+  'player',
+  'editor',
+  'view',
+  'debugMonitor',
+  'scriptorium'
+];
 
 const APP_DEFAULTS = {
   editor: {
@@ -127,6 +140,15 @@ const APP_DEFAULTS = {
     port: DEFAULT_ZEUS_MCP.playerDebug.monitor,
     theme: DEFAULT_THEME,
     debug: true
+  },
+  argConsole: {
+    port: DEFAULT_ZEUS_UI_MESH.argConsole.port,
+    theme: DEFAULT_THEME,
+    branding: { title: 'ARG Console', tag: 'Scriptorium · Zeus SDK' },
+    scriptorium: {
+      path: DEFAULT_ZEUS_UI_MESH.scriptorium.path
+    },
+    debug: false
   }
 };
 
@@ -187,12 +209,26 @@ export function resolveRuntimeConfig(fileConfig, { appId, packageDir, appBase, d
     };
   }
 
+  if (fileConfig.scriptorium || appBase.scriptorium) {
+    const scr = uis.scriptorium || DEFAULT_ZEUS_UI_MESH.scriptorium;
+    runtime.scriptorium = {
+      ...(appBase.scriptorium || {}),
+      ...(fileConfig.scriptorium || {}),
+      host: scr.host,
+      port: scr.port,
+      path: (fileConfig.scriptorium || appBase.scriptorium || {}).path || scr.path || '/runtime',
+      secret: resolveScriptoriumSecret()
+    };
+  }
+
   return runtime;
 }
 
 /**
  * @param {object} options
- * @param {string} options.appId - editor | player | view | firehose | debug
+ * @param {string} options.appId - mesh/app id (editor | player | view | firehose |
+ *   player3d | debug3d | debug | argConsole | …). Not a closed whitelist:
+ *   unknown ids work with extraDefaults + defaultPort.
  * @param {number} [options.defaultPort]
  * @param {object} [options.features]
  * @param {object} [options.extraDefaults]
@@ -280,10 +316,17 @@ export function createAppConfig(options) {
 
   function updateSection(section, updates) {
     const fileConfig = readFileConfig();
-    if (!Object.prototype.hasOwnProperty.call(fileConfig, section)) {
+    const known =
+      Object.prototype.hasOwnProperty.call(fileConfig, section) ||
+      Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, section);
+    if (!known) {
       throw new Error(`Configuration section '${section}' does not exist`);
     }
-    fileConfig[section] = { ...fileConfig[section], ...updates };
+    const base = fileConfig[section] ?? DEFAULT_CONFIG[section] ?? {};
+    fileConfig[section] = {
+      ...(typeof base === 'object' && base !== null && !Array.isArray(base) ? base : {}),
+      ...updates
+    };
     persistFileConfig(fileConfig);
     return resolveRuntimeConfig(fileConfig, runtimeCtx);
   }

@@ -14,6 +14,7 @@
     "ui": "arg-console"
   },
   "dependencies": {
+    "@zeus/app-shell": "*",
     "@zeus/arg-domain": "*",
     "@zeus/protocol": "*",
     "@zeus/presets-sdk": "*",

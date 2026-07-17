@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*",
     "@zeus/ui-kit": "*"
   },
   "license": "AIPLv1"

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { DEFAULT_THEME } from '@zeus/ui-kit';
-import { resetZeusEnvLoader } from '@zeus/presets-sdk/env';
-import { resolveRuntimeConfig } from '../src/create-app-config.mjs';
+import { resetZeusEnvLoader, DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk/env';
+import { createAppConfig, resolveRuntimeConfig } from '../src/create-app-config.mjs';
 
 test('runtime config resolves env overrides', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'app-shell-runtime-'));
@@ -71,5 +72,76 @@ test('runtime config resolves debugMonitor baseUrl from env', () => {
     if (prev == null) delete process.env.ZEUS_PORT_PLAYER_DEBUG;
     else process.env.ZEUS_PORT_PLAYER_DEBUG = prev;
     resetZeusEnvLoader();
+  }
+});
+
+test('argConsole resolves port + scriptorium from mesh/env', () => {
+  const prevPort = process.env.ZEUS_PORT_ARG_CONSOLE;
+  const prevScr = process.env.ZEUS_PORT_SCRIPTORIUM;
+  const prevSecret = process.env.ZEUS_SCRIPTORIUM_SECRET;
+  resetZeusEnvLoader();
+  process.env.ZEUS_PORT_ARG_CONSOLE = '4121';
+  process.env.ZEUS_PORT_SCRIPTORIUM = '4117';
+  process.env.ZEUS_SCRIPTORIUM_SECRET = 'test-secret';
+
+  try {
+    const runtime = resolveRuntimeConfig(
+      { scriptorium: { path: '/runtime' } },
+      {
+        appId: 'argConsole',
+        packageDir: process.cwd(),
+        appBase: {
+          port: DEFAULT_ZEUS_UI_MESH.argConsole.port,
+          scriptorium: { path: '/runtime' }
+        },
+        defaultPort: DEFAULT_ZEUS_UI_MESH.argConsole.port
+      }
+    );
+
+    assert.equal(runtime.server.port, 4121);
+    assert.equal(runtime.scriptorium.port, 4117);
+    assert.equal(runtime.scriptorium.path, '/runtime');
+    assert.equal(runtime.scriptorium.secret, 'test-secret');
+    assert.ok(runtime.scriptorium.host);
+  } finally {
+    if (prevPort == null) delete process.env.ZEUS_PORT_ARG_CONSOLE;
+    else process.env.ZEUS_PORT_ARG_CONSOLE = prevPort;
+    if (prevScr == null) delete process.env.ZEUS_PORT_SCRIPTORIUM;
+    else process.env.ZEUS_PORT_SCRIPTORIUM = prevScr;
+    if (prevSecret == null) delete process.env.ZEUS_SCRIPTORIUM_SECRET;
+    else process.env.ZEUS_SCRIPTORIUM_SECRET = prevSecret;
+    resetZeusEnvLoader();
+  }
+});
+
+test('unknown appId works with extraDefaults (no APP_DEFAULTS whitelist)', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'app-shell-custom-'));
+  const srcDir = path.join(tempDir, 'src');
+  fs.mkdirSync(srcDir);
+  const configUrl = pathToFileURL(path.join(srcDir, 'config.mjs')).href;
+  resetZeusEnvLoader();
+
+  try {
+    const { getConfig, packageDir } = createAppConfig({
+      appId: 'customGameUi',
+      defaultPort: 3999,
+      importMetaUrl: configUrl,
+      skipConfigFile: true,
+      extraDefaults: {
+        branding: { title: 'Custom Game', tag: 'test' },
+        scriptorium: { path: '/runtime' }
+      }
+    });
+
+    assert.equal(packageDir, tempDir);
+    const cfg = getConfig();
+    assert.equal(cfg.server.port, 3999);
+    assert.equal(cfg.branding.title, 'Custom Game');
+    assert.equal(cfg.scriptorium.path, '/runtime');
+    assert.ok(cfg.scriptorium.port);
+    assert.ok(cfg.scriptorium.secret);
+  } finally {
+    resetZeusEnvLoader();
+    fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });

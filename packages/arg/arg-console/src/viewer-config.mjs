@@ -21,7 +21,7 @@ import { getConfig } from './config.mjs';
  * @returns {{ scriptoriumUrl: string, room: string, sessionId: string, token: string, actor: string|null, startPack: string[], browsers: { cache: string, firehose: string } }}
  */
 export function resolveViewerConfig(opts = {}, env = process.env) {
-  const scr = getConfig(env).scriptorium;
+  const scr = getConfig().scriptorium;
   const host = env.ZEUS_HOST || 'localhost';
   const ui = resolveZeusUiPorts();
   const startPackRaw = env.ZEUS_ARG_START_PACK || 'aleph-tronco-puro,aleph-firehose-browse';
