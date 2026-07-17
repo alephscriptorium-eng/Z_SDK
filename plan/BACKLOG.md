@@ -492,7 +492,8 @@ Hallazgos diferidos U56 (no bloquean):
   **Demolición:** `VOLUMES/` del monorepo.
 
 ## Ola 7 — El plano de datos (diseño en [DATOS.md](DATOS.md); paralelizable
-con olas 2–5 salvo deps indicadas)
+con olas 2–5 salvo deps indicadas) — **cerrada** (orquestador / 2026-07-18;
+último WP: U83; U80–U83 + U91–U92 ✅)
 
 - ✅ **WP-U80 · `@zeus/linea-kit`** — aceptado (orquestador / 2026-07-17) —
   los formatos canónicos de DATOS.md §2
@@ -577,8 +578,8 @@ Diferidos del reporte/revisión WP-U82 (no bloquean cierre):
 - `release:changeset-dry` sobre paquete aún untracked ensucia el árbol
   (checkout falla al restaurar package.json nuevo)
 
-- 🔶 **WP-U83 · Las tramas integran crecer/vaciar** *(dep U82, U30, U23)* —
-  (lote-7b / orquestador / 2026-07-18) — delta y pozo incorporan el ciclo
+- ✅ **WP-U83 · Las tramas integran crecer/vaciar** *(dep U82, U30, U23)* —
+  aceptado (orquestador / 2026-07-18) — delta y pozo incorporan el ciclo
   completo del mapa a su trama y CASOS: crecer (cachear/curar/milestone ya
   en WP-U30) y **vaciar** como mecánica con coste narrativo (qué significa
   purgar en el delta; qué en el pozo), con casos C-* nuevos en formato
@@ -587,6 +588,19 @@ Diferidos del reporte/revisión WP-U82 (no bloquean cierre):
   **CA:** casos nuevos pasan el test de coherencia; e2e MCP de al menos un
   caso de vaciado por juego; scoring/ledger reflejan el ciclo.
   **Demolición:** n/a.
+
+### Cola hallazgos ola 7 (WP-U83)
+
+Diferidos del reporte/revisión WP-U83 (no bloquean cierre; **cierra ola 7**):
+- ⬜ **timeout_confirmacion MCP** — rechazo idempotente de `empty` a veces
+  llega como `timeout_confirmacion` en el wrapper aunque la autoridad ya
+  aplicó `nada_que_vaciar` (confirmIntent/unchanged). Candidato: pulido
+  player-mcp-kit.
+- ⬜ **murk/grifo e2e** — e2e arg-mcp acumula murk alto (~28) antes de C-33;
+  reabrir grifo para más vertido colapsa la ronda. Gate vacía hundidas
+  residuales.
+- ⬜ **V4.9 sin browser** — proyección visual del vaciado (gotas que
+  desaparecen); checklist V4.9 queda para pasada humana (`ZEUS_OPEN_BROWSER`).
 
 - ✅ **WP-U91 · Loader MCP del volumen FORCES** *(dep U80; D-19)* — aceptado
   (orquestador / 2026-07-18) — el volumen YA EXISTE:
