@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/force.json",
+  "title": "Force",
+  "description": "force.json activation card (DATOS.md §8 / D-19). Concrete force ids are data, not schema.",
+  "type": "object",
+  "required": ["id", "kind"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "enum": ["force", "boot"] },
+    "type": { "type": "string" },
+    "viewpoint": { "type": "string" },
+    "lore": { "type": ["string", "null"] },
+    "anchor_scene": { "type": "string" },
+    "triggers": { "type": "array", "items": { "type": "string" } },
+    "pairs_with": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(force|cota|boot|linea):.+"
+      }
+    },
+    "scene_count": { "type": "integer", "minimum": 0 },
+    "notes": { "type": ["string", "null"] },
+    "provenance": { "type": "object", "additionalProperties": true }
+  }
+}

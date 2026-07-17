@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/snapshot-meta.json",
+  "title": "SnapshotMeta",
+  "description": "snapshots/<rol>/meta.json endpoint metadata (DATOS.md §2)",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "role": { "type": "string" },
+    "oldid": { "type": ["integer", "null"] },
+    "registro_id": { "type": ["string", "null"] },
+    "timestamp": { "type": "string" },
+    "user": { "type": "string" },
+    "path": { "type": "string" },
+    "summary": { "type": "string" },
+    "cache_wikitext": { "type": "boolean" },
+    "fetched": { "type": ["boolean", "string"] }
+  }
+}

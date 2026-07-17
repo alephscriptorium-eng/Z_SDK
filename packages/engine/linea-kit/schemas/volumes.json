@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/volumes.json",
+  "title": "VolumesRegistry",
+  "description": "VOLUMES/volumes.json — disk slots and corpora (DATOS.md §2)",
+  "type": "object",
+  "required": ["volumes"],
+  "additionalProperties": true,
+  "properties": {
+    "root": { "type": "string" },
+    "volumes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["disk", "path"],
+        "additionalProperties": true,
+        "properties": {
+          "disk": { "type": "string", "pattern": "^DISK_\\d+$" },
+          "path": { "type": "string", "minLength": 1 },
+          "readonly": { "type": "boolean" },
+          "label": { "type": "string" },
+          "source": { "type": "object", "additionalProperties": true },
+          "corpora": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "path"],
+              "additionalProperties": true,
+              "properties": {
+                "id": { "type": "string" },
+                "path": { "type": "string" },
+                "label": { "type": "string" },
+                "files": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

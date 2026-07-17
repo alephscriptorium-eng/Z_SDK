@@ -1,0 +1,34 @@
+{
+  "name": "@zeus/linea-kit",
+  "version": "0.1.0",
+  "description": "Canonical VOLUMES formats (DATOS.md §2/§8): JSON Schemas, curation model, validator, and line loader",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./curation": "./src/curation.mjs",
+    "./resolve": "./src/resolve.mjs",
+    "./validate": "./src/validate.mjs",
+    "./loader": "./src/loader.mjs",
+    "./schemas/*": "./schemas/*"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "yaml": "^2.8.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "schemas",
+    "README.md"
+  ]
+}

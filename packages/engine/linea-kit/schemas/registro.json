@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/registro.json",
+  "title": "Registro",
+  "description": "One historial edit registro (DATOS.md §2)",
+  "type": "object",
+  "required": ["id", "oldid"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "slug": { "type": "string" },
+    "oldid": { "type": "integer", "minimum": 0 },
+    "parent_oldid": { "type": ["integer", "null"] },
+    "timestamp": { "type": "string" },
+    "user": { "type": "string" },
+    "bytes": { "type": "integer" },
+    "byte_delta": { "type": "integer" },
+    "section": { "type": ["string", "null"] },
+    "summary": { "type": "string" },
+    "milestone": { "type": "boolean" },
+    "milestone_reasons": { "type": "array", "items": { "type": "string" } },
+    "urls": { "type": "object", "additionalProperties": true },
+    "files": { "type": "object", "additionalProperties": { "type": "string" } },
+    "source": { "type": "object", "additionalProperties": true },
+    "delta_status": { "$ref": "curation-status.json" },
+    "curation_status": { "$ref": "curation-status.json" },
+    "status": { "$ref": "curation-status.json" }
+  }
+}
