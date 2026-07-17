@@ -17,6 +17,22 @@ export function createBrowseRoutes(deps) {
   });
 
   router.get(
+    '/corpora/:corpusId',
+    validate(
+      { params: z.object({ corpusId: z.string().min(1) }) },
+      { routeId: 'corpora.get' }
+    ),
+    (req, res) => {
+      const listed = deps.listCorpora().find((c) => c.id === req.params.corpusId);
+      if (!listed) {
+        res.status(404).json({ error: `Unknown corpus: ${req.params.corpusId}` });
+        return;
+      }
+      res.json({ ...listed, volumePath: listed.path });
+    }
+  );
+
+  router.get(
     '/browse',
     validate({
       query: z.object({

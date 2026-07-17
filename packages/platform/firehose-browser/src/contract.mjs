@@ -17,6 +17,17 @@ const FirehoseConfig = z.object({
 });
 
 const CorporaList = z.object({ corpora: z.array(z.unknown()) });
+const CorpusGet = z.union([
+  z.looseObject({
+    id: z.string(),
+    label: z.string().optional(),
+    path: z.string().optional(),
+    volumePath: z.string().optional(),
+    files: z.number().nullable().optional(),
+    empty: z.boolean().optional()
+  }),
+  z.object({ error: z.string() })
+]);
 const BrowseResult = z.looseObject({});
 const FileResult = z.union([z.looseObject({}), z.object({ error: z.string() })]);
 const PostsList = z.looseObject({});
@@ -53,6 +64,17 @@ export const FIREHOSE_ROUTES = defineRoutes('firehose-view-ui', [
     tags: ['browse'],
     responses: { 200: CorporaList },
     envelope: 'plain'
+  },
+  {
+    id: 'corpora.get',
+    method: 'GET',
+    path: '/api/corpora/:corpusId',
+    summary: 'Corpus metadata by id',
+    tags: ['browse'],
+    request: { params: z.object({ corpusId: z.string() }) },
+    responses: { 200: CorpusGet },
+    envelope: 'plain',
+    xMcpResource: 'firehose://corpus/{corpusId}'
   },
   {
     id: 'browse',

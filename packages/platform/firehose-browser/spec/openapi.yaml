@@ -164,6 +164,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/health_error"
+  /api/corpora/{corpusId}:
+    get:
+      operationId: corpora.get
+      summary: Corpus metadata by id
+      tags:
+        - browse
+      responses:
+        "200":
+          description: Corpus metadata by id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/corpora.get_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+      x-mcp-resource: firehose://corpus/{corpusId}
+      parameters:
+        - name: corpusId
+          in: path
+          required: true
+          schema:
+            type: string
   /api/browse:
     get:
       operationId: browse
@@ -495,6 +527,44 @@ components:
       required:
         - corpora
       additionalProperties: false
+    corpora.get_params:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        corpusId:
+          type: string
+      required:
+        - corpusId
+      additionalProperties: false
+    corpora.get_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      anyOf:
+        - type: object
+          properties:
+            id:
+              type: string
+            label:
+              type: string
+            path:
+              type: string
+            volumePath:
+              type: string
+            files:
+              anyOf:
+                - type: number
+                - type: "null"
+            empty:
+              type: boolean
+          required:
+            - id
+          additionalProperties: {}
+        - type: object
+          properties:
+            error:
+              type: string
+          required:
+            - error
+          additionalProperties: false
     browse_query:
       $schema: https://json-schema.org/draft/2020-12/schema
       type: object
