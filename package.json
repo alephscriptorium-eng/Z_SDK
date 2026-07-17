@@ -69,6 +69,7 @@
     "spec:generate:http": "node scripts/spec-generate.mjs",
     "spec:generate:all": "npm run spec:generate:http && npm run spec:generate",
     "test:protocol": "npm test -w @zeus/protocol",
+    "test:authority-kit": "npm test -w @zeus/authority-kit",
     "spec:redoc": "node scripts/spec-redoc.mjs",
     "spec:asyncapi:html": "node scripts/spec-asyncapi-html.mjs",
     "spec:studio": "node scripts/spec-studio.mjs",
