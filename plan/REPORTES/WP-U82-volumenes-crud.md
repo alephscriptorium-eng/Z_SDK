@@ -128,4 +128,39 @@ Ninguno bloqueante. Push: **no intentado** (política del brief).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador).
+
+### Verificado
+
+- Diff `master...HEAD` acotado: solo `@zeus/volumes-ops`, changeset minor,
+  `package-lock.json`, reporte. **No** tocó `plan/BACKLOG.md`.
+- Merge-base = master (`3d78e06`); no hace falta merge previo.
+- Re-CA: `npm test -w @zeus/volumes-ops` → 6/6 pass (e2e CA + roles + measure).
+- `npm run gates` → OK (0 offenders).
+- Roles: `empty_volume` = operator only (`rol_no_autorizado` para player);
+  `empty_playable` = player/dj asienta sin borrar (DATOS.md §4).
+- Ledger: `.ops-ledger.jsonl` append-only con `kind: empty_volume` + role.
+- `volumes.json`: `syncVolumeCounters` reescribe `files`/`bytes` post-vaciado.
+- REST→MCP vía RouteEntry (`volumes://measure/{volumeId}`); mutación empty
+  solo HTTP. `port: 0` / `resolveZeusHost`; cero nombres de juego.
+- Demolición: auditoría sin scripts sueltos de purga — n/a documentada.
+- Hallazgos (docs drift scripts, readonly candado, dry-run untracked) → no
+  bloquean; candidatos a WP/notas, no arreglados de pasada.
+
+### CA
+
+- [x] e2e fill → measure resource → empty operator (ledger + archivos fuera)
+- [x] rechazo empty con rol player
+- [x] `volumes.json` refleja contadores
+
+### Merge
+
+Autorizado. Orden sugerido: **U82** independiente de U81/U91 (lote-7a).
+Tras merge en master: orquestador marca ✅ BACKLOG + `git worktree remove`
+`.worktrees/wp-u82-volumenes-crud`. Dirty CRLF en
+`playbook-kit/bin/run-playbook.mjs` (fuera de alcance) — no incluir.
+
+### Acción siguiente
+
+Usuario/orquestador: merge + ✅ BACKLOG en master (esta revisión no hace
+ni merge ni push ni ✅).
