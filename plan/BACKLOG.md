@@ -41,10 +41,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   **CA:** `npm test -w` verde en ambos con ≥1 test real por export principal.
   **Demolición:** el `echo 'sin tests'`.
 
-- ⬜ **WP-U03 · Z_SDK + CI** (D-11; ARQUITECTURA §5) — push del monorepo a
+- 🔶 **WP-U03 · Z_SDK + CI** (D-11; ARQUITECTURA §5) — en curso (lote-0b / orquestador / 2026-07-17) — push del monorepo a
   `github.com/alephscriptorium-eng/Z_SDK` (rama main) y GitHub Actions: en
   cada PR/rama `wp/*`, job con `npm ci` + `npm run lint` + `npm run gates`
-  (cuando exista, dep U00 blanda: hasta entonces, lint+tests) + matriz de
+  (dep U00 blanda: YA EXISTE `npm run gates` — cablearlo en CI) + matriz de
   tests de paquetes. Sin publish todavía (eso es WP-U53).
   **CA:** una PR de prueba muestra los checks corriendo; rojo si se introduce
   una violación sintética.
