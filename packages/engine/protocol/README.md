@@ -38,6 +38,7 @@ validateIntent(
 
 - Contrato: [`spec/CONTRATO.md`](spec/CONTRATO.md)
 - AsyncAPI: `npm run spec:generate` → `spec/asyncapi.yaml`
+- Tipos TS: `npm run types:generate` → `types/index.d.ts` (misma fuente que AsyncAPI)
 - HTML portal: `npm run spec:asyncapi:html` (raíz) → `docs/public/api/protocol/`
 
 ## Tests
