@@ -396,26 +396,27 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 - `:13022` (huérfano e2e:operator-ui)
 - `file:` residual operator-ui
 
-- ⬜ **WP-U54 · Consumidores externos anónimos** *(dep U50, U10; D-18)* — el
-  registry es una frontera pública: cualquier tercero (runtime JS/TS, Bun,
-  Node) debe poder construir sobre `@zeus/*` sin hablar con nosotros. Los
-  paquetes publicables llevan **tipos `.d.ts`** (generados de los schemas
-  del protocolo) y docs de handshake para clientes externos
-  (`ZEUS_SCRIPTORIUM_URL`, auth `{token, room, user}`, eventos del
-  contrato). Smoke de consumo: un proyecto externo mínimo (fuera del
-  workspace, instalando SOLO del registry) se une a una room y emite un
-  intent tipado.
+- 🔶 **WP-U54 · Consumidores externos anónimos** *(dep U50, U10; D-18)* — en
+  curso (lote-5b / orquestador / 2026-07-17) — el registry es una frontera
+  pública: cualquier tercero (runtime JS/TS, Bun, Node) debe poder construir
+  sobre `@zeus/*` sin hablar con nosotros. Los paquetes publicables llevan
+  **tipos `.d.ts`** (generados de los schemas del protocolo) y docs de
+  handshake para clientes externos (`ZEUS_SCRIPTORIUM_URL`, auth
+  `{token, room, user}`, eventos del contrato). Smoke de consumo: un
+  proyecto externo mínimo (fuera del workspace, instalando SOLO del
+  registry) se une a una room y emite un intent tipado.
   **CA:** smoke reproducible con evidencia (Node y Bun); tipos presentes en
   los tarballs (`release:dry` los verifica); el handshake documentado en el
   portal.
   **Demolición:** n/a.
 
-- ⬜ **WP-U53 · Semver + release desde CI** *(dep U50, U03; ARQUITECTURA §5)*
-  — adoptar **changesets** en el monorepo: bump semver por paquete,
-  changelog generado, `npm publish` al registry propio desde CI (con el
-  pipeline en verde como condición dura), tag git + GitHub Release en Z_SDK.
-  Cierra el periodo lockstep 0.x. PRACTICAS §6 pasa de «commit convencional
-  basta» a «changeset obligatorio en paquetes publicables».
+- 🔶 **WP-U53 · Semver + release desde CI** *(dep U50, U03; ARQUITECTURA §5)*
+  — en curso (lote-5b / orquestador / 2026-07-17) — adoptar **changesets**
+  en el monorepo: bump semver por paquete, changelog generado, `npm publish`
+  al registry propio desde CI (con el pipeline en verde como condición
+  dura), tag git + GitHub Release en Z_SDK. Cierra el periodo lockstep 0.x.
+  PRACTICAS §6 pasa de «commit convencional basta» a «changeset obligatorio
+  en paquetes publicables».
   **CA:** un cambio de prueba con changeset produce release automático
   end-to-end (bump + changelog + publish + tag) y un pipeline rojo lo
   bloquea.
