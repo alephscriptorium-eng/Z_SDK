@@ -93,7 +93,7 @@ describe('schemas + fixtures', () => {
 });
 
 describe('live VOLUMES (read-only)', () => {
-  it('validates DISK_01/02/03 when present without mutating them', () => {
+  it('validates DISK_01/02/03/04 when present without mutating them', () => {
     const root = resolveLiveVolumesRoot();
     if (!root) {
       console.log('⏳ VOLUMES root missing — skipped live validation (fixtures covered above)');
@@ -125,7 +125,8 @@ describe('live VOLUMES (read-only)', () => {
     const disks = {
       DISK_01: fs.existsSync(path.join(root, 'DISK_01', 'FIREHOSE')),
       DISK_02: fs.existsSync(path.join(root, 'DISK_02', 'LINEAS')),
-      DISK_03: fs.existsSync(path.join(root, 'DISK_03', 'FORCES'))
+      DISK_03: fs.existsSync(path.join(root, 'DISK_03', 'FORCES')),
+      DISK_04: fs.existsSync(path.join(root, 'DISK_04', 'SSB'))
     };
     console.log(
       `live VOLUMES ok at ${root}; disks=${JSON.stringify(disks)}; checked=${report.results.length}; skipped=${JSON.stringify(report.skipped)}`
@@ -144,7 +145,8 @@ function snapshotMtimes(root) {
     'volumes.json',
     'DISK_01/FIREHOSE/triage-manifest.json',
     'DISK_02/LINEAS/registry.yaml',
-    'DISK_03/FORCES/registry.json'
+    'DISK_03/FORCES/registry.json',
+    'DISK_04/SSB/manifest.json'
   ];
   for (const rel of watch) {
     const abs = path.join(root, rel);

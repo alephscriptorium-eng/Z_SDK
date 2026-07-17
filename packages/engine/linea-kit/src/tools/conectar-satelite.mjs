@@ -50,7 +50,7 @@ export function conectarSatelite(options) {
         kind: 'gossip',
         feed_type: options.ssb?.feedType ?? 'tribe*',
         disk_hint: options.ssb?.diskHint ?? 'DISK_04/SSB',
-        note: 'Gossip family; exportador SSB→JSON es WP-U84. Stub only.'
+        note: 'Gossip family; exportador SSB→JSON = @zeus/ssb-system (WP-U84). Dump JSON + sync CLI.'
       }
     }
   };
@@ -102,7 +102,7 @@ Generado por \`conectar-satelite\` (@zeus/linea-kit).
 | ------- | ------ | ----- |
 | wiki (estática) | \`remotes.json\` → remotes.wiki | fetch con gate de aprobación |
 | ATProto (stream) | remotes.atproto | export a DISK_01; no en este tool |
-| SSB (gossip) | remotes.ssb | WP-U84; stub |
+| SSB (gossip) | remotes.ssb | \`@zeus/ssb-system\` sync CLI |
 
 ## MCP
 

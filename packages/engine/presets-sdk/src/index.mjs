@@ -88,7 +88,11 @@ export {
   FORCES_VOLUME_ID,
   resolveForcesBasePath,
   resolveForcesVolumeRoot,
-  resolveForcesVolumePath
+  resolveForcesVolumePath,
+  SSB_VOLUME_ID,
+  resolveSsbBasePath,
+  resolveSsbVolumeRoot,
+  resolveSsbVolumePath
 } from './paths/index.mjs';
 export {
   loadVolumesConfig,
