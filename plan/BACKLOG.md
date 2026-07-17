@@ -13,7 +13,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ## Ola 0 — Suelo firme
 
-- ⬜ **WP-U00 · Gates de prácticas** — test raíz `npm run gates` estilo
+- 🔶 **WP-U00 · Gates de prácticas** — en curso (lote-0a / 2026-07-17) — test raíz `npm run gates` estilo
   `grep-gates` (ARG WP-15): (a) puertos/URLs hardcodeados fuera de
   `presets-sdk/env`, docs y specs; (b) nombres de transición
   (`legacy|v2|-old|-new`) en código; (c) imports que violen ARQUITECTURA §4
@@ -25,7 +25,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   actual (o lista de excepciones justificadas para lo preexistente).
   **Demolición:** n/a.
 
-- ⬜ **WP-U02 · Identidad del juego: delta** (D-8) — retirar el nombre
+- 🔶 **WP-U02 · Identidad del juego: delta** — en curso (lote-0a / 2026-07-17) — (D-8) — retirar el nombre
   «CAUDAL» en favor de **delta**: títulos y prosa de
   `packages/arg/spec/*.md`, README de arg, y las cadenas/banners en código
   (~10 archivos: arg-console kit/vistas/server, authority, launch, contract).
@@ -35,7 +35,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   **Demolición:** el nombre viejo — sin «(antes CAUDAL)» permanentes en specs;
   la historia queda en git y en D-8.
 
-- ⬜ **WP-U01 · Tests que faltan en el núcleo** — `firehose-core` (hoy
+- 🔶 **WP-U01 · Tests que faltan en el núcleo** — en curso (lote-0a / 2026-07-17) — `firehose-core` (hoy
   `test: echo 'sin tests'`) y `room-client-browser` (0 test files): tests de
   comportamiento de su API pública.
   **CA:** `npm test -w` verde en ambos con ≥1 test real por export principal.
