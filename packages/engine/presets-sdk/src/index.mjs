@@ -35,7 +35,7 @@ export {
 // Shared helpers
 export { readJson } from './shared/fs-json.mjs';
 
-// Backward-compat re-exports (prefer family subpaths for new code)
+// Root barrel also re-exports family subpaths (prefer @zeus/presets-sdk/{env,discovery,…})
 export {
   discoverServers,
   syncDiscoveredServers,

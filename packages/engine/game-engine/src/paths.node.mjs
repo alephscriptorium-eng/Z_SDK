@@ -34,5 +34,5 @@ export const assetsDir = path.join(pkgDir, 'assets');
 /** Canonical GLBs (Xbot placeholder, RobotExpressive, SheenChair, SK_Alephillo). */
 export const modelsDir = path.join(assetsDir, 'models');
 
-/** Design/spec docs + canonical scene YAML (source of truth for the ARG). */
+/** Design/spec docs + canonical scene YAML (package-local; not game-specific). */
 export const specDir = path.join(pkgDir, 'spec');

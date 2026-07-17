@@ -2,7 +2,7 @@
 
 Visor de **sesión 3D** (:3018) — cliente room del runtime scriptorium. Express,
 server-rendered, sin bundler: sirve la shell + los assets crudos de
-[`@zeus/ui-3d-kit`](../../lib/ui-3d-kit), [`@zeus/view-kit`](../../lib/view-kit)
+[`@zeus/ui-3d-kit`](../../engine/ui-3d-kit), [`@zeus/view-kit`](../../engine/view-kit)
 y three.js vendorizado; el navegador resuelve todo por import map.
 
 ## Qué rinde
@@ -17,7 +17,7 @@ y three.js vendorizado; el navegador resuelve todo por import map.
   | `PING {from}` | walk home→far | walk → idle al llegar |
   | `PONG {from}` | walk far→home | walk + emote (wave) |
   | `selection:cast {actorId, targetId, label, deckId}` | settle en el ancla del nodo del deck | sit + emote (thumbsUp), etiqueta = `label ?? targetId`, HUD |
-  | `session:state` (snapshot) | sin intents; reconcilia etiquetas (idempotente, para viewers que entran tarde) | etiqueta desde `selections.byActor` |
+  | snapshot vía `onState` (contrato room) | sin intents; reconcilia mapa + etiquetas (idempotente, viewers tardíos) | etiqueta desde `selections.byActor` |
 
 - **HUD DOM** con el estado de la sesión (deck, playhead, selecciones).
 
