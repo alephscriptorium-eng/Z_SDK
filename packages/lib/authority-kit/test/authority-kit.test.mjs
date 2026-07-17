@@ -11,6 +11,8 @@ import {
   PROTOCOL_EVENTS
 } from '../src/index.mjs';
 
+const GAME = 'kit-test';
+
 function createFakeIo() {
   /** @type {Map<string, Function[]>} */
   const handlers = new Map();
@@ -54,6 +56,9 @@ function createDomain(opts = {}) {
       if (payload?.intent === 'bad') return { ok: false, error: 'rechazo_test' };
       if (opts.onApply) opts.onApply(payload);
       ledger.push({ kind: 'ok', intent: payload.intent, actorId: payload.actorId });
+      if (opts.emitTrack) {
+        tracks.push({ actorId: payload.actorId, hint: 'test-browser', ref: { kind: 'nodo' } });
+      }
       return { ok: true, error: null };
     },
     tick() {
@@ -76,6 +81,21 @@ function createDomain(opts = {}) {
     get tickCount() {
       return tickCount;
     }
+  };
+}
+
+/** @param {Partial<object>} extra */
+function baseOpts(extra = {}) {
+  return {
+    user: 'auth-test',
+    room: 'ROOM_T',
+    game: GAME,
+    tickMs: 60_000,
+    installSignalHandlers: false,
+    exitOnSignal: null,
+    log: () => {},
+    warn: () => {},
+    ...extra
   };
 }
 
@@ -148,36 +168,78 @@ describe('resolveContentRevSnapshotOpts', () => {
 });
 
 describe('startAuthority', () => {
-  it('aplica intent → publica ledger + state en eventos canónicos', async () => {
+  it('exige game (string no vacío)', async () => {
     const fake = createFakeClient();
-    const domain = createDomain();
+    await assert.rejects(
+      () =>
+        startAuthority(
+          baseOpts({
+            game: undefined,
+            domain: createDomain(),
+            createClient: () => fake,
+            connectAndJoin: async () => ({ room: 'ROOM_T' })
+          })
+        ),
+      /game/
+    );
+    await assert.rejects(
+      () =>
+        startAuthority(
+          baseOpts({
+            game: '',
+            domain: createDomain(),
+            createClient: () => fake,
+            connectAndJoin: async () => ({ room: 'ROOM_T' })
+          })
+        ),
+      /game/
+    );
+  });
+
+  it('publica state|track|ledger con payload.game vía makeEnvelope', async () => {
+    const fake = createFakeClient();
+    const domain = createDomain({ emitTrack: true });
     const accepted = [];
 
-    const auth = await startAuthority({
-      user: 'auth-test',
-      room: 'ROOM_T',
-      tickMs: 60_000,
-      domain,
-      events: PROTOCOL_EVENTS,
-      createClient: () => fake,
-      connectAndJoin: async () => ({ room: 'ROOM_T', socketId: '1' }),
-      installSignalHandlers: false,
-      exitOnSignal: null,
-      onIntentAccepted: (p) => accepted.push(p),
-      log: () => {},
-      warn: () => {}
-    });
+    const auth = await startAuthority(
+      baseOpts({
+        domain,
+        events: PROTOCOL_EVENTS,
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T', socketId: '1' }),
+        onIntentAccepted: (p) => accepted.push(p)
+      })
+    );
 
-    // publishState inicial
-    assert.ok(fake.published.some((p) => p.event === 'state'));
+    const bootState = fake.published.find((p) => p.event === 'state');
+    assert.ok(bootState);
+    assert.equal(bootState.payload.game, GAME);
+    assert.equal(bootState.payload.from, 'auth-test');
+    assert.equal(bootState.payload.reason, 'change');
 
     fake.io.emit('intent', { actorId: 'uno', intent: 'join' });
     assert.equal(accepted.length, 1);
-    assert.ok(fake.published.some((p) => p.event === 'ledger'));
-    assert.ok(
-      fake.published.filter((p) => p.event === 'state').length >= 2,
-      'state tras intent'
-    );
+
+    const ledgerPub = fake.published.filter((p) => p.event === 'ledger');
+    assert.ok(ledgerPub.length >= 1);
+    for (const p of ledgerPub) {
+      assert.equal(p.payload.game, GAME);
+      assert.equal(p.payload.kind, 'ok');
+      assert.equal(p.payload.entryKind, 'ok');
+    }
+
+    const trackPub = fake.published.filter((p) => p.event === 'track');
+    assert.ok(trackPub.length >= 1);
+    for (const p of trackPub) {
+      assert.equal(p.payload.game, GAME);
+      assert.equal(p.payload.hint, 'test-browser');
+    }
+
+    const states = fake.published.filter((p) => p.event === 'state');
+    assert.ok(states.length >= 2, 'state tras intent');
+    for (const p of states) {
+      assert.equal(p.payload.game, GAME);
+    }
 
     await auth.stop(null);
     assert.equal(fake.io.closed, true);
@@ -189,19 +251,14 @@ describe('startAuthority', () => {
     const rejected = [];
     const before = fake.published.length;
 
-    const auth = await startAuthority({
-      user: 'auth-test',
-      room: 'ROOM_T',
-      tickMs: 60_000,
-      domain,
-      createClient: () => fake,
-      connectAndJoin: async () => ({ room: 'ROOM_T' }),
-      installSignalHandlers: false,
-      exitOnSignal: null,
-      onIntentRejected: (p, err) => rejected.push({ p, err }),
-      log: () => {},
-      warn: () => {}
-    });
+    const auth = await startAuthority(
+      baseOpts({
+        domain,
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T' }),
+        onIntentRejected: (p, err) => rejected.push({ p, err })
+      })
+    );
 
     const afterBoot = fake.published.length;
     assert.ok(afterBoot > before);
@@ -213,57 +270,54 @@ describe('startAuthority', () => {
     await auth.stop(null);
   });
 
-  it('dual-wire: publica state en canónico + alias', async () => {
+  it('dual-wire: publica state en canónico + alias (mismo envelope game)', async () => {
     const fake = createFakeClient();
     const domain = createDomain({ withRev: false });
 
-    const auth = await startAuthority({
-      user: 'auth-test',
-      room: 'ROOM_T',
-      tickMs: 60_000,
-      domain,
-      events: {
-        STATE: ['state', 'arg:state'],
-        INTENT: ['intent', 'arg:intent'],
-        TRACK: ['track', 'arg:track'],
-        LEDGER: ['ledger', 'arg:ledger']
-      },
-      createClient: () => fake,
-      connectAndJoin: async () => ({ room: 'ROOM_T' }),
-      installSignalHandlers: false,
-      exitOnSignal: null,
-      log: () => {},
-      warn: () => {}
-    });
+    const auth = await startAuthority(
+      baseOpts({
+        domain,
+        events: {
+          STATE: ['state', 'arg:state'],
+          INTENT: ['intent', 'arg:intent'],
+          TRACK: ['track', 'arg:track'],
+          LEDGER: ['ledger', 'arg:ledger']
+        },
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T' })
+      })
+    );
 
     const stateEvents = fake.published.filter((p) => p.event === 'state' || p.event === 'arg:state');
     assert.ok(stateEvents.some((p) => p.event === 'state'));
     assert.ok(stateEvents.some((p) => p.event === 'arg:state'));
+    for (const p of stateEvents) {
+      assert.equal(p.payload.game, GAME);
+    }
 
     fake.io.emit('arg:intent', { actorId: 'dos', intent: 'join' });
-    assert.ok(fake.published.some((p) => p.event === 'arg:ledger'));
-    assert.ok(fake.published.some((p) => p.event === 'ledger'));
+    const ledgers = fake.published.filter((p) => p.event === 'arg:ledger' || p.event === 'ledger');
+    assert.ok(ledgers.some((p) => p.event === 'arg:ledger'));
+    assert.ok(ledgers.some((p) => p.event === 'ledger'));
+    for (const p of ledgers) {
+      assert.equal(p.payload.game, GAME);
+    }
     await auth.stop(null);
   });
 
   it('onShutdown se invoca al stop', async () => {
     const fake = createFakeClient();
     let closed = false;
-    const auth = await startAuthority({
-      user: 'auth-test',
-      room: 'ROOM_T',
-      tickMs: 60_000,
-      domain: createDomain({ withRev: false }),
-      createClient: () => fake,
-      connectAndJoin: async () => ({ room: 'ROOM_T' }),
-      installSignalHandlers: false,
-      exitOnSignal: null,
-      onShutdown: async () => {
-        closed = true;
-      },
-      log: () => {},
-      warn: () => {}
-    });
+    const auth = await startAuthority(
+      baseOpts({
+        domain: createDomain({ withRev: false }),
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T' }),
+        onShutdown: async () => {
+          closed = true;
+        }
+      })
+    );
     await auth.stop(null);
     assert.equal(closed, true);
   });
@@ -274,22 +328,20 @@ describe('startAuthority', () => {
     const domain = createDomain({ withRev: false });
     domain.snapshot = () => ({ huge: 'x'.repeat(40_000) });
 
-    const auth = await startAuthority({
-      user: 'auth-test',
-      room: 'ROOM_T',
-      tickMs: 60_000,
-      domain,
-      snapshotBudget: true,
-      createClient: () => fake,
-      connectAndJoin: async () => ({ room: 'ROOM_T' }),
-      installSignalHandlers: false,
-      exitOnSignal: null,
-      log: () => {},
-      warn: (...args) => warnings.push(args.join(' '))
-    });
+    const auth = await startAuthority(
+      baseOpts({
+        domain,
+        snapshotBudget: true,
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T' }),
+        warn: (...args) => warnings.push(args.join(' '))
+      })
+    );
 
     assert.ok(warnings.some((w) => /over budget/.test(w)));
-    assert.ok(fake.published.some((p) => p.event === 'state'));
+    const state = fake.published.find((p) => p.event === 'state');
+    assert.ok(state);
+    assert.equal(state.payload.game, GAME);
     await auth.stop(null);
   });
 });

@@ -1,17 +1,17 @@
 # `@zeus/authority-kit`
 
 Autoridad genérica Zeus: loop de tick, aplicación de intents vía reducer
-registrado (dominio inyectado), emisión `state` / `ledger` / `track`,
-presupuesto de snapshot medible y arranque/parada limpios.
+registrado (dominio inyectado), emisión `state` / `ledger` / `track` vía
+`makeEnvelope` de `@zeus/protocol` (campo `game` obligatorio), presupuesto de
+snapshot medible y arranque/parada limpios.
 
-Node-only (depende de `@zeus/rooms`). **No nombra juegos** (D-8): el juego
-aporta el dominio y, si hace falta, alias wire.
+Node-only (depende de `@zeus/rooms`). **No nombra juegos** (D-8): el caller
+pasa `game` y aporta el dominio; el kit solo exige string no vacío.
 
 ## Uso
 
 ```js
 import { startAuthority, PROTOCOL_EVENTS } from '@zeus/authority-kit';
-import { EVENTS as GAME_EVENTS } from './my-game-contract.mjs';
 
 const domain = {
   applyIntent(payload) { /* → { ok, error } */ },
@@ -24,6 +24,7 @@ const domain = {
 await startAuthority({
   user: 'my-authority',
   room: 'MY_ROOM',
+  game: 'my-game', // obligatorio; lo inyecta el paquete de juego
   tickMs: 100,
   heartbeatMs: 1000,
   domain,
@@ -33,6 +34,9 @@ await startAuthority({
   onShutdown: async () => { /* cerrar feeds, etc. */ }
 });
 ```
+
+`state` / `track` / `ledger` se publican siempre con envelope
+`{ v, game, … }`. No hay publicación de payloads sueltos sin `game`.
 
 La cascada SIGINT del launcher del juego (p. ej. `arg-demos/launch.mjs`) se
 hereda: el kit solo escucha `SIGINT`/`SIGTERM` en el proceso de autoridad.
