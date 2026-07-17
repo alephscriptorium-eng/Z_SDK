@@ -113,4 +113,43 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador). Sin merge ni ✅ BACKLOG en esta
+pasada (pedido explícito del usuario; autorización queda pendiente de
+merge+✅ en master). Sin push.
+
+### Verificado
+
+- Diff vs master: ya al día (merge-base = master `0220246`); no hizo falta
+  merge. 3 commits convencionales; 14 archivos; alcance U30 (arg-domain +
+  spec delta + playbook-coherence + reporte). Worker **no** tocó
+  `plan/BACKLOG.md` ni `packages/arg/spec/BACKLOG.md`.
+- Demolición: n/a (adición). Sin v2/legacy/old/new en src tocado.
+- Diseño previo en CONTRATO (tabla reducer + `lines.regs`) y LORE; casos
+  C-30..C-32 en formato playbook-kit (`dj_*` provisionales → U31).
+- Ledger con evidencia en test domain-state: `kind` cache/curate/milestone,
+  `actorId`, `detail.status` / `reasons`; score `cached`/`curated`/`milestoned`.
+- PRACTICAS §1.11: delta verde; pozo sin intents DJ (documentado) +
+  `test:pozo` / `e2e:pozo-mcp` verdes; `gates` limpio. Auto-revisión §3
+  honesta.
+
+### Re-CA (worktree, sin browser)
+
+- `npm run test:arg-domain` → **59 pass**, 0 fail
+- `npm run test:arg` → exit 0 (domain + feeds + console + player-mcp)
+- `npm run test:pozo` → **6 pass**, 0 fail
+- `npm run e2e:pozo-mcp` → `C-01/C-02 + gates` verde
+- `npm run gates` → `gates: OK (0 offenders)`
+
+### CA
+
+- [x] tests de reducer válidos/inválidos por rol (`cache`/`curate`/
+  `milestone` + rechazos; player → `rol_no_autorizado`)
+- [x] entradas de ledger con evidencia (domain-state WP-U30)
+- [x] casos C-30..C-32 redactados en CASOS.md (playbook-kit; coherencia ok)
+
+### Merge sugerido
+
+Tras merge+✅ en master (fuera de esta pasada): U31 (dep U30+U11) queda
+desbloqueado en dominio; U32 sigue detrás de U31. Hallazgos U30
+(`dj_*` MCP/decks, side-effect volumen, `makeIntent`+role) → U31 / cleanup
+menor — no bloquean.
