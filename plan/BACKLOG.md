@@ -655,14 +655,14 @@ Diferidos del reporte/revisión WP-U92 (no bloquean cierre):
 
 ## Ola 8 — Feeds federados (dep U80)
 
-- ⬜ **WP-U84 · Conector SSB → VOLUMES (Tribes y Parliament)** — exportador
-  del log del pub OASIS (mensajes tipados `tribe*`, `parliament*`, votos —
-  modelos en DATOS.md §7) a **JSON en disco**: volumen `DISK_04/SSB` (el
-  slot DISK_03 lo ocupa FORCES desde 2026-07-15) con
-  entrada en volumes.json (readonly, provenance del pub), mismo procedimiento
-  que firehose. Servidor MCP loader read-only hermano de linea-firehose.
-  Files-first: el exportador es un proceso de sync, no un demonio nuevo del
-  mesh.
+- 🔶 **WP-U84 · Conector SSB → VOLUMES (Tribes y Parliament)** — (lote-8a /
+  orquestador / 2026-07-18) — exportador del log del pub OASIS (mensajes
+  tipados `tribe*`, `parliament*`, votos — modelos en DATOS.md §7) a **JSON
+  en disco**: volumen `DISK_04/SSB` (el slot DISK_03 lo ocupa FORCES desde
+  2026-07-15) con entrada en volumes.json (readonly, provenance del pub),
+  mismo procedimiento que firehose. Servidor MCP loader read-only hermano de
+  linea-firehose. Files-first: el exportador es un proceso de sync, no un
+  demonio nuevo del mesh.
   **CA:** e2e contra fixture de log SSB (sin red): export → volumen válido
   (U80) → resources MCP navegables; documentado el runbook contra el pub real
   (`ZEUS_SSB_*`), ejecutado si hay acceso (⏳ si no, honesto).
