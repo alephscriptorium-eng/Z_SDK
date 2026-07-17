@@ -126,4 +126,41 @@ Ninguna. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador). Sin merge ni ✅ BACKLOG en esta pasada
+(pedido explícito del usuario; autorización queda pendiente de merge+✅ en master).
+
+### Verificado
+
+- Merge `master` → rama: `79e39f9` (hereda WP-U24 plan; ort, sin conflicto de producto).
+- Diff acotado a U20: `packages/lib/view-kit`, consumo arg-console, `assets/js/delta`,
+  demolición `assets/js/kit`, eslint/workspace, reporte. Worker **no** tocó BACKLOG.
+- Commits convencionales: `feat(view-kit)` · `refactor(arg-console)!` · docs.
+- Re-CA (worktree post-merge, sin `ZEUS_OPEN_BROWSER`):
+  - `npm test -w @zeus/view-kit` → 30/30 pass
+  - `npm run test:arg-console` → 32/32 pass (incl. `/view-kit` + cadena imports)
+  - `npm run e2e:arg` → verde (G-ARG-E2E.1–10)
+  - `npm run gates` → `gates: OK (0 offenders)`
+- Demolición: `assets/js/kit/` ausente; cero refs `assets/js/kit` en `packages/arg`;
+  piezas de dominio en `assets/js/delta/`; vistas importan `@zeus/view-kit` + delta.
+- `demo:arg` visual: ⏳ honesto en reporte — **aceptable** (brief: headless OK).
+- PRACTICAS §1–3 / D-8: corte kit genérico vs delta correcto; respuesta pozo §1.11 sí.
+  Deuda menor no bloqueante: clases CSS `arg-panel` / `arg-btn` aún en view-kit
+  (acoplamiento cosmético al CSS del consumidor; no nombres de dominio en API).
+
+### CA
+
+- [x] `test:arg-console` verde
+- [x] `e2e:arg` verde
+- [x] `demo:arg` se ve igual — ⏳ anotado (no inventado)
+
+### Merge sugerido
+
+Tras ✅ BACKLOG en master: merge `wp/u20-view-kit` → master; luego U21/U22
+(paralelizables) y U24 (ya en plan; independiente de producto U20). Worktree
+`.worktrees/wp-u20-view-kit` a retirar tras merge.
+
+### Notas (no bloquean)
+
+- Flaky e2e G-ARG-E2E.10 (reporte worker) — ajeno; re-CA verde en revisión.
+- 3d-monitor kit hermano → WP-U22.
+- Colisión nombre SSR `arg-console/src/view-kit` vs `@zeus/view-kit` → U21 posible.
