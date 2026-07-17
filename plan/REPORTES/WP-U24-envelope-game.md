@@ -145,4 +145,49 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador). Sin merge ni ✅ BACKLOG en esta
+pasada (pedido explícito del usuario; autorización queda pendiente de
+merge+✅ en master). Sin push.
+
+### Verificado
+
+- Merge `master` → rama: limpio (`chore(wp-u24): merge master`); hereda
+  WP-U22 (3d-monitor / player-3d-ui sobre view-kit). Sin conflicto de
+  producto con U24.
+- Diff acotado a U24: `authority-kit` (`game` + `makeEnvelope` state/track/
+  ledger), caller delta `game: GAME_ID`, README kit, reporte. Worker **no**
+  tocó BACKLOG ni `packages/arg/spec/BACKLOG.md`. Dual-wire / A-05 no
+  cambiado (solo aserción `payload.game` en test dual-wire ya existente).
+- Commits convencionales: `feat(authority-kit)!` · `refactor(arg-demos)` ·
+  docs · merge chore.
+- Re-CA (worktree post-merge, `ZEUS_OPEN_BROWSER=0`):
+  - `npm test -w @zeus/authority-kit` → 10/10 pass
+  - `npm run test:arg` → exit 0
+  - `npm run e2e:arg` → verde (G-ARG-E2E.1–.10; sin browser)
+  - `npm run gates` → `gates: OK (0 offenders)`
+- Demolición: cero `publishAll(...{ from:` sueltos; `makeEnvelope` ×3
+  (state/track/ledger); cero nombres de juego en `authority-kit/src/`.
+- PRACTICAS §1.11 pozo: respuesta sí (solo `game: 'pozo'` + domain).
+- Auto-revisión PRACTICAS §3 honesta; evidencia literal coherente.
+
+### CA
+
+- [x] tests del kit asertan `payload.game` en state/track/ledger (+ rechazo
+  sin `game`)
+- [x] autoridad delta instancia el kit y `test:arg` / `e2e:arg` verdes
+- [x] cero nombres de juego en el kit (caller inyecta `game`)
+
+### Hallazgo (no bloquea)
+
+- **Ledger `kind` vs `entryKind`:** documentado en reporte + comentario en
+  kit. Payload lleva `entryKind` + `kind` restaurado al discriminante para
+  no romper e2e/vistas. Migrar consumidores a `entryKind` (dejar
+  `kind: 'ledger'` en envelope) = WP futuro; no es A-05.
+
+### Merge
+
+- Autorizado a merge temprano en master (gate pre-U23; pocos conflictos con
+  vistas). Preferible antes de U23. U21 sigue en vuelo en paralelo — no
+  bloquea este merge.
+- Tras merge+✅: `git worktree remove` del worktree U24.
+- Siguiente tras ✅: desbloquear U23.
