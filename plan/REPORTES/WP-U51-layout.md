@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok) |
 | fecha | 2026-07-17 |
 | rama | `wp/u51-layout` |
-| commit(s) | `719bab7` (move); + commit de paths/reporte en HEAD |
+| commit(s) | `719bab7` (move); `04375f8` (paths + reporte) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
