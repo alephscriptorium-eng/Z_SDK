@@ -5,7 +5,7 @@
 | agente | worker (swarm chat WP-U52) |
 | fecha | 2026-07-17 |
 | rama | `wp/u52-auditoria` |
-| commit(s) | `e884493` (+ commit de este reporte) |
+| commit(s) | `e884493` `9a8ba1b` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
