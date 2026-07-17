@@ -341,7 +341,8 @@ Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup)
   resource-template MCP y responde; `spec:generate:all` la documenta.
   **Demolición:** `openapi-mcp-projector` como huérfano (cableado o borrado).
 
-- ⬜ **WP-U41 · Portal de docs refundado** *(dep U10, U40)* — VitePress
+- 🔶 **WP-U41 · Portal de docs refundado** *(dep U10, U40)* — en curso
+  (ola-4 / orquestador / 2026-07-17) — VitePress
   refleja la realidad: engine/editor/mesh/games, contrato único (AsyncAPI),
   rutas REST (OpenAPI/Redoc), resources MCP, y el método playbook. README
   raíz y README de cada paquete publicable al día (el de `packages/arg` lista
