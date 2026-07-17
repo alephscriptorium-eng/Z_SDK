@@ -1,7 +1,7 @@
 {
   "name": "@zeus/http-contract",
   "version": "0.1.0",
-  "description": "HTTP REST contract core: RouteEntry manifests, zod envelopes, OpenAPI generation, route coverage, express validation middleware",
+  "description": "HTTP REST contract core: RouteEntry manifests, zod envelopes, OpenAPI generation, RouteEntry→MCP projection, route coverage, express validation middleware",
   "type": "module",
   "main": "src/index.mjs",
   "exports": {
