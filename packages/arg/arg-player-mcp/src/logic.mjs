@@ -1,17 +1,21 @@
 /**
  * Tools/resources/prompts MCP del arg-player-mcp.
  *
- * Semántica verificable: cada tool de acción emite el arg:intent como MI
- * actor y espera confirmación observable en arg:state / arg:ledger. La
- * autoridad no responde a intents rechazados: el no-op se detecta con una
- * ventana corta (noopMs) y se explica con un dry-run puro del reducer
- * (reduceArgIntent sobre el estado proyectado — jamás se aplican ops).
+ * Instancia @zeus/player-mcp-kit: confirmIntent, resources estándar,
+ * health. Aquí solo vive lo específico de delta (tools, proyección, nav).
  */
 
 import { z } from 'zod';
 import { jsonContent, resolveMcpApprovalToken } from '@zeus/presets-sdk';
 import { mcpApprovalGateLine } from '@zeus/presets-sdk/mcp';
 import { EMOTES, deltaV0, makeIntent, cloakModFor, CLOAK_MODS } from '@zeus/arg-domain';
+import {
+  confirmIntent,
+  buildStandardPlayerResources,
+  fail,
+  sleep,
+  DEFAULT_POLL_MS
+} from '@zeus/player-mcp-kit';
 import {
   staticNav,
   corridorsFrom,
@@ -24,71 +28,30 @@ import {
 import { findPath } from './nav.mjs';
 import { readCasosMarkdown, listCasoIds, extractCaso } from './casos.mjs';
 
-const POLL_MS = 120;
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+/** Esquema de resources estándar (histórico `arg://…`). */
+const RESOURCE_SCHEME = 'arg';
 
 function contactIdFor(actorId, targetId) {
   const [x, y] = [actorId, targetId].sort();
   return `c-${x}--${y}`;
 }
 
-function fail(error, extra = {}) {
-  return { ok: false, error, ...extra };
-}
-
 /**
- * Emite un intent y espera confirmación observable.
- *
- * @param {object} bridge — room bridge del actor
- * @param {object} cfg — { confirmTimeoutMs, noopMs }
- * @param {{
- *   intent: string,
- *   args?: object,
- *   done: (state: object) => unknown,          // truthy = confirmado
- *   unchanged?: (state: object) => boolean,     // true = sin efecto aún (candidato a no-op)
- *   evidence?: (state: object|null, value: unknown) => object,
- *   timeoutMs?: number,
- *   timeoutHint?: string
- * }} spec
+ * confirmIntent del kit + dry-run delta (explainIntent / maze).
+ * @param {object} bridge
+ * @param {{ confirmTimeoutMs: number, noopMs: number }} cfg
+ * @param {object} spec
  */
-async function confirmIntent(bridge, cfg, spec) {
-  if (!bridge.connected) return fail('room_desconectada');
-  const { intent, args = {}, done, unchanged, evidence, timeoutHint } = spec;
-  const timeoutMs = spec.timeoutMs ?? cfg.confirmTimeoutMs;
-
-  bridge.emitIntent(intent, args);
-
-  const start = Date.now();
-  let explainedOnce = false;
-  while (Date.now() - start < timeoutMs) {
-    const state = bridge.lastState();
-    if (state) {
-      const value = done(state);
-      if (value) {
-        return { ok: true, evidencia: evidence ? evidence(state, value) : value };
-      }
-      // Ventana de no-op: si nada cambió, pregunta al reducer (dry-run puro)
-      // qué regla habría rechazado el intent.
-      if (!explainedOnce && Date.now() - start >= cfg.noopMs && (!unchanged || unchanged(state))) {
-        explainedOnce = true;
-        const verdict = explainIntent(state, bridge.maze(), makeIntent(bridge.actor, intent, args));
-        if (!verdict.ok) {
-          return fail(verdict.error, {
-            reglaProbable: verdict.error,
-            evidencia: evidence ? evidence(state, null) : { actor: compactActor(state, bridge.actor) }
-          });
-        }
-      }
-    }
-    await sleep(POLL_MS);
-  }
-  const state = bridge.lastState();
-  return fail('timeout_confirmacion', {
-    ...(timeoutHint ? { nota: timeoutHint } : {}),
-    evidencia: evidence ? evidence(state, null) : { actor: compactActor(state, bridge.actor) }
+async function confirm(bridge, cfg, spec) {
+  const { intent, args = {} } = spec;
+  return confirmIntent(bridge, cfg, {
+    ...spec,
+    explain:
+      spec.explain ??
+      ((state) => explainIntent(state, bridge.maze(), makeIntent(bridge.actor, intent, args))),
+    evidence:
+      spec.evidence ??
+      ((state, value) => (value != null ? value : { actor: compactActor(state, bridge.actor) }))
   });
 }
 
@@ -97,7 +60,7 @@ async function moveOneHop(bridge, cfg, nodeId, { waitArrival = true, timeoutMs }
   const pre = bridge.myActor();
   if (!pre) return fail('actor_desconocido', { nota: 'llama antes a player_join' });
   const originNodeId = pre.nodeId;
-  return confirmIntent(bridge, cfg, {
+  return confirm(bridge, cfg, {
     intent: 'move',
     args: { nodeId },
     timeoutMs,
@@ -142,7 +105,7 @@ export function buildMcp(server, bridge, cfg) {
     },
     async ({ tier, timeoutMs }) =>
       jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'join',
           args: { kind: 'player', ...(tier ? { tier } : {}) },
           timeoutMs,
@@ -249,7 +212,7 @@ export function buildMcp(server, bridge, cfg) {
     },
     async ({ riverId, timeoutMs }) =>
       jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'ride',
           args: { riverId },
           timeoutMs,
@@ -276,7 +239,7 @@ export function buildMcp(server, bridge, cfg) {
         return jsonContent(fail('no_montado', { evidencia: { actor: me } }));
       }
       return jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'dismount',
           args: {},
           timeoutMs,
@@ -356,7 +319,7 @@ export function buildMcp(server, bridge, cfg) {
     async ({ dropletId, label, timeoutMs }) => {
       const sinceSeq = bridge.maxLedgerSeq();
       return jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'salvage',
           args: { dropletId, label },
           timeoutMs,
@@ -389,7 +352,7 @@ export function buildMcp(server, bridge, cfg) {
     async ({ dropletId, timeoutMs }) => {
       const sinceTs = Date.now();
       return jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'track:cast',
           args: { dropletId },
           timeoutMs,
@@ -421,7 +384,7 @@ export function buildMcp(server, bridge, cfg) {
     async ({ targetId, timeoutMs }) => {
       const contactId = contactIdFor(actor, targetId);
       return jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'contact:request',
           args: { targetId },
           timeoutMs,
@@ -451,7 +414,7 @@ export function buildMcp(server, bridge, cfg) {
       if (!mine) return jsonContent(fail('sin_contacto_abierto'));
       const [contactId] = mine;
       return jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'contact:close',
           args: { contactId },
           timeoutMs,
@@ -492,7 +455,7 @@ export function buildMcp(server, bridge, cfg) {
         return jsonContent(payload);
       }
       return jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'tap:set',
           args: { tapId, aperture },
           timeoutMs,
@@ -530,7 +493,7 @@ export function buildMcp(server, bridge, cfg) {
     },
     async ({ corridorId, approval, waitOpen = false, timeoutMs }) => {
       const corridorState = () => corridorsFrom(bridge.maze())[corridorId]?.state ?? null;
-      const phase1 = await confirmIntent(bridge, cfg, {
+      const phase1 = await confirm(bridge, cfg, {
         intent: 'excavate',
         args: { corridorId, ...(approval ? { approval } : {}) },
         timeoutMs,
@@ -569,7 +532,7 @@ export function buildMcp(server, bridge, cfg) {
             fail('excavacion_fallida', { evidencia: { pasillo: { corridorId, state }, ledger: errorEntry ?? null } })
           );
         }
-        await sleep(POLL_MS);
+        await sleep(DEFAULT_POLL_MS);
       }
       return jsonContent(fail('timeout_confirmacion', { evidencia: { pasillo: { corridorId, state: corridorState() } } }));
     }
@@ -592,7 +555,7 @@ export function buildMcp(server, bridge, cfg) {
     },
     async ({ presetId, label, timeoutMs }) =>
       jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'cloak:equip',
           args: { presetId, ...(label ? { label } : {}) },
           timeoutMs,
@@ -618,7 +581,7 @@ export function buildMcp(server, bridge, cfg) {
     },
     async ({ name, timeoutMs }) =>
       jsonContent(
-        await confirmIntent(bridge, cfg, {
+        await confirm(bridge, cfg, {
           intent: 'emote',
           args: { name },
           timeoutMs: timeoutMs ?? 5000,
@@ -659,68 +622,76 @@ export function buildMcp(server, bridge, cfg) {
  * @param {object} bridge
  */
 export function getResourceRegistry(bridge) {
-  return [
-    {
-      name: 'arg-player-state',
-      uri: 'arg://player/state',
-      title: `Actor "${bridge.actor}" en vivo`,
-      mimeType: 'application/json',
-      description: 'Snapshot compacto de MI actor + grifos/mar/objetivo resumidos (mismo payload que player_state).',
-      read: () => summarizeState(bridge.lastState(), bridge.actor)
+  const standard = buildStandardPlayerResources({
+    game: RESOURCE_SCHEME,
+    bridge,
+    titles: {
+      playerState: `Actor "${bridge.actor}" en vivo`,
+      scene: 'Escena delta-v0 con estados en vivo',
+      casos: 'Playbook de casos de validación (CASOS.md)'
     },
-    {
-      name: 'arg-scene',
-      uri: 'arg://scene',
-      title: 'Escena delta-v0 con estados en vivo',
-      mimeType: 'application/json',
-      description:
+    descriptions: {
+      playerState:
+        'Snapshot compacto de MI actor + grifos/mar/objetivo resumidos (mismo payload que player_state).',
+      scene:
         'Nodos/enlaces del nav-graph, ríos, grifos y cantera (cámaras+pasillos con estados) para planificar rutas.',
-      read: () => {
-        const nav = staticNav();
-        const state = bridge.lastState();
-        const maze = bridge.maze();
-        return {
-          sceneId: deltaV0.id,
-          spawnNodeId: deltaV0.spawnNodeId,
-          labelset: deltaV0.labelset,
-          contactRadius: deltaV0.contactRadius,
-          nodos: Object.fromEntries(
-            Object.entries(nav.nodos).map(([id, n]) => [id, { nombre: n.nombre, zone: n.zone, position: n.position }])
-          ),
-          enlaces: Object.fromEntries(
-            Object.entries(nav.enlaces).map(([id, l]) => [
-              id,
-              {
-                from: l.from,
-                to: l.to,
-                medium: l.medium,
-                ...(l.corridorId ? { corridorId: l.corridorId } : {})
-              }
-            ])
-          ),
-          rios: Object.fromEntries(
-            Object.entries(deltaV0.rios).map(([id, r]) => [
-              id,
-              { tapId: r.tapId, embarkNodeId: r.embarkNodeId, mouthNodeId: r.mouthNodeId }
-            ])
-          ),
-          grifos: Object.fromEntries(
-            Object.entries(deltaV0.taps).map(([id, t]) => [
-              id,
-              { summitNodeId: t.summitNodeId, riverId: t.riverId, vivo: state?.taps?.[id] ?? null }
-            ])
-          ),
-          cantera: {
-            entryNodeId: deltaV0.cantera.entryNodeId,
-            entryChamberId: deltaV0.cantera.entryChamberId,
-            mazeRev: maze?.rev ?? null,
-            camaras: maze?.chambers ?? null,
-            pasillos: corridorsFrom(maze)
-          },
-          mar: state?.sea ?? { murkCapacity: deltaV0.mar.murkCapacity }
-        };
-      }
+      casos:
+        'packages/arg/spec/CASOS.md completo + índice de ids. Usa el prompt validar-caso para un caso concreto.'
     },
+    readPlayerState: () => summarizeState(bridge.lastState(), bridge.actor),
+    readScene: () => {
+      const nav = staticNav();
+      const state = bridge.lastState();
+      const maze = bridge.maze();
+      return {
+        sceneId: deltaV0.id,
+        spawnNodeId: deltaV0.spawnNodeId,
+        labelset: deltaV0.labelset,
+        contactRadius: deltaV0.contactRadius,
+        nodos: Object.fromEntries(
+          Object.entries(nav.nodos).map(([id, n]) => [id, { nombre: n.nombre, zone: n.zone, position: n.position }])
+        ),
+        enlaces: Object.fromEntries(
+          Object.entries(nav.enlaces).map(([id, l]) => [
+            id,
+            {
+              from: l.from,
+              to: l.to,
+              medium: l.medium,
+              ...(l.corridorId ? { corridorId: l.corridorId } : {})
+            }
+          ])
+        ),
+        rios: Object.fromEntries(
+          Object.entries(deltaV0.rios).map(([id, r]) => [
+            id,
+            { tapId: r.tapId, embarkNodeId: r.embarkNodeId, mouthNodeId: r.mouthNodeId }
+          ])
+        ),
+        grifos: Object.fromEntries(
+          Object.entries(deltaV0.taps).map(([id, t]) => [
+            id,
+            { summitNodeId: t.summitNodeId, riverId: t.riverId, vivo: state?.taps?.[id] ?? null }
+          ])
+        ),
+        cantera: {
+          entryNodeId: deltaV0.cantera.entryNodeId,
+          entryChamberId: deltaV0.cantera.entryChamberId,
+          mazeRev: maze?.rev ?? null,
+          camaras: maze?.chambers ?? null,
+          pasillos: corridorsFrom(maze)
+        },
+        mar: state?.sea ?? { murkCapacity: deltaV0.mar.murkCapacity }
+      };
+    },
+    readCasos: () => {
+      const markdown = readCasosMarkdown();
+      return { casos: listCasoIds(markdown), markdown };
+    }
+  });
+
+  return [
+    ...standard,
     {
       name: 'arg-sea',
       uri: 'arg://sea',
@@ -734,7 +705,8 @@ export function getResourceRegistry(bridge) {
       uri: 'arg://ledger/tail',
       title: 'Cola del ledger (últimas 50)',
       mimeType: 'application/json',
-      description: 'Últimas entradas arg:ledger vistas por este wrapper (label/excavate/burst/collapse/objetivo/error).',
+      description:
+        'Últimas entradas arg:ledger vistas por este wrapper (label/excavate/burst/collapse/objetivo/error).',
       read: () => ({ entries: bridge.ledgerTail() })
     },
     {
@@ -744,17 +716,6 @@ export function getResourceRegistry(bridge) {
       mimeType: 'application/json',
       description: 'Últimos arg:track de MI actor (recurso pisado + hint de navegador real).',
       read: () => ({ actor: bridge.actor, entries: bridge.tracksTail() })
-    },
-    {
-      name: 'arg-casos',
-      uri: 'arg://casos',
-      title: 'Playbook de casos de validación (CASOS.md)',
-      mimeType: 'application/json',
-      description: 'packages/arg/spec/CASOS.md completo + índice de ids. Usa el prompt validar-caso para un caso concreto.',
-      read: () => {
-        const markdown = readCasosMarkdown();
-        return { casos: listCasoIds(markdown), markdown };
-      }
     }
   ];
 }
