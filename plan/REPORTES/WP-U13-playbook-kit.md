@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U13) |
 | fecha | 2026-07-17 |
 | rama | `wp/u13-playbook-kit` |
-| commit(s) | `61dc749` feat(playbook-kit) · `471d1b7` refactor(player-mcp-kit)! · `982e2c4` refactor(arg-player-mcp)! · (docs reporte, ver log) |
+| commit(s) | `61dc749` feat(playbook-kit) · `471d1b7` refactor(player-mcp-kit)! · `982e2c4` refactor(arg-player-mcp)! · `d0fa43a` docs(reportes) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 | browsers | no launch (`ZEUS_OPEN_BROWSER` no set) |
