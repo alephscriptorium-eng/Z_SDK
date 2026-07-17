@@ -13,8 +13,8 @@ import { fileURLToPath } from 'node:url';
 import { io } from 'socket.io-client';
 import { connectMcp, toolResultJson } from '@zeus/test-utils';
 import { resolveMcpApprovalToken } from '@zeus/presets-sdk';
-import { startFirehoseMcp } from '../packages/mcp/linea-firehose/src/start.mjs';
-import { startAll } from '../packages/mcp/linea-system/src/start.mjs';
+import { startFirehoseMcp } from '../packages/mesh/linea-firehose/src/start.mjs';
+import { startAll } from '../packages/mesh/linea-system/src/start.mjs';
 import { applyE2eLineaPorts, shutdownE2E } from './helpers.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -155,12 +155,12 @@ try {
   const health = await fetch(`http://${HOST}:${FIREHOSE_MCP_PORT}/mcp/health`);
   gate('G-ARG-FEEDS.0 firehose health', health.ok, `status ${health.status}`);
 
-  startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+  startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
   await waitForHealth(SOCKET_PORT, 'socket-server');
 
   const { logs: authLogs } = startApp(
     'authority-real',
-    join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'),
+    join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'),
     { ZEUS_ARG_FEEDS: 'real', ZEUS_ARG_SEED: '7' }
   );
   await sleep(4000);
@@ -258,7 +258,7 @@ try {
 
   console.log('\n── Escenario B: auto degrade ──\n');
 
-  startApp('socket-auto', join(root, 'packages/platform/socket-server/src/index.mjs'), {
+  startApp('socket-auto', join(root, 'packages/mesh/socket-server/src/index.mjs'), {
     ZEUS_PORT_SCRIPTORIUM: String(SOCKET_PORT_AUTO),
     ZEUS_SCRIPTORIUM_URL: `http://${HOST}:${SOCKET_PORT_AUTO}`
   });
@@ -266,7 +266,7 @@ try {
 
   const { logs: autoLogs } = startApp(
     'authority-auto',
-    join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'),
+    join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'),
     {
       ZEUS_PORT_SCRIPTORIUM: String(SOCKET_PORT_AUTO),
       ZEUS_SCRIPTORIUM_URL: `http://${HOST}:${SOCKET_PORT_AUTO}`,

@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const libDir = path.join(root, 'packages', 'lib');
+const libDir = path.join(root, 'packages', 'engine');
 const outDir = path.join(root, '.release-dry');
 const REGISTRY = 'https://npm.scriptorium.escrivivir.co';
 const LOCKSTEP = '0.1.0';
@@ -166,7 +166,7 @@ function main() {
 
   const dirs = listPublicable();
   if (dirs.length === 0) {
-    console.error('release:dry — no publicable packages found under packages/lib/');
+    console.error('release:dry — no publicable packages found under packages/engine/');
     process.exit(1);
   }
 

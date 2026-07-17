@@ -11,4 +11,4 @@ La mitad visual sigue siendo humana. Sin nombres de juego en el kit: el juego
 aporta la ruta del playbook, el patrón de tools y el MCP HTTP.
 
 Ver también la guía del [método playbook](/playbook/).
-README: `packages/lib/playbook-kit/README.md`.
+README: `packages/engine/playbook-kit/README.md`.

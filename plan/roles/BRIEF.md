@@ -40,7 +40,7 @@ Reporte: plan/REPORTES/WP-U00-gates.md
 
 Lecturas extra:
 - plan/ARQUITECTURA.md §4
-- packages/arg/arg-console/test/grep-gates.test.mjs (el patrón de referencia)
+- packages/games/delta/arg-console/test/grep-gates.test.mjs (el patrón de referencia)
 
 Notas: merge después de U02 y U01 si hay conflictos en scripts raíz.
 ```
@@ -56,7 +56,7 @@ Worktree: ../zeus-wp-u01
 Reporte: plan/REPORTES/WP-U01-core-tests.md
 
 Lecturas extra:
-- packages/lib/firehose-core y packages/lib/room-client-browser (API pública)
+- packages/engine/firehose-core y packages/engine/room-client-browser (API pública)
 
 Notas: la Demolición del WP incluye borrar el `echo 'sin tests'`.
 ```
@@ -73,7 +73,7 @@ Reporte: plan/REPORTES/WP-U02-delta-identity.md
 
 Lecturas extra:
 - plan/DECISIONES.md D-8
-- packages/arg/spec/*.md, README de arg, arg-console, authority, launch, contract
+- packages/games/delta/spec/*.md, README de arg, arg-console, authority, launch, contract
 
 Notas: solo identidad (CAUDAL→delta); no cambiar rooms/eventos/rutas (ola 5).
 Merge preferido: primero entre los de la ola 0.

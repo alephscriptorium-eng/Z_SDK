@@ -1,0 +1,41 @@
+{
+  "name": "@zeus/ui-kit",
+  "version": "0.1.0",
+  "description": "Shared Zeus UI shell: template, navigation, themes and base assets",
+  "type": "module",
+  "main": "src/index.mjs",
+  "scripts": {
+    "build:json-path": "node scripts/generate-json-path-browser.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./theme-contract": "./src/theme-contract.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib",
+    "docs": {
+      "repo": [
+        "packages/mesh/player-ui/spec/openapi.yaml"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@zeus/presets-sdk": "0.1.0"
+  },
+  "dependencies": {
+    "@zeus/http-contract": "0.1.0",
+    "express": "^5.2.1",
+    "hyperaxe": "^3.0.2",
+    "zod": "^4.4.3"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "assets",
+    "README.md"
+  ]
+}

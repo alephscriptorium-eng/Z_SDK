@@ -15,12 +15,12 @@ import { spawn } from 'node:child_process';
 import { io as ioClient } from 'socket.io-client';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { makeIntent } from '@zeus/arg-domain';
-import { createOperatorUiServer } from '../packages/operator-ui/serve.mjs';
+import { createOperatorUiServer } from '../packages/mesh/operator-ui/serve.mjs';
 import { assert, safeClose } from './helpers.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
-const distBrowser = path.join(repoRoot, 'packages', 'operator-ui', 'dist', 'public', 'browser');
+const distBrowser = path.join(repoRoot, 'packages', 'mesh', 'operator-ui', 'dist', 'public', 'browser');
 
 const HOST = 'localhost';
 const SCRIPTORIUM_PORT = 13037;
@@ -146,9 +146,9 @@ try {
   console.log(`   G-U32.0 OK: ${path.basename(mainBundle)}`);
 
   console.log('2. Starting socket-server + authority...');
-  startApp('socket', path.join(repoRoot, 'packages/platform/socket-server/src/index.mjs'));
+  startApp('socket', path.join(repoRoot, 'packages/mesh/socket-server/src/index.mjs'));
   await waitForHttp(`http://${HOST}:${SCRIPTORIUM_PORT}/health`);
-  startApp('authority', path.join(repoRoot, 'packages/arg/arg-demos/apps/authority/index.mjs'));
+  startApp('authority', path.join(repoRoot, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
 
   const zeusInject = {
     scriptoriumUrl: RUNTIME_URL,

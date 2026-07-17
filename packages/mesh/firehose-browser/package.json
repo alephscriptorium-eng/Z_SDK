@@ -1,0 +1,35 @@
+{
+  "name": "@zeus/firehose-browser",
+  "version": "0.1.0",
+  "description": "Firehose volume browser with micropost preview on DISK_01",
+  "type": "module",
+  "main": "src/server.mjs",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "app",
+    "ui": "firehose",
+    "docs": {
+      "repo": [
+        "packages/mesh/firehose-browser/spec/openapi.yaml"
+      ]
+    }
+  },
+  "dependencies": {
+    "@zeus/app-shell": "*",
+    "@zeus/arg-domain": "*",
+    "@zeus/firehose-core": "*",
+    "@zeus/http-contract": "*",
+    "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*",
+    "@zeus/test-utils": "*",
+    "@zeus/ui-kit": "*",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "hyperaxe": "^3.0.2"
+  },
+  "private": true
+}

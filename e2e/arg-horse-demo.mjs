@@ -87,11 +87,11 @@ spawnSync('bash', [join(root, 'scripts/stop-ports.sh'), 'e2e arg-horse cleanup',
 });
 await sleep(500);
 
-startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
 await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
-startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'));
-startApp('tap-horse', join(root, 'packages/arg/arg-demos/apps/tap-horse/index.mjs'));
-startApp('console', join(root, 'packages/arg/arg-console/src/server.mjs'), {
+startApp('authority', join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+startApp('tap-horse', join(root, 'packages/games/delta/arg-demos/apps/tap-horse/index.mjs'));
+startApp('console', join(root, 'packages/games/delta/arg-console/src/server.mjs'), {
   ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT)
 });
 await waitForHttp(`http://${HOST}:${CONSOLE_PORT}/health`);

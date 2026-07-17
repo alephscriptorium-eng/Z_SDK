@@ -129,13 +129,13 @@ async function callTool(port, name, args = {}) {
 // ── arranque ────────────────────────────────────────────────────────────
 console.log('\n🎮 e2e CAUDAL MCP · puertos aislados', { SOCKET_PORT, MCP_UNO_PORT, MCP_DOS_PORT, ROOM }, '\n');
 
-startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
 await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
-startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'));
-startApp('mcp-uno', join(root, 'packages/arg/arg-player-mcp/src/start.mjs'), {
+startApp('authority', join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+startApp('mcp-uno', join(root, 'packages/games/delta/arg-player-mcp/src/start.mjs'), {
   ZEUS_ARG_PLAYER_ACTOR: 'uno'
 });
-startApp('mcp-dos', join(root, 'packages/arg/arg-player-mcp/src/start.mjs'), {
+startApp('mcp-dos', join(root, 'packages/games/delta/arg-player-mcp/src/start.mjs'), {
   ZEUS_ARG_PLAYER_ACTOR: 'dos'
 });
 

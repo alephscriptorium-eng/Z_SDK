@@ -1,6 +1,6 @@
 # Engine
 
-Lo genérico y publicable del SDK. Hoy vive en `packages/lib/*`; el layout
+Lo genérico y publicable del SDK. Hoy vive en `packages/engine/*`; el layout
 objetivo lo agrupa bajo `engine/` (WP-U51 no mueve carpetas aún).
 
 | Paquete | Rol |

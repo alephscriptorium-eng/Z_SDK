@@ -102,7 +102,7 @@ if (socketAlready) {
   console.log(`[launch] levantando socket-server en :${endpoints.scriptoriumPort}`);
   startApp(
     'socket',
-    join(monorepoRoot, 'packages/platform/socket-server/src/index.mjs'),
+    join(monorepoRoot, 'packages/mesh/socket-server/src/index.mjs'),
     {},
     { quiet: true }
   );

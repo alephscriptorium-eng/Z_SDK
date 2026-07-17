@@ -78,9 +78,9 @@ test('CA rojo (b): nombre de transición detectado', () => {
   }
 });
 
-test('CA rojo (c): import de @zeus/arg-* fuera de packages/arg', () => {
+test('CA rojo (c): import de @zeus/arg-* fuera de packages/games/delta', () => {
   const root = withTempTree('zeus-gates-argimport-', (dir) => {
-    const pkg = path.join(dir, 'packages', 'platform', 'fake-mesh', 'src');
+    const pkg = path.join(dir, 'packages', 'mesh', 'fake-mesh', 'src');
     fs.mkdirSync(pkg, { recursive: true });
     fs.writeFileSync(
       path.join(pkg, 'bridge.mjs'),
@@ -88,7 +88,7 @@ test('CA rojo (c): import de @zeus/arg-* fuera de packages/arg', () => {
     );
   });
   try {
-    const file = path.join(root, 'packages', 'platform', 'fake-mesh', 'src', 'bridge.mjs');
+    const file = path.join(root, 'packages', 'mesh', 'fake-mesh', 'src', 'bridge.mjs');
     const offenders = scanArgImportViolations({ repoRoot: root, files: [file] });
     assert.equal(offenders.length, 1);
     assert.equal(offenders[0].rule, 'arg-import');
@@ -138,7 +138,7 @@ test('oldid de dominio no dispara transición -old', () => {
 test('presets-sdk/env puede declarar puertos sin offender', () => {
   const envFile = path.join(
     REPO_ROOT,
-    'packages/lib/presets-sdk/src/env/index.mjs'
+    'packages/engine/presets-sdk/src/env/index.mjs'
   );
   const offenders = scanHardcodedPorts({ repoRoot: REPO_ROOT, files: [envFile] });
   assert.deepEqual(offenders, []);

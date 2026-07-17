@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { resolveSpecToolPorts } from '@zeus/presets-sdk/env';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const spec = path.join(root, 'packages/lib/protocol/spec/asyncapi.yaml');
+const spec = path.join(root, 'packages/engine/protocol/spec/asyncapi.yaml');
 const { studio } = resolveSpecToolPorts();
 
 const child = spawn(

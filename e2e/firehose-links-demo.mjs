@@ -4,9 +4,9 @@
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createPlayerServer } from '../packages/app/player-ui/src/server.mjs';
+import { createPlayerServer } from '../packages/mesh/player-ui/src/server.mjs';
 import { resolveUiMesh } from '@zeus/presets-sdk';
-import { buildFirehoseLinksResponse } from '../packages/app/player-ui/src/link-recipes/firehose-link-recipes.mjs';
+import { buildFirehoseLinksResponse } from '../packages/mesh/player-ui/src/link-recipes/firehose-link-recipes.mjs';
 
 import { shutdownE2E } from './helpers.mjs';
 

@@ -28,7 +28,7 @@ Verificado 2026-07-15. Fuente viva: `SCRIPTORIUM_V0/network-engine/linea-aleph/`
 (578 archivos, motor Python funcional). Fuentes migradas (recuperables por
 git en network-engine): `git show 0b1c4a3~1:lineas-poder/...` (tronco) y
 `git show e540702~1:zeus-presets-sdk/packages/linea-system/...` (capa MCP JS,
-antecesora directa de nuestro `packages/mcp/linea-system`).
+antecesora directa de nuestro `packages/mesh/linea-system`).
 
 | formato | rol | fuente canónica |
 | ------- | --- | --------------- |
@@ -58,7 +58,7 @@ Motor de referencia para las herramientas (WP-U81): `segment_linea.py`
 (historiales: milestones por reglas de `byte_delta`/keywords/editor),
 `segment_poder.py` (troncos desde `nodos.yaml`), `fetch_wp_historia.py` +
 `linea-aleph/scripts/{mw_client,history_common,fetch_snapshot,fetch_batch,…}.py`.
-La API de lectura de referencia es nuestro `packages/mcp/linea-system`
+La API de lectura de referencia es nuestro `packages/mesh/linea-system`
 (resources `linea://nodo/{year}`, `linea://wikitext/{oldid}`…, tool
 `cache_wikitext` con fetch async — el patrón «pedir un dato remoto lo
 materializa en disco» ya existe y es el que los juegos jugarán).

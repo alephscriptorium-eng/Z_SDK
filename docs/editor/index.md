@@ -1,6 +1,6 @@
 # Editor — mundo A
 
-Crear juegos y releases. Hoy: `packages/app/editor-ui` (CRUD de presets →
+Crear juegos y releases. Hoy: `packages/editor/editor-ui` (CRUD de presets →
 camino hacia editor de gamemap/release).
 
 ```bash

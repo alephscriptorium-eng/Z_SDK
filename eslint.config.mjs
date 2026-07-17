@@ -13,7 +13,7 @@ export default [
       'docs/.vitepress/dist/**',
       'docs/.vitepress/cache/**',
       '.vitepress/cache/**',
-      'packages/operator-ui/dist/**',
+      'packages/mesh/operator-ui/dist/**',
       'docs/api/**'
     ]
   },
@@ -33,7 +33,7 @@ export default [
     }
   },
   {
-    files: ['packages/lib/session-protocol/browser/**'],
+    files: ['packages/engine/ui-3d-kit/src/**'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -43,7 +43,7 @@ export default [
     }
   },
   {
-    files: ['packages/lib/ui-3d-kit/src/**'],
+    files: ['packages/engine/view-kit/src/**'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -53,17 +53,7 @@ export default [
     }
   },
   {
-    files: ['packages/lib/view-kit/src/**'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: {
-        ...globals.browser
-      }
-    }
-  },
-  {
-    files: ['packages/lib/room-client-browser/browser/**'],
+    files: ['packages/engine/room-client-browser/browser/**'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

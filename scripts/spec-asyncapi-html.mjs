@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
-const spec = path.join(root, 'packages/lib/protocol/spec/asyncapi.yaml');
+const spec = path.join(root, 'packages/engine/protocol/spec/asyncapi.yaml');
 const outDir = path.join(root, 'docs', 'public', 'api', 'protocol');
 
 fs.mkdirSync(outDir, { recursive: true });

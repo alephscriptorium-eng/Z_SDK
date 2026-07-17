@@ -26,7 +26,7 @@ Ejemplo vivo: firehose-browser `corpora.get` →
 
 Además de la proyección por ruta, `@zeus/http-contract/mcp-resources` mantiene
 schemas de payloads conocidos (linea / firehose / solar / server card).
-Catálogo generado: `packages/lib/http-contract/spec/mcp-resources.md`.
+Catálogo generado: `packages/engine/http-contract/spec/mcp-resources.md`.
 
 ```bash
 npm run spec:generate -w @zeus/http-contract

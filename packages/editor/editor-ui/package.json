@@ -1,0 +1,32 @@
+{
+  "name": "@zeus/editor-ui",
+  "version": "0.1.0",
+  "description": "Web UI for MCP catalog browsing and preset management (ported from Zeus, no inference)",
+  "type": "module",
+  "main": "src/server.mjs",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "app",
+    "ui": "editor",
+    "docs": {
+      "repo": [
+        "packages/editor/editor-ui/spec/openapi.yaml"
+      ]
+    }
+  },
+  "dependencies": {
+    "@zeus/app-shell": "*",
+    "@zeus/http-contract": "*",
+    "@zeus/presets-sdk": "*",
+    "@zeus/test-utils": "*",
+    "@zeus/ui-kit": "*",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "hyperaxe": "^3.0.2"
+  },
+  "private": true
+}

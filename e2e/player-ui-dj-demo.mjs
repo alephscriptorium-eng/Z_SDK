@@ -82,14 +82,14 @@ function shutdown() {
 console.log('\n🎛️ e2e player-ui DJ ·', { SOCKET_PORT, CONSOLE_PORT, PLAYER_PORT, ROOM }, '\n');
 
 try {
-  startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+  startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
   await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
 
-  startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'));
-  startApp('console', join(root, 'packages/arg/arg-console/src/server.mjs'), {
+  startApp('authority', join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+  startApp('console', join(root, 'packages/games/delta/arg-console/src/server.mjs'), {
     ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT)
   });
-  startApp('player', join(root, 'packages/app/player-ui/src/server.mjs'), {
+  startApp('player', join(root, 'packages/mesh/player-ui/src/server.mjs'), {
     ZEUS_PORT_PLAYER: String(PLAYER_PORT),
     PORT: String(PLAYER_PORT)
   });
