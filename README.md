@@ -12,7 +12,7 @@
 | **Sesión y dominio** | `player-ui` (vista DJ sobre room del juego), `@zeus/arg-domain`, `@zeus/protocol`, `@zeus/authority-kit` | 3013 |
 | **Escenas** | `player-3d-ui` (visor de sesión), `3d-monitor` (portal de vistas de room), `operator-ui` (shell Angular tier-2), `editor-ui`, `cache-browser`, `firehose-browser` | 3018 / 3019 / 3020 / 3012 / 3015 / 3016 |
 | **3D** | `@zeus/ui-3d-kit` (vanilla ESM, import maps), `@zeus/game-engine` (motor lógico puro) | — |
-| **Canales MCP** | rabbit/spider/horse sobre rooms (`@alephscript/mcp-core-sdk`), `@zeus/openapi-mcp-projector`, presets curados (`@zeus/presets-sdk`) | — |
+| **Canales MCP** | rabbit/spider/horse sobre rooms (`@alephscript/mcp-core-sdk`), proyección RouteEntry→MCP en `@zeus/http-contract`, presets curados (`@zeus/presets-sdk`) | — |
 | **MCP servers** | solar (demo), lineas (corpus), firehose (disk), console-monitor | 4101–4103 / 4111–4112 / 3008 / 3014 |
 
 ## Arranque rápido

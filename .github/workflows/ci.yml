@@ -46,7 +46,6 @@ jobs:
           - '@zeus/rooms'
           - '@zeus/protocol'
           - '@zeus/authority-kit'
-          - '@zeus/openapi-mcp-projector'
           - '@zeus/game-engine'
           - '@zeus/operator-bridge'
           - '@zeus/ui-3d-kit'
