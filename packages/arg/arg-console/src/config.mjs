@@ -1,35 +1,22 @@
 /**
- * Configuración mínima y autocontenida del arg-console.
- *
- * A propósito NO usa createAppConfig de @zeus/app-shell (su whitelist de
- * appIds no conoce este paquete): host/puerto de env con defaults del
- * contrato (CONTRATO.md §6) y datos del socket-server para el viewer-config.
+ * Configuración de @zeus/arg-console vía createAppConfig (@zeus/app-shell).
+ * Puerto y host salen del mesh UI (ZEUS_PORT_ARG_CONSOLE / ZEUS_HOST);
+ * scriptorium (host/port/path/secret) lo inyecta resolveRuntimeConfig.
  */
 
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { createAppConfig } from '@zeus/app-shell';
+import { DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk/env';
 
-/** Raíz del paquete (contiene package.json y assets/). */
-export const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
-export const DEFAULT_ARG_CONSOLE_PORT = 3021;
-export const DEFAULT_SCRIPTORIUM_PORT = 3017;
-
-/**
- * @param {NodeJS.ProcessEnv} [env]
- * @returns {{server: {port:number, host:string}, scriptorium: {host:string, port:number, path:string, secret:string}}}
- */
-export function getConfig(env = process.env) {
-  return {
-    server: {
-      port: Number(env.ZEUS_PORT_ARG_CONSOLE) || DEFAULT_ARG_CONSOLE_PORT,
-      host: env.ZEUS_ARG_CONSOLE_HOST || 'localhost'
-    },
-    scriptorium: {
-      host: env.ZEUS_SCRIPTORIUM_HOST || 'localhost',
-      port: Number(env.ZEUS_PORT_SCRIPTORIUM) || DEFAULT_SCRIPTORIUM_PORT,
-      path: '/runtime',
-      secret: env.ZEUS_SCRIPTORIUM_SECRET || 'dev-secret'
-    }
-  };
-}
+export const {
+  packageDir,
+  getAppConfig,
+  getConfig,
+  setTheme,
+  getDefaultTheme,
+  getLocalNavEntries
+} = createAppConfig({
+  appId: 'argConsole',
+  defaultPort: DEFAULT_ZEUS_UI_MESH.argConsole.port,
+  importMetaUrl: import.meta.url,
+  skipConfigFile: true
+});
