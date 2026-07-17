@@ -98,14 +98,14 @@ Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente f
 ### Cola hallazgos lote 1a (WP-U10)
 
 Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
-- migrar wire `arg:*` → kinds canónicos con U11 (+ vistas)
+- migrar wire `arg:*` → kinds canónicos: autoridad dual-wire en U11; vistas aún pendientes
 - comentario residual «generate.mjs» en `session-protocol/spec/build.mjs` (higiene hasta U31)
 - portal VitePress ausente → WP-U41; HTML AsyncAPI bajo `docs/public/api/` (gitignored) cumple CA de render
 - nota: U10 apoya APIs de http-contract/presets-sdk (2/9 workspaces rojos de cola U03) pero CA no exige esas suites verdes
 - duda worker (brief U11 / DECISIONES si el usuario cierra): ¿Peer Card en handshake U11 o basta `role` en intent hasta ola WebRTC?
 - e2e banners «CAUDAL» residuales (cola U02) — fuera de alcance
 
-- 🔶 **WP-U11 · `@zeus/authority-kit`** *(dep U10)* — en curso (lote-1b / orquestador / 2026-07-17) — autoridad genérica
+- ✅ **WP-U11 · `@zeus/authority-kit`** *(dep U10)* — aceptado (orquestador / 2026-07-17) — autoridad genérica
   extraída de `arg-demos/apps/authority`: loop de tick, aplicación de intents
   vía reducer registrado, emisión state/ledger/track, presupuesto de snapshot,
   arranque/parada limpios (sin huérfanos: cascada SIGINT ya resuelta en
@@ -113,6 +113,14 @@ Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
   **CA:** la autoridad de delta queda instanciando el kit (diff negativo en
   arg-demos); `e2e:arg` y `test:arg` verdes sin tocar los tests.
   **Demolición:** el código genérico que quede duplicado en arg-demos.
+
+
+### Cola hallazgos lote 1b (WP-U11)
+
+Diferidos del reporte/revisión WP-U11 (no bloquean cierre):
+- dual-wire hasta migrar vistas (canónico + alias `arg:*`; ~2× tráfico state/track/ledger)
+- `stop:services` no limpia puertos e2e aislados (≠ env canónico; p.ej. 13027 huérfano)
+- Peer Card handshake diferido (no exigida en U11; `role` en intent basta hasta ola WebRTC / DECISIONES)
 
 - 🔶 **WP-U12 · `@zeus/player-mcp-kit`** *(dep U10)* — en curso (lote-1b / orquestador / 2026-07-17) — generalizar
   `arg-player-mcp`: patrón «un MCP por actor» con semántica verificable
