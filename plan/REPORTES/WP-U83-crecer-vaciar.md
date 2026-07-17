@@ -140,4 +140,35 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18
+
+### Verificado
+
+- **Merge master→rama:** OK. Conflictos en `pozo` (contract/domain/test/README) y
+  `arg-domain/README` por paralelo U92; resolución conservadora: `empty` (U83) +
+  `force:activate`/`force:deactivate` (U92). Commit `6ccac24`.
+- **Alcance** `master...HEAD`: 27 archivos — delta/pozo empty + CASOS C-33/C-03 +
+  e2e MCP + ops twin `empty_playable` + reporte. Sin engine genérico ni BACKLOG
+  editado por el worker.
+- **CA (re-ejecutados post-merge):**
+  - coherencia playbook: arg-player-mcp 22/22 (fase vaciar C-33); pozo CASOS C-01..C-03
+  - e2e vaciado: `e2e:pozo-mcp` C-03 verde; `e2e:arg-mcp` G-MCP.9
+    `removed=27 · murk 28.2→3.2 · again=timeout_confirmacion` (ledger/score ok)
+  - score/ledger: `kind:"empty"` + `opsIntent:"empty_playable"` + `score.emptied`
+  - unit: arg-domain 68/68 (incl. empty + U92); pozo 8/8; empty.test 5/5
+  - `npm run gates` OK; lint 0 errors / 12 warnings preexistentes
+- **PRACTICAS:** dominio puro + volumes-ops en borde autoridad; handlers en tabla;
+  sin nombres de transición; commits convencionales; demolición n/a.
+- **Hallazgos** (anotados, no arreglados): (1) `timeout_confirmacion` MCP en
+  rechazo idempotente aunque autoridad aplica `nada_que_vaciar`; (2) murk/grifo
+  e2e — reabrir grifo colapsa; (3) checklist V4.9 visual sin browser.
+
+### Orden de merge sugerido
+
+Tras marcar ✅ en BACKLOG (master, orquestador): merge `wp/u83-crecer-vaciar` →
+master (U92 ya ✅). Luego `git worktree remove` del worktree U83.
+
+### Nota
+
+Este veredicto **autoriza** merge; BACKLOG ✅ y merge a master **no** ejecutados
+en esta pasada (pedido explícito del usuario). Push: no intentado.
