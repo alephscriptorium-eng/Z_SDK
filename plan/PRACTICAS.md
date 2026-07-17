@@ -117,10 +117,9 @@ sobre cada rama `wp/*`: lo que aquí es criterio de devolución, allí es rojo.
 
 ## 6. Commits
 
-Tras las olas, esta codebase y sus repos hermanos siguen **versionado
-semántico integrado en CI/CD** (ARQUITECTURA §5). El histórico que el swarm
-escribe HOY es el que las herramientas de release leerán mañana — el formato
-se adopta desde ya, no en la ola 5:
+Esta codebase y sus repos hermanos siguen **versionado semántico integrado
+en CI/CD** (ARQUITECTURA §5, WP-U53). El histórico que el swarm escribe es el
+que changesets + el workflow de release consumen:
 
 - **Commits convencionales**: `tipo(alcance): resumen` — tipos
   `feat|fix|refactor|test|docs|chore`; alcance = paquete tocado
@@ -129,6 +128,11 @@ se adopta desde ya, no en la ola 5:
   dispara majors, pero deja el rastro que el changelog necesitará.
 - Un WP puede tener varios commits, pero cada commit compila y cuenta UNA
   cosa; nada de `wip`, `fix2`, `arreglos`.
-- Cuando exista el pipeline (WP-U53), todo WP que toque un paquete publicable
-  añadirá además su **changeset** (declaración de bump + nota de changelog);
-  hasta entonces, el commit convencional basta.
+- **Changeset obligatorio** en todo WP que toque un paquete **publicable**
+  (`packages/engine/*` sin `private: true`): `npx changeset` con bump
+  (`patch`/`minor`/`major`) + nota de changelog. El pipeline
+  (`.github/workflows/release.yml`) acumula changesets → bump por paquete →
+  changelog → `npm publish` al registry propio + tag + GitHub Release, solo
+  con pipeline verde y secret `NPM_TOKEN`. Verificación local sin publish:
+  `npm run release:changeset-dry`. Los juegos y el mesh/editor siguen
+  privados y no se publican desde aquí.
