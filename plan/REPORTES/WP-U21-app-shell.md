@@ -124,4 +124,31 @@ app-shell verdes salvo openapi drift preexistente documentado.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17
+
+### Verificado
+- Diff acotado (8 archivos): app-shell + arg-console + reporte; sin BACKLOG
+  tocado por el worker.
+- Merge `master` → `wp/u21-app-shell` limpio (hereda U22/U24).
+- CA-1 demolición: `rg` en `packages/` cero hits de
+  `NO usa createAppConfig` / `DEFAULT_ARG_CONSOLE_PORT` / `a propósito NO`
+  (solo plan/BACKLOG + reportes/brief).
+- CA-2 consumidores: re-ejecutado post-merge —
+  `npm test -w @zeus/app-shell` → 4/0;
+  `npm test -w @zeus/arg-console` → 32/0;
+  `@zeus/player-3d-ui` → 18/0; `@zeus/3d-monitor` → 15/0 (conteo post-U22);
+  `@zeus/console-monitor` → 10/0.
+- `npm run gates` → OK (0 offenders).
+- PRACTICAS §1.1 puertos vía mesh; §1.11 pozo respondido (appId desconocido +
+  extraDefaults); commits convencionales; OpenAPI drift preexistente no bloquea
+  (documentado).
+
+### Hallazgos a incorporar en master (higiene, no bloquean)
+- Actualizar `plan/ARQUITECTURA.md` §1 («arg-console evita app-shell») —
+  mentira post-merge.
+- Colisión SSR `src/view-kit/` vs `@zeus/view-kit` — sigue diferida (U20/U22).
+
+### Merge
+Autorizado. Orden sugerido: U24/U22 ya en master; este WP puede entrar solo.
+Tras merge: ✅ BACKLOG en master + `git worktree remove` del árbol U21.
+No push en este ritual.
