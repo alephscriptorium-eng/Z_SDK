@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@zeus/arg-domain": "*",
+    "@zeus/protocol": "*",
     "@zeus/presets-sdk": "*",
     "@zeus/game-engine": "*",
     "@zeus/room-client-browser": "*",

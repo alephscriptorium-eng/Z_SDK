@@ -65,9 +65,10 @@
 
 
 
-    "spec:generate": "npm run spec:generate -w @zeus/session-protocol",
+    "spec:generate": "npm run spec:generate -w @zeus/protocol",
     "spec:generate:http": "node scripts/spec-generate.mjs",
     "spec:generate:all": "npm run spec:generate:http && npm run spec:generate",
+    "test:protocol": "npm test -w @zeus/protocol",
     "spec:redoc": "node scripts/spec-redoc.mjs",
     "spec:asyncapi:html": "node scripts/spec-asyncapi-html.mjs",
     "spec:studio": "node scripts/spec-studio.mjs",

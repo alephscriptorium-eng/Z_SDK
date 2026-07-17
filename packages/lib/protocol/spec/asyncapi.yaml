@@ -1,0 +1,190 @@
+asyncapi: 3.1.0
+info:
+  title: Zeus Protocol
+  version: "1"
+  description: "Contrato único Zeus: state | intent | track | ledger. El campo `game` en el envelope discrimina el juego; el engine no nombra juegos. Roles de intent: player, dj, operator. Credencial de rol: Peer Card (scopes role:*). Gates: G-PROTO.1, G-PROTO.2, G-PROTO.3, G-PROTO.4, G-PROTO.5. Snapshot budget default: 32768 bytes."
+defaultContentType: application/json
+channels:
+  room:
+    address: room/{roomId}
+    description: Socket.IO room channel (ROOM_MESSAGE). Wire event name = kind (state|intent|track|ledger).
+    parameters:
+      roomId:
+        description: Room id resolved via @zeus/rooms / ZEUS_SCRIPTORIUM_URL
+    messages:
+      state:
+        $ref: "#/components/messages/state"
+      intent:
+        $ref: "#/components/messages/intent"
+      track:
+        $ref: "#/components/messages/track"
+      ledger:
+        $ref: "#/components/messages/ledger"
+operations:
+  send_state:
+    action: send
+    channel:
+      $ref: "#/channels/room"
+    messages:
+      - $ref: "#/channels/room/messages/state"
+  receive_intent:
+    action: receive
+    channel:
+      $ref: "#/channels/room"
+    messages:
+      - $ref: "#/channels/room/messages/intent"
+  send_track:
+    action: send
+    channel:
+      $ref: "#/channels/room"
+    messages:
+      - $ref: "#/channels/room/messages/track"
+  send_ledger:
+    action: send
+    channel:
+      $ref: "#/channels/room"
+    messages:
+      - $ref: "#/channels/room/messages/ledger"
+components:
+  messages:
+    state:
+      name: state
+      title: state
+      summary: Authoritative compact snapshot (budget-checked)
+      payload:
+        type: object
+        required:
+          - v
+          - game
+          - ts
+        properties:
+          v: &a1
+            type: integer
+            const: 1
+          game: &a2
+            type: string
+            minLength: 1
+            description: Game id supplied by the consumer package
+          from: &a3
+            type: string
+          ts: &a4
+            type: integer
+            description: Unix epoch milliseconds
+          kind:
+            type: string
+            const: state
+          tick:
+            type: integer
+          reason:
+            type: string
+            enum:
+              - change
+              - heartbeat
+        additionalProperties: true
+    intent:
+      name: intent
+      title: intent
+      summary: Actor requests a domain mutation; authority validates role + shape then reduces
+      payload:
+        type: object
+        required:
+          - v
+          - game
+          - actorId
+          - intent
+          - ts
+        properties:
+          v: *a1
+          game: *a2
+          from: *a3
+          ts: *a4
+          kind:
+            type: string
+            const: intent
+          actorId:
+            type: string
+            minLength: 1
+          intent:
+            type: string
+            minLength: 1
+          role:
+            type: string
+            enum:
+              - player
+              - dj
+              - operator
+            default: player
+          peerCard:
+            type: object
+            description: Optional Peer Card credential (roomId/endpoint/token/scopes/expiresAt)
+            properties:
+              roomId:
+                type: string
+              endpoint:
+                type: string
+              token:
+                type: string
+              scopes:
+                type: array
+                items:
+                  type: string
+              expiresAt:
+                type: string
+                format: date-time
+        additionalProperties: true
+    track:
+      name: track
+      title: track
+      summary: Navigation cue for real browsers (no domain mutation)
+      payload:
+        type: object
+        required:
+          - v
+          - game
+          - actorId
+          - ts
+        properties:
+          v: *a1
+          game: *a2
+          from: *a3
+          ts: *a4
+          kind:
+            type: string
+            const: track
+          actorId:
+            type: string
+          ref:
+            type: object
+          hint:
+            type: string
+        additionalProperties: true
+    ledger:
+      name: ledger
+      title: ledger
+      summary: Append-only crystallization / evidence entry
+      payload:
+        type: object
+        required:
+          - v
+          - game
+          - seq
+          - ts
+          - kind
+        properties:
+          v: *a1
+          game: *a2
+          from: *a3
+          ts: *a4
+          kind:
+            type: string
+            const: ledger
+          seq:
+            type: integer
+          entryKind:
+            type: string
+            description: Ledger entry discriminant (game-specific)
+          actorId:
+            type: string
+          detail:
+            type: object
+        additionalProperties: true

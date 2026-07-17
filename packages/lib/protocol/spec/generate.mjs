@@ -1,6 +1,6 @@
 /**
- * Generate AsyncAPI 3.0 spec from EVENTS manifest + zod schemas.
- * Run: npm run spec:generate -w @zeus/session-protocol
+ * Generate AsyncAPI from @zeus/protocol contract.
+ * Run: npm run spec:generate -w @zeus/protocol
  */
 
 import fs from 'node:fs';

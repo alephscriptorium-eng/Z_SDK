@@ -16,6 +16,7 @@
  *   /arg-domain        → src/ browser-safe de @zeus/arg-domain (crudo:
  *                        las vistas importan contrato y escena, jamás
  *                        instancian motores como autoridad — G-ARG.1)
+ *   /protocol          → src/ browser-safe de @zeus/protocol (crudo)
  *   /models            → GLBs canónicos (puppets tier 'puppet')
  *   /api/mcp/*         → PresetStore read-only (WP-11/WP-12)
  *   /health            → { status: ok, views }
@@ -35,6 +36,7 @@ import { browserAssetsDir as roomClientAssetsDir } from '@zeus/room-client-brows
 import { srcDir as uiKitSrcDir, modelsDir, getThreeDir } from '@zeus/ui-3d-kit/node';
 import { srcDir as gameEngineSrcDir } from '@zeus/game-engine/node';
 import { srcDir as argDomainSrcDir } from '@zeus/arg-domain/node';
+import { srcDir as protocolSrcDir } from '@zeus/protocol/node';
 
 import { getConfig, packageDir } from './config.mjs';
 import { resolveViewerConfig } from './viewer-config.mjs';
@@ -163,6 +165,7 @@ export async function createArgConsoleServer(options = {}) {
   app.use('/kit', express.static(uiKitSrcDir));
   app.use('/game-engine', express.static(gameEngineSrcDir));
   app.use('/arg-domain', express.static(argDomainSrcDir));
+  app.use('/protocol', express.static(protocolSrcDir));
   app.use('/models', express.static(modelsDir));
 
   mountReadOnlyPresetRoutes(app, { registry, store });

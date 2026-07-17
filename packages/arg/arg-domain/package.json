@@ -15,7 +15,8 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@zeus/game-engine": "*"
+    "@zeus/game-engine": "*",
+    "@zeus/protocol": "*"
   },
   "devDependencies": {
     "@zeus/presets-sdk": "*"

@@ -9,7 +9,7 @@ import { deltaV0, buildCanteraTopology, buildNavGraph } from './scenes/delta-v0.
 import { createFlowEngine } from './flow-engine.mjs';
 import { createMazeEngine } from './maze-engine.mjs';
 import { reduceArgIntent } from './reducer.mjs';
-import { isIntentShaped, trackHintFor } from './contract.mjs';
+import { validateIntent, trackHintFor } from './contract.mjs';
 import { effectiveLinkSpeed } from './cloak-mods.mjs';
 
 const EMOTE_TTL_MS = 2500;
@@ -250,7 +250,8 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
 
     /** Valida y aplica un arg:intent. Inválido ⇒ no-op con error. */
     applyIntent(payload) {
-      if (!isIntentShaped(payload)) return { ok: false, error: 'intent_malformada' };
+      const gate = validateIntent(payload);
+      if (!gate.ok) return { ok: false, error: gate.error };
       if (
         payload.intent === 'excavate' &&
         feeds.requiresApproval === true &&

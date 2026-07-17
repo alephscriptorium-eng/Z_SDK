@@ -1,0 +1,31 @@
+{
+  "name": "@zeus/protocol",
+  "version": "0.1.0",
+  "description": "Contrato único Zeus: envelope state|intent|track|ledger, makeIntent, roles, gates, Peer Card, AsyncAPI",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./contract": "./src/contract.mjs",
+    "./roles": "./src/roles.mjs",
+    "./gates": "./src/gates.mjs",
+    "./peer-card": "./src/peer-card.mjs",
+    "./node": "./src/node.mjs",
+    "./spec": "./spec/asyncapi.yaml",
+    "./spec/build": "./spec/build.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "spec:generate": "node spec/generate.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@zeus/http-contract": "*"
+  }
+}

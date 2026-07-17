@@ -14,8 +14,7 @@
     "./projection": "./src/projection/index.mjs"
   },
   "scripts": {
-    "test": "node --test test/*.mjs",
-    "spec:generate": "node spec/generate.mjs"
+    "test": "node --test test/*.mjs"
   },
   "license": "AIPLv1",
   "zeus": {

@@ -3,8 +3,8 @@
 delta — dominio puro del ARG. Sin three, sin red (mismo espíritu
 que `@zeus/game-engine`, del que reutiliza `sampleLink`/`linkDistance`).
 
-- `src/contract.mjs` — eventos (`arg:state|intent|track|ledger`), constantes,
-  `makeIntent` (browser-safe: el arg-console lo importa crudo).
+- `src/contract.mjs` — capa delta sobre `@zeus/protocol`: wire `arg:*`,
+  catálogo de intents con roles, `makeIntent` (browser-safe).
 - `src/scenes/delta-v0.mjs` — el delta: nav-graph (nodos/enlaces), grifos,
   ríos, mar y topología de la cantera.
 - `src/flow-engine.mjs` — la Riada: presión/apertura/burst, gotas, mar.

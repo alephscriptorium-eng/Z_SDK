@@ -1,12 +1,34 @@
 /**
- * delta — contrato de dominio (v1). Nombres de eventos, constantes de
- * transporte y guards de intents. Ver packages/arg/spec/CONTRATO.md.
+ * delta — capa de juego sobre @zeus/protocol.
+ * Eventos wire `arg:*` (compat), catálogo de intents con roles, constantes
+ * de room/tick. Lo genérico vive en @zeus/protocol (no duplicar).
  *
  * Browser-safe: sin imports de Node.
  */
 
-export const ARG_PROTOCOL_VERSION = 1;
+import {
+  PROTOCOL_VERSION,
+  makeIntent as protocolMakeIntent,
+  isIntentShaped as protocolIsIntentShaped,
+  validateIntent as protocolValidateIntent,
+  createIntentCatalog,
+  assertIntentRole,
+  ROLES,
+  GATES,
+  SNAPSHOT_BUDGET_BYTES
+} from '@zeus/protocol';
 
+export const ARG_PROTOCOL_VERSION = PROTOCOL_VERSION;
+
+/** Id de juego en el envelope (campo `game`). */
+export const GAME_ID = 'delta';
+
+/**
+ * Nombres wire históricos de delta (`arg:*`).
+ * El contrato canónico usa `state|intent|track|ledger` + `game` en envelope;
+ * estos alias preservan comportamiento de transporte hasta que la autoridad
+ * (U11) y las vistas migren al nombre canónico.
+ */
 export const EVENTS = {
   STATE: 'arg:state',
   INTENT: 'arg:intent',
@@ -21,26 +43,35 @@ export const AUTHORITY_USER = 'arg-authority';
 export const ARG_TICK_MS = 100;
 export const ARG_HEARTBEAT_MS = 1000;
 
-export const INTENTS = [
-  'join',
-  'move',
-  'swim',
-  'ride',
-  'dismount',
-  'tap:set',
-  'label:cast',
-  'excavate',
-  'contact:request',
-  'contact:close',
-  'cloak:equip',
-  'emote',
-  'salvage',
-  'track:cast'
-];
+/**
+ * Catálogo delta: intents de jugador. Intents `dj`/`operator` llegan en olas
+ * posteriores (U30+); el gate de rol ya está cableado vía @zeus/protocol.
+ */
+export const INTENT_DEFS = {
+  join: { roles: ['player'] },
+  move: { roles: ['player'] },
+  swim: { roles: ['player'] },
+  ride: { roles: ['player'] },
+  dismount: { roles: ['player'] },
+  'tap:set': { roles: ['player'] },
+  'label:cast': { roles: ['player'] },
+  excavate: { roles: ['player'] },
+  'contact:request': { roles: ['player'] },
+  'contact:close': { roles: ['player'] },
+  'cloak:equip': { roles: ['player'] },
+  emote: { roles: ['player'] },
+  salvage: { roles: ['player'] },
+  'track:cast': { roles: ['player'] }
+};
+
+export const INTENT_CATALOG = createIntentCatalog(INTENT_DEFS);
+export const INTENTS = Object.freeze([...INTENT_CATALOG.keys()]);
 
 export const POSES = ['idle', 'walk', 'ride', 'swim', 'sit', 'menu'];
 export const EMOTES = ['wave', 'nod', 'shake', 'thumbsUp'];
 export const ZONES = ['terraza', 'cima', 'rio', 'mar', 'cantera'];
+
+export { ROLES, GATES, SNAPSHOT_BUDGET_BYTES, assertIntentRole };
 
 /** Hint de navegador real para arg:track según el tipo de recurso. */
 export function trackHintFor(refKind) {
@@ -50,26 +81,22 @@ export function trackHintFor(refKind) {
 }
 
 /**
- * Construye un arg:intent bien formado (el reducer revalida siempre).
+ * Construye un arg:intent bien formado (misma firma pública que antes).
+ * Añade `game: 'delta'` en el envelope sin romper callers existentes.
  */
 export function makeIntent(actorId, intent, args = {}, from = actorId) {
-  return {
-    v: ARG_PROTOCOL_VERSION,
+  return protocolMakeIntent(actorId, intent, args, {
     from,
-    ts: Date.now(),
-    actorId,
-    intent,
-    ...args
-  };
+    game: GAME_ID
+  });
 }
 
 /** Forma mínima válida de un arg:intent (transport-level, no de negocio). */
 export function isIntentShaped(payload) {
-  return Boolean(
-    payload &&
-      typeof payload === 'object' &&
-      typeof payload.actorId === 'string' &&
-      payload.actorId &&
-      INTENTS.includes(payload.intent)
-  );
+  return protocolIsIntentShaped(payload, INTENT_CATALOG);
+}
+
+/** Forma + rol (default player). */
+export function validateIntent(payload) {
+  return protocolValidateIntent(payload, INTENT_CATALOG);
 }
