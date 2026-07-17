@@ -523,10 +523,10 @@ Hallazgos diferidos U80 (no bloquean):
   gitignored del árbol principal; hace falta `ZEUS_VOLUMES_ROOT` o
   symlinks locales (runbook; no WP si basta documentar).
 
-- ⬜ **WP-U81 · Herramientas de segmentación del dramaturgo** *(dep U80)* —
-  migrar el CONCEPTO de los pythons (segment_linea, segment_poder,
-  fetch_wp_historia, fetch_snapshot — punteros en DATOS.md §7) a herramientas
-  JS del kit de línea: `crear-linea` (scaffolding desde placeholders:
+- 🔶 **WP-U81 · Herramientas de segmentación del dramaturgo** *(dep U80)* —
+  en curso (lote-7a / orquestador / 2026-07-17) — migrar el CONCEPTO de los
+  pythons (segment_linea, segment_poder, fetch_wp_historia, fetch_snapshot —
+  punteros en DATOS.md §7) a herramientas JS del kit de línea: `crear-linea` (scaffolding desde placeholders:
   nodos.yaml de ejemplo, registry, carpetas), `segmentar` (historial →
   manifest con milestones por reglas), `conectar-satelite` (genera las
   instrucciones/config del MCP satélite y los remotos wiki/ATProto/SSB),
@@ -549,12 +549,13 @@ Hallazgos diferidos U80 (no bloquean):
   **Demolición:** n/a (nacimiento; los pythons viven en network-engine, fuera
   de este repo).
 
-- ⬜ **WP-U82 · CRUD de volúmenes: medir y vaciar** *(dep U80; encaja con la
-  ola 4)* — capa de operación sobre volumes.json/DISKs, files-first: medición
-  (tamaño por volumen/corpus/línea) y **vaciado** con roles (DATOS.md §4:
-  operator = purga dura con asiento; player/dj = vaciado jugable vía intent).
-  Todo expuesto REST + MCP resource desde una definición (patrón WP-U40);
-  nada toca disco sin pasar por autoridad (intents) u operación con ledger.
+- 🔶 **WP-U82 · CRUD de volúmenes: medir y vaciar** *(dep U80; encaja con la
+  ola 4)* — en curso (lote-7a / orquestador / 2026-07-17) — capa de operación
+  sobre volumes.json/DISKs, files-first: medición (tamaño por
+  volumen/corpus/línea) y **vaciado** con roles (DATOS.md §4: operator =
+  purga dura con asiento; player/dj = vaciado jugable vía intent). Todo
+  expuesto REST + MCP resource desde una definición (patrón WP-U40); nada
+  toca disco sin pasar por autoridad (intents) u operación con ledger.
   **CA:** e2e — llenar un corpus sintético, medirlo por resource, vaciarlo
   por rol operator (asiento en ledger, archivos fuera) y rechazo del mismo
   vaciado con rol player; `volumes.json` refleja contadores.
@@ -570,15 +571,15 @@ Hallazgos diferidos U80 (no bloquean):
   caso de vaciado por juego; scoring/ledger reflejan el ciclo.
   **Demolición:** n/a.
 
-- ⬜ **WP-U91 · Loader MCP del volumen FORCES** *(dep U80; D-19)* — el
-  volumen YA EXISTE: `VOLUMES/DISK_03/FORCES` importado y curado a mano el
-  2026-07-15 (12 corpus, 68 escenas, registry.json con activación, entrada
-  en volumes.json; formato v0 en su README — el import simuló la salida del
-  linea-kit). Lo que queda: (a) los schemas force/cota de U80 validan
-  DISK_03 sin tocarlo (el fixture ya está en el repo); (b) MCP loader
-  read-only hermano de linea-system (`force://{id}`, `force://{id}/
-  scene/…`, registry y cotas como resources; refs `linea:*` no montadas =
-  pendiente, no error).
+- 🔶 **WP-U91 · Loader MCP del volumen FORCES** *(dep U80; D-19)* — en curso
+  (lote-7a / orquestador / 2026-07-17) — el volumen YA EXISTE:
+  `VOLUMES/DISK_03/FORCES` importado y curado a mano el 2026-07-15 (12
+  corpus, 68 escenas, registry.json con activación, entrada en volumes.json;
+  formato v0 en su README — el import simuló la salida del linea-kit). Lo que
+  queda: (a) los schemas force/cota de U80 validan DISK_03 sin tocarlo (el
+  fixture ya está en el repo); (b) MCP loader read-only hermano de
+  linea-system (`force://{id}`, `force://{id}/scene/…`, registry y cotas
+  como resources; refs `linea:*` no montadas = pendiente, no error).
   **CA:** e2e — el volumen valida contra U80; un resource de escena ancla y
   el registry con `session_budget` se leen por MCP; el loader no nombra
   ninguna force concreta en código (gate).
