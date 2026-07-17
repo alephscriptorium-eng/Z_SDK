@@ -72,7 +72,10 @@ export const INTENT_DEFS = {
   curate: { roles: ['dj'] },
   milestone: { roles: ['dj'] },
   /** Visor de operador (WP-U32): anotar inspección con asiento en ledger. */
-  inspect: { roles: ['operator'] }
+  inspect: { roles: ['operator'] },
+  /** Forces (WP-U92): el sistema inyecta entropía — operator/dj. */
+  'force:activate': { roles: ['operator', 'dj'] },
+  'force:deactivate': { roles: ['operator', 'dj'] }
 };
 
 export const INTENT_CATALOG = createIntentCatalog(INTENT_DEFS);
@@ -86,6 +89,7 @@ export { ROLES, GATES, SNAPSHOT_BUDGET_BYTES, assertIntentRole };
 
 /** Hint de navegador real para arg:track según el tipo de recurso. */
 export function trackHintFor(refKind) {
+  if (refKind === 'force-scene') return 'force-browser';
   return refKind === 'micropost' || refKind === 'corpus'
     ? 'firehose-browser'
     : 'cache-browser';

@@ -10,9 +10,10 @@ El contrato de entrada al mesh es el **validador**; las tools son cortesía.
 
 | subpath | runtime | contenido |
 | ------- | ------- | -------- |
-| `@zeus/linea-kit` | browser-safe | curación + resolve puro (sin fs) |
+| `@zeus/linea-kit` | browser-safe | curación + resolve + force activation (sin fs) |
 | `@zeus/linea-kit/curation` | browser-safe | enum / `normalizeCurationStatus` |
 | `@zeus/linea-kit/resolve` | browser-safe | `resolveNodo`, `resolveOldid`, … |
+| `@zeus/linea-kit/force-activation` | browser-safe | `explainActivate` / budget / exclusiones / cotas |
 | `@zeus/linea-kit/validate` | node | Ajv + schemas en disco + `validateVolumesTree` |
 | `@zeus/linea-kit/loader` | node | `loadLineaData`, `loadForcesData`, `readWikitext`, … |
 | `@zeus/linea-kit/tools` | node | `crear-linea`, `segmentar`, `conectar-satelite`, `fetch`, `segmentar-force`, `crear-cotas` |
@@ -48,10 +49,12 @@ npx zeus-linea-kit starterkit-force --forces-root /tmp/forces --overwrite
 `editorialStatus` (transmedia) convergen en `CURATION_STATUSES` /
 `normalizeCurationStatus` / `readCurationStatus`.
 
-## Regla de los dos juegos
+## Force activation (WP-U92)
 
-Este paquete es **engine**: no nombra juegos ni forces concretas. Los ids de
-corpus viven en VOLUMES / fixtures / salida del dramaturgo.
+Módulo puro `@zeus/linea-kit/force-activation`: aplica `session_budget`,
+exclusiones y boot del registry **inyectado** (cero ids concretos en código).
+Delta y pozo consumen el mismo API; el corpus vive en VOLUMES / fixtures.
+
 
 ## Tests
 

@@ -34,7 +34,10 @@ export const EVENTS = Object.freeze({
   LEDGER: PROTOCOL_EVENTS.LEDGER
 });
 
-/** Catálogo: join, draw_drop (crecer/cosechar) y empty (vaciar el vaso). */
+/**
+ * Catálogo: join, draw_drop (crecer), empty (vaciar, WP-U83) y
+ * force activate/deactivate (WP-U92).
+ */
 export const INTENTS = createIntentCatalog({
   join: {
     roles: ['player'],
@@ -52,6 +55,14 @@ export const INTENTS = createIntentCatalog({
   empty: {
     roles: ['player'],
     description: 'Derramar el pozo (liberar el vaso) con asiento en ledger'
+  },
+  'force:activate': {
+    roles: ['operator', 'dj'],
+    description: 'Activar una force del registry (session_budget / exclusiones)'
+  },
+  'force:deactivate': {
+    roles: ['operator', 'dj'],
+    description: 'Desactivar una force activa (salvo boot_always_on)'
   }
 });
 

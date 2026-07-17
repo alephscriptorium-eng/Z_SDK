@@ -1,17 +1,29 @@
 /**
  * pozo — dominio puro (sin red, sin fs, sin Date.now escondido).
- * Intents con ledger: draw_drop (cosechar) y empty (vaciar el vaso, WP-U83).
+ * Intents: draw_drop + empty (WP-U83) y force activate/deactivate (WP-U92).
  */
 
+import {
+  normalizeForceRegistry,
+  initialActiveForces,
+  explainActivate,
+  explainDeactivate,
+  cotasSnapshot
+} from '@zeus/linea-kit/force-activation';
 import { INTENTS, POZO_SCENE, validateIntent } from './contract.mjs';
 
 /**
- * @param {{ now?: () => number }} [opts]
+ * @param {{ now?: () => number, forcesRegistry?: object|null }} [opts]
  */
 export function createPozoDomainState(opts = {}) {
   const clock = typeof opts.now === 'function' ? opts.now : () => Date.now();
 
-  /** @type {Record<string, { id: string, kind: string, nodeId: string, joinedAt: number }>} */
+  const forcesReg =
+    opts.forcesRegistry == null ? null : normalizeForceRegistry(opts.forcesRegistry);
+  /** @type {Set<string>} */
+  const activeForces = new Set(forcesReg ? initialActiveForces(forcesReg) : []);
+
+  /** @type {Record<string, { id: string, kind: string, nodeId: string, joinedAt: number, score?: object }>} */
   const actors = {};
   let wellLevel = POZO_SCENE.well.startLevel;
   let dripAcc = 0;
@@ -111,6 +123,55 @@ export function createPozoDomainState(opts = {}) {
       });
       contentRev += 1;
       return { ok: true, error: null };
+    },
+
+    'force:activate'(payload) {
+      if (!forcesReg) return { ok: false, error: 'forces_no_configuradas' };
+      const forceId = payload.forceId ?? payload.id;
+      const check = explainActivate(forcesReg, activeForces, forceId);
+      if (!check.ok) return { ok: false, error: check.error };
+      activeForces.add(forceId);
+      ledgerSeq += 1;
+      const ts = clock();
+      ledgerOut.push({
+        kind: 'force:activate',
+        seq: ledgerSeq,
+        actorId: payload.actorId,
+        forceId,
+        ts,
+        detail: { forceId },
+        ...(check.ref ? { ref: check.ref } : {})
+      });
+      if (check.ref) {
+        trackOut.push({
+          actorId: payload.actorId,
+          hint: 'force-browser',
+          ref: check.ref,
+          ts
+        });
+      }
+      contentRev += 1;
+      return { ok: true, error: null };
+    },
+
+    'force:deactivate'(payload) {
+      if (!forcesReg) return { ok: false, error: 'forces_no_configuradas' };
+      const forceId = payload.forceId ?? payload.id;
+      const check = explainDeactivate(forcesReg, activeForces, forceId);
+      if (!check.ok) return { ok: false, error: check.error };
+      activeForces.delete(forceId);
+      ledgerSeq += 1;
+      const ts = clock();
+      ledgerOut.push({
+        kind: 'force:deactivate',
+        seq: ledgerSeq,
+        actorId: payload.actorId,
+        forceId,
+        ts,
+        detail: { forceId }
+      });
+      contentRev += 1;
+      return { ok: true, error: null };
     }
   };
 
@@ -170,7 +231,19 @@ export function createPozoDomainState(opts = {}) {
           dripAcc
         },
         nodes: POZO_SCENE.nodes,
-        links: POZO_SCENE.links
+        links: POZO_SCENE.links,
+        forces: forcesReg
+          ? {
+              active: [...activeForces],
+              boot: forcesReg.boot,
+              session_budget: forcesReg.activation.session_budget,
+              cotas: cotasSnapshot(forcesReg, {
+                // pozo: pozo seco ≈ colapso; lleno ≈ victoria
+                collapsed: wellLevel <= 0,
+                victory: wellLevel >= POZO_SCENE.well.capacity
+              })
+            }
+          : null
       };
     },
 
@@ -200,6 +273,16 @@ export function createPozoDomainState(opts = {}) {
         if (!actors[payload.actorId]) return { ok: false, error: 'actor_desconocido' };
         if (wellLevel < 1) return { ok: false, error: 'pozo_ya_vacio' };
         return { ok: true, error: null };
+      }
+      if (payload.intent === 'force:activate') {
+        if (!forcesReg) return { ok: false, error: 'forces_no_configuradas' };
+        const check = explainActivate(forcesReg, activeForces, payload.forceId ?? payload.id);
+        return check.ok ? { ok: true, error: null } : { ok: false, error: check.error };
+      }
+      if (payload.intent === 'force:deactivate') {
+        if (!forcesReg) return { ok: false, error: 'forces_no_configuradas' };
+        const check = explainDeactivate(forcesReg, activeForces, payload.forceId ?? payload.id);
+        return check.ok ? { ok: true, error: null } : { ok: false, error: check.error };
       }
       return { ok: false, error: 'intent_desconocido' };
     }

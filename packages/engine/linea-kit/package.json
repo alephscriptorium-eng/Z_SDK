@@ -11,6 +11,7 @@
     ".": "./src/index.mjs",
     "./curation": "./src/curation.mjs",
     "./resolve": "./src/resolve.mjs",
+    "./force-activation": "./src/force-activation.mjs",
     "./validate": "./src/validate.mjs",
     "./loader": "./src/loader.mjs",
     "./tools": "./src/tools/index.mjs",

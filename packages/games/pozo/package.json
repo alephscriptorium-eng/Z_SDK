@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@zeus/authority-kit": "*",
+    "@zeus/linea-kit": "*",
     "@zeus/playbook-kit": "*",
     "@zeus/player-mcp-kit": "*",
     "@zeus/presets-sdk": "*",

@@ -1,5 +1,5 @@
 /**
- * @zeus/linea-kit — browser-safe model (curation + pure resolve).
+ * @zeus/linea-kit — browser-safe model (curation + pure resolve + force activation).
  * Node-only: import `@zeus/linea-kit/loader` and `@zeus/linea-kit/validate`.
  */
 
@@ -24,3 +24,14 @@ export {
   resolveRegistrosForYear,
   validateNodoSectionMappings
 } from './resolve.mjs';
+
+export {
+  normalizeForceRegistry,
+  initialActiveForces,
+  forceAnchorTrackRef,
+  cotasSnapshot,
+  explainActivate,
+  explainDeactivate,
+  applyActivate,
+  applyDeactivate
+} from './force-activation.mjs';

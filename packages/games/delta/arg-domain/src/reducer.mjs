@@ -15,6 +15,7 @@
  * }
  */
 
+import { explainActivate, explainDeactivate } from '@zeus/linea-kit/force-activation';
 import { EMOTES, INTENTS } from './contract.mjs';
 import { cloakModFor } from './cloak-mods.mjs';
 import { seaLayout } from './sea-layout.mjs';
@@ -405,6 +406,49 @@ const HANDLERS = {
         ...(intent.label != null ? { label: intent.label } : {})
       }
     });
+  },
+
+  /**
+   * Force activate (WP-U92): rules from injected registry (budget / exclusions).
+   * Valid → ops + trackCast of anchor scene.
+   */
+  'force:activate'(view, intent) {
+    const registry = view.forces?.registry;
+    if (!registry) return fail('forces_no_configuradas');
+    const forceId = intent.forceId ?? intent.id;
+    const check = explainActivate(registry, view.forces.active ?? [], forceId);
+    if (!check.ok) return fail(check.error);
+    const ops = [
+      { op: 'force:activate', forceId },
+      {
+        op: 'ledger:push',
+        entryKind: 'force:activate',
+        actorId: intent.actorId,
+        ...(check.ref ? { ref: check.ref } : {}),
+        detail: { forceId }
+      }
+    ];
+    if (check.ref) {
+      return { ok: true, ops, trackCast: { ref: check.ref, hint: 'force-browser' } };
+    }
+    return okOps(...ops);
+  },
+
+  'force:deactivate'(view, intent) {
+    const registry = view.forces?.registry;
+    if (!registry) return fail('forces_no_configuradas');
+    const forceId = intent.forceId ?? intent.id;
+    const check = explainDeactivate(registry, view.forces.active ?? [], forceId);
+    if (!check.ok) return fail(check.error);
+    return okOps(
+      { op: 'force:deactivate', forceId },
+      {
+        op: 'ledger:push',
+        entryKind: 'force:deactivate',
+        actorId: intent.actorId,
+        detail: { forceId }
+      }
+    );
   }
 };
 

@@ -612,8 +612,8 @@ Diferidos del reporte/revisión WP-U91 (no bloquean cierre):
   strings crudos; YAML CRLF vs generate LF falla sync sin drift de contenido.
   Candidato: normalizar LF en la comparación o `.gitattributes` para `*.yaml`.
 
-- 🔶 **WP-U92 · Intents de force: el sistema inyecta entropía** *(dep U91,
-  U30)* — (lote-7b / orquestador / 2026-07-18) — el dominio gana
+- ✅ **WP-U92 · Intents de force: el sistema inyecta entropía** *(dep U91,
+  U30)* — aceptado (orquestador / 2026-07-18) — el dominio gana
   `force:activate`/`force:deactivate` con roles `operator`/`dj`: la
   autoridad valida contra el registry del volumen (`session_budget`,
   `pairs_with`, exclusiones declaradas — las reglas viven en los datos, el
@@ -625,6 +625,19 @@ Diferidos del reporte/revisión WP-U91 (no bloquean cierre):
   dry-run; par excluido = rechazo; activación válida = asiento + track
   navegable; delta y pozo consumen el mecanismo (regla de los dos juegos).
   **Demolición:** n/a (adición al dominio).
+
+### Cola hallazgos ola 7 (WP-U92)
+
+Diferidos del reporte/revisión WP-U92 (no bloquean cierre):
+- ⬜ **authority/demo sin `forcesRegistry`** — sin inyectar registry el intent
+  responde `forces_no_configuradas`; candidato cablear `loadForcesData` /
+  fixture en demos (borde node).
+- ⬜ **`resolveTrackRef` no resuelve `force://`** — track sale en outbox con
+  URI; deep-link browser / MCP pendiente.
+- Nota: `pairs_with` queda blando (solo exclusiones hard del registry);
+  endurecer afirmativo = WP aparte si hace falta.
+- Higiene: worktrees necesitan `npm install` local para exports nuevos del
+  kit (no WP).
 
 ## Ola 8 — Feeds federados (dep U80)
 
