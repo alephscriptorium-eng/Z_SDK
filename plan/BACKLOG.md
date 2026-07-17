@@ -379,14 +379,22 @@ Diferidos del reporte/revisión WP-U50 (no bloquean cierre):
 - `file:` residual operator-ui
 - game-engine «ARG» (identidad residual)
 
-- 🔶 **WP-U51 · Layout final** *(dep olas 1–4)* — en curso (ola-5 /
-  orquestador / 2026-07-17) — mover a
+- ✅ **WP-U51 · Layout final** — aceptado
+  (orquestador / 2026-07-17) — mover a
   `packages/{engine,editor,mesh,games}` + `examples/` según ARQUITECTURA §2,
   (D-8/D-9: `games/{delta,pozo}`, visores en `mesh/`), actualizar workspaces,
   scripts raíz e imports. Un solo WP, mecánico, con el repo ya convergido.
   **CA:** `npm install` limpio; `lint`, `test:arg`, `gates` y los e2e de la
   matriz verdes; `git log --follow` conserva historia de los archivos movidos.
   **Demolición:** las carpetas `lib/ app/ platform/ mcp/ arg/` antiguas.
+
+### Cola hallazgos ola 5 (WP-U51)
+
+Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
+- C-30 playbook (`e2e:playbook-kit` G-PB.0)
+- VOLUMES e2e (`e2e:view` / `e2e:firehose`)
+- `:13022` (huérfano e2e:operator-ui)
+- `file:` residual operator-ui
 
 - ⬜ **WP-U54 · Consumidores externos anónimos** *(dep U50, U10; D-18)* — el
   registry es una frontera pública: cualquier tercero (runtime JS/TS, Bun,
