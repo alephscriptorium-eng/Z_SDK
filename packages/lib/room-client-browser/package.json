@@ -6,7 +6,8 @@
   "main": "src/index.mjs",
   "exports": {
     ".": "./src/index.mjs",
-    "./browser": "./browser/room-client.browser.mjs"
+    "./browser": "./browser/room-client.browser.mjs",
+    "./dev-config": "./browser/dev-room-config.mjs"
   },
   "scripts": {
     "test": "node --experimental-test-module-mocks --test test/*.mjs"

@@ -59,21 +59,20 @@ test('createBrowserRoomClient wires auth, register, state and ROOM_MESSAGE', asy
   outbound.length = 0;
   const client = createBrowserRoomClient({
     scriptoriumUrl: 'http://localhost:3017/runtime',
-    room: 'scriptorium.t',
-    sessionId: 't',
+    room: 'ARG_U32',
     token: 'tok',
     user: 'viewer-1',
     type: 'Viewer'
   });
 
-  assert.equal(client.room, 'scriptorium.t');
+  assert.equal(client.room, 'ARG_U32');
   assert.equal(client.user, 'viewer-1');
   assert.equal(lastSock.url, 'http://localhost:3017/runtime');
   assert.equal(lastSock.autoConnect, false);
   assert.deepEqual(lastSock.transports, ['websocket']);
   assert.deepEqual(lastSock.auth, {
     token: 'tok',
-    room: 'scriptorium.t',
+    room: 'ARG_U32',
     user: 'viewer-1'
   });
   assert.equal(client.getSocket(), lastSock);
@@ -81,62 +80,53 @@ test('createBrowserRoomClient wires auth, register, state and ROOM_MESSAGE', asy
   await client.connect();
   assert.ok(outbound.some((o) => o.event === 'CLIENT_REGISTER'));
   assert.ok(
-    outbound.some(
-      (o) => o.event === 'CLIENT_SUSCRIBE' && o.data.room === 'scriptorium.t'
-    )
+    outbound.some((o) => o.event === 'CLIENT_SUSCRIBE' && o.data.room === 'ARG_U32')
   );
 
   const snaps = [];
-  const unsub = client.onState((snapshot, envelope) => {
-    snaps.push({ snapshot, seq: envelope.seq });
+  const unsub = client.onState((snapshot) => {
+    snaps.push(snapshot);
   });
-  lastSock._inbound('SET_STATE', {
-    type: 'session:state',
-    snapshot: { phase: 'activa' },
-    seq: 7
-  });
-  lastSock._inbound('SET_STATE', { type: 'other', snapshot: { ignored: true } });
-  assert.deepEqual(snaps, [{ snapshot: { phase: 'activa' }, seq: 7 }]);
+  lastSock._inbound('state', { sceneId: 'delta-v0', actors: { a: {} }, ts: 1 });
+  lastSock._inbound('arg:state', { sceneId: 'delta-v0', actors: { a: {}, b: {} }, ts: 2 });
+  assert.equal(snaps.length, 2);
+  assert.equal(snaps[0].sceneId, 'delta-v0');
+  assert.ok(snaps[1].actors.b);
   unsub();
-  lastSock._inbound('SET_STATE', {
-    type: 'session:state',
-    snapshot: { phase: 'cierre' },
-    seq: 8
-  });
-  assert.equal(snaps.length, 1);
+  lastSock._inbound('state', { sceneId: 'ignored' });
+  assert.equal(snaps.length, 2);
 
   const roomEvents = [];
-  client.onRoomEvent('PING', (payload) => roomEvents.push(payload));
-  lastSock._inbound('PING', { n: 3 });
-  assert.deepEqual(roomEvents, [{ n: 3 }]);
+  client.onRoomEvent('ledger', (payload) => roomEvents.push(payload));
+  lastSock._inbound('ledger', { kind: 'inspect' });
+  assert.deepEqual(roomEvents, [{ kind: 'inspect' }]);
 
   const anyEvents = [];
   client.onAny((event, payload) => anyEvents.push({ event, payload }));
-  lastSock._inbound('PONG', { ok: true });
-  assert.ok(anyEvents.some((e) => e.event === 'PONG' && e.payload.ok === true));
+  lastSock._inbound('intent', { ok: true });
+  assert.ok(anyEvents.some((e) => e.event === 'intent' && e.payload.ok === true));
 
-  client.emit('CAST', { targetId: 1 });
+  client.emit('intent', { intent: 'inspect' });
   const roomMessage = outbound.find(
-    (o) => o.event === 'ROOM_MESSAGE' && o.data.event === 'CAST'
+    (o) => o.event === 'ROOM_MESSAGE' && o.data.event === 'intent'
   );
   assert.ok(roomMessage);
   assert.deepEqual(roomMessage.data, {
-    event: 'CAST',
-    room: 'scriptorium.t',
-    data: { targetId: 1 }
+    event: 'intent',
+    room: 'ARG_U32',
+    data: { intent: 'inspect' }
   });
 
   client.disconnect();
 });
 
-test('createBrowserRoomClient strips /runtime and defaults room from sessionId', async () => {
+test('createBrowserRoomClient strips /runtime and defaults room to ARG_DELTA', async () => {
   outbound.length = 0;
   const client = createBrowserRoomClient({
     scriptoriumUrl: 'http://host.example:4017/runtime/',
-    sessionId: 's9',
     token: 't'
   });
   assert.equal(lastSock.url, 'http://host.example:4017/runtime');
-  assert.equal(client.room, 'scriptorium.s9');
+  assert.equal(client.room, 'ARG_DELTA');
   assert.match(client.user, /^viewer-\d+$/);
 });
