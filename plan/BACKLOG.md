@@ -396,8 +396,8 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 - `:13022` (huérfano e2e:operator-ui)
 - `file:` residual operator-ui
 
-- 🔶 **WP-U54 · Consumidores externos anónimos** *(dep U50, U10; D-18)* — en
-  curso (lote-5b / orquestador / 2026-07-17) — el registry es una frontera
+- ✅ **WP-U54 · Consumidores externos anónimos** *(dep U50, U10; D-18)* — aceptado
+  (orquestador / 2026-07-17) — el registry es una frontera
   pública: cualquier tercero (runtime JS/TS, Bun, Node) debe poder construir
   sobre `@zeus/*` sin hablar con nosotros. Los paquetes publicables llevan
   **tipos `.d.ts`** (generados de los schemas del protocolo) y docs de
