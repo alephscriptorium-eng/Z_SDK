@@ -128,4 +128,54 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador)_
+**Aceptado ✅** — 2026-07-17 (orquestador). Sin merge ni ✅ BACKLOG en esta
+pasada (pedido explícito del usuario; autorización queda pendiente de
+merge+✅ en master). Sin push.
+
+### Verificado
+
+- Diff vs master: ya al día (merge-base = master `ed3421a`); no hizo falta
+  merge. 2 commits convencionales (`feat!` + reporte); ~115 archivos;
+  −5.3k neto. Alcance U31 (player-ui DJ + demolición session-* /
+  tablero-core + e2e + stubs satélite). Worker **no** tocó
+  `plan/BACKLOG.md` ni `packages/arg/spec/BACKLOG.md`.
+- player-ui = vista `dj`: `createDjTransport` → `connectAndJoin` room
+  `ZEUS_ARG_ROOM` / `ARG_DELTA`; intents `cache`/`curate`/`milestone` con
+  `role: 'dj'`; sin `MAKE_MASTER` / sin `session-transport` master /
+  sin room `scriptorium.<id>` como Tablero compartido.
+- Demolición dura: dirs `session-protocol`, `session-domain`,
+  `tablero-core` ausentes; `session-transport.mjs` y
+  `createRoomSessionClient` borrados; cero imports vivos
+  `@zeus/session-*` / `@zeus/tablero-core` (solo comentarios de
+  absorbido/stub). Cero re-exports compat.
+- PRACTICAS §1.11: delta verde (e2e DJ + arg-domain); pozo sin player-ui
+  (documentado) + `test:pozo` verde; `gates` limpio. Auto-revisión §3
+  honesta.
+
+### Re-CA (worktree, sin browser)
+
+- `npm run test:player-ui` → **14 pass**, 0 fail
+- `npm run e2e:player-ui-dj` → G-U31.1…G-U31.6 OK
+- `npm run gates` → `gates: OK (0 offenders)`
+- `npm run test:pozo` → **6 pass**, 0 fail
+- `npm run test:arg-domain` → **59 pass**, 0 fail
+
+### CA
+
+- [x] e2e — deck/API DJ → intent `cache` → ledger → visible en tablero
+  delta (`e2e:player-ui-dj`)
+- [x] suite player-ui verde recortada al rol DJ (14 pass)
+
+### Residuales (no bloquean; post-merge / U32)
+
+- `eslint.config.mjs` aún lista `packages/lib/session-protocol/browser/**`
+  (path muerto).
+- `package-lock.json` entradas extraneous de paquetes borrados (ghost npm).
+- e2e legacy SKIPPED; operator-ui / player-3d stubs → **WP-U32** / cleanup.
+- Tools MCP `dj_*` no cableados (hallazgo worker; CA cubierto por HTTP/decks).
+
+### Merge
+
+Listo para merge en master cuando el usuario autorice. Tras merge: ✅
+BACKLOG U31 en master + `git worktree remove` del worktree U31. U32
+desbloqueado (dep U31).
