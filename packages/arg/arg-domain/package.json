@@ -21,5 +21,6 @@
   "devDependencies": {
     "@zeus/presets-sdk": "*"
   },
-  "license": "AIPLv1"
+  "license": "AIPLv1",
+  "private": true
 }

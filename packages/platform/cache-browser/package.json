@@ -32,5 +32,6 @@
     "express": "^5.2.1",
     "hyperaxe": "^3.0.2",
     "yaml": "^2.8.0"
-  }
+  },
+  "private": true
 }

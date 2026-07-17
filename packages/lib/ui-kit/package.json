@@ -22,12 +22,20 @@
     }
   },
   "devDependencies": {
-    "@zeus/presets-sdk": "*"
+    "@zeus/presets-sdk": "0.1.0"
   },
   "dependencies": {
-    "@zeus/http-contract": "*",
+    "@zeus/http-contract": "0.1.0",
     "express": "^5.2.1",
     "hyperaxe": "^3.0.2",
     "zod": "^4.4.3"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "assets",
+    "README.md"
+  ]
 }

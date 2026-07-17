@@ -17,5 +17,6 @@
   "devDependencies": {
     "@zeus/test-utils": "*"
   },
-  "license": "AIPLv1"
+  "license": "AIPLv1",
+  "private": true
 }

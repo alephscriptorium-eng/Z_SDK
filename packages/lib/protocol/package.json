@@ -26,6 +26,14 @@
     "yaml": "^2.8.0"
   },
   "devDependencies": {
-    "@zeus/http-contract": "*"
-  }
+    "@zeus/http-contract": "0.1.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "spec",
+    "README.md"
+  ]
 }

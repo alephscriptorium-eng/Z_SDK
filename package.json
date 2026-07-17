@@ -108,7 +108,8 @@
     "e2e:arg-mcp": "node e2e/arg-mcp-demo.mjs",
     "e2e:playbook-kit": "node e2e/playbook-kit-demo.mjs",
     "e2e:pozo-mcp": "node e2e/pozo-mcp-demo.mjs",
-    "test:pozo": "npm test -w @zeus/pozo"
+    "test:pozo": "npm test -w @zeus/pozo",
+    "release:dry": "node scripts/release-dry.mjs"
   },
   "devDependencies": {
     "@alephscript/mcp-core-sdk": "^1.5.0",
@@ -128,5 +129,6 @@
       "next": "14.2.26"
     }
   },
-  "license": "AIPLv1"
+  "license": "AIPLv1",
+  "private": true
 }

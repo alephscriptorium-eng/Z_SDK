@@ -17,10 +17,19 @@
   "zeus": {
     "role": "lib",
     "docs": {
-      "repo": ["packages/platform/firehose-browser/spec/openapi.yaml"]
+      "repo": [
+        "packages/platform/firehose-browser/spec/openapi.yaml"
+      ]
     }
   },
   "dependencies": {
-    "@zeus/presets-sdk": "*"
-  }
+    "@zeus/presets-sdk": "0.1.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
 }

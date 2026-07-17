@@ -13,12 +13,20 @@
     "test": "node --experimental-test-module-mocks --test test/*.mjs"
   },
   "dependencies": {
-    "@zeus/presets-sdk": "*",
-    "@zeus/rooms": "*",
+    "@zeus/presets-sdk": "0.1.0",
+    "@zeus/rooms": "0.1.0",
     "socket.io-client": "^4.8.1"
   },
   "license": "AIPLv1",
   "zeus": {
     "role": "lib"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "browser",
+    "README.md"
+  ]
 }

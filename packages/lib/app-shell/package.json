@@ -22,9 +22,16 @@
     }
   },
   "dependencies": {
-    "@zeus/presets-sdk": "*",
-    "@zeus/rooms": "*",
-    "@zeus/ui-kit": "*"
+    "@zeus/presets-sdk": "0.1.0",
+    "@zeus/rooms": "0.1.0",
+    "@zeus/ui-kit": "0.1.0"
   },
-  "license": "AIPLv1"
+  "license": "AIPLv1",
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
 }
