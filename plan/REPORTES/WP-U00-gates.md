@@ -5,8 +5,8 @@
 | agente | worker wp/u00-gates |
 | fecha | 2026-07-17 |
 | rama | `wp/u00-gates` |
-| commit(s) | `eed6855` feat(gates); `1c892bb` test(gates); `13ebdcf` docs(reportes) |
-| estado propuesto | listo para revisión |
+| commit(s) | `eed6855` feat(gates); `1c892bb` test(gates); `13ebdcf`/`0b675e7` docs(reportes); `fe40041` merge(master) |
+| estado propuesto | aceptado (orquestador) — listo para merge+✅ en master |
 
 ## Qué se hizo
 
@@ -135,4 +135,30 @@ n/a (WP sin demolición).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17
+
+### Verificado
+
+- Diff acotado a `scripts/gates/`, `test/gates/`, scripts raíz `gates`/`test:gates`, reporte. Worker no tocó `plan/BACKLOG.md`.
+- Commits convencionales (`feat`/`test`/`docs`).
+- Integración con master (U01+U02): `git merge master` **limpia** (sin conflicto en `package.json`; `gates`/`test:gates` conservados). Commit merge: `fe40041`.
+- CA re-ejecutado tras merge:
+  - `npm run gates` → `gates: OK (0 offenders)`
+  - `npm run test:gates` → 7/7 (verde repo + rojo sintético a–d + `oldid` + env)
+  - `npm run lint` → exit 0, 16 warnings preexistentes (0 errors)
+- Reglas a–d implementadas; `exceptions.mjs`: 44 entradas, todas con `reason` (ports 34 / transition 6 / arg-import 4); regla (d) lista vacía (layout `packages/engine` aún no existe — scanner + test sintético OK).
+- Auto-revisión PRACTICAS §3 honesta; evidencia literal coherente con re-ejecución.
+
+### Hallazgos → cola (no bloquean)
+
+- Limpieza de fallbacks `?? 30xx` / `localhost:3017` (retirar excepciones ports).
+- Consolidar puertos duplicados en `mcp/{linea,solar}-system` → env.
+- Cortar imports mesh→`@zeus/arg-domain` al layout `games/` (ola 5).
+- API `legacy` / SessionManifest `v2` (ola 3).
+- U03: cablear `npm run gates` en CI (script ya existe y es verde).
+
+### Merge
+
+Orden sugerido: **U00 tras U01+U02** (master ya los tiene). Merge fast-forward o merge commit desde `wp/u00-gates` (ya rebased/merged con master vía `fe40041`). Tras merge en master: ✅ en BACKLOG + `git worktree remove`.
+
+**Listo para merge+✅:** SÍ (autorizado; ✅ lo pone el orquestador en master al mergear).
