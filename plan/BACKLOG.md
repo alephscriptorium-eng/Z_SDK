@@ -76,7 +76,7 @@ Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente f
 
 ## Ola 1 — El contrato único (engine nace)
 
-- 🔶 **WP-U10 · `@zeus/protocol`** — en curso (ola-1 / orquestador / 2026-07-17) — generalizar
+- ✅ **WP-U10 · `@zeus/protocol`** — aceptado (orquestador / 2026-07-17) — generalizar
   `packages/arg/arg-domain/src/contract.mjs` + `spec/CONTRATO.md`: eventos
   `state|intent|track|ledger` con campo `game` en el envelope, `makeIntent`,
   validación de forma, **roles** (`player|dj|operator`) declarados por intent,
@@ -94,6 +94,16 @@ Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente f
   **Demolición:** el contrato duplicado dentro de arg-domain (queda solo lo
   específico de delta); la parte de session-protocol que solo generaba spec
   (el resto de session-protocol muere en WP-U31).
+
+### Cola hallazgos lote 1a (WP-U10)
+
+Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
+- migrar wire `arg:*` → kinds canónicos con U11 (+ vistas)
+- comentario residual «generate.mjs» en `session-protocol/spec/build.mjs` (higiene hasta U31)
+- portal VitePress ausente → WP-U41; HTML AsyncAPI bajo `docs/public/api/` (gitignored) cumple CA de render
+- nota: U10 apoya APIs de http-contract/presets-sdk (2/9 workspaces rojos de cola U03) pero CA no exige esas suites verdes
+- duda worker (brief U11 / DECISIONES si el usuario cierra): ¿Peer Card en handshake U11 o basta `role` en intent hasta ola WebRTC?
+- e2e banners «CAUDAL» residuales (cola U02) — fuera de alcance
 
 - ⬜ **WP-U11 · `@zeus/authority-kit`** *(dep U10)* — autoridad genérica
   extraída de `arg-demos/apps/authority`: loop de tick, aplicación de intents
