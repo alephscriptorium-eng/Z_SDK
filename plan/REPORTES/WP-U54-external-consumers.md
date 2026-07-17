@@ -5,7 +5,7 @@
 | agente | worker (swarm chat WP-U54) |
 | fecha | 2026-07-17 |
 | rama | `wp/u54-external-consumers` |
-| commit(s) | _(rellenar tras commit)_ |
+| commit(s) | `62dcb99` `262ea25` `837b9fe` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
