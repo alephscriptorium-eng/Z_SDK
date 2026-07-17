@@ -1,5 +1,6 @@
 # CI monorepo Z_SDK (WP-U03 / D-12 / ARQUITECTURA §5 paso 1).
-# Sin publish (eso es WP-U53). Cablea npm run gates (U00) en cada PR / wp/*.
+# Publish/tag/GitHub Release: .github/workflows/release.yml (WP-U53), solo en main
+# y solo tras quality+test verdes + secret NPM_TOKEN.
 name: CI
 
 on:
