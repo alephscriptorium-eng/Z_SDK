@@ -125,4 +125,34 @@ Ninguno bloqueante. Push: **no intentado** (política del brief).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador). Sin ✅ BACKLOG ni merge a master
+en este paso (pedido explícito del usuario).
+
+### Verificado
+
+1. **Merge master → rama** (`e80ddff`): U81/U82 ya en master; conflicto único
+   en `linea-kit/README.md` (loader `loadForcesData` + tools/starterkits U81)
+   resuelto sin perder ninguna fila.
+2. **CA re-ejecutada** (worktree, `ZEUS_VOLUMES_ROOT=…/zeus-sdk/VOLUMES`):
+   - `npm test -w @zeus/force-system` → 2/2; validate U80 `forceChecks=25`;
+     `force://registry` con `session_budget`; escena ancla MCP
+     `force://main/scene/…/01-aspirate-a-esteta`; gate src sin forces
+     concretas.
+   - `npm test -w @zeus/linea-kit` → 20/20 (incl. forces-loader + live DISK_03).
+   - `npm test -w @zeus/http-contract` → 18/18.
+   - `npm run gates` → OK (0 offenders).
+3. **Alcance**: diff `master...HEAD` acotado a force-system + forces-loader
+   linea-kit + presets path/puerto + http-contract force:// + changeset +
+   reporte. Sin U92 (`force:activate`/`deactivate` ausentes). Worker no
+   inventó ✅ en BACKLOG.
+4. **Basura master**: `packages/mesh/force-system/{src,test}/` existen en el
+   árbol de master como **dirs vacíos no trackeados** (accidente npm del
+   hallazgo §3 del worker). **Limpiar al merge** (`rm -rf` esos dirs antes o
+   al checkout del paquete real).
+
+### Merge sugerido (cuando el usuario autorice)
+
+1. En master: borrar dirs vacíos `packages/mesh/force-system/` si siguen.
+2. Merge `wp/u91-forces-loader` → master.
+3. Orquestador: BACKLOG 🔶→✅ U91; `git worktree remove` del worktree U91.
+4. Siguiente natural: WP-U92 (intents activate; dep U91+U30).
