@@ -9,7 +9,7 @@
     "./browser": "./browser/room-client.browser.mjs"
   },
   "scripts": {
-    "test": "node --test test/*.mjs"
+    "test": "node --experimental-test-module-mocks --test test/*.mjs"
   },
   "dependencies": {
     "@zeus/presets-sdk": "*",
