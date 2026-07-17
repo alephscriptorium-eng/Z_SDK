@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u92-force-intents` |
-| commit(s) | `be26ab3,b8eb721,56605e6,4b0961d,` |
+| commit(s) | `be26ab3`, `b8eb721`, `56605e6`, `81f2be3` |
 | estado propuesto | listo para revisión |
 | push | **no intentado** (política swarm) |
 
