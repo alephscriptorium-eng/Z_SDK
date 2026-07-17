@@ -35,7 +35,7 @@ pasó en tu sesión. **Rellena una copia por sesión; no acumules rondas aquí.*
 | ---- | ----- |
 | fecha | _(rellenar)_ |
 | agente / humano | _(rellenar)_ |
-| comando | `ZEUS_OPEN_BROWSER=0 npm run demo:arg` |
+| comando | `npm run demo:arg` _(default sin browser; opt-in `ZEUS_OPEN_BROWSER=1`)_ |
 | navegador | _(Chrome + extensión «Claude in Chrome» — ver CASOS.md §2)_ |
 | feeds | _(synthetic / real / auto)_ |
 | vistas abiertas | _(solo las del caso; abrir 3 escenas 3D satura GPUs modestas)_ |

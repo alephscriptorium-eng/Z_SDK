@@ -89,10 +89,10 @@ player_observe {"what":"sea"}   → collapsed debe ser false
 
 ## 2. Montaje: móntalo así o lo pagarás
 
-- **Arranca sin ventanas**: `ZEUS_OPEN_BROWSER=0 npm run demo:arg`. Por defecto
-  abre **5** ventanas, 3 de ellas escenas Three.js con su propio contexto WebGL
-  a 60 fps — para un `arg:state` que solo emite a 10 Hz. En una GPU integrada
-  eso la clava al 95%. Abre **solo la vista del caso** (casi siempre el tablero).
+- **Arranca sin ventanas** (default): `npm run demo:arg`. Solo abre navegador
+  con `ZEUS_OPEN_BROWSER=1` (hasta **5** ventanas, 3 de ellas escenas Three.js
+  con WebGL a 60 fps — para un `arg:state` a 10 Hz eso clava GPUs integradas
+  al 95%). Abre **solo la vista del caso** (casi siempre el tablero).
 - **Usa Chrome + la extensión «Claude in Chrome»** (`mcp__claude-in-chrome__*`).
   Es la diferencia entre validar y adivinar: **te deja ver la escena tú mismo**
   (`computer {action:"screenshot"}`, `read_console_messages`) en vez de depender
@@ -203,7 +203,7 @@ muera debajo de ti.
 
 ## S-0 · Arranque *(sin reloj todavía)*
 
-1. `ZEUS_OPEN_BROWSER=0 npm run demo:arg`
+1. `npm run demo:arg` _(default sin ventanas; `ZEUS_OPEN_BROWSER=1` solo si quieres auto-abrir)_
 2. Espera `/mcp/health` → `connected:true` y `lastStateTs` < 2 s en :4121 y :4122.
 3. Abre **solo** el tablero en Chrome: `http://localhost:3021/views/tablero`
 4. Captura tú mismo la pantalla y léela.

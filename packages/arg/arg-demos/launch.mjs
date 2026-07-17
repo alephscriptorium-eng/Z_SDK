@@ -84,7 +84,7 @@ async function ensureService(label, port, appPath, extraEnv = {}) {
     return;
   }
   console.log(`[launch] levantando ${label} en :${port}`);
-  startApp(label, appPath, { ZEUS_OPEN_BROWSER: '0', ...extraEnv });
+  startApp(label, appPath, extraEnv);
   for (let i = 0; i < 40; i++) {
     if (await portOpen(port, HOST)) return;
     await new Promise((r) => setTimeout(r, 250));
@@ -174,8 +174,7 @@ setTimeout(() => {
 setTimeout(() => {
   startApp('console', join(monorepoRoot, 'packages/arg/arg-console/src/server.mjs'), {
     ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT),
-    ZEUS_ARG_ROOM: ROOM,
-    ZEUS_OPEN_BROWSER: '0'
+    ZEUS_ARG_ROOM: ROOM
   });
 }, 600);
 
@@ -215,8 +214,9 @@ setTimeout(async () => {
   console.log('[launch] ──────────────────────────────────────────────');
   console.log('');
 
-  if (process.env.ZEUS_OPEN_BROWSER === '0') {
-    console.log('[launch] ZEUS_OPEN_BROWSER=0 — no abro navegador');
+  // Opt-in: solo abre con ZEUS_OPEN_BROWSER=1 (default: no abrir).
+  if (process.env.ZEUS_OPEN_BROWSER !== '1') {
+    console.log('[launch] ZEUS_OPEN_BROWSER≠1 — no abro navegador (opt-in: =1)');
     return;
   }
 

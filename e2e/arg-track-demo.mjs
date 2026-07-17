@@ -107,14 +107,12 @@ startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mj
 startApp('cache', join(root, 'packages/platform/cache-browser/src/server.mjs'), {
   ZEUS_PORT_VIEW: String(CACHE_PORT),
   ZEUS_ARG_TRACK_ACTOR: ACTOR,
-  ZEUS_ARG_ROOM: ROOM,
-  ZEUS_OPEN_BROWSER: '0'
+  ZEUS_ARG_ROOM: ROOM
 });
 startApp('firehose', join(root, 'packages/platform/firehose-browser/src/server.mjs'), {
   ZEUS_PORT_FIREHOSE: String(FIREHOSE_PORT),
   ZEUS_ARG_TRACK_ACTOR: ACTOR,
-  ZEUS_ARG_ROOM: ROOM,
-  ZEUS_OPEN_BROWSER: '0'
+  ZEUS_ARG_ROOM: ROOM
 });
 await waitForHttp(`http://${HOST}:${CACHE_PORT}/health`);
 await waitForHttp(`http://${HOST}:${FIREHOSE_PORT}/health`);
