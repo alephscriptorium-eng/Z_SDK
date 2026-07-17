@@ -330,7 +330,8 @@ Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup)
 
 ## Ola 4 — Resource/REST-driven
 
-- ⬜ **WP-U40 · RouteEntry → MCP resources** — cablear
+- 🔶 **WP-U40 · RouteEntry → MCP resources** — en curso (ola-4 /
+  orquestador / 2026-07-17) — cablear
   `openapi-mcp-projector` dentro de `http-contract`: toda ruta REST declarada
   queda proyectada automáticamente como resource/resource-template MCP. Si al
   implementarlo el projector no aporta (decisión con evidencia en el reporte),
