@@ -587,8 +587,8 @@ Diferidos del reporte/revisión WP-U82 (no bloquean cierre):
   caso de vaciado por juego; scoring/ledger reflejan el ciclo.
   **Demolición:** n/a.
 
-- 🔶 **WP-U91 · Loader MCP del volumen FORCES** *(dep U80; D-19)* — en curso
-  (lote-7a / orquestador / 2026-07-17) — el volumen YA EXISTE:
+- ✅ **WP-U91 · Loader MCP del volumen FORCES** *(dep U80; D-19)* — aceptado
+  (orquestador / 2026-07-18) — el volumen YA EXISTE:
   `VOLUMES/DISK_03/FORCES` importado y curado a mano el 2026-07-15 (12
   corpus, 68 escenas, registry.json con activación, entrada en volumes.json;
   formato v0 en su README — el import simuló la salida del linea-kit). Lo que
@@ -601,6 +601,15 @@ Diferidos del reporte/revisión WP-U82 (no bloquean cierre):
   ninguna force concreta en código (gate).
   **Demolición:** n/a (el corpus fuente original sigue en network-engine
   como provenance histórica; zeus ya no depende de él).
+
+### Cola hallazgos ola 7 (WP-U91)
+
+Diferidos del reporte/revisión WP-U91 (no bloquean cierre):
+- ⬜ **DISK_03 gitignore / ZEUS_VOLUMES_ROOT** — mismo hilo U80: worktrees no
+  heredan DISK gitignored; hace falta `ZEUS_VOLUMES_ROOT` o symlink (runbook).
+- ⬜ **presets-sdk openapi CRLF (Windows)** — `assertSpecMatches` compara
+  strings crudos; YAML CRLF vs generate LF falla sync sin drift de contenido.
+  Candidato: normalizar LF en la comparación o `.gitattributes` para `*.yaml`.
 
 - ⬜ **WP-U92 · Intents de force: el sistema inyecta entropía** *(dep U91,
   U30)* — el dominio gana `force:activate`/`force:deactivate` con roles
