@@ -123,7 +123,7 @@ export function mountSessionConsole(host, { client }) {
   let manifest = { inbound: [] };
 
   const logSessionError = (payload) => {
-    appendLog(logEl, `← session:error ${JSON.stringify(payload)}`, 'error');
+    appendLog(logEl, `← deck:error ${JSON.stringify(payload)}`, 'error');
   };
 
   const offError = client.onError?.(logSessionError);
@@ -160,7 +160,7 @@ export function mountSessionConsole(host, { client }) {
           appendLog(logEl, `← ${outcome.replyEvent} ${JSON.stringify(reply)}`, 'reply');
         }
       } else if (outcome.kind === 'ack-error') {
-        // session:error logged via client.onError
+        // error logged via client.onError
       } else if (outcome.kind === 'ack') {
         appendLog(logEl, `← ack ${JSON.stringify(outcome.ackResult)}`, 'reply');
       } else if (outcome.kind === 'reply-only') {

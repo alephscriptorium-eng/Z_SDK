@@ -21,7 +21,7 @@ function emit(event, data) {
   socket.emit(event, data);
 }
 
-socket.on('session:error', (err) => console.warn('session:error', err));
+socket.on('deck:error', (err) => console.warn('deck:error', err));
 socket.on('dj:ledger', (entry) => {
   const badge = document.getElementById('dj-room-badge');
   if (badge && entry?.kind) {
@@ -733,7 +733,7 @@ socket.on('dj:projection', (proj) => {
   }
 
   socket.on('catalog:servers', populateServerSelects);
-  socket.on('session:state', renderState);
+  socket.on('state', renderState);
 
   socket.on('deck:resolved', (payload) => {
     updateDeckResolved(payload.deckId, payload);

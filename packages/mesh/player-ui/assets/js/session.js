@@ -41,8 +41,8 @@ const client = {
     }),
   onError: (fn) => {
     const handler = (err) => fn(err);
-    socket.on('session:error', handler);
-    return () => socket.off('session:error', handler);
+    socket.on('deck:error', handler);
+    return () => socket.off('deck:error', handler);
   }
 };
 
@@ -77,7 +77,7 @@ function eventToPath(event) {
   if (type === 'deck:resolved' && p.deckId) {
     return 'decks.' + p.deckId + '.resolved';
   }
-  if (type === 'session:state') return 'session';
+  if (type === 'state') return 'session';
   if (type === 'debug:resolve-timing' && p.deckId) {
     return 'decks.' + p.deckId;
   }
@@ -142,7 +142,7 @@ function onSessionState(state) {
 room.onState(onSessionState);
 
 client.onError((err) => {
-  console.warn('session:error', err);
+  console.warn('deck/room error', err);
   if (phaseBadge) {
     phaseBadge.textContent = 'error';
     phaseBadge.dataset.state = 'degraded';

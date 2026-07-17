@@ -114,7 +114,7 @@ export function createSessionHandlers(deps) {
   );
 
   const onConnection = (socket, server) => {
-    server.unicast(socket, 'session:state', snapshotFromActor(actor));
+    server.unicast(socket, 'state', snapshotFromActor(actor));
     server.unicast(socket, 'dj:projection', {
       state: deps.getDjState?.() ?? null,
       ledger: deps.getDjLedger?.() ?? []

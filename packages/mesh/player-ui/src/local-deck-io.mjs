@@ -1,6 +1,7 @@
 /**
  * Local Socket.IO for deck browser ↔ player-ui (not scriptorium master).
  * Shared game state travels only via DJ transport → ARG_DELTA authority.
+ * Local deck snapshot uses contrato room event name `state` (WP-U56).
  */
 
 import { Server } from 'socket.io';
@@ -38,7 +39,7 @@ export function attachLocalDeckIo(httpServer, options) {
 
   return {
     io,
-    broadcastState: (snapshot) => io.emit('session:state', snapshot),
+    broadcastState: (snapshot) => io.emit('state', snapshot),
     emitDeckResolved: (payload) => io.emit('deck:resolved', payload),
     emitCatalog: (servers) => io.emit('catalog:servers', servers),
     emitDjProjection: (payload) => io.emit('dj:projection', payload),
