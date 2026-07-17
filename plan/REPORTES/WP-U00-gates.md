@@ -5,7 +5,7 @@
 | agente | worker wp/u00-gates |
 | fecha | 2026-07-17 |
 | rama | `wp/u00-gates` |
-| commit(s) | `eed6855` feat(gates); `1c892bb` test(gates); _(este)_ docs(reportes) |
+| commit(s) | `eed6855` feat(gates); `1c892bb` test(gates); `13ebdcf` docs(reportes) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
