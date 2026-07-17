@@ -1,0 +1,21 @@
+{
+  "name": "@zeus/player-mcp-kit",
+  "version": "0.1.0",
+  "description": "Patrón MCP-por-actor: room bridge, confirmIntent (intent→evidencia), resources estándar, health connected+lastStateTs",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*",
+    "@zeus/rooms": "*"
+  }
+}

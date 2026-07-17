@@ -7,7 +7,9 @@ evolucionado del `3d-monitor`, autocontenido en esta familia de paquetes.
 | paquete | qué es |
 | ------- | ------ |
 | [`arg-domain`](arg-domain/) | dominio puro: contrato, escena `delta-v0`, flow-engine (grifos/ríos/mar), maze-engine (cantera), reducers, feeds |
+| [`arg-feeds`](arg-feeds/) | feeds node-only (sintético / real) |
 | [`arg-console`](arg-console/) | portal de vistas :3021 — `tablero` (overview global) y `jugador` (vista encarnada con input) |
+| [`arg-player-mcp`](arg-player-mcp/) | MCP por actor sobre `@zeus/player-mcp-kit` (uno/dos) |
 | [`arg-demos`](arg-demos/) | autoridad del juego (10 Hz) + launcher de la demo de 3 visores |
 
 ## Dosier
