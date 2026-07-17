@@ -1,7 +1,7 @@
 /**
  * Shell compartido de todas las páginas del arg-console: template de
  * @zeus/ui-kit (directo, sin app-shell — config mínima autocontenida) + el
- * import map de página (three, socket.io, ui-3d-kit, game-engine y
+ * import map de página (three, socket.io, ui-3d-kit, view-kit, game-engine y
  * arg-domain servidos vendorizados/crudos por el server).
  */
 
@@ -36,6 +36,8 @@ export const IMPORT_MAP = {
     'socket.io-client': '/vendor/socket.io/socket.io.esm.min.js',
     '@zeus/ui-3d-kit': '/kit/index.mjs',
     '@zeus/ui-3d-kit/': '/kit/',
+    '@zeus/view-kit': '/view-kit/index.mjs',
+    '@zeus/view-kit/': '/view-kit/',
     '@zeus/game-engine': '/game-engine/index.mjs',
     '@zeus/game-engine/': '/game-engine/',
     '@zeus/arg-domain': '/arg-domain/index.mjs',

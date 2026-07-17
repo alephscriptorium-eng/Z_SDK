@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { seaLayout } from '@zeus/arg-domain';
-import { createSeaDroplets } from '../assets/js/kit/sea-droplets.mjs';
+import { createSeaDroplets } from '../assets/js/delta/sea-droplets.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixture = JSON.parse(readFileSync(join(__dirname, '../../arg-domain/test/fixtures/sea-populated.json'), 'utf8'));

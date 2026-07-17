@@ -17,7 +17,7 @@ import {
   STICK_EMOTES,
   WALK_PERIOD_SEC,
   EMOTE_DURATION_SEC
-} from '../assets/js/kit/stick-poses.mjs';
+} from '../src/stick-poses.mjs';
 
 const JOINT_KEYS = Object.keys(zeroPose());
 

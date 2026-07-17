@@ -32,7 +32,7 @@ export function renderCloakInventory({ startPack = [], equipped = null, presets 
   return [
     equipped
       ? `<p class="overlay-muted">equipado · <strong>${esc(equipped.label ?? equipped.presetId)}</strong></p>`
-      : '<p class="overlay-muted">sin cloak — vas desnudo por el delta</p>',
+      : '<p class="overlay-muted">sin cloak — sin preset equipado</p>',
     `<div class="cloak-list">${rows.length ? rows.join('') : '<p class="overlay-muted">cargando inventario…</p>'}</div>`,
     '<p class="overlay-hint">[Q] cerrar</p>'
   ].join('\n');

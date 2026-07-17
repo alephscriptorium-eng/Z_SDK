@@ -11,7 +11,7 @@
  */
 
 import * as THREE from 'three';
-import { createPanel } from './panel.mjs';
+import { createPanel } from '@zeus/view-kit';
 import { renderInspector, inspectorTitle } from './inspector-render.mjs';
 
 const CLICK_SLOP_PX = 6; // más que esto es un drag de OrbitControls, no un click

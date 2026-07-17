@@ -4,7 +4,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { renderCloakInventory } from '../assets/js/kit/cloak-panel.mjs';
+import { renderCloakInventory } from '../src/cloak-panel.mjs';
 
 test('renderCloakInventory: start pack primero y activo resaltado', () => {
   const html = renderCloakInventory({

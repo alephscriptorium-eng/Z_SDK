@@ -24,7 +24,7 @@ export function connectRoom(cfg, opts = {}) {
   room.connect()
     .then(() => setText(statusId, 'connected'))
     .catch((err) => {
-      console.warn('[arg-console] room connect falló:', err);
+      console.warn('[view-kit] room connect falló:', err);
       setText(statusId, 'offline');
     });
   return room;

@@ -156,13 +156,15 @@ test('GET /arg-domain/contract.mjs → 200 (dominio crudo servido)', async (t) =
   assert.match(body, /ARG_DELTA/);
 });
 
-test('GET /kit/index.mjs y /vendor/socket.io → 200', async (t) => {
+test('GET /kit/index.mjs, /view-kit/index.mjs y /vendor/socket.io → 200', async (t) => {
   const handle = await createArgConsoleServer({ port: 0 });
   t.after(() => handle.close());
   const { port } = handle;
 
   const kit = await fetch(`http://localhost:${port}/kit/index.mjs`);
   assert.equal(kit.status, 200);
+  const viewKit = await fetch(`http://localhost:${port}/view-kit/index.mjs`);
+  assert.equal(viewKit.status, 200);
   const io = await fetch(`http://localhost:${port}/vendor/socket.io/socket.io.esm.min.js`);
   assert.equal(io.status, 200);
 });
@@ -184,22 +186,26 @@ test('sirve toda la cadena de imports del navegador (sin 404s)', { skip: threeAv
   const { port } = handle;
 
   const routes = [
-    '/assets/js/kit/index.mjs',
-    '/assets/js/kit/scene.mjs',
-    '/assets/js/kit/hud.mjs',
-    '/assets/js/kit/room.mjs',
-    '/assets/js/kit/channel-events.mjs',
-    '/assets/js/kit/labels.mjs',
-    '/assets/js/kit/log-panel.mjs',
-    '/assets/js/kit/stick-poses.mjs',
-    '/assets/js/kit/stick-puppet.mjs',
-    '/assets/js/kit/delta-stage.mjs',
-    '/assets/js/kit/river-droplets.mjs',
-    '/assets/js/kit/actors-layer.mjs',
-    '/assets/js/kit/intent-client.mjs',
-    '/assets/js/kit/horse-client.mjs',
-    '/assets/js/kit/contact-render.mjs',
-    '/assets/js/kit/cloak-panel.mjs',
+    '/view-kit/index.mjs',
+    '/view-kit/scene.mjs',
+    '/view-kit/hud.mjs',
+    '/view-kit/room.mjs',
+    '/view-kit/channel-events.mjs',
+    '/view-kit/labels.mjs',
+    '/view-kit/log-panel.mjs',
+    '/view-kit/stick-poses.mjs',
+    '/view-kit/stick-puppet.mjs',
+    '/view-kit/actors-layer.mjs',
+    '/view-kit/horse-client.mjs',
+    '/view-kit/contact-render.mjs',
+    '/view-kit/cloak-panel.mjs',
+    '/view-kit/panel.mjs',
+    '/assets/js/delta/index.mjs',
+    '/assets/js/delta/delta-stage.mjs',
+    '/assets/js/delta/river-droplets.mjs',
+    '/assets/js/delta/intent-client.mjs',
+    '/assets/js/delta/inspector.mjs',
+    '/assets/js/delta/inspector-render.mjs',
     '/assets/js/views/tablero.mjs',
     '/assets/js/views/jugador.mjs',
     '/assets/css/viewer.css',

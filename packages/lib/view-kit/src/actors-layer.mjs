@@ -2,7 +2,7 @@
  * Capa de actores — gestiona un puppet por actor del snapshot (híbrido por
  * tier): 'stick' → monigote procedural; 'puppet' → GLB via loadPuppet de
  * ui-3d-kit con fallback a stick si el GLB falla. Posición interpolada
- * (lerp hacia el position del snapshot, heading por delta de movimiento),
+ * (lerp hacia el position del snapshot, heading por el desplazamiento),
  * pose→setBase, emote→playAdditive, label sprite con el id, y anillo de
  * cloak (toro fino orbitando) cuando el actor lleva cloak.
  */
@@ -85,7 +85,7 @@ export function createActorsLayer(parent, opts = {}) {
           parent.add(glb.object);
         })
         .catch((err) => {
-          console.warn(`[arg-console] GLB puppet falló para ${actor.id}, se queda el stick:`, err.message);
+          console.warn(`[view-kit] GLB puppet falló para ${actor.id}, se queda el stick:`, err.message);
         });
     }
     return entry;
@@ -137,7 +137,7 @@ export function createActorsLayer(parent, opts = {}) {
         entry.pos.z += dz * k;
         entry.puppet.setPosition(entry.pos);
 
-        // heading por delta de movimiento (solo si se mueve de verdad)
+        // heading por el desplazamiento (solo si se mueve de verdad)
         const speed = Math.hypot(dx, dz);
         if (speed > 0.05) {
           const targetHeading = Math.atan2(dx, dz);

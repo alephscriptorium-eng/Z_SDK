@@ -11,7 +11,7 @@ import {
   bindContactMenu,
   setContactLive,
   formatContactLive
-} from '../assets/js/kit/contact-render.mjs';
+} from '../src/contact-render.mjs';
 
 const { preset, catalog } = grifoCloakDef('grifo-a');
 const offer = resolvePresetOffer(preset, catalog);

@@ -1,0 +1,22 @@
+{
+  "name": "@zeus/view-kit",
+  "version": "0.1.0",
+  "description": "Kit de vistas 3D+HTML browser-safe (escena, HUD, panel, stick-puppet, room wiring) servido por import-map",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./node": "./src/paths.node.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/ui-3d-kit": "*",
+    "three": "^0.170.0"
+  }
+}

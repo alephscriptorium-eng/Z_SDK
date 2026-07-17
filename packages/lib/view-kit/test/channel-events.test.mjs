@@ -6,7 +6,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { onChannelEvent } from '../assets/js/kit/channel-events.mjs';
+import { onChannelEvent } from '../src/channel-events.mjs';
 
 function fakeRoom() {
   const handlers = new Map(); // event -> Set<cb>

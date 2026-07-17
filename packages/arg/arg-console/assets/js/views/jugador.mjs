@@ -21,13 +21,8 @@ import {
   readViewerConfig,
   connectRoom,
   onChannelEvent,
-  createDeltaStage,
-  createRiverDroplets,
   createActorsLayer,
-  createIntentClient,
   createPanel,
-  createInspector,
-  isSyntheticUri,
   createHorseClient,
   renderContactMenu,
   bindContactMenu,
@@ -35,11 +30,18 @@ import {
   formatContactLive,
   renderCloakInventory,
   bindCloakInventory,
-  fetchPresetSummaries,
+  fetchPresetSummaries
+} from '@zeus/view-kit';
+import {
+  createDeltaStage,
+  createRiverDroplets,
   createSeaDroplets,
+  createIntentClient,
+  createInspector,
+  isSyntheticUri,
   renderSeaActionPanel,
   bindSeaActionPanel
-} from '../kit/index.mjs';
+} from '../delta/index.mjs';
 
 const CAMERA_OFFSET = { x: 0, y: 6, z: 9 };
 const TRACK_MAX = 3;

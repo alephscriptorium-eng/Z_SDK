@@ -4,16 +4,16 @@
  * createPanel construye una ventanita DOM con barra de título (título +
  * botón ▸/▾ si es colapsable + la propia barra como asa de arrastre si es
  * draggable) y persiste `{collapsed, x, y}` en localStorage con clave
- * `delta:<view>:<id>` — la ley del proyecto: la operativa vive en HTML
- * fuera del canvas, y esas ventanitas se pueden mover y plegar.
+ * `vk:<view>:<id>` — la operativa vive en HTML fuera del canvas, y esas
+ * ventanitas se pueden mover y plegar.
  *
  * Sin three ni imports: DOM puro con `doc`/`storage` inyectables para que
  * los tests de node lo ejerciten con stubs.
  */
 
-/** Clave de persistencia por vista: `delta:<view>:<id>`. */
+/** Clave de persistencia por vista: `vk:<view>:<id>`. */
 export function panelStorageKey(view, id) {
-  return `delta:${view || 'view'}:${id}`;
+  return `vk:${view || 'view'}:${id}`;
 }
 
 /**
@@ -71,7 +71,7 @@ export function clampToBounds(x, y, w, h, boundsW, boundsH) {
  * @param {boolean} [opts.draggable]      barra como asa de arrastre (default false)
  * @param {boolean} [opts.defaultCollapsed]
  * @param {Element} [opts.mount]          contenedor (default #viewer-stage o body)
- * @param {string}  [opts.view]           vista actual (clave `delta:<view>:<id>`)
+ * @param {string}  [opts.view]           vista actual (clave `vk:<view>:<id>`)
  * @param {string}  [opts.className]      clase extra de posicionamiento
  * @param {Document} [opts.doc]           inyectable en tests
  * @param {Storage} [opts.storage]        inyectable en tests

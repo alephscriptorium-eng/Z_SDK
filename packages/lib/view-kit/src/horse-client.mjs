@@ -150,7 +150,7 @@ export function createHorseClient(room, selfId) {
     },
 
     /**
-     * @param {string} to peer HORSE id (grifo-a, horse-demo, …)
+     * @param {string} to peer HORSE id (p. ej. tap-a, horse-demo)
      * @param {string} method JSON-RPC method
      * @param {object} [params]
      */

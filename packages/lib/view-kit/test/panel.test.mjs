@@ -13,7 +13,7 @@ import {
   loadPanelState,
   savePanelState,
   clampToBounds
-} from '../assets/js/kit/panel.mjs';
+} from '../src/panel.mjs';
 
 // ---- stubs ------------------------------------------------------------------
 
@@ -72,9 +72,9 @@ function fakeDoc() {
 
 // ---- funciones puras ----------------------------------------------------------
 
-test('panelStorageKey: delta:<view>:<id>', () => {
-  assert.equal(panelStorageKey('tablero', 'ledger'), 'delta:tablero:ledger');
-  assert.equal(panelStorageKey(undefined, 'hud'), 'delta:view:hud');
+test('panelStorageKey: vk:<view>:<id>', () => {
+  assert.equal(panelStorageKey('tablero', 'ledger'), 'vk:tablero:ledger');
+  assert.equal(panelStorageKey(undefined, 'hud'), 'vk:view:hud');
 });
 
 test('load/savePanelState: persiste y mezcla sobre un storage stub', () => {

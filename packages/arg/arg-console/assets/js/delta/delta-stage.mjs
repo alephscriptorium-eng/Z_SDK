@@ -11,7 +11,7 @@
 
 import * as THREE from 'three';
 import { buildCanteraTopology } from '@zeus/arg-domain/scenes/delta-v0';
-import { createLabelSprite } from './labels.mjs';
+import { createLabelSprite } from '@zeus/view-kit';
 
 const ZONE_COLORS = {
   terraza: 0x00ff88,

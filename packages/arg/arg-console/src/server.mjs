@@ -12,6 +12,7 @@
  *   /vendor/three      → node_modules/three
  *   /vendor/socket.io  → dist ESM de socket.io-client
  *   /kit               → src/ browser-safe de @zeus/ui-3d-kit (crudo)
+ *   /view-kit          → src/ browser-safe de @zeus/view-kit (crudo)
  *   /game-engine       → src/ browser-safe de @zeus/game-engine (crudo)
  *   /arg-domain        → src/ browser-safe de @zeus/arg-domain (crudo:
  *                        las vistas importan contrato y escena, jamás
@@ -34,6 +35,7 @@ import { ServerRegistry, PresetStore, countPresetItems } from '@zeus/presets-sdk
 import { assetsDir as uiKitAssetsDir } from '@zeus/ui-kit';
 import { browserAssetsDir as roomClientAssetsDir } from '@zeus/room-client-browser';
 import { srcDir as uiKitSrcDir, modelsDir, getThreeDir } from '@zeus/ui-3d-kit/node';
+import { srcDir as viewKitSrcDir } from '@zeus/view-kit/node';
 import { srcDir as gameEngineSrcDir } from '@zeus/game-engine/node';
 import { srcDir as argDomainSrcDir } from '@zeus/arg-domain/node';
 import { srcDir as protocolSrcDir } from '@zeus/protocol/node';
@@ -163,6 +165,7 @@ export async function createArgConsoleServer(options = {}) {
   app.use('/vendor/socket.io', express.static(socketIoDistDir()));
 
   app.use('/kit', express.static(uiKitSrcDir));
+  app.use('/view-kit', express.static(viewKitSrcDir));
   app.use('/game-engine', express.static(gameEngineSrcDir));
   app.use('/arg-domain', express.static(argDomainSrcDir));
   app.use('/protocol', express.static(protocolSrcDir));

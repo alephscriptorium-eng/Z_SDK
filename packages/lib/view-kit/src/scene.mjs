@@ -1,11 +1,10 @@
 /**
  * View kit · bootstrap del stage 3D.
  *
- * Envuelve el scene manager de ui-3d-kit con las convenciones que comparten
- * las vistas de delta: montar en #viewer-stage, ocultar el canvas
- * placeholder, escenario oscuro con grid, y una pequeña superficie
- * frame/dispose. Expone sceneManager entero (la vista jugador necesita
- * cámara y controls para el modo chase).
+ * Envuelve el scene manager de ui-3d-kit con las convenciones compartidas:
+ * montar en #viewer-stage, ocultar el canvas placeholder, escenario oscuro
+ * con grid, y una pequeña superficie frame/dispose. Expone sceneManager
+ * entero (cámaras chase / inspección orbital).
  *
  * NOTA: `three` / `@zeus/ui-3d-kit` resuelven en el NAVEGADOR vía import map.
  */
