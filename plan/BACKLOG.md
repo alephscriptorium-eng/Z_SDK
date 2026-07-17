@@ -189,27 +189,30 @@ Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
   **Demolición:** el kit dentro de arg-console (quedan solo las vistas
   tablero/jugador específicas de delta).
 
-- ⬜ **WP-U21 · app-shell aprende de arg-console** *(dep U20)* — las razones
-  por las que arg-console evitó `createAppConfig` (whitelist rígida) se
-  arreglan EN app-shell; arg-console y las vistas del view-kit usan app-shell.
+- 🔶 **WP-U21 · app-shell aprende de arg-console** *(dep U20)* — en curso
+  (lote-2b / orquestador / 2026-07-17) — las razones por las que arg-console
+  evitó `createAppConfig` (whitelist rígida) se arreglan EN app-shell;
+  arg-console y las vistas del view-kit usan app-shell.
   **CA:** arg-console sin config propia divergente; los demás consumidores de
   app-shell intactos (sus tests verdes).
   **Demolición:** `arg-console/src/config.mjs` divergente y el comentario «a
   propósito NO usa createAppConfig».
 
-- ⬜ **WP-U22 · 3d-monitor y player-3d-ui sobre view-kit** *(dep U20)* —
-  migrar sus vistas al view-kit; evaluar en el reporte si tras la migración
-  merecen vivir como apps o pasar a `examples/`.
+- 🔶 **WP-U22 · 3d-monitor y player-3d-ui sobre view-kit** *(dep U20)* — en
+  curso (lote-2b / orquestador / 2026-07-17) — migrar sus vistas al view-kit;
+  evaluar en el reporte si tras la migración merecen vivir como apps o pasar
+  a `examples/`.
   **CA:** sus e2e (`e2e:player-3d`, vistas de 3d-monitor) verdes; diff
   negativo neto.
   **Demolición:** el view-kit ancestro duplicado en 3d-monitor (de donde nació
   el de arg-console — el círculo se cierra).
 
-- ⬜ **WP-U24 · authority-kit fuerza envelope `game`** *(dep U11; gate pre-U23)* —
-  Cerrar A-02: `startAuthority` exige `game` (string no vacío) y publica
-  `state|track|ledger` vía `makeEnvelope` de `@zeus/protocol` (hoy el kit
-  no cablea `makeEnvelope` en producción; payloads salen sin `game`).
-  Intent ya va tipado; objetivo 4/4 kinds con `game`.
+- 🔶 **WP-U24 · authority-kit fuerza envelope `game`** *(dep U11; gate pre-U23)* —
+  en curso (lote-2b / orquestador / 2026-07-17) — Cerrar A-02: `startAuthority`
+  exige `game` (string no vacío) y publica `state|track|ledger` vía
+  `makeEnvelope` de `@zeus/protocol` (hoy el kit no cablea `makeEnvelope` en
+  producción; payloads salen sin `game`). Intent ya va tipado; objetivo 4/4
+  kinds con `game`.
   **CA:** tests del kit asertan `payload.game` en state/track/ledger;
   autoridad delta instancia el kit y `test:arg` / `e2e:arg` verdes;
   cero nombres de juego en el kit (el `game` lo inyecta el caller).
