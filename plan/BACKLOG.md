@@ -216,8 +216,15 @@ Diferidos del reporte/revisión WP-U22 (no bloquean cierre):
   **Demolición:** el view-kit ancestro duplicado en 3d-monitor (de donde nació
   el de arg-console — el círculo se cierra).
 
-- 🔶 **WP-U24 · authority-kit fuerza envelope `game`** *(dep U11; gate pre-U23)* —
-  en curso (lote-2b / orquestador / 2026-07-17) — Cerrar A-02: `startAuthority`
+### Cola hallazgos ola 2 (WP-U24)
+
+Diferidos del reporte/revisión WP-U24 (no bloquean cierre ni U23):
+- Ledger `kind` vs `entryKind`: AsyncAPI/`makeEnvelope` usan `kind: 'ledger'`
+  y `entryKind` para el discriminante de hecho; consumidores aún leen
+  `entry.kind === 'label'|…`. El kit publica ambos. Migrar a `entryKind`
+  (dejar `kind: 'ledger'` en envelope) = WP futuro; no es A-05.
+
+- ✅ **WP-U24 · authority-kit fuerza envelope `game`** *(dep U11; gate pre-U23)* — aceptado (orquestador / 2026-07-17) — Cerrar A-02: `startAuthority`
   exige `game` (string no vacío) y publica `state|track|ledger` vía
   `makeEnvelope` de `@zeus/protocol` (hoy el kit no cablea `makeEnvelope` en
   producción; payloads salen sin `game`). Intent ya va tipado; objetivo 4/4
