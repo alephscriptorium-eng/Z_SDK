@@ -162,3 +162,13 @@ n/a (WP sin demolición).
 Orden sugerido: **U00 tras U01+U02** (master ya los tiene). Merge fast-forward o merge commit desde `wp/u00-gates` (ya rebased/merged con master vía `fe40041`). Tras merge en master: ✅ en BACKLOG + `git worktree remove`.
 
 **Listo para merge+✅:** SÍ (autorizado; ✅ lo pone el orquestador en master al mergear).
+
+### Cierre en master (orquestador / 2026-07-17)
+
+- Merge: `62ff47d` (`merge(wp-u00): gates de prácticas`)
+- BACKLOG: ✅ U00 — `e8f900f` `chore(plan): acepta WP-U00 (cierra lote 0a)`
+- Post-merge: `npm run gates` OK (0 offenders); `npm run test:gates` 7/7
+- Worktree `.worktrees/wp-u00-gates` eliminado; rama `wp/u00-gates` conservada (sin push)
+
+**Lote 0a completo** (U00+U01+U02 ✅). Siguiente natural: **WP-U03 · Z_SDK+CI** (lote 0b) — listo para que el orquestador/padre asigne (no lanzado aquí).
+
