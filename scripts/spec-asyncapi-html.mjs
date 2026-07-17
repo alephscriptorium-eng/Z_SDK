@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate static AsyncAPI HTML for the session protocol spec.
+ * Generate static AsyncAPI HTML for the Zeus protocol contract.
  * Run: npm run spec:asyncapi:html
  */
 
@@ -11,12 +11,12 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
-const spec = path.join(root, 'packages/lib/session-protocol/spec/asyncapi.yaml');
-const outDir = path.join(root, 'docs', 'public', 'api', 'session');
+const spec = path.join(root, 'packages/lib/protocol/spec/asyncapi.yaml');
+const outDir = path.join(root, 'docs', 'public', 'api', 'protocol');
 
 fs.mkdirSync(outDir, { recursive: true });
 
-console.log(`→ Session protocol: ${path.relative(root, spec)}`);
+console.log(`→ Zeus protocol: ${path.relative(root, spec)}`);
 
 const result = spawnSync(
   'npx',
@@ -38,4 +38,4 @@ if (result.status !== 0) {
   process.exit(result.status ?? 1);
 }
 
-console.log(`\nAsyncAPI HTML generated: docs/public/api/session/`);
+console.log(`\nAsyncAPI HTML generated: docs/public/api/protocol/`);

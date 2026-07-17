@@ -21,5 +21,9 @@ test('EVENTS manifest aligns with schema maps', () => {
 });
 
 test('asyncapi.yaml is in sync with generator (in-memory)', () => {
-  assertSpecMatches(buildAsyncApiSpec, specPath, 'npm run spec:generate -w @zeus/session-protocol');
+  assertSpecMatches(
+    buildAsyncApiSpec,
+    specPath,
+    'session-protocol AsyncAPI is frozen until WP-U31; edit build.mjs + yaml together'
+  );
 });
