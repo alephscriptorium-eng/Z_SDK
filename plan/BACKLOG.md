@@ -436,7 +436,7 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
 > **Nota orquestador (lote-post5 / 2026-07-17):** Ola 6 / **U55** pausados —
-> swarm sin credenciales/registry. Lote paralelo asignado: **U56** + **U80**.
+> swarm sin credenciales/registry. **U56** aceptado; **U80** sigue en curso.
 > NO asignar: U55, U60+ (U60 = nuevo repo GitHub).
 
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
@@ -447,13 +447,21 @@ Hallazgos grandes diferidos (no bloquean cierre de ola 5):
   **Demolición:** dependencias `file:` residuales en esos paquetes.
   _(pausado — dep registry/credenciales; no asignar en swarm)_
 
-- 🔶 **WP-U56 · Retirar wire vivo `session:*` del stack DJ** — en curso
-  (lote-post5 / orquestador / 2026-07-17) — player-ui /
+- ✅ **WP-U56 · Retirar wire vivo `session:*` del stack DJ** — aceptado
+  (orquestador / 2026-07-17) — player-ui /
   socket-server / console-monitor / ping-pong; alinear a contrato room
   `state`/`intent` (post-U32). Producto mesh, no solo higiene de README.
   **CA:** cero emit/on `session:*` en el stack DJ vivo; demos/e2e del stack
   usan el contrato room actual.
   **Demolición:** allowlists y handlers `session:*` en esos paquetes.
+
+Hallazgos diferidos U56 (no bloquean):
+
+- ⬜ **domain-helpers / demos domain** — `e2e/domain-helpers.mjs` (y
+  domain-*) siguen filtrando `type === 'session:state'` fuera del stack DJ
+  (residual post-U31). Alinear a `state` / contrato room.
+- ⬜ **flake e2e DJ `actor_desconocido`** — race join→intent en
+  `e2e:player-ui-dj` (G-U31.4/6 intermitente). Estabilizar e2e / timing.
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
 
