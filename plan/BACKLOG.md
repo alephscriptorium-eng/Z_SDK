@@ -679,12 +679,13 @@ Diferidos del reporte/revisión WP-U84 (no bloquean cierre):
 - Nota: `ZEUS_VOLUMES_ROOT` / worktrees — mismo hilo U80/U91 (DISK gitignored
   no heredado; runbook o symlink).
 
-- ⬜ **WP-U85 · Familias de feed unificadas en el engine** *(dep U84)* — la
-  interfaz de feeds (hoy en el juego delta, patrón arg-feeds §4) se
-  generaliza a las tres naturalezas de DATOS.md §3 (estática/stream/gossip)
-  con la cadena de curación unificada de U80; conexión ATProto directa
-  (jetstream → DISK_01) como implementación de referencia del stream, con
-  degradación a sintético intacta.
+- 🔶 **WP-U85 · Familias de feed unificadas en el engine** *(dep U84)* —
+  (lote-8b / orquestador / 2026-07-18) — la interfaz de feeds (hoy en el
+  juego delta, patrón arg-feeds §4) se generaliza a las tres naturalezas de
+  DATOS.md §3 (estática/stream/gossip) con la cadena de curación unificada
+  de U80; conexión ATProto directa (jetstream → DISK_01) como
+  implementación de referencia del stream, con degradación a sintético
+  intacta.
   **CA:** delta y pozo consumen feeds por la interfaz común (dos juegos =
   regla cumplida); e2e de degradación auto→sintético; un feed SSB y uno
   ATProto navegables desde un juego en demo.
