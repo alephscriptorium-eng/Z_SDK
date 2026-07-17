@@ -235,15 +235,16 @@ Diferidos del reporte/revisión WP-U24 (no bloquean cierre ni U23):
   **Demolición:** publicación de payloads sueltos sin envelope en el kit.
   **Nota:** no mezclar A-05 (dual-wire); paralelizable con U21/U22 tras U20.
 
-- ⬜ **WP-U23 · pozo, el segundo juego** *(dep U10–U13, U20; D-8)* — juego
-  mínimo A PROPÓSITO: un pozo, un puñado de nodos, un feed, UN intent con
-  ledger (p. ej. sacar una gota del pozo y etiquetarla), una vista sobre
-  view-kit, un MCP de jugador sobre player-mcp-kit, y un CASOS.md corto en
-  formato playbook-kit. Regla dura: se construye **solo importando engine/***
-  — si para hacer pozo hay que tocar el engine, ese cambio es un hallazgo
-  (mejora del SDK) y se hace como WP aparte, no como parche desde el juego.
-  Es el gate viviente de la regla de los dos juegos: a partir de aquí, todo
-  WP de engine debe dejar verdes a delta Y a pozo.
+- 🔶 **WP-U23 · pozo, el segundo juego** *(dep U10–U13, U20; D-8)* — en curso
+  (lote-2c / orquestador / 2026-07-17) — juego mínimo A PROPÓSITO: un pozo,
+  un puñado de nodos, un feed, UN intent con ledger (p. ej. sacar una gota
+  del pozo y etiquetarla), una vista sobre view-kit, un MCP de jugador sobre
+  player-mcp-kit, y un CASOS.md corto en formato playbook-kit. Regla dura: se
+  construye **solo importando engine/*** — si para hacer pozo hay que tocar
+  el engine, ese cambio es un hallazgo (mejora del SDK) y se hace como WP
+  aparte, no como parche desde el juego. Es el gate viviente de la regla de
+  los dos juegos: a partir de aquí, todo WP de engine debe dejar verdes a
+  delta Y a pozo.
   **CA:** `demo:pozo` levanta room+autoridad+vista+MCP; e2e — un cliente
   JSON-RPC ejecuta sus casos vía MCP; `gates` verde (engine sin nombres de
   juego); cero imports de `games/delta` ni de `packages/arg`.
