@@ -185,4 +185,39 @@ suficiente del CA «install resuelve el engine» hasta U53?
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador)
+
+### Qué se verificó
+
+- Rama `wp/u50-scope-publish` ya incluye master (`merge-base` = `d5e74c4`); no hizo falta merge.
+- Diff acotado a alcance U50 (`.npmrc`, publish metadata engine, `private: true`,
+  `scripts/release-dry.mjs`, READMEs nuevos, reporte). Sin BACKLOG. Sin producto runtime.
+- **CA `release:dry`:** re-ejecutado en worktree → **all 15 green** (lockstep 0.1.0,
+  registry `https://npm.scriptorium.escrivivir.co`).
+- **CA install registry:** **⏳** aceptado por política swarm (brief + usuario):
+  sin publish/credenciales; dry-run tarball fuera del monorepo documentado en reporte
+  (`TARBALL_INSTALL_OK`). Probe `npm view` 404 coherente.
+- **`.npmrc`:** `@zeus:registry=…` junto a `@alephscript`.
+- **15 publicables** en `packages/lib/*`: `publishConfig.registry`, `files`, `version`
+  0.1.0, README presentes. `@zeus/operator-bridge` **private** (mesh).
+- **No publicables:** `private: true` en app/platform/mcp/arg/games/operator-ui/
+  threejs-ui-lib (los que ya lo eran en master no aparecen en diff; coherente).
+- **`gates`:** re-ejecutado → `gates: OK (0 offenders)`.
+- **Demolición `file:`:** residual operator-ui / threejs-ui-lib documentado ⏳;
+  no half-migrated (correcto sin registry poblado; D-11 / U53).
+- Commits convencionales; auto-revisión honesta (demolición ⏳ explícita).
+
+### CA registry (política)
+
+⏳ **OK** — no bloquea aceptación. Cierre real del CA queda a U53 (publish CI) o
+smoke U54 cuando el registry tenga `@zeus/*`.
+
+### Merge
+
+Autorizado. Orden sugerido: **U50 primero** (ola 5); luego U51 / U54 / U53 según deps.
+Tras merge: `git worktree remove` del worktree U50.
+
+### Acción orquestador (esta sesión)
+
+Solo §revisión + commit en rama. **No** merge, **no** push, **no** ✅ BACKLOG,
+**no** npm publish (pedido explícito del usuario).
