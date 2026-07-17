@@ -164,7 +164,7 @@ Diferidos del reporte/revisión WP-U13 (no bloquean cierre; cierra ola 1):
 
 ## Ola 2 — Un solo motor de vistas
 
-- ⬜ **WP-U20 · `@zeus/view-kit`** — extraer el kit de navegador de
+- 🔶 **WP-U20 · `@zeus/view-kit`** — en curso (ola-2 / orquestador / 2026-07-17) — extraer el kit de navegador de
   `arg-console/assets/js/kit/` (~4.600 LOC: escena, ventanitas/panel, HUD,
   inspector raycast, stick-puppet, droplets, deep-links honestos) a paquete
   engine browser-safe servido por import-map. arg-console pasa a consumirlo.
