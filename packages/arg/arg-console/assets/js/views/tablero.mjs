@@ -29,11 +29,14 @@ import {
 import { EVENTS } from '@zeus/arg-domain';
 
 const LEDGER_COLORS = {
-  label: '#00ff41',     // verde
-  excavate: '#00d4ff',  // cian
-  burst: '#ff8844',     // naranja
-  collapse: '#ff3344',  // rojo
-  objetivo: '#ffd700'   // dorado
+  label: '#00ff41',
+  excavate: '#00d4ff',
+  burst: '#ff8844',
+  collapse: '#ff3344',
+  objetivo: '#ffd700',
+  cache: '#7cffb2',
+  curate: '#c4a1ff',
+  milestone: '#ffd27a'
 };
 
 function fmtLedger(entry) {
@@ -48,6 +51,12 @@ function fmtLedger(entry) {
       return `EL DELTA COLAPSA — murk ${entry.detail?.murk} / ${entry.detail?.capacity}`;
     case 'objetivo':
       return `OBJETIVO CUMPLIDO — ${entry.detail?.labeled} etiquetadas, ${entry.detail?.excavated} excavadas`;
+    case 'cache':
+      return `${entry.actorId ?? '?'} cachea ${entry.detail?.lineId}/${entry.detail?.registroId}`;
+    case 'curate':
+      return `${entry.actorId ?? '?'} curates ${entry.detail?.lineId}/${entry.detail?.registroId} → ${entry.detail?.status ?? ''}`;
+    case 'milestone':
+      return `${entry.actorId ?? '?'} milestone ${entry.detail?.lineId}/${entry.detail?.registroId} · ${(entry.detail?.reasons ?? []).join(',')}`;
     default:
       return JSON.stringify(entry.detail ?? {});
   }

@@ -1,23 +1,20 @@
 /**
- * Route coverage for @zeus/player-ui — aleph API and room session transport.
+ * Route coverage for @zeus/player-ui — aleph API + DJ intent endpoint.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { io } from 'socket.io-client';
 import { fetchAndValidate, setupSmokeVolumesEnv } from '@zeus/test-utils';
-import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { PLAYER_ROUTES } from '../src/contract.mjs';
-import { startPlayerRoomStack } from './helpers.mjs';
+import { startPlayerDjStack } from './helpers.mjs';
 
 setupSmokeVolumesEnv(import.meta.url);
 
 const { createPlayerServer } = await import('../src/server.mjs');
 
-const ROOM = 'scriptorium.default';
-
-test('player aleph and room socket routes', async (t) => {
-  const stack = await startPlayerRoomStack(createPlayerServer, { playerPort: 0 });
+test('player aleph and dj routes', async (t) => {
+  const stack = await startPlayerDjStack(createPlayerServer, { playerPort: 0 });
 
   t.after(async () => {
     await stack.close();
@@ -33,7 +30,6 @@ test('player aleph and room socket routes', async (t) => {
   assert.equal(viewLinks.status, 200);
   assert.ok('linea' in viewBody);
   assert.ok(Array.isArray(viewBody.items));
-  assert.equal(viewBody.wikitext, null, 'view-links tolerates empty deck resolution');
 
   const { body: presetsBody, res: presets } = await fetchAndValidate(
     base,
@@ -43,12 +39,27 @@ test('player aleph and room socket routes', async (t) => {
   assert.equal(presets.status, 200);
   assert.ok(Array.isArray(presetsBody));
 
-  const runtimeUrl = `${stack.scriptoriumUrl}/runtime`;
-  const socket = io(runtimeUrl, {
+  const proj = await fetch(`${base}/api/dj/projection`);
+  assert.equal(proj.status, 200);
+  const projBody = await proj.json();
+  assert.equal(projBody.room, stack.room);
+
+  const djRes = await fetch(`${base}/api/dj/cache`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ lineId: 'linea-aleph', registroId: 'P03' })
+  });
+  assert.equal(djRes.status, 200);
+  const djBody = await djRes.json();
+  assert.equal(djBody.ok, true);
+  assert.equal(djBody.payload.intent, 'cache');
+  assert.equal(djBody.payload.role, 'dj');
+
+  const socket = io(base, {
+    path: '/deck-io',
     transports: ['websocket'],
     reconnection: false,
-    timeout: 5000,
-    auth: { token: resolveScriptoriumSecret(), room: ROOM, user: 'routes-test' }
+    timeout: 5000
   });
 
   t.after(() => {
@@ -56,15 +67,8 @@ test('player aleph and room socket routes', async (t) => {
   });
 
   await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('connect timeout')), 8000);
+    const timer = setTimeout(() => reject(new Error('deck-io connect timeout')), 8000);
     socket.on('connect', () => {
-      socket.emit('CLIENT_REGISTER', {
-        usuario: 'routes-test',
-        sesion: 'routes-test-1',
-        type: 'RouteTest',
-        features: ['test']
-      });
-      socket.emit('CLIENT_SUSCRIBE', { room: ROOM });
       clearTimeout(timer);
       resolve();
     });
@@ -72,19 +76,18 @@ test('player aleph and room socket routes', async (t) => {
       clearTimeout(timer);
       reject(err);
     });
-    socket.connect();
   });
 
-  const sessionState = await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('session:state timeout')), 8000);
-    socket.on('SET_STATE', (data) => {
-      if (data?.type !== 'session:state' || !data.snapshot) return;
+  const statePromise = new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('session:state timeout')), 5000);
+    socket.on('session:state', (snap) => {
       clearTimeout(timer);
-      resolve(data.snapshot);
+      resolve(snap);
     });
   });
 
-  assert.ok('phase' in sessionState);
-  assert.ok(sessionState.playhead);
-  assert.ok(sessionState.decks);
+  socket.emit('domain:playhead:set', { year: 2010 });
+  const snap = await statePromise;
+  assert.ok(snap.playhead);
+  assert.equal(snap.playhead.year, 2010);
 });

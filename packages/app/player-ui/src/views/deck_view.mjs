@@ -7,10 +7,9 @@ import {
 } from 'hyperaxe';
 import { template, pageContainer, contentSection } from './main_views.mjs';
 import { formatShellTag } from '@zeus/ui-kit';
-import { DEFAULT_SERVERS_BY_DECK, PARTE_CUES } from '@zeus/tablero-core';
+import { DEFAULT_SERVERS_BY_DECK, PARTE_CUES } from '../deck-kit.mjs';
 import { getConfig } from '../config.mjs';
 import { getAlephConfig } from '../aleph-bridge.mjs';
-import { resolveZeusUiPorts } from '@zeus/presets-sdk/env';
 
 /**
  * @param {object} viewData
@@ -18,16 +17,12 @@ import { resolveZeusUiPorts } from '@zeus/presets-sdk/env';
  * @param {Array} viewData.presets
  * @param {string[]} [viewData.themes]
  * @param {string} [viewData.currentTheme]
- * @param {{ scriptoriumUrl: string, room: string, sessionId: string, token: string }} [viewData.roomConfig]
+ * @param {string} [viewData.djRoom]
  */
 export function deckView(viewData = {}) {
   const config = getConfig();
   const aleph = getAlephConfig(config);
-  const { servers = [], presets = [], themes = [], currentTheme = config.theme?.current, roomConfig } = viewData;
-  const scriptoriumHref = (() => {
-    const scr = resolveZeusUiPorts().scriptorium || { host: 'localhost', port: 3017, path: '/runtime' };
-    return `http://${scr.host}:${scr.port}${scr.path || '/runtime'}`;
-  })();
+  const { servers = [], presets = [], themes = [], currentTheme = config.theme?.current, djRoom = 'ARG_DELTA' } = viewData;
   const range = config.deck?.troncoRange || { min: 450, max: 2026 };
   const cues = config.deck?.parteCues || PARTE_CUES;
   const defaultYear = config.deck?.defaultYear ?? 2010;
@@ -39,7 +34,7 @@ export function deckView(viewData = {}) {
   const defaultPresetC = presetIdByName(aleph.defaultPresets.C || config.deck?.defaultFirehosePreset);
 
   return template(
-    'Tablero ALEPH',
+    'Tablero ALEPH · DJ',
     pageContainer(
       div({ class: 'tablero-container' },
         script(
@@ -48,12 +43,10 @@ export function deckView(viewData = {}) {
             imports: { 'socket.io-client': '/vendor/socket.io/socket.io.esm.min.js' }
           })
         ),
-        roomConfig
-          ? script(
-              { type: 'application/json', id: 'room-config' },
-              JSON.stringify(roomConfig)
-            )
-          : null,
+        script(
+          { type: 'application/json', id: 'dj-config' },
+          JSON.stringify({ room: djRoom, role: 'dj', deckPath: '/deck-io' })
+        ),
         headerAleph(aleph),
         contentSection(null,
           div({ class: 'deck-container' },
@@ -62,7 +55,7 @@ export function deckView(viewData = {}) {
                 button({ id: 'transport-play', type: 'button', class: 'btn btn-outline' }, 'Play'),
                 button({ id: 'transport-pause', type: 'button', class: 'btn btn-outline' }, 'Pause'),
                 button({ id: 'sync-toggle', type: 'button', class: 'btn btn-outline' }, 'Sync: ON'),
-                a({ href: scriptoriumHref, class: 'btn btn-outline session-link', target: '_blank', rel: 'noopener noreferrer' }, 'Runtime'),
+                span({ class: 'state-badge', id: 'dj-room-badge' }, `dj · ${djRoom}`),
                 span({ class: 'state-badge session-phase-badge', id: 'session-phase-badge', 'data-state': 'idle' }, 'idle')
               ),
               div({ class: 'playhead-control' },

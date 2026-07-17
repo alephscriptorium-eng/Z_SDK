@@ -1,23 +1,17 @@
 /**
- * Integration test stack: scriptorium + player-ui room master.
- * Avoids hang when createPlayerServer runs without a live /runtime backend.
+ * Integration test stack: scriptorium + player-ui DJ (joins ARG_DELTA).
  */
 
 import { createScriptoriumServer } from '@zeus/socket-server';
 
 /**
- * @param {import('../src/server.mjs').createPlayerServer} createPlayerServer
+ * @param {typeof import('../src/server.mjs').createPlayerServer} createPlayerServer
  * @param {object} [options]
- * @param {number} [options.scriptoriumPort]
- * @param {number} [options.playerPort]
- * @param {string} [options.sessionId]
  */
-export async function startPlayerRoomStack(createPlayerServer, options = {}) {
+export async function startPlayerDjStack(createPlayerServer, options = {}) {
   const scriptoriumPort = options.scriptoriumPort ?? 0;
   const playerPort = options.playerPort ?? 0;
-  const sessionId = options.sessionId ?? 'default';
-
-  process.env.ZEUS_SESSION_TRANSPORT = 'room';
+  const room = options.room ?? process.env.ZEUS_ARG_ROOM ?? 'ARG_DELTA';
 
   const scriptorium = await createScriptoriumServer({
     port: scriptoriumPort,
@@ -27,11 +21,13 @@ export async function startPlayerRoomStack(createPlayerServer, options = {}) {
 
   const scriptoriumUrl = `http://localhost:${scriptorium.port}`;
   process.env.ZEUS_SCRIPTORIUM_URL = scriptoriumUrl;
+  process.env.ZEUS_ARG_ROOM = room;
 
   const player = await createPlayerServer({
     port: playerPort,
     host: 'localhost',
-    sessionId,
+    sessionId: options.sessionId ?? 'default',
+    room,
     discoveryExclusive: false,
     discoveryTimeoutMs: options.discoveryTimeoutMs ?? 2000
   });
@@ -40,11 +36,15 @@ export async function startPlayerRoomStack(createPlayerServer, options = {}) {
     scriptorium,
     player,
     scriptoriumUrl,
-    room: `scriptorium.${sessionId}`,
+    room,
     async close() {
       await player.close();
       await scriptorium.close();
       delete process.env.ZEUS_SCRIPTORIUM_URL;
+      delete process.env.ZEUS_ARG_ROOM;
     }
   };
 }
+
+/** @deprecated alias — suite recortada al rol dj */
+export const startPlayerRoomStack = startPlayerDjStack;

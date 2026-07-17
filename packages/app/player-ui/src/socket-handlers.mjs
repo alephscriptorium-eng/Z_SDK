@@ -1,12 +1,9 @@
 /**
- * Session socket handler factory for @zeus/player-ui.
+ * Local deck handler factory for @zeus/player-ui (DJ vista).
+ * Inbound events drive local xstate + MCP; DJ intents go via dj-transport.
  */
 
-import {
-  reduceSessionInbound,
-  applyActorEvents,
-  applyDomainOps
-} from '@zeus/session-domain';
+import { reduceDeckInbound, applyActorEvents } from './session-inbound.mjs';
 
 /**
  * @param {object} deps
@@ -22,9 +19,9 @@ export function createSessionHandlers(deps) {
     handleFirehoseCorpus,
     handleWikitextCache,
     handleWikitextPoll,
+    handleDjIntent,
     listServers,
     snapshotFromActor,
-    domainState,
     getIo
   } = deps;
 
@@ -55,6 +52,15 @@ export function createSessionHandlers(deps) {
         case 'resolveAllDecks':
           await resolveAllDecks(io());
           break;
+        case 'djCache':
+          handleDjIntent?.('cache', payload);
+          break;
+        case 'djCurate':
+          handleDjIntent?.('curate', payload);
+          break;
+        case 'djMilestone':
+          handleDjIntent?.('milestone', payload);
+          break;
         default:
           break;
       }
@@ -62,31 +68,22 @@ export function createSessionHandlers(deps) {
   };
 
   const dispatchInbound = (event, payload, ctx) => {
-    const reduction = reduceSessionInbound(event, payload);
-    if (
-      reduction.actorEvents.length === 0 &&
-      reduction.domainOps.length === 0 &&
-      reduction.sideEffects.length === 0
-    ) {
+    const reduction = reduceDeckInbound(event, payload);
+    if (reduction.actorEvents.length === 0 && reduction.sideEffects.length === 0) {
       return;
     }
 
     applyActorEvents(actor, reduction.actorEvents);
-    applyDomainOps(domainState, reduction.domainOps);
 
     if (reduction.sideEffects.length === 0) {
-      if (reduction.broadcast) {
-        broadcastState(io());
-      }
+      if (reduction.broadcast) broadcastState(io());
       return;
     }
 
     const run = async () => {
       try {
         await runSideEffects(reduction, ctx);
-        if (reduction.broadcast) {
-          broadcastState(io());
-        }
+        if (reduction.broadcast) broadcastState(io());
       } catch (err) {
         console.error(`${event} error:`, err);
       }
@@ -95,27 +92,33 @@ export function createSessionHandlers(deps) {
     run();
   };
 
-  const handlers = {
-    'domain:deck:load': (payload, ctx) => dispatchInbound('domain:deck:load', payload, ctx),
-    'domain:playhead:set': (payload, ctx) => dispatchInbound('domain:playhead:set', payload, ctx),
-    'registro:select': (payload, ctx) => dispatchInbound('registro:select', payload, ctx),
-    'micropost:select': (payload, ctx) => dispatchInbound('micropost:select', payload, ctx),
-    'firehose:corpus': (payload, ctx) => dispatchInbound('firehose:corpus', payload, ctx),
-    'wikitext:cache': (payload, ctx) => dispatchInbound('wikitext:cache', payload, ctx),
-    'wikitext:poll': (payload, ctx) => dispatchInbound('wikitext:poll', payload, ctx),
-    'sync:toggle': (_payload, ctx) => dispatchInbound('sync:toggle', {}, ctx),
-    'transport:play': (_payload, ctx) => dispatchInbound('transport:play', {}, ctx),
-    'transport:pause': (_payload, ctx) => dispatchInbound('transport:pause', {}, ctx),
-    'caso:set': (payload, ctx) => dispatchInbound('caso:set', payload, ctx),
-    'selection:cast': (payload, ctx) => dispatchInbound('selection:cast', payload, ctx),
-    'game:intent': (payload, ctx) => dispatchInbound('game:intent', payload, ctx),
-    'material:pin': (payload, ctx) => dispatchInbound('material:pin', payload, ctx),
-    'material:unpin': (payload, ctx) => dispatchInbound('material:unpin', payload, ctx),
-    'node:ontology:set': (payload, ctx) => dispatchInbound('node:ontology:set', payload, ctx)
-  };
+  /** @type {Record<string, (payload: unknown, ctx: object) => unknown>} */
+  const handlers = Object.fromEntries(
+    [
+      'domain:deck:load',
+      'domain:playhead:set',
+      'registro:select',
+      'micropost:select',
+      'firehose:corpus',
+      'wikitext:cache',
+      'wikitext:poll',
+      'sync:toggle',
+      'transport:play',
+      'transport:pause',
+      'caso:set',
+      'selection:cast',
+      'dj:cache',
+      'dj:curate',
+      'dj:milestone'
+    ].map((event) => [event, (payload, ctx) => dispatchInbound(event, payload ?? {}, ctx)])
+  );
 
   const onConnection = (socket, server) => {
-    server.unicast(socket, 'session:state', snapshotFromActor(actor, domainState));
+    server.unicast(socket, 'session:state', snapshotFromActor(actor));
+    server.unicast(socket, 'dj:projection', {
+      state: deps.getDjState?.() ?? null,
+      ledger: deps.getDjLedger?.() ?? []
+    });
     listServers()
       .then((servers) => server.unicast(socket, 'catalog:servers', servers))
       .catch((error) => {

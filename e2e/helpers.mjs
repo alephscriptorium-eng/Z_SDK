@@ -3,10 +3,12 @@
  */
 
 import { loadZeusEnv, resolveLineasBasePath } from '@zeus/presets-sdk';
-import { waitForSocketEvent } from '@zeus/session-protocol';
+import { waitForSocketEvent } from '@zeus/rooms';
 
 loadZeusEnv();
 export const lineasBasePath = resolveLineasBasePath();
+export { waitForSocketEvent };
+export const waitForEvent = waitForSocketEvent;
 
 /** Isolated linea MCP ports — avoids EADDRINUSE when dev servers occupy 4111/4112. */
 export const E2E_LINEA_PORTS = { espana: 14111, wpHistoria: 14112 };
@@ -33,8 +35,6 @@ export function applyE2eLineaPorts() {
 export function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
-
-export const waitForEvent = waitForSocketEvent;
 
 /** Close an MCP/HTTP server handle without throwing if already stopped. */
 export async function safeClose(handle) {

@@ -5,8 +5,7 @@
  */
 
 import { setup, assign } from 'xstate';
-import { PARTE_CUES, emptyDeckActor, emptyDecksActor } from '@zeus/tablero-core';
-import { buildSessionManifest } from '@zeus/session-domain';
+import { PARTE_CUES, emptyDeckActor, emptyDecksActor } from './deck-kit.mjs';
 
 export { PARTE_CUES };
 
@@ -164,13 +163,12 @@ export const sessionMachine = setup({
 });
 
 /**
- * Build a serializable SessionManifest v2 snapshot for room broadcast.
+ * Local xstate snapshot (not shared via room — authority owns game state).
  * @param {import('xstate').Actor} actor
- * @param {ReturnType<import('@zeus/session-domain').createSessionDomainState>|null} [domainState]
  */
-export function snapshotFromActor(actor, domainState = null) {
+export function snapshotFromActor(actor) {
   const { value, context } = actor.getSnapshot();
-  const legacy = {
+  return {
     phase: value,
     playhead: context.playhead,
     sync: context.sync,
@@ -179,5 +177,4 @@ export function snapshotFromActor(actor, domainState = null) {
     selections: context.selections,
     parteCues: PARTE_CUES
   };
-  return buildSessionManifest(legacy, domainState?.snapshot?.() ?? {});
 }

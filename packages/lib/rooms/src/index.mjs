@@ -20,7 +20,6 @@ export {
   resolveScriptoriumSecret,
   DEFAULT_SCRIPTORIUM_SECRET
 };
-export { createRoomSessionClient } from './room-session-client.mjs';
 
 /**
  * @param {string} [user]
@@ -40,7 +39,7 @@ export function createClient(user = config.user, overrides = {}) {
 /**
  * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
  * @param {string} user
- * @param {{ type?: string, features?: string[], room?: string }} [options]
+ * @param {{ type?: string, features?: string[], room?: string, connectTimeoutMs?: number }} [options]
  */
 export async function connectAndJoin(client, user, options = {}) {
   const room = options.room ?? config.room;
@@ -82,9 +81,7 @@ export async function connectAndJoin(client, user, options = {}) {
 
 /**
  * Declare this socket as master of a room (MAKE_MASTER).
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
- * @param {string} room
- * @param {object} [data]
+ * Kept for authorities / demos that still use master-room protocol.
  */
 export function makeMaster(client, room, data = {}) {
   client.room('MAKE_MASTER', { ...data, room }, room);
@@ -92,9 +89,6 @@ export function makeMaster(client, room, data = {}) {
 
 /**
  * Broadcast SET_STATE to room members (master-room protocol).
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
- * @param {string} room
- * @param {unknown} data
  */
 export function setState(client, room, data) {
   client.room('SET_STATE', data, room);
@@ -102,8 +96,6 @@ export function setState(client, room, data) {
 
 /**
  * Subscribe to SET_STATE events for a room.
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
- * @param {(data: unknown) => void} cb
  */
 export function onState(client, cb) {
   client.io.on('SET_STATE', cb);
@@ -112,10 +104,6 @@ export function onState(client, cb) {
 
 /**
  * Emit a channel event via ROOM_MESSAGE.
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
- * @param {string} event
- * @param {unknown} data
- * @param {string} [room]
  */
 export function emitRoomEvent(client, event, data, room = config.room) {
   client.room(event, data, room);
@@ -123,11 +111,28 @@ export function emitRoomEvent(client, event, data, room = config.room) {
 
 /**
  * Listen for arbitrary room-broadcast events.
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
- * @param {string} event
- * @param {(data: unknown) => void} cb
  */
 export function onRoomEvent(client, event, cb) {
   client.io.on(event, cb);
   return () => client.io.off(event, cb);
+}
+
+/**
+ * Wait for a socket.io event (e2e / wire canary).
+ * Absorbed from demolished session-protocol client-core.
+ */
+export function waitForSocketEvent(socket, event, predicate = null, timeoutMs = 8000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Timeout waiting for ${event}`)),
+      timeoutMs
+    );
+    const handler = (payload) => {
+      if (predicate && !predicate(payload)) return;
+      clearTimeout(timer);
+      socket.off(event, handler);
+      resolve(payload);
+    };
+    socket.on(event, handler);
+  });
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * @zeus/player-ui server.
- * Express + in-process @zeus/presets-sdk + socket.io /session namespace.
+ * @zeus/player-ui server — DJ vista on the game room (ARG_DELTA).
+ * Local xstate + MCP decks; shared state/ledger via @zeus/authority-kit.
  */
 
 import path from 'node:path';
@@ -11,10 +11,7 @@ import http from 'node:http';
 import { pathToFileURL } from 'node:url';
 import express from 'express';
 import cors from 'cors';
-import { browserAssetsDir, srcDir, makeError, ERROR_CODES } from '@zeus/session-protocol';
-import { browserAssetsDir as roomClientAssetsDir, resolveRoomClientConfig } from '@zeus/room-client-browser';
-import { buildAsyncApiSpec } from '@zeus/session-protocol/spec/build';
-import { buildSessionManifest } from '@zeus/session-protocol/spec/manifest';
+import { browserAssetsDir as roomClientAssetsDir } from '@zeus/room-client-browser';
 import { mountSpecRoutes, mountSwaggerUi } from '@zeus/presets-sdk/docs';
 import { createActor } from 'xstate';
 import {
@@ -29,14 +26,12 @@ import {
   readVolumeFile,
   TRIAGE_MANIFEST_PATH
 } from '@zeus/presets-sdk';
-import { buildViewLinksResponse } from './link-recipes/view-link-recipes.mjs';
-import { buildFirehoseLinksResponse } from './link-recipes/firehose-link-recipes.mjs';
+import { FIREHOSE_SERVER_NAME } from './deck-kit.mjs';
 import { assetsDir as uiKitAssetsDir, createThemeRoutes } from '@zeus/ui-kit';
 
 import { getConfig, resolveDataDir, packageDir } from './config.mjs';
 import { ThemeHandler } from './theme-handler.mjs';
 import { sessionMachine, snapshotFromActor } from './session-machine.mjs';
-import { createSessionDomainState } from '@zeus/session-domain';
 import { deckView } from './views/deck_view.mjs';
 import { settingsView } from './views/settings_view.mjs';
 import {
@@ -51,15 +46,18 @@ import {
 } from './aleph-bridge.mjs';
 import {
   isFirehoseDeck,
-  resolveFirehoseDeck,
-  FIREHOSE_SERVER_NAME
+  resolveFirehoseDeck
 } from './firehose-bridge.mjs';
 import { createTtlCache } from './ttl-cache.mjs';
 import { createSessionHandlers } from './socket-handlers.mjs';
 import { createAlephRoutes } from './aleph-routes.mjs';
 import { buildPlayerSpec } from '../spec/build.mjs';
 import { createDebugRoutes } from './debug-routes.mjs';
-import { resolveSessionTransport, createSessionTransport } from './session-transport.mjs';
+import { createDjTransport, resolveDjRoom } from './dj-transport.mjs';
+import { attachLocalDeckIo } from './local-deck-io.mjs';
+import { makeError, ERROR_CODES } from './deck-errors.mjs';
+import { buildViewLinksResponse } from './link-recipes/view-link-recipes.mjs';
+import { buildFirehoseLinksResponse } from './link-recipes/firehose-link-recipes.mjs';
 
 const require = createRequire(import.meta.url);
 
@@ -155,7 +153,6 @@ export async function createPlayerServer(options = {}) {
   });
   const actor = createActor(sessionMachine);
   actor.start();
-  const domainState = createSessionDomainState();
   const alephConfig = getAlephConfig(config);
   actor.send({ type: 'CASO_SET', casoId: alephConfig.defaultCaso || 'aeo-p24-linea' });
 
@@ -172,20 +169,20 @@ export async function createPlayerServer(options = {}) {
     debugStats.eventCounts[event] = (debugStats.eventCounts[event] || 0) + 1;
   };
 
-  const sessionTransportMode = resolveSessionTransport();
-  const transportBox = { current: /** @type {Awaited<ReturnType<typeof createSessionTransport>> | null} */ (null) };
+  const transportBox = { current: /** @type {Awaited<ReturnType<typeof createDjTransport>> | null} */ (null) };
+  const localIoBox = { current: /** @type {ReturnType<typeof attachLocalDeckIo> | null} */ (null) };
 
   const broadcastState = () => {
     bumpDebugEvent('session:state');
-    transportBox.current?.broadcastState();
+    localIoBox.current?.broadcastState(snapshotFromActor(actor));
   };
 
   const emitDeckResolved = (_io, payload) => {
-    transportBox.current?.emitDeckResolved(payload);
+    localIoBox.current?.emitDeckResolved(payload);
   };
 
   const emitSessionEvent = (_io, event, payload) => {
-    transportBox.current?.io?.emit(event, payload);
+    localIoBox.current?.io?.emit(event, payload);
   };
 
   async function runDiscovery() {
@@ -474,7 +471,6 @@ export async function createPlayerServer(options = {}) {
   const wikitextWaitByOldid = new Map();
   const WIKITEXT_WAIT_MS = 30000;
   const WIKITEXT_POLL_MS = 2000;
-  const sessionBox = { current: /** @type {Awaited<ReturnType<typeof createSessionTransport>> | null} */ (null) };
 
   async function waitForWikitextCached(io, socket, { deckId = 'B', oldid }) {
     const key = Number(oldid);
@@ -490,7 +486,7 @@ export async function createPlayerServer(options = {}) {
             code: ERROR_CODES.HANDLER_ERROR,
             message: String(deckCtx.error)
           });
-          transportBox.current?.io?.emit('session:error', err);
+          localIoBox.current?.io?.emit('session:error', err);
           throw new Error(deckCtx.error);
         }
         const wikitext = await fetchWikitext(deckCtx.extractor, key);
@@ -506,7 +502,7 @@ export async function createPlayerServer(options = {}) {
         message: 'wikitext cache wait timed out',
         details: { oldid: key, timeoutMs: WIKITEXT_WAIT_MS }
       });
-      transportBox.current?.io?.emit('session:error', err);
+      localIoBox.current?.io?.emit('session:error', err);
       throw new Error(err.message);
     })().finally(() => {
       wikitextWaitByOldid.delete(key);
@@ -592,22 +588,24 @@ export async function createPlayerServer(options = {}) {
   app.use(express.json());
   app.use('/assets', express.static(uiKitAssetsDir));
   app.use('/assets', express.static(path.join(packageDir, 'assets')));
-  app.use('/assets/session-protocol', express.static(browserAssetsDir));
   app.use('/assets/room-client', express.static(roomClientAssetsDir));
-  app.use('/assets/src', express.static(srcDir));
   app.use('/vendor/socket.io', express.static(socketIoDistDir()));
 
   mountSpecRoutes(app, {
     specs: {
-      'openapi.json': buildPlayerSpec,
-      'asyncapi.json': buildAsyncApiSpec,
-      'session-manifest.json': buildSessionManifest
+      'openapi.json': buildPlayerSpec
     }
   });
   mountSwaggerUi(app, { title: 'Player UI API' });
 
   app.get('/health', (req, res) => {
-    res.json({ status: 'ok', service: 'player-ui', timestamp: new Date().toISOString() });
+    res.json({
+      status: 'ok',
+      service: 'player-ui',
+      role: 'dj',
+      room: resolveDjRoom(process.env),
+      timestamp: new Date().toISOString()
+    });
   });
 
   app.use('/api', createThemeRoutes(themeHandler, getConfig));
@@ -637,11 +635,44 @@ export async function createPlayerServer(options = {}) {
       loadMedicion,
       buildTopology,
       listServers,
-      getSessionSnapshot: () => snapshotFromActor(actor, domainState)
+      getSessionSnapshot: () => snapshotFromActor(actor),
+      getDjState: () => transportBox.current?.getLastState?.() ?? null,
+      getDjLedger: () => transportBox.current?.getLedgerTail?.() ?? []
     })
   );
 
   app.use('/api', createDebugRoutes({ config }));
+
+  /** DJ intents from decks / e2e — authority owns validation. */
+  app.post('/api/dj/:intent', (req, res) => {
+    const intent = req.params.intent;
+    if (!['cache', 'curate', 'milestone'].includes(intent)) {
+      res.status(400).json({ ok: false, error: 'intent_invalida' });
+      return;
+    }
+    const dj = transportBox.current;
+    if (!dj) {
+      res.status(503).json({ ok: false, error: 'dj_transport_no_listo' });
+      return;
+    }
+    const body = req.body ?? {};
+    const payload = dj.emitDjIntent(intent, {
+      lineId: body.lineId ?? 'linea-aleph',
+      registroId: body.registroId ?? body.registro_id,
+      ...(intent === 'curate' && body.to ? { to: body.to } : {}),
+      ...(intent === 'milestone' && body.reasons ? { reasons: body.reasons } : {})
+    });
+    bumpDebugEvent(`dj:${intent}`);
+    res.json({ ok: true, payload, room: dj.room });
+  });
+
+  app.get('/api/dj/projection', (_req, res) => {
+    res.json({
+      room: transportBox.current?.room ?? resolveDjRoom(),
+      state: transportBox.current?.getLastState?.() ?? null,
+      ledger: transportBox.current?.getLedgerTail?.() ?? []
+    });
+  });
 
   app.get('/settings', async (req, res) => {
     try {
@@ -663,9 +694,7 @@ export async function createPlayerServer(options = {}) {
         presets,
         themes: themeHandler.getAvailableThemes(),
         currentTheme: themeHandler.getCurrentTheme(),
-        roomConfig: resolveRoomClientConfig({
-          sessionId: options.sessionId ?? 'default'
-        })
+        djRoom: resolveDjRoom(process.env)
       });
       res.setHeader('Content-Type', 'text/html');
       res.send(html.outerHTML);
@@ -678,9 +707,36 @@ export async function createPlayerServer(options = {}) {
   const httpServer = http.createServer(app);
   const ioBox = { current: /** @type {import('socket.io').Server | null} */ (null) };
 
-  const { handlers } = createSessionHandlers({
+  function handleDjIntent(intent, payload = {}) {
+    const registroId =
+      payload.registroId ??
+      payload.registro_id ??
+      (payload.oldid != null ? `P${String(payload.oldid).padStart(2, '0')}` : null);
+    // Map deck oldid → line-board seed ids when possible (P03/P04).
+    const mapped =
+      registroId ??
+      (payload.oldid === 1882 ? 'P03' : payload.oldid === 1898 ? 'P04' : null);
+    if (!mapped && intent === 'cache') {
+      // Fallback demo seed so deck cache still produces a ledger entry.
+      transportBox.current?.emitDjIntent(intent, {
+        lineId: payload.lineId ?? 'linea-aleph',
+        registroId: 'P03'
+      });
+      return;
+    }
+    if (!mapped) return;
+    transportBox.current?.emitDjIntent(intent, {
+      lineId: payload.lineId ?? 'linea-aleph',
+      registroId: mapped,
+      ...(intent === 'curate' ? { to: payload.to ?? 'draft' } : {}),
+      ...(intent === 'milestone'
+        ? { reasons: payload.reasons ?? ['deck'] }
+        : {})
+    });
+  }
+
+  const { handlers, onConnection } = createSessionHandlers({
     actor,
-    domainState,
     broadcastState,
     resolveAllDecks,
     handleDeckLoad,
@@ -689,46 +745,37 @@ export async function createPlayerServer(options = {}) {
     handleFirehoseCorpus,
     handleWikitextCache,
     handleWikitextPoll,
+    handleDjIntent,
     listServers,
     snapshotFromActor,
-    getIo: () => ioBox.current
+    getIo: () => ioBox.current,
+    getDjState: () => transportBox.current?.getLastState?.() ?? null,
+    getDjLedger: () => transportBox.current?.getLedgerTail?.() ?? []
   });
 
-  const transport = await createSessionTransport({
-    getSnapshot: () => snapshotFromActor(actor, domainState),
-    handlers,
-    onConnection: (socket, server) => {
-      server.unicast(socket, 'session:state', snapshotFromActor(actor, domainState));
-      listServers()
-        .then((servers) => server.unicast(socket, 'catalog:servers', servers))
-        .catch((error) => {
-          console.error('Discovery on connect failed:', error.message);
-          server.unicast(socket, 'catalog:servers', []);
-        });
+  const localIo = attachLocalDeckIo(httpServer, { handlers, onConnection });
+  localIoBox.current = localIo;
+  ioBox.current = localIo.io;
+
+  const djTransport = await createDjTransport({
+    actorId: options.actorId ?? `player-ui-dj-${options.sessionId ?? 'default'}`,
+    room: options.room ?? resolveDjRoom(process.env),
+    onState: (snap) => {
+      localIo.emitDjProjection({
+        state: snap,
+        ledger: transportBox.current?.getLedgerTail?.() ?? []
+      });
     },
-    sessionId: options.sessionId ?? 'default'
-  });
-
-  transportBox.current = transport;
-  ioBox.current = transport.io;
-  sessionBox.current = transport;
-  const io = transport.io;
-  const session = transport;
-
-  console.log(`Session transport: room → ${transport.room}`);
-
-  const MAP_TICK_MS = 100;
-  const MAP_HEARTBEAT_MS = 1000;
-  let lastMapBroadcast = 0;
-  const mapTickInterval = setInterval(() => {
-    const changed = domainState.tick(MAP_TICK_MS / 1000);
-    const now = Date.now();
-    const walking = Object.values(domainState.getMap().actors ?? {}).some((a) => a.pose === 'walk');
-    if (changed || (walking && now - lastMapBroadcast >= MAP_HEARTBEAT_MS)) {
-      broadcastState();
-      lastMapBroadcast = now;
+    onLedger: (entry) => {
+      localIo.emitDjLedger(entry);
     }
-  }, MAP_TICK_MS);
+  });
+  transportBox.current = djTransport;
+
+  const io = localIo.io;
+  const session = { mode: 'dj', room: djTransport.room, transport: djTransport };
+
+  console.log(`DJ transport: room → ${djTransport.room} (no scriptorium master)`);
 
   let debugHeartbeat = null;
   if (debugEnabled) {
@@ -756,6 +803,7 @@ export async function createPlayerServer(options = {}) {
     httpServer,
     io,
     session,
+    dj: djTransport,
     actor,
     registry,
     catalog,
@@ -771,13 +819,14 @@ export async function createPlayerServer(options = {}) {
       actor.send({ type: 'DECK_DEGRADED', deckId });
       broadcastState(io);
     },
+    emitDjIntent: (intent, args) => djTransport.emitDjIntent(intent, args),
     close: async () => {
-      clearInterval(mapTickInterval);
       if (debugHeartbeat) clearInterval(debugHeartbeat);
       actor.send({ type: 'SESSION_CLOSE' });
       actor.stop();
       await registry.close();
-      await transport.close();
+      await djTransport.close();
+      await localIo.close();
       await new Promise((res) => {
         if (!httpServer.listening) {
           res();

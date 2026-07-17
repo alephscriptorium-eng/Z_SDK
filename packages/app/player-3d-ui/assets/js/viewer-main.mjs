@@ -23,7 +23,7 @@ import {
   readViewerConfig,
   connectRoom
 } from '@zeus/view-kit';
-import { projectSlice, SCENE_IDS } from '@zeus/session-protocol/projection';
+import { projectSlice, SCENE_IDS } from './local-projection.mjs';
 import { createEventChoreographer } from './event-choreographer.mjs';
 
 function buildStage(scene) {
