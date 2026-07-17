@@ -185,4 +185,59 @@ n/a (WP sin demolición).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: aceptado ✅** — orquestador / 2026-07-17
+
+Política usuario: swarm sin credenciales / no push. CA remoto «PR de prueba
+muestra checks» queda **⏳** sin bloquear aceptación (workflow + evidencia
+local + honestidad del reporte OK).
+
+### Verificado
+
+- **Alcance** `master...HEAD`: solo `.github/workflows/ci.yml`, `README.md`
+  §Verificación, este reporte. Worker no tocó `plan/BACKLOG.md` ni
+  `packages/arg/spec/BACKLOG.md`. Sin lógica de producto.
+- **Base limpia**: merge-base = `master` (`7ff4056`); no hace falta merge
+  para revisar.
+- **Commits** convencionales: `chore(ci)`, `docs(reportes)` ×3.
+- **Workflow** `.github/workflows/ci.yml`:
+  - triggers: `pull_request` + push `main` / `wp/**`
+  - job `quality`: `npm ci` → `lint` → **`npm run gates`** (cableado U00) →
+    `test:gates`
+  - job `test`: matriz 31 workspaces, `fail-fast: false`, `npm test -w`
+  - sin publish (U53)
+- **CA local re-ejecutado** (worktree, 2026-07-17):
+  - `npm run lint` → exit 0 (0 errors, 16 warnings preexistentes)
+  - `npm run gates` → `gates: OK (0 offenders)`
+  - `npm run test:gates` → 7/7 pass (rojo sintético a–d + oldid + env)
+- Evidencia del worker de rojo sintético en disco (`port: 3013` → FAIL →
+  limpio → OK) coherente con PRACTICAS §5; no se reinventó.
+- Auto-revisión §3 honesta; CA remoto marcado ⏳ con motivo literal (orden
+  no-push + 403 previo documentado).
+
+### CA remoto PR
+
+⏳ — no bloquea. Validación Actions queda fuera del swarm (sembrar `main` +
+push rama + PR).
+
+### Matriz 9/31 fail
+
+**Aceptable con nota** — fallos preexistentes documentados en §hallazgos;
+`fail-fast: false` deja señal útil. No devolver el WP por eso. Cola
+BACKLOG (orquestador en master, paso aparte): reparación de los 9
+workspaces que fallan `npm test -w` (o WP dedicado post-primer-push).
+
+### Hallazgos → cola (no bloquean)
+
+1. 9/31 `npm test -w` FAIL (presets-sdk, session-protocol, http-contract,
+   linea-system, linea-firehose, cache-browser, firehose-browser, editor-ui,
+   player-ui).
+2. Mismatch credencial git HTTPS (`escrivivir-co`) vs `gh`
+   (`alephscriptorium-eng`) — quien empuje fuera del swarm.
+3. Nota U00 «U03 debe cablear gates» — **cumplida** en este WP.
+
+### Merge
+
+Autorizado a merge en master (fast-forward o merge commit desde
+`wp/u03-z-sdk-ci`). **Este chat no mergea ni marca BACKLOG ✅** (paso
+aparte del orquestador en master, sin push remoto según política). Tras
+merge local: `git worktree remove` del worktree U03.
