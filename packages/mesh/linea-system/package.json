@@ -19,11 +19,11 @@
   },
   "dependencies": {
     "@zeus/http-contract": "*",
+    "@zeus/linea-kit": "*",
     "@zeus/presets-sdk": "*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "yaml": "^2.8.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
