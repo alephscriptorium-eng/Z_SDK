@@ -9,6 +9,7 @@ que `@zeus/game-engine`, del que reutiliza `sampleLink`/`linkDistance`).
   ríos, mar y topología de la cantera.
 - `src/flow-engine.mjs` — la Riada: presión/apertura/burst, gotas, mar.
 - `src/maze-engine.mjs` — la Cantera: cámaras/pasillos, ghost→digging→open.
+- `src/line-board.mjs` — tablero DJ: cache → curate → milestone (rol `dj`).
 - `src/reducer.mjs` — `reduceArgIntent` puro (G-ARG.4).
 - `src/domain-state.mjs` — `createArgDomainState`: la verdad de la Autoridad
   (applyIntent / tick / snapshot compacto / drainOutbox).

@@ -13,7 +13,14 @@ function deepFreeze(obj) {
 }
 
 /** Vista mínima congelada: cualquier mutación del reducer lanzaría TypeError. */
-function makeView({ actorPatch = {}, droplet = null, contacts = {}, extraNodos = {}, extraEnlaces = {} } = {}) {
+function makeView({
+  actorPatch = {},
+  droplet = null,
+  contacts = {},
+  extraNodos = {},
+  extraEnlaces = {},
+  lines = null
+} = {}) {
   const scene = {
     spawnNodeId: 'plaza',
     labelset: ['agora', 'memoria'],
@@ -53,9 +60,19 @@ function makeView({ actorPatch = {}, droplet = null, contacts = {}, extraNodos =
     uno: {
       id: 'uno', kind: 'player', tier: 'stick', cloak: null, zone: 'terraza',
       nodeId: 'plaza', linkId: null, direction: null, progress: null,
-      riding: null, pose: 'idle', emote: null, score: { labeled: 0, excavated: 0 },
+      riding: null, pose: 'idle', emote: null,
+      score: { labeled: 0, excavated: 0, cached: 0, curated: 0, milestoned: 0 },
       position: { x: 0, y: 0, z: 0 },
       ...actorPatch
+    }
+  };
+  const defaultLines = {
+    'linea-aleph': {
+      id: 'linea-aleph',
+      registros: {
+        P03: { id: 'P03', oldid: 1882, cached: false, deltaStatus: 'pending', milestone: null },
+        P04: { id: 'P04', oldid: 1898, cached: true, deltaStatus: 'draft', milestone: null }
+      }
     }
   };
   const view = {
@@ -65,6 +82,7 @@ function makeView({ actorPatch = {}, droplet = null, contacts = {}, extraNodos =
     taps: { 'grifo-t': { id: 'grifo-t', summitNodeId: 'cima' } },
     corridors: { 'pasillo-xy': { id: 'pasillo-xy', a: 'camara-x', b: 'camara-y', state: 'ghost' } },
     contacts: { ...contacts },
+    lines: lines ?? defaultLines,
     dropletUnder: () => droplet,
     positionOf: (id) => actors[id]?.position ?? (id === 'grifo-t' ? nav.nodos.cima.position : null)
   };
@@ -73,6 +91,7 @@ function makeView({ actorPatch = {}, droplet = null, contacts = {}, extraNodos =
   deepFreeze(view.actors);
   deepFreeze(view.taps);
   deepFreeze(view.corridors);
+  deepFreeze(view.lines);
   return view;
 }
 
@@ -244,13 +263,14 @@ function makeSeaView({ actorZone = 'mar', actorNodeId = 'orilla-mar', collapsed 
         zone: actorZone,
         nodeId: actorNodeId,
         position: nav.nodos[actorNodeId]?.position ?? { x: 0, y: 0, z: 0 },
-        score: { labeled: 0, excavated: 0 }
+        score: { labeled: 0, excavated: 0, cached: 0, curated: 0, milestoned: 0 }
       }
     },
     taps: {},
     corridors: {},
     contacts: {},
     sea: { collapsed, murk: 1, crystals: 0 },
+    lines: {},
     seaDroplets: () => droplets,
     seaDropletById: (id) => droplets.find((d) => d.id === id) ?? null,
     dropletUnder: () => null,
@@ -295,4 +315,124 @@ test('track:cast: válido emite trackCast sin ops de dominio', () => {
   assert.equal(res.trackCast.ref.uri, 'firehose://synthetic/0/2');
   assert.equal(before, JSON.stringify(view));
   assert.equal(reduceArgIntent(view, makeIntent('uno', 'track:cast', { dropletId: 'nope' })).error, 'gota_invalida');
+});
+
+test('cache (dj): registro ghost → line:cache + score; rechazos de negocio', () => {
+  const view = makeView();
+  const res = reduceArgIntent(
+    view,
+    makeIntent('uno', 'cache', { lineId: 'linea-aleph', registroId: 'P03', role: 'dj' })
+  );
+  assert.equal(res.ok, true);
+  assert.equal(res.ops[0].op, 'line:cache');
+  assert.equal(res.ops[1].op, 'actor:score');
+  assert.equal(res.ops[1].key, 'cached');
+
+  assert.equal(
+    reduceArgIntent(
+      view,
+      makeIntent('uno', 'cache', { lineId: 'linea-aleph', registroId: 'P04', role: 'dj' })
+    ).error,
+    'ya_cacheado'
+  );
+  assert.equal(
+    reduceArgIntent(
+      view,
+      makeIntent('uno', 'cache', { lineId: 'nope', registroId: 'P03', role: 'dj' })
+    ).error,
+    'linea_invalida'
+  );
+  assert.equal(
+    reduceArgIntent(
+      view,
+      makeIntent('uno', 'cache', { lineId: 'linea-aleph', registroId: 'PX', role: 'dj' })
+    ).error,
+    'registro_invalido'
+  );
+});
+
+test('curate (dj): exige cached y avance de un paso', () => {
+  const view = makeView();
+  assert.equal(
+    reduceArgIntent(
+      view,
+      makeIntent('uno', 'curate', { lineId: 'linea-aleph', registroId: 'P03', role: 'dj' })
+    ).error,
+    'no_cacheado'
+  );
+  const ok = reduceArgIntent(
+    view,
+    makeIntent('uno', 'curate', { lineId: 'linea-aleph', registroId: 'P04', to: 'curated', role: 'dj' })
+  );
+  assert.equal(ok.ok, true);
+  assert.equal(ok.ops[0].op, 'line:curate');
+  assert.equal(ok.ops[0].to, 'curated');
+
+  const curatedLines = {
+    'linea-aleph': {
+      id: 'linea-aleph',
+      registros: {
+        P04: { id: 'P04', oldid: 1898, cached: true, deltaStatus: 'curated', milestone: null }
+      }
+    }
+  };
+  assert.equal(
+    reduceArgIntent(
+      makeView({ lines: curatedLines }),
+      makeIntent('uno', 'curate', { lineId: 'linea-aleph', registroId: 'P04', role: 'dj' })
+    ).error,
+    'ya_curado'
+  );
+  assert.equal(
+    reduceArgIntent(
+      makeView({
+        lines: {
+          'linea-aleph': {
+            id: 'linea-aleph',
+            registros: {
+              P03: { id: 'P03', oldid: 1882, cached: true, deltaStatus: 'pending', milestone: null }
+            }
+          }
+        }
+      }),
+      makeIntent('uno', 'curate', {
+        lineId: 'linea-aleph',
+        registroId: 'P03',
+        to: 'curated',
+        role: 'dj'
+      })
+    ).error,
+    'status_salto'
+  );
+});
+
+test('milestone (dj): solo sobre curated sin milestone previo', () => {
+  const ready = {
+    'linea-aleph': {
+      id: 'linea-aleph',
+      registros: {
+        P04: { id: 'P04', oldid: 1898, cached: true, deltaStatus: 'curated', milestone: null }
+      }
+    }
+  };
+  const res = reduceArgIntent(
+    makeView({ lines: ready }),
+    makeIntent('uno', 'milestone', {
+      lineId: 'linea-aleph',
+      registroId: 'P04',
+      reasons: ['byte_delta'],
+      role: 'dj'
+    })
+  );
+  assert.equal(res.ok, true);
+  assert.equal(res.ops[0].op, 'line:milestone');
+  assert.deepEqual(res.ops[0].reasons, ['byte_delta']);
+
+  assert.equal(
+    reduceArgIntent(
+      makeView(),
+      makeIntent('uno', 'milestone', { lineId: 'linea-aleph', registroId: 'P04', role: 'dj' })
+    ).error,
+    'no_curado'
+  );
 });

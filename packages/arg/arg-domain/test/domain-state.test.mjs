@@ -222,3 +222,75 @@ test('rol no autorizado ⇒ rechazo (WP-U10)', () => {
   assert.equal(denied.error, 'rol_no_autorizado');
   assert.equal(actor(state, 'uno').nodeId, deltaV0.spawnNodeId);
 });
+
+test('WP-U30 dj: cache/curate/milestone → ledger + score; player rechazado', () => {
+  const state = makeState();
+  assert.equal(state.applyIntent(makeIntent('dj1', 'join')).ok, true);
+
+  const asPlayer = state.applyIntent(
+    makeIntent('dj1', 'cache', { lineId: 'linea-aleph', registroId: 'P03' })
+  );
+  assert.equal(asPlayer.ok, false);
+  assert.equal(asPlayer.error, 'rol_no_autorizado');
+
+  assert.equal(
+    state.applyIntent(
+      makeIntent('dj1', 'cache', { lineId: 'linea-aleph', registroId: 'P03', role: 'dj' })
+    ).ok,
+    true
+  );
+  assert.equal(
+    state.applyIntent(
+      makeIntent('dj1', 'curate', { lineId: 'linea-aleph', registroId: 'P03', role: 'dj' })
+    ).ok,
+    true
+  );
+  assert.equal(
+    state.applyIntent(
+      makeIntent('dj1', 'curate', {
+        lineId: 'linea-aleph',
+        registroId: 'P03',
+        to: 'curated',
+        role: 'dj'
+      })
+    ).ok,
+    true
+  );
+  assert.equal(
+    state.applyIntent(
+      makeIntent('dj1', 'milestone', {
+        lineId: 'linea-aleph',
+        registroId: 'P03',
+        reasons: ['byte_delta'],
+        role: 'dj'
+      })
+    ).ok,
+    true
+  );
+
+  state.tick(0.1);
+  const out = state.drainOutbox();
+  assert.ok(out.ledger.some((e) => e.kind === 'cache' && e.actorId === 'dj1'), 'ledger cache');
+  assert.ok(
+    out.ledger.some((e) => e.kind === 'curate' && e.detail?.status === 'draft'),
+    'ledger curate draft'
+  );
+  assert.ok(
+    out.ledger.some((e) => e.kind === 'curate' && e.detail?.status === 'curated'),
+    'ledger curate curated'
+  );
+  assert.ok(
+    out.ledger.some(
+      (e) => e.kind === 'milestone' && e.detail?.reasons?.includes('byte_delta')
+    ),
+    'ledger milestone'
+  );
+
+  const score = actor(state, 'dj1').score;
+  assert.equal(score.cached, 1);
+  assert.equal(score.curated, 2);
+  assert.equal(score.milestoned, 1);
+
+  const lines = state.snapshot().lines;
+  assert.ok(lines.regs.some((r) => r[1] === 'P03' && r[2] === 1 && r[3] === 2 && r[4] === 1));
+});

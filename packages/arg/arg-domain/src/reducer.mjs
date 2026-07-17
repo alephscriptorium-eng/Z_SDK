@@ -92,7 +92,7 @@ const HANDLERS = {
         riding: null,
         pose: 'idle',
         emote: null,
-        score: { labeled: 0, excavated: 0 }
+        score: { labeled: 0, excavated: 0, cached: 0, curated: 0, milestoned: 0 }
       }
     });
   },
@@ -278,6 +278,90 @@ const HANDLERS = {
     const droplet = view.seaDropletById?.(intent.dropletId);
     if (!droplet) return fail('gota_invalida');
     return { ok: true, ops: [], trackCast: { ref: droplet.ref } };
+  },
+
+  /** DJ: materializar un registro de línea (hermano de excavate). */
+  cache(view, intent) {
+    const actor = view.actors[intent.actorId];
+    if (!actor) return fail('actor_desconocido');
+    if (typeof intent.lineId !== 'string' || !intent.lineId) return fail('linea_requerida');
+    if (typeof intent.registroId !== 'string' || !intent.registroId) return fail('registro_requerido');
+    const reg = view.lines?.[intent.lineId]?.registros?.[intent.registroId];
+    if (!reg) {
+      if (!view.lines?.[intent.lineId]) return fail('linea_invalida');
+      return fail('registro_invalido');
+    }
+    if (reg.cached) return fail('ya_cacheado');
+    return okOps(
+      {
+        op: 'line:cache',
+        lineId: intent.lineId,
+        registroId: intent.registroId,
+        actorId: actor.id,
+        approval: intent.approval ?? null
+      },
+      { op: 'actor:score', id: actor.id, key: 'cached' }
+    );
+  },
+
+  /** DJ: avanzar delta_status pending→draft→curated (un paso). */
+  curate(view, intent) {
+    const actor = view.actors[intent.actorId];
+    if (!actor) return fail('actor_desconocido');
+    if (typeof intent.lineId !== 'string' || !intent.lineId) return fail('linea_requerida');
+    if (typeof intent.registroId !== 'string' || !intent.registroId) return fail('registro_requerido');
+    const reg = view.lines?.[intent.lineId]?.registros?.[intent.registroId];
+    if (!reg) {
+      if (!view.lines?.[intent.lineId]) return fail('linea_invalida');
+      return fail('registro_invalido');
+    }
+    if (!reg.cached) return fail('no_cacheado');
+    const order = ['pending', 'draft', 'curated'];
+    const currentIdx = order.indexOf(reg.deltaStatus);
+    const to = intent.to ?? order[Math.min(currentIdx + 1, order.length - 1)];
+    if (to !== 'draft' && to !== 'curated') return fail('status_invalido');
+    const targetIdx = order.indexOf(to);
+    if (targetIdx <= currentIdx) {
+      return fail(currentIdx === targetIdx ? 'ya_curado' : 'status_retroceso');
+    }
+    if (targetIdx > currentIdx + 1) return fail('status_salto');
+    return okOps(
+      {
+        op: 'line:curate',
+        lineId: intent.lineId,
+        registroId: intent.registroId,
+        to,
+        actorId: actor.id
+      },
+      { op: 'actor:score', id: actor.id, key: 'curated' }
+    );
+  },
+
+  /** DJ: anclar milestone sobre un registro ya curated. */
+  milestone(view, intent) {
+    const actor = view.actors[intent.actorId];
+    if (!actor) return fail('actor_desconocido');
+    if (typeof intent.lineId !== 'string' || !intent.lineId) return fail('linea_requerida');
+    if (typeof intent.registroId !== 'string' || !intent.registroId) return fail('registro_requerido');
+    const reg = view.lines?.[intent.lineId]?.registros?.[intent.registroId];
+    if (!reg) {
+      if (!view.lines?.[intent.lineId]) return fail('linea_invalida');
+      return fail('registro_invalido');
+    }
+    if (!reg.cached) return fail('no_cacheado');
+    if (reg.deltaStatus !== 'curated') return fail('no_curado');
+    if (reg.milestone) return fail('ya_milestone');
+    const reasons = Array.isArray(intent.reasons) ? intent.reasons : [];
+    return okOps(
+      {
+        op: 'line:milestone',
+        lineId: intent.lineId,
+        registroId: intent.registroId,
+        reasons,
+        actorId: actor.id
+      },
+      { op: 'actor:score', id: actor.id, key: 'milestoned' }
+    );
   }
 };
 

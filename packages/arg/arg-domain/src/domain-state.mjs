@@ -8,6 +8,7 @@ import { sampleLink, linkDistance } from '@zeus/game-engine';
 import { deltaV0, buildCanteraTopology, buildNavGraph } from './scenes/delta-v0.mjs';
 import { createFlowEngine } from './flow-engine.mjs';
 import { createMazeEngine } from './maze-engine.mjs';
+import { createLineBoard, DEFAULT_LINE_SEED } from './line-board.mjs';
 import { reduceArgIntent } from './reducer.mjs';
 import { validateIntent, trackHintFor } from './contract.mjs';
 import { effectiveLinkSpeed } from './cloak-mods.mjs';
@@ -25,7 +26,12 @@ export const DEFAULT_GAMEMAP = {
   objetivo: { labeled: 10, excavated: 2 }
 };
 
-export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT_GAMEMAP } = {}) {
+export function createArgDomainState({
+  scene = deltaV0,
+  feeds,
+  gamemap = DEFAULT_GAMEMAP,
+  lineSeed = DEFAULT_LINE_SEED
+} = {}) {
   if (!feeds) throw new Error('createArgDomainState: feeds requerido (resolveFeeds)');
 
   const topology = buildCanteraTopology(scene.cantera);
@@ -34,6 +40,7 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
   const excavateTimeoutMs = feeds.excavateTimeoutMs ?? 20000;
   const flow = createFlowEngine(scene, feeds.firehose);
   const nav = buildNavGraph(scene, topology);
+  const lineBoard = createLineBoard(gamemap.lines ?? lineSeed);
 
   const actors = {};
   const contacts = {};
@@ -74,6 +81,7 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
       sea: flow.sea,
       corridors: maze.corridors,
       contacts,
+      lines: lineBoard.lines,
       dropletUnder: (riverId, prog) => flow.dropletUnder(riverId, prog),
       seaDroplets: () => flow.sea.droplets,
       seaDropletById: (id) => flow.seaDropletById(id),
@@ -122,6 +130,18 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
               .then(() => maze.completeDig(op.corridorId))
               .catch((err) => maze.failDig(op.corridorId, err?.message ?? 'excavate_failed'));
           }
+          break;
+        }
+        case 'line:cache': {
+          lineBoard.cache(op.lineId, op.registroId, op.actorId);
+          break;
+        }
+        case 'line:curate': {
+          lineBoard.curate(op.lineId, op.registroId, op.to, op.actorId);
+          break;
+        }
+        case 'line:milestone': {
+          lineBoard.milestone(op.lineId, op.registroId, op.reasons, op.actorId);
           break;
         }
         case 'contact:set':
@@ -233,6 +253,27 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
         pushLedger('error', { detail: { corridorId: ev.corridorId, reason: ev.reason } });
       }
     }
+    for (const ev of lineBoard.drainEvents()) {
+      if (ev.kind === 'cache') {
+        pushLedger('cache', {
+          actorId: ev.actorId,
+          ref: ev.ref,
+          detail: { lineId: ev.lineId, registroId: ev.registroId }
+        });
+      } else if (ev.kind === 'curate') {
+        pushLedger('curate', {
+          actorId: ev.actorId,
+          ref: ev.ref,
+          detail: { lineId: ev.lineId, registroId: ev.registroId, status: ev.status }
+        });
+      } else if (ev.kind === 'milestone') {
+        pushLedger('milestone', {
+          actorId: ev.actorId,
+          ref: ev.ref,
+          detail: { lineId: ev.lineId, registroId: ev.registroId, reasons: ev.reasons }
+        });
+      }
+    }
     if (
       !progress.objetivoMet &&
       progress.labeled >= gamemap.objetivo.labeled &&
@@ -253,7 +294,7 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
       const gate = validateIntent(payload);
       if (!gate.ok) return { ok: false, error: gate.error };
       if (
-        payload.intent === 'excavate' &&
+        (payload.intent === 'excavate' || payload.intent === 'cache') &&
         feeds.requiresApproval === true &&
         payload.approval !== feeds.approvalToken
       ) {
@@ -324,6 +365,7 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
         rivers: flowSnap.rivers,
         sea: flowSnap.sea,
         maze: maze.snapshot(fullMaze),
+        lines: lineBoard.snapshot(),
         contacts: Object.fromEntries(
           Object.entries(contacts).map(([id, c]) => [id, { a: c.a, b: c.b, state: c.state }])
         ),
@@ -335,6 +377,7 @@ export function createArgDomainState({ scene = deltaV0, feeds, gamemap = DEFAULT
     },
 
     mazeRev: () => maze.rev,
+    lineRev: () => lineBoard.rev,
 
     /** Ledger y tracks pendientes de publicar (la autoridad los emite y limpia). */
     drainOutbox() {

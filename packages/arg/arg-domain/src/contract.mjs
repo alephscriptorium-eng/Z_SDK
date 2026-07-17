@@ -44,8 +44,8 @@ export const ARG_TICK_MS = 100;
 export const ARG_HEARTBEAT_MS = 1000;
 
 /**
- * Catálogo delta: intents de jugador. Intents `dj`/`operator` llegan en olas
- * posteriores (U30+); el gate de rol ya está cableado vía @zeus/protocol.
+ * Catálogo delta: intents de jugador + manipulador de líneas (rol `dj`).
+ * Operator llega en olas posteriores; el gate de rol ya está en @zeus/protocol.
  */
 export const INTENT_DEFS = {
   join: { roles: ['player'] },
@@ -61,7 +61,11 @@ export const INTENT_DEFS = {
   'cloak:equip': { roles: ['player'] },
   emote: { roles: ['player'] },
   salvage: { roles: ['player'] },
-  'track:cast': { roles: ['player'] }
+  'track:cast': { roles: ['player'] },
+  /** Manipulador de líneas (WP-U30): crecer el volumen desde el tablero DJ. */
+  cache: { roles: ['dj'] },
+  curate: { roles: ['dj'] },
+  milestone: { roles: ['dj'] }
 };
 
 export const INTENT_CATALOG = createIntentCatalog(INTENT_DEFS);
