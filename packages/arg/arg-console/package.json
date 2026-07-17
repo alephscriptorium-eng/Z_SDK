@@ -1,7 +1,7 @@
 {
   "name": "@zeus/arg-console",
   "version": "0.1.0",
-  "description": "CAUDAL — portal de vistas 3D del ARG del delta (:3021): tablero (overview global) y jugador (vista encarnada con input). Derivado evolucionado y autocontenido del 3d-monitor.",
+  "description": "delta — portal de vistas 3D del ARG (:3021): tablero (overview global) y jugador (vista encarnada con input). Derivado evolucionado y autocontenido del 3d-monitor.",
   "type": "module",
   "main": "src/server.mjs",
   "scripts": {

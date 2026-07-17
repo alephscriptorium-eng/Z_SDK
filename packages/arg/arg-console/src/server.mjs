@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * @zeus/arg-console server — portal de vistas 3D de CAUDAL (:3021).
+ * @zeus/arg-console server — portal de vistas 3D de delta (:3021).
  *
  * Express server-rendered sin bundler (patrón server.mjs del 3d-monitor,
  * evolucionado). Las vistas viven en src/views/registry.mjs sobre el view

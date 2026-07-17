@@ -1,5 +1,5 @@
 /**
- * Escena canónica `delta-v0`: el delta de CAUDAL.
+ * Escena canónica `delta-v0`: el tablero del juego delta.
  *
  * Datos puros (sin three, sin red) en el idioma de @zeus/game-engine:
  * nodos con posición, enlaces con waypoints + walkSpeed. Encima añade el

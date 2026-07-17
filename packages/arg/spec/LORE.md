@@ -1,12 +1,10 @@
-# CAUDAL — el delta del Escriptorio
+# delta — ARG del Escriptorio
 
-> ARG multijugador sobre el runtime Scriptorium. Nombre en clave: **CAUDAL**
-> (castellano: *caudal* = flujo de agua **y** riqueza acumulada — las dos
-> acepciones son literalmente las dos economías del juego).
+> ARG multijugador sobre el runtime Scriptorium. Nombre del juego: **delta**.
 
 ## Idea madre
 
-CAUDAL no es un visualizador de datos: es un **juego cuyo tablero son los
+delta no es un visualizador de datos: es un **juego cuyo tablero son los
 volúmenes de datos reales del Scriptorium, y cuyas jugadas los hacen crecer**.
 Jugar no es leer la línea: es decidir qué contiene, cuándo se pincha el
 firehose, qué se etiqueta, qué se excava y se cachea. El mundo del juego es la
@@ -15,7 +13,7 @@ proyectada como un delta habitable.
 
 Inspiración (no modelización) de [parlament](https://pub.escrivivir.co/parlament/):
 
-| parlament                  | CAUDAL                                              |
+| parlament                  | delta                                               |
 | -------------------------- | --------------------------------------------------- |
 | "el vivo puede ser caótico; el retorno no" | la riada es caótica; solo lo etiquetado/cacheado cristaliza |
 | Firehose (presión semántica del Público)   | **La Riada**: ríos de microposts sin etiquetar       |
@@ -44,7 +42,7 @@ las gotas caen sin cauce, inundan y se pierden (corpus `discarded`).
   etiquetado: **nadar en el mar** = consultar lo ya cristalizado.
 - **Colapso**: si el vertido sin etiquetar supera el umbral, el delta se
   inunda (game over de ronda / cue de gamemap). El juego cooperativo es la
-  gestión de caudal: cuánto abres, cuántos etiquetadores hay río abajo.
+  gestión del flujo: cuánto abres, cuántos etiquetadores hay río abajo.
 
 ### 2. PIEDRA — La Cantera (estática, estable, se consulta y se excava)
 
@@ -100,7 +98,7 @@ de la articulación y el movimiento, no del material.
 
 1. La Autoridad carga un **gamemap** (escena + semillas + cues + objetivos).
 2. Los grifos acumulan presión; alguien tiene que subir y pactar aperturas.
-3. Río abajo, surfistas etiquetan gotas; el mar acumula caudal cristalizado.
+3. Río abajo, surfistas etiquetan gotas; el mar acumula flujo cristalizado.
 4. En la Cantera, expediciones consultan y excavan; el laberinto crece.
 5. Todo lo cristalizado (etiquetas, excavaciones) queda en el ledger del
    Notario; lo caótico (riadas, vertidos) se pierde.

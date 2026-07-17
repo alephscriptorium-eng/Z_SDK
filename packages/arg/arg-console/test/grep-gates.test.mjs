@@ -1,5 +1,5 @@
 /**
- * G-ARG grep gates (WP-15 parcial) — disciplina de capas CAUDAL.
+ * G-ARG grep gates (WP-15 parcial) — disciplina de capas delta.
  */
 
 import test from 'node:test';

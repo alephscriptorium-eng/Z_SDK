@@ -1,4 +1,4 @@
-# CAUDAL — El mar vivo (diseño, v1)
+# delta — El mar vivo (diseño, v1)
 
 Las gotas que llegan al mar dejan de evaporarse en contadores: persisten como
 población acotada. Las **etiquetadas flotan** formando clusters por etiqueta de

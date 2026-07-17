@@ -1,4 +1,4 @@
-# CAUDAL — UX y sistema de juego
+# delta — UX y sistema de juego
 
 ## El delta (escena `delta-v0`)
 
@@ -137,7 +137,7 @@ operativa, lectura y control vive en HTML fuera del canvas. Nunca "llenar el
    ventanitas DOM con barra de título: **colapsables** (▸/▾) todas,
    **arrastrables** la leyenda y el ledger. Estado (posición + colapso)
    persiste en `localStorage` por vista.
-3. **Inspector de caudal y cantera** — click (raycast) sobre un símbolo 3D
+3. **Inspector de flujo y cantera** — click (raycast) sobre un símbolo 3D
    abre su panel HTML:
    - **grifo**: presión/apertura/estado + cola upstream y los mensajes ya en
      cauce (uri, corpus, etiqueta, progreso); botones de apertura si hay

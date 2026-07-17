@@ -13,7 +13,7 @@ import { isIntentShaped, trackHintFor } from './contract.mjs';
 import { effectiveLinkSpeed } from './cloak-mods.mjs';
 
 const EMOTE_TTL_MS = 2500;
-/** El jinete surfea algo más rápido que el caudal: va adelantando gotas
+/** El jinete surfea algo más rápido que el flujo: va adelantando gotas
  * (si no, la distancia a la gota más próxima quedaría congelada al embarcar). */
 const RIDER_SPEED_FACTOR = 1.15;
 

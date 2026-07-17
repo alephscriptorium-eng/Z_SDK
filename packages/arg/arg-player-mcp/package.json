@@ -1,7 +1,7 @@
 {
   "name": "@zeus/arg-player-mcp",
   "version": "0.1.0",
-  "description": "CAUDAL — servidor MCP que envuelve a UN jugador del delta (uno|dos): un agente LLM emite intents y valida el juego mientras un humano observa las vistas. Una instancia = un actor (:4121 uno, :4122 dos).",
+  "description": "delta — servidor MCP que envuelve a UN jugador (uno|dos): un agente LLM emite intents y valida el juego mientras un humano observa las vistas. Una instancia = un actor (:4121 uno, :4122 dos).",
   "type": "module",
   "main": "src/index.mjs",
   "exports": {

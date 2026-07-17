@@ -763,7 +763,7 @@ export function getPromptRegistry(bridge) {
   return [
     {
       name: 'validar-caso',
-      title: 'Validar un caso del playbook CAUDAL',
+      title: 'Validar un caso del playbook delta',
       description:
         'Devuelve los pasos de un caso de CASOS.md listos para ejecutar con los tools player_* de este servidor.',
       argsSchema: {
@@ -780,7 +780,7 @@ export function getPromptRegistry(bridge) {
           ].join('\n');
         }
         return [
-          `Valida el caso ${casoId} de CAUDAL controlando al actor "${bridge.actor}" con los tools player_* de este servidor.`,
+          `Valida el caso ${casoId} de delta controlando al actor "${bridge.actor}" con los tools player_* de este servidor.`,
           '',
           'Reglas del juego de validación:',
           '1. Ejecuta los "pasos del agente" en orden, como llamadas MCP literales.',

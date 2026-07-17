@@ -1,7 +1,7 @@
 {
   "name": "@zeus/arg-domain",
   "version": "0.1.0",
-  "description": "CAUDAL — dominio puro del ARG del delta: contrato, escena delta-v0, flow-engine (grifos/ríos/mar), maze-engine (cantera), reducers y feeds. Sin three, sin red.",
+  "description": "delta — dominio puro del ARG: contrato, escena delta-v0, flow-engine (grifos/ríos/mar), maze-engine (cantera), reducers y feeds. Sin three, sin red.",
   "type": "module",
   "main": "src/index.mjs",
   "exports": {

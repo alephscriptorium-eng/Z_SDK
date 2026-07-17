@@ -1,4 +1,4 @@
-# CAUDAL — Backlog para el swarm
+# delta — Backlog para el swarm
 
 Convención: cada WP es autocontenido, con criterios de aceptación (CA)
 verificables por test o e2e. El **vertical slice** (marcado ✅ slice) lo
@@ -80,7 +80,7 @@ Referencias: [CONTRATO.md](CONTRATO.md), [UX.md](UX.md), [LORE.md](LORE.md).
   DOM con barra de título, colapsables (leyenda y ledger además arrastrables),
   estado persistido en localStorage por vista. CA: sin scroll horizontal a
   cualquier tamaño; colapso/posición sobreviven a un reload.
-- **WP-25 · Inspector de caudal y cantera** — raycast sobre símbolos 3D
+- **WP-25 · Inspector de flujo y cantera** — raycast sobre símbolos 3D
   (grifo, río, mar, cámara) abre panel HTML con los MENSAJES: gotas en cauce
   (uri/corpus/label/progress), presión del grifo, cristales/murk del mar,
   recurso y estado de la cámara. Click en gota/cámara → deep-link honesto.

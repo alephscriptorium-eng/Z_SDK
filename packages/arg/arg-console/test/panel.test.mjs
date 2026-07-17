@@ -72,9 +72,9 @@ function fakeDoc() {
 
 // ---- funciones puras ----------------------------------------------------------
 
-test('panelStorageKey: caudal:<view>:<id>', () => {
-  assert.equal(panelStorageKey('tablero', 'ledger'), 'caudal:tablero:ledger');
-  assert.equal(panelStorageKey(undefined, 'hud'), 'caudal:view:hud');
+test('panelStorageKey: delta:<view>:<id>', () => {
+  assert.equal(panelStorageKey('tablero', 'ledger'), 'delta:tablero:ledger');
+  assert.equal(panelStorageKey(undefined, 'hud'), 'delta:view:hud');
 });
 
 test('load/savePanelState: persiste y mezcla sobre un storage stub', () => {

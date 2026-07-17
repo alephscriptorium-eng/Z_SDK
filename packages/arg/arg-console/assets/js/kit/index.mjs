@@ -9,7 +9,7 @@
  *   labels         → sprites de etiqueta y glow
  *   log-panel      → log DOM (ledger del Notario)
  *
- * Piezas nuevas de CAUDAL:
+ * Piezas nuevas de delta:
  *   stick-poses    → poses paramétricas puras (sin three, node-testable)
  *   stick-puppet   → monigote procedural duck-type de loadPuppet (WP-07)
  *   delta-stage    → escena estática del delta desde deltaV0
