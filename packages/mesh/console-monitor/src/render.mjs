@@ -91,7 +91,7 @@ export function renderFrame(ctx) {
       `phase=${chalk.white(session.phase)}  year=${chalk.white.bold(session.playhead?.year)}  ${play}  ${sync}`
     );
   } else {
-    lines.push(chalk.bold(' SESSION ') + chalk.gray('waiting for session:state…'));
+    lines.push(chalk.bold(' SESSION ') + chalk.gray('waiting for state…'));
   }
 
   lines.push(

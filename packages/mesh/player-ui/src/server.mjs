@@ -173,7 +173,7 @@ export async function createPlayerServer(options = {}) {
   const localIoBox = { current: /** @type {ReturnType<typeof attachLocalDeckIo> | null} */ (null) };
 
   const broadcastState = () => {
-    bumpDebugEvent('session:state');
+    bumpDebugEvent('state');
     localIoBox.current?.broadcastState(snapshotFromActor(actor));
   };
 
@@ -486,7 +486,7 @@ export async function createPlayerServer(options = {}) {
             code: ERROR_CODES.HANDLER_ERROR,
             message: String(deckCtx.error)
           });
-          localIoBox.current?.io?.emit('session:error', err);
+          localIoBox.current?.io?.emit('deck:error', err);
           throw new Error(deckCtx.error);
         }
         const wikitext = await fetchWikitext(deckCtx.extractor, key);
@@ -502,7 +502,7 @@ export async function createPlayerServer(options = {}) {
         message: 'wikitext cache wait timed out',
         details: { oldid: key, timeoutMs: WIKITEXT_WAIT_MS }
       });
-      localIoBox.current?.io?.emit('session:error', err);
+      localIoBox.current?.io?.emit('deck:error', err);
       throw new Error(err.message);
     })().finally(() => {
       wikitextWaitByOldid.delete(key);

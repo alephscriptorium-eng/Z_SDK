@@ -26,7 +26,7 @@ export function createSubstrate(config) {
   /** @type {ReturnType<typeof createStateStore>} */
   let stateStore;
   const client = createSessionClient({
-    scriptoriumUrl: config.sessionUrl,
+    baseUrl: config.baseUrl,
     pushEvent: (type, payload, detail) => stateStore.recordEvent(type, payload, detail)
   });
   stateStore = createStateStore({ config, client, poller });
@@ -158,7 +158,7 @@ export async function startAll(options = {}) {
     tuiHandle.start();
 
     if (!headless) {
-      console.log(`[${mcpHandle.name}] TUI monitor → ${config.sessionUrl}`);
+      console.log(`[${mcpHandle.name}] TUI monitor → deck-io ${config.baseUrl}`);
     }
 
     return {

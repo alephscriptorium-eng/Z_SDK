@@ -45,7 +45,7 @@ import { emptyDeckSlots } from './deck-slots.mjs';
  * @property {number|null} health.rest.lastFetchAt
  * @property {string|null} health.rest.lastError
  * @property {boolean} health.rest.fetching
- * @property {object|null} session - full session:state payload
+ * @property {object|null} session - full deck `state` payload from player-ui
  * @property {object} decks - { A, B, C } deck entries from session
  * @property {unknown[]|null} catalog - socket catalog:servers
  * @property {object} infrastructure
@@ -76,7 +76,7 @@ function defaultDetail(type, payload) {
       return String(payload.reason ?? '');
     case 'connect_error':
       return String(payload.message ?? '');
-    case 'session:state':
+    case 'state':
       return `phase=${payload.phase} year=${payload.year}${payload.activeCaso ? ` caso=${payload.activeCaso}` : ''}`;
     case 'deck:resolved':
       if (payload.kind === 'firehose') {

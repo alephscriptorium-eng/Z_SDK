@@ -8,9 +8,12 @@ export const RELAY_UPSTREAM = ['CLIENT_REGISTER', 'CLIENT_SUSCRIBE', 'ROOM_MESSA
 export const RELAY_DOWNSTREAM_TOP = new Set([
   'SET_STATE',
   'deck:resolved',
+  'deck:error',
   'catalog:servers',
-  'session:state',
-  'session:error'
+  'state',
+  'intent',
+  'ledger',
+  'track'
 ]);
 
 /**

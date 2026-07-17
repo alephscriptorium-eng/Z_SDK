@@ -136,23 +136,26 @@ function makeIoClientStub() {
   };
 }
 
-test('attachSessionParticipant: caches snapshot from session:state SET_STATE', () => {
+test('attachSessionParticipant: caches snapshot from state', () => {
   const client = makeIoClientStub();
   const p = attachSessionParticipant(client, { room: 'scriptorium.default', actorId: 'ping-demo' });
   assert.equal(p.getSnapshot(), null);
 
   const snap = snapshotWithRevs([1, 2, 3]);
-  client.io.emit('SET_STATE', { type: 'session:state', snapshot: snap, seq: 5 });
+  client.io.emit('state', snap);
   assert.equal(p.getSnapshot(), snap);
 });
 
-test('attachSessionParticipant: ignores non-session SET_STATE and payloads without snapshot', () => {
+test('attachSessionParticipant: accepts wrapped { snapshot } and ignores empty payloads', () => {
   const client = makeIoClientStub();
   const p = attachSessionParticipant(client, { room: 'r', actorId: 'a' });
-  client.io.emit('SET_STATE', { type: 'other:state', snapshot: { decks: {} } });
+  client.io.emit('state', { foo: 1 });
   assert.equal(p.getSnapshot(), null);
-  client.io.emit('SET_STATE', { type: 'session:state' });
+  client.io.emit('state', {});
   assert.equal(p.getSnapshot(), null);
+  const snap = snapshotWithRevs([9]);
+  client.io.emit('state', { snapshot: snap });
+  assert.equal(p.getSnapshot(), snap);
 });
 
 test('attachSessionParticipant: onSnapshot fires on new snapshots', () => {
@@ -161,7 +164,7 @@ test('attachSessionParticipant: onSnapshot fires on new snapshots', () => {
   const seen = [];
   p.onSnapshot((s) => seen.push(s));
   const snap = snapshotWithRevs([9]);
-  client.io.emit('SET_STATE', { type: 'session:state', snapshot: snap });
+  client.io.emit('state', snap);
   assert.equal(seen.length, 1);
   assert.equal(seen[0], snap);
 });
@@ -169,7 +172,7 @@ test('attachSessionParticipant: onSnapshot fires on new snapshots', () => {
 test('attachSessionParticipant: cast picks rev and emits selection:cast', () => {
   const client = makeIoClientStub();
   const p = attachSessionParticipant(client, { room: 'scriptorium.default', actorId: 'ping-demo', deckId: 'B' });
-  client.io.emit('SET_STATE', { type: 'session:state', snapshot: snapshotWithRevs([11, 22, 33]) });
+  client.io.emit('state', snapshotWithRevs([11, 22, 33]));
 
   const data = p.cast({ strategy: strategies.last, label: 'x' });
   assert.deepEqual(data, { actorId: 'ping-demo', kind: 'registro', deckId: 'B', targetId: 33, label: 'x' });
@@ -189,7 +192,7 @@ test('attachSessionParticipant: dispose detaches listener', () => {
   const client = makeIoClientStub();
   const p = attachSessionParticipant(client, { room: 'r', actorId: 'a' });
   p.dispose();
-  client.io.emit('SET_STATE', { type: 'session:state', snapshot: snapshotWithRevs([1]) });
+  client.io.emit('state', snapshotWithRevs([1]));
   assert.equal(p.getSnapshot(), null);
 });
 

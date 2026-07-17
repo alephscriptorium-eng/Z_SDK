@@ -376,7 +376,7 @@ function main() {
   });
 
   room.onAny((event, payload) => {
-    if (event === 'SET_STATE' || event === 'session:state') return; // via onState
+    if (event === 'state' || event === 'arg:state' || event === 'SET_STATE') return; // via onState
     counters.bump('events');
     const from = emitterOf(payload, 'peer');
 
