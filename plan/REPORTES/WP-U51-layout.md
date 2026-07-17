@@ -164,4 +164,31 @@ Ninguno que bloquee el CA del WP. Push: **no intentado** (política swarm).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: aceptado ✅** (2026-07-17 · orquestador)
+
+### Verificado
+
+- Diff `master...HEAD`: merge-base = master (`687f317`); sin merge pendiente.
+  733 files / move mecánico + paths/gates/docs; `plan/BACKLOG.md` **no** tocado.
+- Demolición: `packages/{lib,app,platform,mcp,arg,operator-ui}` **ABSENT**; layout
+  `engine|editor|mesh|games/{delta,pozo}` + `examples/{game-demos,ping-pong-bots}`.
+- Re-CA en worktree (esta revisión):
+  - `lint` → exit 0 (0 errors / 12 warnings preexistentes)
+  - `gates` → `gates: OK (0 offenders)`
+  - `test:arg` → pass (suites delta; exit 0)
+  - spot `e2e:arg` → 🟢 todos los gates en verde
+- `git log --follow` conserva historia (protocol, arg-domain, socket-server).
+- Grep live: cero `packages/(lib|app|platform|mcp|arg)/` en `*.{mjs,js,ts,json,yml}`.
+
+### Hallazgos (cola; no bloquean)
+
+1. `e2e:playbook-kit` G-PB.0 / C-30 — contenido CASOS, no regresión del move.
+2. `e2e:view` / `e2e:firehose` — VOLUMES ausentes en worktree (ambiente).
+3. Huérfano `:13022` / `stop:services` — cola U11.
+4. `file:` residual operator-ui — cola U50 (paths actualizados a mesh/engine).
+
+### Merge
+
+**Autorizado** a merge en master tras OK del usuario. Orden sugerido: U51 solo
+(ola 5); U52 después. Orquestador: ✅ BACKLOG + `git worktree remove` **tras**
+merge (esta revisión: NO merge / NO push / NO ✅ BACKLOG — pedido explícito).
