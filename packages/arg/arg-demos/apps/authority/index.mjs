@@ -1,10 +1,9 @@
 /**
- * delta — la Autoridad del juego (el único proceso que muta dominio,
- * gate G-ARG.1). Patrón heredado de game-demos/apps/map:
- *   arg:intent (room) → reducer → arg:state 10 Hz + arg:track + arg:ledger.
+ * delta — autoridad del juego: instancia @zeus/authority-kit con el dominio
+ * arg-domain + feeds. Lo genérico (tick, publish, shutdown) vive en el kit.
  */
 
-import { createClient, connectAndJoin } from '@zeus/rooms';
+import { startAuthority } from '@zeus/authority-kit';
 import {
   createArgDomainState,
   EVENTS,
@@ -49,77 +48,45 @@ const feeds = await resolveRuntimeFeeds({
 
 const state = createArgDomainState({ feeds, gamemap });
 
-const client = createClient(USER, { room: ROOM });
-let lastFullMazeAt = 0;
-let lastMazeRev = 0;
+/**
+ * Wire: dual canónico + `arg:*` (migración U11).
+ * Las vistas/e2e siguen en `arg:*`; el kit ya habla kinds canónicos.
+ */
+const WIRE_EVENTS = {
+  STATE: ['state', EVENTS.STATE],
+  INTENT: ['intent', EVENTS.INTENT],
+  TRACK: ['track', EVENTS.TRACK],
+  LEDGER: ['ledger', EVENTS.LEDGER]
+};
 
-function publishState(reason) {
-  const now = Date.now();
-  const fullMaze = state.mazeRev() !== lastMazeRev || now - lastFullMazeAt >= HEARTBEAT_MS;
-  if (fullMaze) {
-    lastMazeRev = state.mazeRev();
-    lastFullMazeAt = now;
-  }
-  const snapshot = state.snapshot(reason, { fullMaze });
-  client.room(EVENTS.STATE, { from: USER, ...snapshot }, ROOM);
-}
-
-function publishOutbox() {
-  const out = state.drainOutbox();
-  for (const track of out.tracks) {
-    client.room(EVENTS.TRACK, track, ROOM);
-  }
-  for (const entry of out.ledger) {
-    client.room(EVENTS.LEDGER, entry, ROOM);
-    console.log(`[${USER}] 📜 ${entry.kind}`, JSON.stringify(entry.detail ?? entry.ref ?? ''));
-  }
-  return out.ledger.length + out.tracks.length;
-}
-
-client.io.on(EVENTS.INTENT, (data) => {
-  const result = state.applyIntent(data);
-  if (!result.ok) {
-    console.warn(`[${USER}] intent rechazada (${result.error}):`, JSON.stringify(data));
-    return;
-  }
-  console.log(`[${USER}] ← ${data.intent} · ${data.actorId}`);
-  publishOutbox();
-  publishState('change');
-});
+const domain = {
+  applyIntent: (payload) => state.applyIntent(payload),
+  tick: (deltaSec, now) => state.tick(deltaSec, now),
+  drainOutbox: () => state.drainOutbox(),
+  contentRev: () => state.mazeRev(),
+  snapshot: (reason, { full = false } = {}) => state.snapshot(reason, { fullMaze: full })
+};
 
 console.log(
   `\n🌊 delta authority · user=${USER} · room=${ROOM} · scene=${state.scene.id} · feeds=${feeds.mode ?? FEED_MODE} · tick=${TICK_MS}ms\n`
 );
 
-await connectAndJoin(client, USER, {
-  type: 'ArgAuthority',
-  features: ['delta-0.1', 'arg-state', 'arg-track', 'arg-ledger'],
-  room: ROOM
+await startAuthority({
+  user: USER,
+  room: ROOM,
+  tickMs: TICK_MS,
+  heartbeatMs: HEARTBEAT_MS,
+  domain,
+  events: WIRE_EVENTS,
+  join: {
+    type: 'ArgAuthority',
+    features: ['delta-0.1', 'arg-state', 'arg-track', 'arg-ledger']
+  },
+  snapshotBudget: true,
+  onLedger: (entry) => {
+    console.log(`[${USER}] 📜 ${entry.kind}`, JSON.stringify(entry.detail ?? entry.ref ?? ''));
+  },
+  onShutdown: async () => {
+    if (typeof feeds.close === 'function') await feeds.close();
+  }
 });
-
-publishState('change');
-
-const interval = setInterval(() => {
-  state.tick(TICK_MS / 1000);
-  const emitted = publishOutbox();
-  // Los ríos y la presión son continuos: se publica a ritmo de tick
-  // (los visores hacen dead reckoning entre snapshots, contrato P4).
-  publishState(emitted > 0 ? 'change' : 'heartbeat');
-}, TICK_MS);
-
-async function shutdown() {
-  clearInterval(interval);
-  console.log(`\n[${USER}] saliendo`);
-  client.io.close();
-  if (typeof feeds.close === 'function') await feeds.close();
-  process.exit(0);
-}
-
-// La autoridad no escucha en ningún puerto (es cliente de la room), así que las
-// herramientas que matan por puerto no la alcanzan: depende de que el launcher
-// le cascadee la señal. Escucha las dos.
-for (const signal of ['SIGINT', 'SIGTERM']) {
-  process.on(signal, () => {
-    shutdown();
-  });
-}
