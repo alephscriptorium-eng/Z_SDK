@@ -81,7 +81,7 @@ function getResourceRegistry(stateStore, config, _poller) {
       uri: 'player://session',
       title: 'Player session state',
       mimeType: 'application/json',
-      description: 'Full session:state payload from player-ui socket (phase, playhead, decks).',
+      description: 'Full deck `state` payload from player-ui deck-io (phase, playhead, decks).',
       read: () => stateStore.getSession()
     },
     {

@@ -238,8 +238,8 @@ function main() {
   });
 
   room.onAny((event, payload) => {
-    // SET_STATE (and its `session:state` re-broadcast) is handled by onState.
-    if (event === 'SET_STATE' || event === 'session:state') return;
+    // `state` / `arg:state` handled by onState; skip SET_STATE residuals.
+    if (event === 'state' || event === 'arg:state' || event === 'SET_STATE') return;
     if (['RABBIT', 'SPIDER', 'HORSE'].includes(event)) return; // handled above
     spawnTraffic(emitterOf(payload, 'peer'), event, payload);
   });

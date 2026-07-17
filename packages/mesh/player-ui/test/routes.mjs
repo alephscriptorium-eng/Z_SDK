@@ -79,8 +79,8 @@ test('player aleph and dj routes', async (t) => {
   });
 
   const statePromise = new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('session:state timeout')), 5000);
-    socket.on('session:state', (snap) => {
+    const timer = setTimeout(() => reject(new Error('state timeout')), 5000);
+    socket.on('state', (snap) => {
       clearTimeout(timer);
       resolve(snap);
     });

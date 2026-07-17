@@ -16,12 +16,12 @@
   "dependencies": {
     "@zeus/app-shell": "*",
     "@zeus/presets-sdk": "*",
-    "@zeus/rooms": "*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "chalk": "^5.4.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "log-update": "^6.1.0",
+    "socket.io-client": "^4.8.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
