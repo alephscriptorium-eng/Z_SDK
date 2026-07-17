@@ -211,7 +211,7 @@ function main() {
     seaActionPanel.setCollapsed(false, { persist: false });
   }
 
-  // ---- inspector de caudal y cantera (WP-25) ---------------------------------
+  // ---- inspector de flujo y cantera (WP-25) ---------------------------------
   const inspector = createInspector({
     stage,
     pickables: delta.pickables,

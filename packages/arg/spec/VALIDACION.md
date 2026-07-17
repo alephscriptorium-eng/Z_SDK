@@ -1,4 +1,4 @@
-# CAUDAL — Acta de validación (plantilla en blanco)
+# delta — Acta de validación (plantilla en blanco)
 
 Acta de **una** pasada de validación de [CASOS.md](CASOS.md) contra la demo real.
 CASOS.md es el guion (qué hacer y en qué orden); esto es el registro de lo que

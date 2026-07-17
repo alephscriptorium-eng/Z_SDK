@@ -97,7 +97,7 @@ export function createRoomBridge({
     async connect() {
       await connectAndJoin(client, user, {
         type: 'ArgPlayerMcp',
-        features: ['caudal-0.1', 'arg-intent', 'mcp-wrapper'],
+        features: ['delta-0.1', 'arg-intent', 'mcp-wrapper'],
         room
       });
       connected = true;

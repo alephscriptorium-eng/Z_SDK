@@ -25,7 +25,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   actual (o lista de excepciones justificadas para lo preexistente).
   **Demolición:** n/a.
 
-- 🔶 **WP-U02 · Identidad del juego: delta** — en curso (lote-0a / 2026-07-17) — (D-8) — retirar el nombre
+- ✅ **WP-U02 · Identidad del juego: delta** — aceptado (orquestador / 2026-07-17) — (D-8) — retirar el nombre
   «CAUDAL» en favor de **delta**: títulos y prosa de
   `packages/arg/spec/*.md`, README de arg, y las cadenas/banners en código
   (~10 archivos: arg-console kit/vistas/server, authority, launch, contract).
@@ -35,7 +35,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   **Demolición:** el nombre viejo — sin «(antes CAUDAL)» permanentes en specs;
   la historia queda en git y en D-8.
 
-- 🔶 **WP-U01 · Tests que faltan en el núcleo** — en curso (lote-0a / 2026-07-17) — `firehose-core` (hoy
+- ✅ **WP-U01 · Tests que faltan en el núcleo** — aceptado (orquestador / 2026-07-17) — `firehose-core` (hoy
   `test: echo 'sin tests'`) y `room-client-browser` (0 test files): tests de
   comportamiento de su API pública.
   **CA:** `npm test -w` verde en ambos con ≥1 test real por export principal.
@@ -49,6 +49,16 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   **CA:** una PR de prueba muestra los checks corriendo; rojo si se introduce
   una violación sintética.
   **Demolición:** n/a.
+
+### Cola hallazgos lote 0a
+
+Diferidos del reporte WP-U01 (no bloquean cierre):
+- residual CAUDAL en `e2e/arg-*.mjs` y `.vscode/tasks.json` (fuera de CA U02)
+- typo `CLIENT_SUSCRIBE`
+- `readInjectedRoomConfig` sin export
+- `Date.now()` como default user
+- worktrees: `npm install` / walk-up de node_modules
+- dependencia de `--experimental-test-module-mocks`
 
 ## Ola 1 — El contrato único (engine nace)
 

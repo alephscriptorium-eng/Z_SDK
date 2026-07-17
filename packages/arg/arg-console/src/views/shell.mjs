@@ -15,12 +15,12 @@ const LOCAL_NAV = [
 ];
 
 /**
- * template(title, content, opts) con la marca CAUDAL y la nav local fija.
+ * template(title, content, opts) con la marca delta y la nav local fija.
  */
 export function template(pageTitle, content, opts = {}) {
   return uiTemplate(pageTitle, content, {
     uiId: 'arg-console',
-    brand: defaultShellBrand('CAUDAL · arg-console'),
+    brand: defaultShellBrand('delta · arg-console'),
     localNavEntries: LOCAL_NAV,
     theme: 'Dark-MCP',
     themes: [],

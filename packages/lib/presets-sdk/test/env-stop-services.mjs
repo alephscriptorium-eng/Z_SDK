@@ -97,7 +97,7 @@ test('resolveStopServicePorts rejects unknown service', () => {
   assert.throws(() => resolveStopServicePorts('unknown-service'), /Unknown Zeus stop service/);
 });
 
-test('los servicios de CAUDAL se resuelven a sus puertos', () => {
+test('los servicios de delta se resuelven a sus puertos', () => {
   resetZeusEnvLoader();
   const prev = { console: process.env.ZEUS_PORT_ARG_CONSOLE, uno: process.env.ZEUS_MCP_ARG_UNO, dos: process.env.ZEUS_MCP_ARG_DOS };
   try {

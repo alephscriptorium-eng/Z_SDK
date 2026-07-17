@@ -1,5 +1,5 @@
 /**
- * Portal — galería de vistas de CAUDAL (una tarjeta por vista registrada,
+ * Portal — galería de vistas de delta (una tarjeta por vista registrada,
  * enlazando a /views/:id). Mismo patrón que el portal del 3d-monitor.
  */
 
@@ -23,7 +23,7 @@ export function portalView(ctx) {
   );
 
   const content = section({ class: 'portal-page' },
-    h1({ class: 'portal-title' }, '🌊 CAUDAL · portal de vistas del delta'),
+    h1({ class: 'portal-title' }, '🌊 delta · portal de vistas'),
     p({ class: 'portal-sub' },
       'Room ',
       span({ class: 'portal-room' }, ctx.viewerConfig.room),
@@ -32,7 +32,7 @@ export function portalView(ctx) {
     div({ class: 'portal-grid' }, ...cards)
   );
 
-  return template('CAUDAL', content, {
+  return template('delta', content, {
     currentPage: 'portal',
     styles: ['/assets/css/viewer.css']
   });

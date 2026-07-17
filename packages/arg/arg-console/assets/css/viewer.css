@@ -1,4 +1,4 @@
-/* CAUDAL · arg-console — derivado del viewer.css del 3d-monitor + overlays
+/* delta · arg-console — derivado del viewer.css del 3d-monitor + overlays
    propios (menú de contacto, panel de cloak, franja de tracking): estética
    wireframe/terminal, fondos #0a0a12ee, bordes 1px cian/ámbar, monospace. */
 
@@ -204,7 +204,7 @@ body:has(.viewer-page) .main-footer {
   color: #d7fbe6;
 }
 
-/* ---- ventanitas CAUDAL (panel.mjs · WP-24, estética terminal) ---- */
+/* ---- ventanitas delta (panel.mjs · WP-24, estética terminal) ---- */
 
 .arg-panel {
   position: absolute;
@@ -321,7 +321,7 @@ body:has(.viewer-page) .main-footer {
   margin: 8px 0 0;
 }
 
-/* ---- inspector de caudal y cantera (WP-25) ---- */
+/* ---- inspector de flujo y cantera (WP-25) ---- */
 
 .insp-kv {
   display: flex;

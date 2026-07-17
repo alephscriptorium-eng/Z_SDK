@@ -1,4 +1,4 @@
-# CAUDAL — ARG del delta (packages/arg/\*)
+# delta — ARG (packages/arg/\*)
 
 Juego multijugador three.js sobre el runtime Scriptorium: el tablero son los
 volúmenes de datos (firehose + wikicache) y jugar los hace crecer. Derivado

@@ -1,6 +1,6 @@
 # @zeus/arg-domain
 
-CAUDAL — dominio puro del ARG del delta. Sin three, sin red (mismo espíritu
+delta — dominio puro del ARG. Sin three, sin red (mismo espíritu
 que `@zeus/game-engine`, del que reutiliza `sampleLink`/`linkDistance`).
 
 - `src/contract.mjs` — eventos (`arg:state|intent|track|ledger`), constantes,

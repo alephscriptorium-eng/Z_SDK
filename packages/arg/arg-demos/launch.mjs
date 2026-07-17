@@ -1,5 +1,5 @@
 /**
- * Demo CAUDAL: socket-server + cache/firehose browsers + autoridad +
+ * Demo delta: socket-server + cache/firehose browsers + autoridad +
  * arg-console. Abre 5 ventanas del juego (tablero, 2 jugadores, cache, firehose).
  * Patrón heredado de game-demos/launch.mjs.
  */
@@ -112,7 +112,7 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
 
 console.log('');
 console.log('┌────────────────────────────────────────────┐');
-console.log('│  🌊 CAUDAL · demo 3 visores · @zeus/arg    │');
+console.log('│  🌊 delta · demo 3 visores · @zeus/arg     │');
 console.log('└────────────────────────────────────────────┘');
 console.log('');
 
@@ -198,7 +198,7 @@ setTimeout(async () => {
   ];
 
   console.log('');
-  console.log('[launch] ── visores CAUDAL (5 ventanas) ───────────────');
+  console.log('[launch] ── visores delta (5 ventanas) ────────────────');
   for (const { label, url } of viewers) {
     console.log(`[launch]   ${label} → ${url}`);
   }

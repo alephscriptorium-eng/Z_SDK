@@ -1,6 +1,6 @@
 # @zeus/arg-demos
 
-La **Autoridad** de CAUDAL y el launcher de la demo de 3 visores.
+La **Autoridad** de delta y el launcher de la demo de 3 visores.
 
 - `apps/authority/` — único proceso que muta el dominio (gate G-ARG.1):
   recibe `arg:intent` de la room, aplica el reducer de `@zeus/arg-domain` y
