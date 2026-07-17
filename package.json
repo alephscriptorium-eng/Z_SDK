@@ -76,6 +76,8 @@
     "docs:build": "npm run spec:generate:all && npm run spec:redoc && npm run spec:asyncapi:html && vitepress build docs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "gates": "node scripts/gates/run.mjs",
+    "test:gates": "node --test test/gates/*.test.mjs",
     "format": "prettier --write .",
     "seed:aleph": "node scripts/seed-aleph-presets.mjs",
     "stop:services": "node scripts/stop-services.mjs",
