@@ -20,7 +20,14 @@
     "role": "lib"
   },
   "dependencies": {
-    "@zeus/game-engine": "*",
+    "@zeus/game-engine": "0.1.0",
     "three": "^0.170.0"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
 }

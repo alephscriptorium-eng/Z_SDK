@@ -21,3 +21,6 @@ plan/recursos/*
 
 # Worktrees locales del swarm (lote paralelo)
 .worktrees/
+
+# WP-U50 release:dry tarballs (local only; never publish from here)
+.release-dry/

@@ -35,8 +35,8 @@
     }
   },
   "dependencies": {
-    "@zeus/http-contract": "*",
-    "@zeus/ui-kit": "*",
+    "@zeus/http-contract": "0.1.0",
+    "@zeus/ui-kit": "0.1.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "archiver": "^7.0.1",
     "cors": "^2.8.6",
@@ -45,5 +45,12 @@
     "swagger-ui-dist": "^5.29.0",
     "yaml": "^2.8.0",
     "zod": "^4.4.3"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
 }

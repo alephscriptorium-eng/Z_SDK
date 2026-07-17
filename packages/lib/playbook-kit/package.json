@@ -19,6 +19,14 @@
     "role": "lib"
   },
   "dependencies": {
-    "@zeus/presets-sdk": "*"
-  }
+    "@zeus/presets-sdk": "0.1.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "bin",
+    "README.md"
+  ]
 }
