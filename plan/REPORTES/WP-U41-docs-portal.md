@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok 4.5) |
 | fecha | 2026-07-17 |
 | rama | `wp/u41-docs-portal` |
-| commit(s) | `fd0fc8f` docs(portal) · (reporte en HEAD) |
+| commit(s) | `fd0fc8f` docs(portal) · `ae982df` docs(reportes) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 
