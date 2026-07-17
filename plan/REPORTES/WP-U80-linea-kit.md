@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-17 |
 | rama | `wp/u80-linea-kit` |
-| commit(s) | _(hashes tras commits)_ |
+| commit(s) | `9560c30`, `55213d1`, `609c65a`, `ca5f9f0` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
