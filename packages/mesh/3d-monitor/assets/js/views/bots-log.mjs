@@ -152,9 +152,8 @@ function main() {
   });
 
   room.onAny((event, payload) => {
-    // SET_STATE is handled by onState; the runtime re-broadcasts the same
-    // snapshot as `session:state`, so skip both to avoid double entries.
-    if (event === 'SET_STATE' || event === 'session:state') return;
+    // `state` / `arg:state` handled by onState; skip SET_STATE residuals.
+    if (event === 'state' || event === 'arg:state' || event === 'SET_STATE') return;
     record(event, payload);
   });
 

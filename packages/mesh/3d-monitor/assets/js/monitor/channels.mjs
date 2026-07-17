@@ -50,7 +50,7 @@ export const KNOWN_ROLES = Object.keys(ROLE_STYLES);
  */
 export function classifyRole(event, payload) {
   const name = String(event || '');
-  if (name === 'SET_STATE' || name === 'session:state') return 'master';
+  if (name === 'SET_STATE' || name === 'state' || name === 'arg:state') return 'master';
   if (name === 'RABBIT') return 'rabbit';
   if (name === 'SPIDER') return 'spider';
   if (name === 'HORSE' || name.startsWith('HORSE_') || name.startsWith('HORSE.')) return 'horse';
