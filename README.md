@@ -48,8 +48,15 @@ npm run docs:build
 ```
 
 En GitHub (`alephscriptorium-eng/Z_SDK`), Actions corre `npm ci` + lint + gates
-+ matriz de tests en cada PR y pushes a `main` / `wp/*`
-(sin publish; release es WP-U53).
++ matriz de tests en cada PR y pushes a `main` / `wp/*`. En `main`, el
+workflow **Release** (changesets) solo publica tras quality+test verdes y si
+existe el secret `NPM_TOKEN` (registry `@zeus`). Local, sin publish:
+
+```bash
+npx changeset                 # obligatorio si tocas engine publicable
+npm run release:changeset-dry # bump + changelog + pack, luego restaura
+npm run release:dry           # solo npm pack + verify tarballs
+```
 
 ## Licencia
 
