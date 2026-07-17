@@ -1,13 +1,10 @@
 # @zeus/3d-monitor
 
 **Portal de vistas 3D** (:3019) sobre el runtime del scriptorium — misma armazón
-que [`@zeus/player-3d-ui`](../../app/player-3d-ui) (Express, server-rendered,
+que [`@zeus/player-3d-ui`](../player-3d-ui) (Express, server-rendered,
 sin bundler, kit + three vendorizados por import map), pero ya **no es una
-vista**: es un **portal de vistas** construido sobre un **view kit** reutilizable.
-
-> Antes se llamaba `@zeus/player-debug-3d-ui` y vivía en `packages/app/`;
-> ahora está en `packages/mesh/3d-monitor`.
-> ahora vive en `packages/mesh/3d-monitor`.
+vista**: es un **portal de vistas** construido sobre un **view kit** reutilizable
+en `packages/mesh/3d-monitor`.
 
 ## Vistas
 

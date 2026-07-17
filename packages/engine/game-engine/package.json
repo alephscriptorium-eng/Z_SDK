@@ -1,7 +1,7 @@
 {
   "name": "@zeus/game-engine",
   "version": "0.1.0",
-  "description": "Pure-logic gamemap engine + scenes + Alephillo/gamething specs — canonical source of truth for the ARG (absorbed from gea-sdk/packages/game, block-11 GA-B). Browser-safe src/, served raw via express.static + import maps.",
+  "description": "Pure-logic gamemap engine + scenes + Alephillo/gamething specs. Browser-safe src/, served raw via express.static + import maps. Game-agnostic (D-8): consumers supply scenes/content.",
   "type": "module",
   "main": "src/index.mjs",
   "exports": {
