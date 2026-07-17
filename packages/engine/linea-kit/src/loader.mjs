@@ -24,6 +24,14 @@ export {
   validateNodoSectionMappings
 } from './resolve.mjs';
 
+export {
+  classifyPairsWith,
+  loadForcesData,
+  buildForcesRegistryView,
+  resolveForce,
+  resolveForceScene
+} from './forces-loader.mjs';
+
 /**
  * @param {string} satDir
  * @returns {string}

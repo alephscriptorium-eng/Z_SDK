@@ -14,8 +14,10 @@ test('RESOURCE_PAYLOADS covers expected URIs', () => {
   assert.ok(RESOURCE_PAYLOADS.has('linea://registros/year/{year}'));
   assert.ok(RESOURCE_PAYLOADS.has('firehose://stats'));
   assert.ok(RESOURCE_PAYLOADS.has('body://info'));
+  assert.ok(RESOURCE_PAYLOADS.has('force://registry'));
+  assert.ok(RESOURCE_PAYLOADS.has('force://{id}/scene/{session}/{slug}'));
   assert.ok(RESOURCE_PAYLOADS.has('server://card'));
-  assert.ok(RESOURCE_PAYLOADS.size >= 17);
+  assert.ok(RESOURCE_PAYLOADS.size >= 21);
 });
 
 test('mcp-resources.md is in sync (in-memory)', () => {

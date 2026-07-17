@@ -43,9 +43,9 @@ describe('schemas + fixtures', () => {
 
   it('validates fixture force/cota family', () => {
     assert.equal(validateFile('force-registry', path.join(forcesFx, 'registry.json')).ok, true);
-    assert.equal(validateFile('force', path.join(forcesFx, 'force-sample/force.json')).ok, true);
+    assert.equal(validateFile('force', path.join(forcesFx, 'forces/force-sample/force.json')).ok, true);
     assert.equal(
-      validateFile('force-manifest', path.join(forcesFx, 'force-sample/manifest.json')).ok,
+      validateFile('force-manifest', path.join(forcesFx, 'forces/force-sample/manifest.json')).ok,
       true
     );
     assert.equal(validateFile('cota', path.join(forcesFx, 'cotas/sima/cota.json')).ok, true);

@@ -14,7 +14,7 @@ El contrato de entrada al mesh es el **validador**; las tools son cortesía.
 | `@zeus/linea-kit/curation` | browser-safe | enum / `normalizeCurationStatus` |
 | `@zeus/linea-kit/resolve` | browser-safe | `resolveNodo`, `resolveOldid`, … |
 | `@zeus/linea-kit/validate` | node | Ajv + schemas en disco + `validateVolumesTree` |
-| `@zeus/linea-kit/loader` | node | `loadLineaData`, `readWikitext`, `readRegistro`, … |
+| `@zeus/linea-kit/loader` | node | `loadLineaData`, `loadForcesData`, `readWikitext`, … |
 | `@zeus/linea-kit/tools` | node | `crear-linea`, `segmentar`, `conectar-satelite`, `fetch`, `segmentar-force`, `crear-cotas` |
 | `@zeus/linea-kit/starterkits` | node | `createLineaJuguete`, `createForceJuguete` |
 | `@zeus/linea-kit/schemas/*` | — | JSON Schema files |

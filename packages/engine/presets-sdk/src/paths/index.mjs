@@ -26,3 +26,9 @@ export {
   MEDIDOR_ETIQUETADOS_REL,
   resolveMedidorCasosPath
 } from './lineas.mjs';
+export {
+  FORCES_VOLUME_ID,
+  resolveForcesBasePath,
+  resolveForcesVolumeRoot,
+  resolveForcesVolumePath
+} from './forces.mjs';
