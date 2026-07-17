@@ -301,6 +301,9 @@ Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup)
   cleanup
 - operator-ui / player-3d stubs (`local-projection`) → **WP-U32**
 - `package-lock.json` entradas `extraneous` de session-*/tablero-core (ghost npm)
+- OpenAPI CRLF flake en `test:player-ui` (Windows): `spec-sync` compara
+  bytes; committed vs gen idénticos normalizando `\r\n`→`\n`. **No mezclar
+  con U32** — WP cleanup / http-contract aparte
 
 - ✅ **WP-U31 · player-ui = vista manipuladora** *(dep U30, U11)* — aceptado
   (orquestador / 2026-07-17) — player-ui
@@ -316,7 +319,8 @@ Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup)
   `tablero-core`: lo que sea dominio vivo se absorbe (a `games/delta` o
   `engine/protocol`), el resto se borra. Cero re-exports de compatibilidad.
 
-- ⬜ **WP-U32 · operator-ui = visor de operador** *(dep U31)* —
+- 🔶 **WP-U32 · operator-ui = visor de operador** *(dep U31)* — en curso
+  (ola-3 / orquestador / 2026-07-17) —
   `operator-bridge` se recablea del protocolo sesión al contrato único
   (proyección de slice de `state`); sus emisiones se vuelven intents con rol
   `operator`. operator-ui (Angular) consume el bridge nuevo.
