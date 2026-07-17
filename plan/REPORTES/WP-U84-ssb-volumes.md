@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u84-ssb-volumes` |
-| commit(s) | `8c95d7b`, `d4d618e`, `0befe18` |
+| commit(s) | `8c95d7b`, `d4d618e`, `ec57d86` (+ docs hash fixes) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
