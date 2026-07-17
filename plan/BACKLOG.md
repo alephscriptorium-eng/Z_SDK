@@ -319,8 +319,8 @@ Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup)
   `tablero-core`: lo que sea dominio vivo se absorbe (a `games/delta` o
   `engine/protocol`), el resto se borra. Cero re-exports de compatibilidad.
 
-- 🔶 **WP-U32 · operator-ui = visor de operador** *(dep U31)* — en curso
-  (ola-3 / orquestador / 2026-07-17) —
+- ✅ **WP-U32 · operator-ui = visor de operador** *(dep U31)* — aceptado
+  (orquestador / 2026-07-17) —
   `operator-bridge` se recablea del protocolo sesión al contrato único
   (proyección de slice de `state`); sus emisiones se vuelven intents con rol
   `operator`. operator-ui (Angular) consume el bridge nuevo.
