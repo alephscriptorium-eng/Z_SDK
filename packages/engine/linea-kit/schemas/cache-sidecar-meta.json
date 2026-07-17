@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/cache-sidecar-meta.json",
+  "title": "CacheSidecarMeta",
+  "description": "cache/snapshots/<oldid>.meta.json provenance sidecar (DATOS.md §2)",
+  "type": "object",
+  "required": ["oldid"],
+  "additionalProperties": true,
+  "properties": {
+    "oldid": { "type": "integer", "minimum": 0 },
+    "parent_oldid": { "type": ["integer", "null"] },
+    "title": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "user": { "type": "string" },
+    "bytes": { "type": "integer" },
+    "source_url": { "type": "string" },
+    "fetched_at": { "type": "string" }
+  }
+}

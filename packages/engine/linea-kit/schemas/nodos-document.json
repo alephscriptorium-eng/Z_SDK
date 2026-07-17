@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/nodos-document.json",
+  "title": "NodosDocument",
+  "description": "nodos.yaml parsed — human trunk input (DATOS.md §2)",
+  "type": "object",
+  "required": ["partes"],
+  "additionalProperties": true,
+  "properties": {
+    "version": { "type": "string" },
+    "corpus": { "type": "string" },
+    "autor_tronco": { "type": "string" },
+    "referencia_wp_cima": { "type": "string" },
+    "nodos": {
+      "description": "Optional detailed nodo list (alongside partes[].nodos id refs)",
+      "oneOf": [
+        { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        { "type": "object", "additionalProperties": true }
+      ]
+    },
+    "partes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "nodos"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "titulo": { "type": "string" },
+          "año_ini": { "type": ["integer", "number"] },
+          "año_fin": { "type": ["integer", "number", "null"] },
+          "nodos": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "type": "string" },
+                {
+                  "type": "object",
+                  "required": ["id"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "id": { "type": "string" },
+                    "años": { "type": "string" },
+                    "etiqueta": { "type": "string" },
+                    "tesis": { "type": "string" },
+                    "articulos_wp": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

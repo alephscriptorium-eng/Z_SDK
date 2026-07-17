@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/manifest-tronco.json",
+  "title": "ManifestTronco",
+  "description": "Trunk line manifest.json (DATOS.md §2)",
+  "type": "object",
+  "required": ["meta", "nodos"],
+  "additionalProperties": true,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["corpus"],
+      "additionalProperties": true,
+      "properties": {
+        "corpus": { "type": "string" },
+        "version": { "type": "string" },
+        "generated_at": { "type": "string" },
+        "source": { "type": "string" },
+        "autor_tronco": { "type": "string" },
+        "referencia_wp_cima": { "type": "string" },
+        "nodo_count": { "type": "integer", "minimum": 0 },
+        "partes": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "satelite_wp": { "type": "string" },
+        "links": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "nodos": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "paths": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "urls": { "type": "object", "additionalProperties": true }
+        }
+      }
+    }
+  }
+}

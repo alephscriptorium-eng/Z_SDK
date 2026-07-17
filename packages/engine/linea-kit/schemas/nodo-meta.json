@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/nodo-meta.json",
+  "title": "NodoMeta",
+  "description": "nodos/<id>/meta.json — one trunk node (DATOS.md §2)",
+  "type": "object",
+  "required": ["id", "año_ini"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "parte": { "type": "string" },
+    "año_ini": { "type": ["integer", "number"] },
+    "año_fin": { "type": ["integer", "number", "null"] },
+    "etiqueta": { "type": "string" },
+    "tesis": { "type": "string" },
+    "tesis_villacañas": { "type": "string" },
+    "articulos_wp": { "type": "array", "items": { "type": "string" } },
+    "años_display": { "type": "string" },
+    "urls": { "type": "object", "additionalProperties": true }
+  }
+}

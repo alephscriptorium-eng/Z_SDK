@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/force-registry.json",
+  "title": "ForceRegistry",
+  "description": "FORCES/registry.json — session_budget, exclusions, forces[], cotas[] (DATOS.md §8)",
+  "type": "object",
+  "required": ["registry", "activation", "forces", "cotas"],
+  "additionalProperties": true,
+  "properties": {
+    "registry": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "imported_at": { "type": "string" },
+    "boot": { "type": "string" },
+    "activation": {
+      "type": "object",
+      "required": ["session_budget"],
+      "additionalProperties": true,
+      "properties": {
+        "session_budget": {
+          "type": "object",
+          "required": ["max_active_forces"],
+          "additionalProperties": true,
+          "properties": {
+            "max_active_forces": { "type": "integer", "minimum": 0 },
+            "boot_always_on": { "type": "boolean" }
+          }
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pair"],
+            "additionalProperties": true,
+            "properties": {
+              "pair": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "type": "string" }
+              },
+              "reason": { "type": "string" }
+            }
+          }
+        },
+        "cotas": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "properties": {
+            "lower": { "type": "string" },
+            "upper": { "type": "string" }
+          }
+        }
+      }
+    },
+    "forces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "path"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "type": "string", "enum": ["force", "boot"] },
+          "type": { "type": "string" },
+          "viewpoint": { "type": "string" },
+          "anchor_scene": { "type": "string" },
+          "triggers": { "type": "array", "items": { "type": "string" } },
+          "pairs_with": { "type": "array", "items": { "type": "string" } },
+          "scene_count": { "type": "integer", "minimum": 0 },
+          "path": { "type": "string" }
+        }
+      }
+    },
+    "cotas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "bound", "path"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "const": "cota" },
+          "bound": { "type": "string", "enum": ["lower", "upper"] },
+          "pole": { "type": "string" },
+          "path": { "type": "string" },
+          "scene_count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

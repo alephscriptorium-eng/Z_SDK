@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/force-manifest.json",
+  "title": "ForceManifest",
+  "description": "Scene corpus manifest for a force or cota (DATOS.md §8). Coverage via scene files prompt/think/output.",
+  "type": "object",
+  "required": ["id", "scenes"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "type": "string", "enum": ["force", "boot", "cota"] },
+    "description": { "type": "string" },
+    "anchor_scene": { "type": "string" },
+    "scene_count": { "type": "integer", "minimum": 0 },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "files"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "session": { "type": "string" },
+          "slug": { "type": "string" },
+          "title": { "type": "string" },
+          "rol": { "type": "array", "items": { "type": "string" } },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "files": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": { "type": ["string", "null"] },
+            "properties": {
+              "prompt": { "type": ["string", "null"] },
+              "think": { "type": ["string", "null"] },
+              "output": { "type": ["string", "null"] }
+            },
+            "description": "Scene layers prompt/think/output; live corpora may omit a layer (anomaly)."
+          },
+          "anomalies": { "type": "array", "items": { "type": "string" } },
+          "source": { "type": "object", "additionalProperties": true }
+        }
+      }
+    }
+  }
+}

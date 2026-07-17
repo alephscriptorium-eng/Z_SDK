@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/cota.json",
+  "title": "Cota",
+  "description": "cota.json — bound corpus with rol sima|cima (DATOS.md §8 / D-19)",
+  "type": "object",
+  "required": ["id", "kind", "bound"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "kind": { "const": "cota" },
+    "bound": { "type": "string", "enum": ["lower", "upper"] },
+    "pole": { "type": "string", "enum": ["colapso", "victoria"] },
+    "viewpoint": { "type": "string" },
+    "lore": { "type": ["string", "null"] },
+    "anchor_scene": { "type": "string" },
+    "triggers": { "type": "array", "items": { "type": "string" } },
+    "pairs_with": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(force|cota|boot|linea):.+"
+      }
+    },
+    "scene_count": { "type": "integer", "minimum": 0 },
+    "notes": { "type": ["string", "null"] },
+    "provenance": { "type": "object", "additionalProperties": true }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/ontology-seeds.json",
+  "title": "OntologySeeds",
+  "description": "ontology-seeds.json — section edit_count seeds (DATOS.md §2)",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "version": { "type": "string" },
+    "sections": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "array",
+            "minItems": 2,
+            "prefixItems": [{ "type": "string" }, { "type": "number" }],
+            "items": false
+          },
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "section": { "type": "string" },
+              "edit_count": { "type": "number" },
+              "viaje": { "type": "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/curation-status.json",
+  "title": "CurationStatus",
+  "description": "Unified curation chain (DATOS.md §2). Aliases: delta_status, editorialStatus, firehose corpus folders.",
+  "type": "string",
+  "enum": [
+    "raw",
+    "candidate",
+    "pending",
+    "draft",
+    "triaged",
+    "labeled",
+    "curated",
+    "canon",
+    "rumor",
+    "proposal",
+    "discarded"
+  ]
+}

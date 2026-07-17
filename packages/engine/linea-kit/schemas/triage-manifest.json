@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/triage-manifest.json",
+  "title": "TriageManifest",
+  "description": "Firehose triage-manifest.json (DISK_01) — corpus folders align with curation chain",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "timestamp": { "type": "string" },
+    "source": { "type": "string" },
+    "strategy": { "type": "string" },
+    "criteria": { "type": "object", "additionalProperties": true },
+    "counts": { "type": "object", "additionalProperties": true },
+    "corpora": { "type": "object", "additionalProperties": true }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/lineas-registry.json",
+  "title": "LineasRegistry",
+  "description": "registry.yaml parsed as JSON — multi-line catalogue (DATOS.md §2)",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["id", "path"],
+    "additionalProperties": true,
+    "properties": {
+      "id": { "type": "string", "minLength": 1 },
+      "path": { "type": "string", "minLength": 1 },
+      "etiqueta": { "type": "string" },
+      "autor_tronco": { "type": "string" },
+      "nodo_prefix": { "type": "string" },
+      "nodo_count": { "type": "integer", "minimum": 0 },
+      "referencia_wp_cima": { "type": "string" },
+      "medidor_linea_ref": { "type": "string" }
+    }
+  }
+}

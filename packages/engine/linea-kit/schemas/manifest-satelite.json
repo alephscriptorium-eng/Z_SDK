@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/manifest-satelite.json",
+  "title": "ManifestSatelite",
+  "description": "Satellite/historial manifest.json — central line format (DATOS.md §2)",
+  "type": "object",
+  "required": ["meta", "registros"],
+  "additionalProperties": true,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["corpus"],
+      "additionalProperties": true,
+      "properties": {
+        "corpus": { "type": "string" },
+        "title": { "type": "string" },
+        "source": { "type": "string" },
+        "generated_at": { "type": "string" },
+        "registro_count": { "type": "integer", "minimum": 0 },
+        "ordering": { "type": "string" },
+        "snapshots": { "type": "object", "additionalProperties": true },
+        "ontology_sections": { "type": "array" },
+        "milestones": {
+          "type": "array",
+          "items": { "type": ["string", "object"] }
+        },
+        "preamble": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "registros": {
+      "type": "array",
+      "items": { "$ref": "registro.json" }
+    }
+  }
+}

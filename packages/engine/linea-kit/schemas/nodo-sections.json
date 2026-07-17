@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/nodo-sections.json",
+  "title": "NodoSections",
+  "description": "nodo-sections.json — trunk↔satellite section bridge (DATOS.md §2)",
+  "type": "object",
+  "required": ["nodos"],
+  "additionalProperties": true,
+  "properties": {
+    "version": { "type": "string" },
+    "linea_id": { "type": "string" },
+    "description": { "type": "string" },
+    "nodos": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["sections"],
+        "additionalProperties": true,
+        "properties": {
+          "sections": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}
