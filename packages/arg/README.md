@@ -1,23 +1,25 @@
-# delta — ARG (packages/arg/\*)
+# delta — ARG (`packages/arg/*`)
 
-Juego multijugador three.js sobre el runtime Scriptorium: el tablero son los
-volúmenes de datos (firehose + wikicache) y jugar los hace crecer. Derivado
-evolucionado del `3d-monitor`, autocontenido en esta familia de paquetes.
+Juego multijugador three.js sobre el runtime Zeus (rooms + contrato único):
+el tablero son los volúmenes de datos (firehose + wikicache) y jugar los hace
+crecer. Dominio puro + autoridad (`@zeus/authority-kit`) + vistas + MCP por
+actor. Derivado evolucionado del `3d-monitor`, autocontenido en esta familia.
 
 | paquete | qué es |
 | ------- | ------ |
-| [`arg-domain`](arg-domain/) | dominio puro: contrato, escena `delta-v0`, flow-engine (grifos/ríos/mar), maze-engine (cantera), reducers, feeds |
+| [`arg-domain`](arg-domain/) | dominio puro: capa delta sobre `@zeus/protocol`, escena `delta-v0`, flow/maze engines, reducers, feeds sintéticos |
 | [`arg-feeds`](arg-feeds/) | feeds node-only (sintético / real) |
-| [`arg-console`](arg-console/) | portal de vistas :3021 — `tablero` (overview global) y `jugador` (vista encarnada con input) |
-| [`arg-player-mcp`](arg-player-mcp/) | MCP por actor sobre `@zeus/player-mcp-kit` (uno/dos) |
-| [`arg-demos`](arg-demos/) | autoridad del juego (10 Hz) + launcher de la demo de 3 visores |
+| [`arg-console`](arg-console/) | portal de vistas — `tablero` (overview) y `jugador` (vista encarnada) |
+| [`arg-player-mcp`](arg-player-mcp/) | MCP por actor sobre `@zeus/player-mcp-kit` |
+| [`arg-demos`](arg-demos/) | autoridad del juego (10 Hz vía authority-kit) + launcher de la demo de 3 visores |
 
 ## Dosier
 
 - [spec/LORE.md](spec/LORE.md) — concepto, las dos fuerzas (Riada/Cantera), mapping con parlament
-- [spec/CONTRATO.md](spec/CONTRATO.md) — entidades, eventos (`arg:state` / `arg:intent` / `arg:track` / `arg:ledger`), invariantes y gates
+- [spec/CONTRATO.md](spec/CONTRATO.md) — entidades, wire `arg:*`, invariantes y gates
 - [spec/UX.md](spec/UX.md) — sistema de juego, controles, menú de cloak MCP, las dos vistas
-- [spec/BACKLOG.md](spec/BACKLOG.md) — work packages para el swarm (fase 0 = vertical slice)
+- [spec/CASOS.md](spec/CASOS.md) — playbook de validación (método CASOS / `@zeus/playbook-kit`)
+- [spec/BACKLOG.md](spec/BACKLOG.md) — work packages del juego (features delta; distinto del backlog de refundación del SDK)
 
 ## Demo rápida (3 visores)
 
@@ -31,8 +33,11 @@ npm run demo:arg
 Controles jugador: `WASD` mover · `E` montar/bajar del río · `1..3` etiquetar
 gota · `Espacio` contacto · `Q` inventario · `X` emote.
 
+No abre navegador salvo `ZEUS_OPEN_BROWSER=1`.
+
 ## Disciplina
 
-Una sola autoridad (`arg-demos/apps/authority`); las vistas solo emiten
-intents y proyectan snapshots (gates G-ARG.1..5 del contrato). Transporte:
-socket-server :3017, room `ARG_DELTA`.
+Una sola autoridad (`arg-demos` + `@zeus/authority-kit`); las vistas solo
+emiten intents y proyectan snapshots (gates G-ARG.1..5). Transporte:
+socket-server, room del juego (`ARG_DELTA` / env). Segundo juego de referencia
+del SDK: **pozo** (`npm run demo:pozo`) — el engine no nombra a ninguno (D-8).

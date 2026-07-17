@@ -1,46 +1,54 @@
 # ZEUS SDK
 
-**Scriptorium Animus Iocandi** — bundle transmedia de herramientas y recursos para un juego ARG: una **sesión colaborativa** cuyo estado es la única verdad compartida, un **DJ** que pincha materiales y ontología sobre ella, **bots federados** que entran por canales MCP peer-to-peer, y toda UI como una **escena** que consume su slice del snapshot.
+**Scriptorium Animus Iocandi** — monorepo para **crear juegos**: contrato único
+(`state` / `intent` / `track` / `ledger`), autoridad por room, UIs como vistas
+que emiten intents, bots MCP por actor, y validación con playbook CASOS.
+
+Dos juegos de referencia (**delta** y **pozo**) demuestran que el engine sirve
+a ambos (D-8). Layout objetivo: **engine · editor · mesh · games** (move físico
+en WP-U51).
 
 ![](./SCRIPTORIUM_SKINS.png)
 
-## Qué hay dentro
+## Mapa (hoy → objetivo)
 
-| Capa | Piezas | Puertos |
-|---|---|---|
-| **Transporte** | `socket-server` (rooms Socket.IO `/runtime`), `@zeus/rooms`, `@zeus/room-client-browser` | 3017 |
-| **Sesión y dominio** | `player-ui` (vista DJ sobre room del juego), `@zeus/arg-domain`, `@zeus/protocol`, `@zeus/authority-kit` | 3013 |
-| **Escenas** | `player-3d-ui` (visor de sesión), `3d-monitor` (portal de vistas de room), `operator-ui` (shell Angular tier-2), `editor-ui`, `cache-browser`, `firehose-browser` | 3018 / 3019 / 3020 / 3012 / 3015 / 3016 |
-| **3D** | `@zeus/ui-3d-kit` (vanilla ESM, import maps), `@zeus/game-engine` (motor lógico puro) | — |
-| **Canales MCP** | rabbit/spider/horse sobre rooms (`@alephscript/mcp-core-sdk`), proyección RouteEntry→MCP en `@zeus/http-contract`, presets curados (`@zeus/presets-sdk`) | — |
-| **MCP servers** | solar (demo), lineas (corpus), firehose (disk), console-monitor | 4101–4103 / 4111–4112 / 3008 / 3014 |
+| Capa | Hoy | Piezas |
+| ---- | --- | ------ |
+| **Engine** | `packages/lib/*` | `protocol`, `authority-kit`, `player-mcp-kit`, `playbook-kit`, `view-kit`, `http-contract`, `rooms`, `presets-sdk`, `game-engine`, `ui-*-kit`… |
+| **Editor** | `packages/app/editor-ui` | crear presets / camino a gamemap |
+| **Mesh** | `packages/app/*`, `platform/*`, `operator-ui` | socket-server, player-ui (DJ), browsers, monitores 3D |
+| **Games** | `packages/arg/*`, `packages/games/pozo` | delta (ARG) · pozo |
 
 ## Arranque rápido
 
 ```bash
 npm install
 npm run start:socket-server   # transporte de rooms
-npm run start:player               # MASTER de sesión (:3013)
-npm run start:player-3d            # visor 3D (:3018)
+npm run demo:arg              # delta — autoridad + 3 visores
+npm run demo:pozo             # pozo — autoridad + vista + MCP
 ```
 
-VS Code: **V1 Zeus ▸ start all** levanta la plataforma V1 (`packages/platform`). **Start ▸ all** levanta la malla completa. Documentación (guías, manuales por servicio, contratos OpenAPI/AsyncAPI y registro de decisiones):
+Documentación (guías, contratos OpenAPI/AsyncAPI, resources MCP, playbook):
 
 ```bash
-npm run docs:dev                   # portal VitePress en :3230
+npm run docs:dev              # VitePress (puerto vía presets-sdk/env, default :3230)
+npm run docs:build            # specs + Redoc + AsyncAPI HTML + sitio estático
 ```
+
+`ZEUS_OPEN_BROWSER=1` es opt-in; por defecto no abre navegador.
 
 ## Verificación
 
 ```bash
 npm run lint
-npm run gates                      # PRACTICAS §5 (puertos, deps, nombres)
-npm run e2e:deck:room              # gates del transporte de sesión
-npm run verify:dual-ui             # dos UIs, un contrato (G-DUI.*)
+npm run gates                 # PRACTICAS §5 (puertos, deps, nombres)
+npm run test:arg              # familia delta
+npm test -w @zeus/pozo        # segundo juego
+npm run docs:build
 ```
 
 En GitHub (`alephscriptorium-eng/Z_SDK`), Actions corre `npm ci` + lint + gates
-+ matriz de tests de paquetes en cada PR y en pushes a `main` / `wp/*`
++ matriz de tests en cada PR y pushes a `main` / `wp/*`
 (sin publish; release es WP-U53).
 
 ## Licencia

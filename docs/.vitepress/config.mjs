@@ -1,0 +1,91 @@
+import { defineConfig } from 'vitepress';
+
+/**
+ * Zeus SDK docs portal — layout objetivo engine / editor / mesh / games.
+ * El move físico de carpetas es WP-U51; aquí documentamos el mapa conceptual.
+ */
+export default defineConfig({
+  title: 'Zeus SDK',
+  description:
+    'SDK para crear juegos: contrato único, autoridad, MCP por actor, playbook CASOS',
+  lang: 'es',
+  cleanUrls: true,
+  ignoreDeadLinks: false,
+  themeConfig: {
+    nav: [
+      { text: 'Inicio', link: '/' },
+      { text: 'Guía', link: '/guide/getting-started' },
+      { text: 'Contratos', link: '/contracts/asyncapi' },
+      { text: 'Playbook', link: '/playbook/' },
+      {
+        text: 'API HTML',
+        items: [
+          { text: 'AsyncAPI (protocol)', link: '/api/protocol/' },
+          { text: 'OpenAPI · Editor UI', link: '/api/editor-ui.html' },
+          { text: 'OpenAPI · Player UI', link: '/api/player-ui.html' },
+          { text: 'OpenAPI · Cache Browser', link: '/api/cache-browser.html' },
+          { text: 'OpenAPI · Firehose Browser', link: '/api/firehose-browser.html' },
+          { text: 'OpenAPI · MCP HTTP', link: '/api/mcp-http.html' }
+        ]
+      }
+    ],
+    sidebar: [
+      {
+        text: 'Guía',
+        items: [
+          { text: 'Arranque rápido', link: '/guide/getting-started' },
+          { text: 'Mapa del monorepo', link: '/guide/layout' },
+          { text: 'Dos juegos (D-8)', link: '/guide/two-games' }
+        ]
+      },
+      {
+        text: 'Engine',
+        items: [
+          { text: 'Visión', link: '/engine/' },
+          { text: 'Contrato único', link: '/engine/protocol' },
+          { text: 'Authority kit', link: '/engine/authority-kit' },
+          { text: 'Player MCP kit', link: '/engine/player-mcp-kit' },
+          { text: 'Playbook kit', link: '/engine/playbook-kit' },
+          { text: 'View kit', link: '/engine/view-kit' },
+          { text: 'HTTP contract', link: '/engine/http-contract' },
+          { text: 'Rooms y presets', link: '/engine/rooms-presets' }
+        ]
+      },
+      {
+        text: 'Editor',
+        items: [{ text: 'Mundo A — crear', link: '/editor/' }]
+      },
+      {
+        text: 'Mesh',
+        items: [{ text: 'Mundo B — operar', link: '/mesh/' }]
+      },
+      {
+        text: 'Games',
+        items: [
+          { text: 'Visión', link: '/games/' },
+          { text: 'delta (ARG)', link: '/games/delta' },
+          { text: 'pozo', link: '/games/pozo' }
+        ]
+      },
+      {
+        text: 'Contratos generados',
+        items: [
+          { text: 'AsyncAPI', link: '/contracts/asyncapi' },
+          { text: 'OpenAPI / Redoc', link: '/contracts/openapi' },
+          { text: 'Resources MCP', link: '/contracts/mcp-resources' }
+        ]
+      },
+      {
+        text: 'Método',
+        items: [{ text: 'Playbook CASOS', link: '/playbook/' }]
+      }
+    ],
+    socialLinks: [],
+    outline: { level: [2, 3] },
+    search: { provider: 'local' },
+    footer: {
+      message: 'Animus Iocandi AIPLv1',
+      copyright: 'Scriptorium · Zeus SDK'
+    }
+  }
+});
