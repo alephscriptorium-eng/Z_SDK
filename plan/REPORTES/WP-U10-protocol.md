@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U10) |
 | fecha | 2026-07-17 |
 | rama | `wp/u10-protocol` |
-| commit(s) | `faa76bd` feat(protocol) · `9f87dd2` refactor(arg-domain)! · `3bffbdc` refactor(session-protocol)! · `6ae8bc6` docs(plan) |
+| commit(s) | `faa76bd` feat(protocol) · `9f87dd2` refactor(arg-domain)! · `3bffbdc` refactor(session-protocol)! · `364b749` docs(plan) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 
