@@ -292,7 +292,8 @@ Diferidos del reporte/revisión WP-U30 (no bloquean cierre; van a U31 / cleanup)
   evidencia; casos nuevos redactados en CASOS.md (formato playbook-kit).
   **Demolición:** n/a (es adición al dominio).
 
-- ⬜ **WP-U31 · player-ui = vista manipuladora** *(dep U30, U11)* — player-ui
+- 🔶 **WP-U31 · player-ui = vista manipuladora** *(dep U30, U11)* — en curso
+  (ola-3 / orquestador / 2026-07-17) — player-ui
   deja de ser master de su room: se une a la room del juego como vista con rol
   `dj`, emite los intents de U30 desde sus decks (mismas líneas, misma cache),
   proyecta `state`/`ledger` donde le toque. El estado xstate local se queda
