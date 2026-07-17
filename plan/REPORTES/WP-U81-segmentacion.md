@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u81-segmentacion` |
-| commit(s) | `c59a9ad`, `c786b0d` |
+| commit(s) | `c59a9ad`, `c786b0d`, `164ad89` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
