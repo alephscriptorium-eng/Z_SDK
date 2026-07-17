@@ -136,4 +136,53 @@ Ninguno bloqueante.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: aceptado ✅** — orquestador / 2026-07-17
+
+Autorizado a merge + ✅ BACKLOG en master (paso aparte; **no** hechos en
+esta revisión). Sin push.
+
+### Verificado
+
+- **Base**: master avanzó con `69aedae` (ZEUS_OPEN_BROWSER opt-in) → merge
+  limpio `d5bc24a merge(master): trae ZEUS_OPEN_BROWSER opt-in a
+  wp/u11-authority-kit`. Tras merge, default no abre browser.
+- **Alcance** `master...HEAD` (producto): `@zeus/authority-kit` nuevo,
+  autoridad delta thin wrapper, dep arg-demos, comentario wire en
+  arg-domain/contract, script raíz + lockfile, reporte. Worker **no**
+  editó `plan/BACKLOG.md` ni `packages/arg/spec/BACKLOG.md`. Sin U12/U13.
+- **Commits** convencionales + BREAKING donde toca:
+  `feat(authority-kit)`, `refactor(arg-demos)!`, `docs(plan)`.
+- **CA re-ejecutado** (worktree, tras merge master, 2026-07-17):
+  - `npm test -w @zeus/authority-kit` → 9 pass / 0 fail
+  - `npm run test:arg` → exit 0 (arg-domain 52, arg-feeds, arg-console,
+    arg-player-mcp 21)
+  - `npm run e2e:arg` → exit 0 (sin forzar `ZEUS_OPEN_BROWSER`; opt-in
+    master → no browser). Gates G-ARG-E2E.1–.10 verdes (incl. salvage .9)
+  - `npm run gates` → `gates: OK (0 offenders)`
+- **Demolición**:
+  - `rg setInterval|publishState|publishOutbox|connectAndJoin`
+    en `arg-demos/apps/authority/` → sin coincidencias
+  - `rg delta|pozo|cantera|grifo|caudal` en `authority-kit/src/` → sin
+    coincidencias
+  - Diff negativo app: 125 → 92 líneas (−71/+38 en el archivo)
+- **Peer Card**: no exigida en U11 — documentado en reporte (OK; no
+  bloquea producto / no DECISIONES §abiertas).
+- **PRACTICAS §1.11**: pozo puede consumir el kit tal cual — sí (dominio
+  inyectado; kit sin nombres de juego).
+- Auto-revisión PRACTICAS §3 honesta; evidencia literal coherente con
+  re-CA.
+
+### Hallazgos → cola (no bloquean)
+
+- Vistas aún en `arg:*` solamente; dual-wire ~2× hasta migración vistas
+  (cola U10 / follow-up).
+- Banners e2e residuales «CAUDAL» (cola U02).
+- Puerto e2e aislado 13027 puede quedar huérfano; `stop:services` no lo
+  limpia (nota worker; aviso visto en re-CA, e2e igual verde).
+
+### Merge
+
+- Orden sugerido: U11 y U12 en cualquier orden tras aceptación (no
+  comparten superficie esperada).
+- Tras merge en master: ✅ BACKLOG + `git worktree remove` del worktree
+  U11.
