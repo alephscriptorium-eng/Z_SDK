@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@zeus/arg-domain": "*",
+    "@zeus/linea-kit": "*",
     "@zeus/presets-sdk": "*"
   },
   "devDependencies": {

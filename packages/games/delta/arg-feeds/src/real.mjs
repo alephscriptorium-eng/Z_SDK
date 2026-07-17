@@ -5,6 +5,7 @@
 
 import { resolveMcpApprovalToken } from '@zeus/presets-sdk';
 import { createSyntheticMazeSource } from '@zeus/arg-domain';
+import { curationStatusFromCorpus } from '@zeus/linea-kit/curation';
 import { callToolJson, createArgMcpClients } from './mcp-client.mjs';
 
 const PREFETCH_LOW = 8;
@@ -57,13 +58,15 @@ export function createRealFeeds({
   let dropletIndex = firehoseCursor;
   const buffer = [];
   let fetching = false;
+  const firehoseCorpus = 'raw';
+  const firehoseCurationStatus = curationStatusFromCorpus(firehoseCorpus);
 
   async function refillBuffer() {
     if (fetching || !clients?.firehose) return;
     fetching = true;
     try {
       const data = await callToolJson(clients.firehose, 'firehose_list_posts', {
-        corpus: 'raw',
+        corpus: firehoseCorpus,
         limit: PREFETCH_BATCH,
         offset: listOffset
       });
@@ -72,9 +75,10 @@ export function createRealFeeds({
       for (const post of posts) {
         buffer.push({
           kind: 'micropost',
-          corpus: 'raw',
+          corpus: firehoseCorpus,
+          curation_status: firehoseCurationStatus,
           index: dropletIndex,
-          uri: postUri('raw', post.filePath)
+          uri: postUri(firehoseCorpus, post.filePath)
         });
         dropletIndex += 1;
         listOffset += 1;
