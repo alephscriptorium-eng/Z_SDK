@@ -164,6 +164,12 @@ Diferidos del reporte/revisión WP-U13 (no bloquean cierre; cierra ola 1):
 
 ## Ola 2 — Un solo motor de vistas
 
+### Cola hallazgos ola 2
+
+Diferidos / laterales (no bloquean U20–U22; A-05 no bloquea U23):
+- A-05: simetría dual-wire / transporte desnudo|envuelto+dedup en
+  arg-console, 3d-monitor, player-mcp-kit (lateral; no bloquear U23)
+
 - 🔶 **WP-U20 · `@zeus/view-kit`** — en curso (ola-2 / orquestador / 2026-07-17) — extraer el kit de navegador de
   `arg-console/assets/js/kit/` (~4.600 LOC: escena, ventanitas/panel, HUD,
   inspector raycast, stick-puppet, droplets, deep-links honestos) a paquete
@@ -188,6 +194,17 @@ Diferidos del reporte/revisión WP-U13 (no bloquean cierre; cierra ola 1):
   negativo neto.
   **Demolición:** el view-kit ancestro duplicado en 3d-monitor (de donde nació
   el de arg-console — el círculo se cierra).
+
+- ⬜ **WP-U24 · authority-kit fuerza envelope `game`** *(dep U11; gate pre-U23)* —
+  Cerrar A-02: `startAuthority` exige `game` (string no vacío) y publica
+  `state|track|ledger` vía `makeEnvelope` de `@zeus/protocol` (hoy el kit
+  no cablea `makeEnvelope` en producción; payloads salen sin `game`).
+  Intent ya va tipado; objetivo 4/4 kinds con `game`.
+  **CA:** tests del kit asertan `payload.game` en state/track/ledger;
+  autoridad delta instancia el kit y `test:arg` / `e2e:arg` verdes;
+  cero nombres de juego en el kit (el `game` lo inyecta el caller).
+  **Demolición:** publicación de payloads sueltos sin envelope en el kit.
+  **Nota:** no mezclar A-05 (dual-wire); paralelizable con U21/U22 tras U20.
 
 - ⬜ **WP-U23 · pozo, el segundo juego** *(dep U10–U13, U20; D-8)* — juego
   mínimo A PROPÓSITO: un pozo, un puñado de nodos, un feed, UN intent con
