@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U20) |
 | fecha | 2026-07-17 |
 | rama | `wp/u20-view-kit` |
-| commit(s) | `4ad240e` feat(view-kit) · `e340c04` refactor(arg-console)! · `9976f6b` docs(reportes) |
+| commit(s) | `4ad240e` feat(view-kit) · `e340c04` refactor(arg-console)! · `45a95d3` docs(reportes) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 | browsers | no launch (`ZEUS_OPEN_BROWSER` no set) |
