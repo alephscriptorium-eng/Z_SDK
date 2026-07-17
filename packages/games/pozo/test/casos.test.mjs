@@ -17,14 +17,14 @@ const CASOS = path.join(
 );
 
 describe('pozo CASOS.md', () => {
-  it('pasa coherencia playbook-kit con C-01 y C-02', () => {
+  it('pasa coherencia playbook-kit con C-01..C-03', () => {
     const markdown = fs.readFileSync(CASOS, 'utf8');
     const result = checkPlaybookCoherence(markdown, {
-      expectedIds: ['C-01', 'C-02'],
+      expectedIds: ['C-01', 'C-02', 'C-03'],
       toolPattern: /`player_\w+\s*\{/
     });
     assert.equal(result.ok, true, result.errors.join('; '));
-    assert.deepEqual(result.ids, ['C-01', 'C-02']);
+    assert.deepEqual(result.ids, ['C-01', 'C-02', 'C-03']);
     assert.ok(result.cases.every((c) => c.mcpStepCount >= 1));
   });
 });
