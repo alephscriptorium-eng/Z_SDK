@@ -1,0 +1,24 @@
+{
+  "name": "@zeus/playbook-kit",
+  "version": "0.1.0",
+  "description": "Método CASOS: formato de caso, test de coherencia, plantilla de acta y runner de evidencia MCP",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./templates/VALIDACION.md": "./src/templates/VALIDACION.md"
+  },
+  "bin": {
+    "zeus-playbook-run": "./bin/run-playbook.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*"
+  }
+}
