@@ -166,7 +166,7 @@ Diferidos del reporte/revisión WP-U13 (no bloquean cierre; cierra ola 1):
 
 ### Cola hallazgos ola 2
 
-Diferidos / laterales (no bloquean U21/U24; A-05 no bloquea U23):
+Diferidos / laterales (A-05 no bloquea U23):
 - A-05: simetría dual-wire / transporte desnudo|envuelto+dedup en
   arg-console, 3d-monitor, player-mcp-kit (lateral; no bloquear U23)
 
@@ -176,7 +176,7 @@ Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
 - e2e:arg G-ARG-E2E.10 flaky (timeout track:cast; 1ª rojo / 2ª verde)
 - ~~`packages/platform/3d-monitor` aún tiene `assets/js/kit/` propio — WP-U22~~ → **cumplida en WP-U22**
 - colisión de nombre: arg-console `src/view-kit/` (SSR defineView) ≠
-  `@zeus/view-kit` (browser) — U21 puede alinear/renombrar el SSR
+  `@zeus/view-kit` (browser) — sigue diferida (U21 no la tocó)
 - clave localStorage de paneles `vk:…` (antes `delta:…`): posiciones
   guardadas del usuario se resetean (aceptable en extracción)
 
@@ -189,8 +189,19 @@ Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
   **Demolición:** el kit dentro de arg-console (quedan solo las vistas
   tablero/jugador específicas de delta).
 
-- 🔶 **WP-U21 · app-shell aprende de arg-console** *(dep U20)* — en curso
-  (lote-2b / orquestador / 2026-07-17) — las razones por las que arg-console
+### Cola hallazgos ola 2 (WP-U21)
+
+Diferidos del reporte/revisión WP-U21 (no bloquean cierre):
+- `plan/ARQUITECTURA.md` §1: «arg-console evita app-shell a propósito» —
+  mentira post-U21; actualizar con U20/U22 (kit / solape 3d-monitor) —
+  higiene orquestador
+- colisión SSR `src/view-kit/` vs `@zeus/view-kit` — sigue diferida (U20/U22;
+  U21 no la tocó)
+- OpenAPI drift preexistente (player-ui / editor-ui / cache-browser /
+  firehose-browser) — no causado por U21
+
+- ✅ **WP-U21 · app-shell aprende de arg-console** *(dep U20)* — aceptado
+  (orquestador / 2026-07-17) — las razones por las que arg-console
   evitó `createAppConfig` (whitelist rígida) se arreglan EN app-shell;
   arg-console y las vistas del view-kit usan app-shell.
   **CA:** arg-console sin config propia divergente; los demás consumidores de
@@ -201,10 +212,11 @@ Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
 ### Cola hallazgos ola 2 (WP-U22)
 
 Diferidos del reporte/revisión WP-U22 (no bloquean cierre):
-- `plan/ARQUITECTURA.md` §1 desactualizado post-U20/U22 (kit arg-console /
-  solape 3d-monitor) — higiene orquestador
+- `plan/ARQUITECTURA.md` §1 desactualizado post-U20/U21/U22 (kit
+  arg-console / solape 3d-monitor; «arg-console evita app-shell» mentira
+  post-U21) — higiene orquestador
 - colisión SSR `src/view-kit/` vs `@zeus/view-kit` en 3d-monitor — misma
-  deuda U20; U21 puede alinear
+  deuda U20; U21 no la tocó (sigue diferida)
 - vista humana demos 3d ⏳ (headless OK por brief)
 - escenas didácticas mínimas en `examples/` (apps quedan mesh / D-9)
 
