@@ -11,6 +11,10 @@ Generated from `RESOURCE_PAYLOADS` in `@zeus/http-contract/mcp-resources`.
 | `firehose://post/{corpusId}/{batch}/{filename}` | firehose://post/{corpusId}/{batch}/{filename} |
 | `firehose://stats` | firehose://stats |
 | `firehose://triage` | firehose://triage |
+| `force://info` | force://info |
+| `force://registry` | force://registry |
+| `force://{id}` | force://{id} |
+| `force://{id}/scene/{session}/{slug}` | force://{id}/scene/{session}/{slug} |
 | `linea://cache/stats` | linea://cache/stats |
 | `linea://info` | linea://info |
 | `linea://nodo/{year}` | linea://nodo/{year} |
