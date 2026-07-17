@@ -11,7 +11,7 @@ JSON Schemas, cadena de curación unificada, validador y loader de líneas.
 | `@zeus/linea-kit/curation` | browser-safe | enum / `normalizeCurationStatus` |
 | `@zeus/linea-kit/resolve` | browser-safe | `resolveNodo`, `resolveOldid`, … |
 | `@zeus/linea-kit/validate` | node | Ajv + schemas en disco + `validateVolumesTree` |
-| `@zeus/linea-kit/loader` | node | `loadLineaData`, `readWikitext`, `readRegistro`, … |
+| `@zeus/linea-kit/loader` | node | `loadLineaData`, `loadForcesData`, `readWikitext`, … |
 | `@zeus/linea-kit/schemas/*` | — | JSON Schema files |
 
 ## Curación unificada
