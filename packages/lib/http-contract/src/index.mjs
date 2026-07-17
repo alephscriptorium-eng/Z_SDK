@@ -22,6 +22,15 @@ export {
   renderMcpResourceCatalog
 } from './openapi.mjs';
 
+export {
+  deriveRouteMcpUri,
+  resolveRouteMcpUri,
+  projectRoutesToMcp,
+  fillExpressPath,
+  bindProjectedHttpReaders,
+  renderRouteMcpCatalog
+} from './mcp-project.mjs';
+
 export { assertSpecMatches } from './spec-sync.mjs';
 export { collectMountedRoutes, assertRoutesMounted } from './route-coverage.mjs';
 export { validate, getValidateMode } from './middleware.mjs';

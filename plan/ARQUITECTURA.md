@@ -28,8 +28,6 @@ antigüedad real. El mapa salió de leer imports reales, no de suposiciones.
 
 ### Deuda concreta detectada
 
-- `@zeus/openapi-mcp-projector`: **0 consumidores**. Se cablea en la ola 4 o
-  se borra en la misma ola, con evidencia. No queda «pendiente».
 - `firehose-core`: `test` = `echo 'sin tests'`. `room-client-browser`: 0
   archivos de test.
 - `arg-console` evita `app-shell` a propósito (config con whitelist molesta) y

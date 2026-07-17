@@ -29,7 +29,6 @@
     "start:operator-ui": "node packages/operator-ui/serve.mjs",
     "start:v1-zeus": "echo 'Equivalent to VS Code task V1 Zeus ▸ start all — run in parallel terminals:' && echo '  npm run start:socket-server' && echo '  npm run start:console-monitor' && echo '  npm run start:cache-browser' && echo '  npm run start:firehose' && echo 'Or use VS Code: Terminal > Run Task > V1 Zeus ▸ start all'",
     "start:all": "echo 'Equivalent to VS Code task Start ▸ all — run MCP/UI servers in parallel terminals:' && echo '  npm run start:lineas' && echo '  npm run start:editor' && echo '  npm run start:player' && echo '  npm run start:cache-browser' && echo '  npm run start:firehose-mcp' && echo '  npm run start:firehose' && echo '  npm run start:console-monitor' && echo '  npm run start:socket-server' && echo '  npm run start:player-3d' && echo '  npm run start:3d-monitor' && echo '  npm run start:operator-ui' && echo 'Or use VS Code: Terminal > Run Task > Start ▸ all'",
-
     "demo:game": "npm run demo -w @zeus/game-demos",
     "demo:bots": "npm run demo -w @zeus/ping-pong-bots",
     "demo:arg": "npm run demo -w @zeus/arg-demos",
@@ -42,7 +41,6 @@
     "test:arg-feeds": "npm test -w @zeus/arg-feeds",
     "test:arg-player-mcp": "npm test -w @zeus/arg-player-mcp",
     "test:arg": "npm run test:arg-domain && npm run test:arg-feeds && npm run test:arg-console && npm run test:arg-player-mcp",
-
     "test:sdk": "npm test -w @zeus/presets-sdk",
     "test:solar": "npm test -w @zeus/solar-system",
     "test:lineas": "npm test -w @zeus/linea-system",
@@ -50,21 +48,15 @@
     "test:console-monitor": "npm test -w @zeus/console-monitor",
     "test:http-contract": "npm test -w @zeus/http-contract",
     "test:rooms": "npm test -w @zeus/rooms",
-    "test:openapi-mcp-projector": "npm test -w @zeus/openapi-mcp-projector",
     "test:socket-server": "npm test -w @zeus/socket-server",
     "test:ui-3d-kit": "node --test packages/lib/ui-3d-kit/test/*.test.mjs",
     "test:game-engine": "npm test -w @zeus/game-engine",
     "test:operator-bridge": "npm test -w @zeus/operator-bridge",
     "build:operator-ui": "npm --prefix packages/operator-ui install && npm --prefix packages/operator-ui run build:all",
-
-    
     "test:player-3d": "npm test -w @zeus/player-3d-ui",
     "test:3d-monitor": "npm test -w @zeus/3d-monitor",
     "test:bots": "npm test -w @zeus/ping-pong-bots",
     "test:player-ui": "npm test -w @zeus/player-ui",
-
-
-
     "spec:generate": "npm run spec:generate -w @zeus/protocol",
     "spec:generate:http": "node scripts/spec-generate.mjs",
     "spec:generate:all": "npm run spec:generate:http && npm run spec:generate",
