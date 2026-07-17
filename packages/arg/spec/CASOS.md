@@ -568,3 +568,70 @@ reporta como `pendiente_de_fase`, no como fallo.
 - **Qué observa el humano**: el firehose-browser del jugador **navega al recurso de la gota** (deep-link honesto: si el ref es sintético, la franja de juego lo marca `「sintético」` sin ENOENT; no navega).
 - **Criterio de éxito**: paso 2 `ok:true` con evidencia del `arg:track` emitido; paso 3 muestra un track con `actorId:"uno"`, `hint:"firehose-browser"` y el `ref.uri` de la gota. Sin mutación de dominio: score, `crystals` y `murk` intactos.
 - **Errores esperados**: `gota_invalida` (la gota ya salió del pool por overflow — elige otra del paso 1).
+
+---
+
+## Fase DJ — manipulador de líneas (WP-U30)
+
+Dominio + ledger listos; **tools MCP `dj_*` y decks de player-ui llegan en
+WP-U31**. Hasta entonces:
+
+- Verificación automática: `npm run test:arg-domain` (reducer + domain-state
+  con evidencia de ledger).
+- Pasos abajo usan nombres provisionales `dj_cache` / `dj_curate` /
+  `dj_milestone`. Si `tools/list` no los expone, el caso se reporta como
+  `pendiente_de_fase` (U31), **no** como fallo de dominio.
+
+Semilla de demo del line-board: línea `linea-aleph`, registros `P03` / `P04`
+(pending, no cacheados).
+
+## C-30 — cache (rol dj) ⇒ ledger + score.cached
+
+- **Precondición**: dominio U30; actor con rol `dj` unido (join). Hasta U31
+  la evidencia sale del test de domain-state / autoridad con
+  `role:"dj"` en el intent. Si `tools/list` no expone `dj_cache`, reportar
+  `pendiente_de_fase` (U31), no fallo de dominio.
+- **Pasos del agente (dj)**:
+  1. `dj_cache {"lineId":"linea-aleph","registroId":"P03"}`
+  2. `dj_cache {"lineId":"linea-aleph","registroId":"P03"}` *(repetir ⇒ rechazo)*
+  3. Intent equivalente con `role:"player"` (o sin role) ⇒ `rol_no_autorizado`
+- **Qué observa el humano**: en el tablero DJ (U31) el registro pasa a
+  «cacheado»; hasta entonces, evidencia solo en ledger/`arg:state.lines`.
+- **Criterio de éxito**: paso 1 `ok:true` con `evidencia.ledger.kind ===
+  "cache"`, `actorId` del dj, `detail.lineId/registroId`; `score.cached`
+  +1; `arg:state.lines.regs` marca cached=1 para P03. Paso 2
+  `error:"ya_cacheado"`. Paso 3 `error:"rol_no_autorizado"`.
+- **Errores esperados**: `linea_invalida`, `registro_invalido`,
+  `ya_cacheado`, `rol_no_autorizado`, `aprobacion_requerida` (feeds reales
+  sin approval).
+
+## C-31 — curate (rol dj) pending→draft→curated
+
+- **Precondición**: C-30 (P03 cacheado).
+- **Pasos del agente (dj)**:
+  1. `dj_curate {"lineId":"linea-aleph","registroId":"P03"}`
+  2. `dj_curate {"lineId":"linea-aleph","registroId":"P03","to":"curated"}`
+  3. `dj_curate {"lineId":"linea-aleph","registroId":"P03"}` *(⇒ ya_curado)*
+  4. `dj_curate {"lineId":"linea-aleph","registroId":"P04"}` *(P04 no cacheado ⇒ no_cacheado)*
+- **Qué observa el humano**: el estado editorial del registro avanza en el
+  deck de curación (U31).
+- **Criterio de éxito**: pasos 1–2 `ok:true` con ledger `kind:"curate"` y
+  `detail.status` `draft` luego `curated`; `score.curated` +2. Paso 3
+  `error:"ya_curado"`. Paso 4 `error:"no_cacheado"`.
+- **Errores esperados**: `no_cacheado`, `status_salto` (pending→curated de
+  un golpe), `ya_curado`, `rol_no_autorizado`.
+
+## C-32 — milestone (rol dj) sobre curated
+
+- **Precondición**: C-31 (P03 en `curated`).
+- **Pasos del agente (dj)**:
+  1. `dj_milestone {"lineId":"linea-aleph","registroId":"P03","reasons":["byte_delta"]}`
+  2. `dj_milestone {"lineId":"linea-aleph","registroId":"P03","reasons":["byte_delta"]}` *(⇒ ya_milestone)*
+  3. Sobre un registro solo `draft` ⇒ `no_curado`
+- **Qué observa el humano**: el registro queda anclado como hito en el
+  manipulador (U31).
+- **Criterio de éxito**: paso 1 `ok:true` con ledger `kind:"milestone"`,
+  `detail.reasons` incluye `"byte_delta"`, `score.milestoned` +1;
+  `lines.regs` marca milestone=1. Paso 2 `error:"ya_milestone"`.
+- **Errores esperados**: `no_cacheado`, `no_curado`, `ya_milestone`,
+  `rol_no_autorizado`.

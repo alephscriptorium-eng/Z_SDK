@@ -46,7 +46,7 @@ room por defecto **`ARG_DELTA`**. Wire actual: eventos `arg:state|intent|track|l
   riding: { riverId, progress }, // o montado en un río (anula link)
   pose: 'idle'|'walk'|'ride'|'swim'|'sit'|'menu',
   emote: null|'wave'|'thumbsUp'|'nod'|'shake',
-  score: { labeled: 0, excavated: 0 }
+  score: { labeled: 0, excavated: 0, cached: 0, curated: 0, milestoned: 0 }
 }
 ```
 
@@ -93,6 +93,40 @@ Al llegar a `progress=1`: `label ? → mar.crystals++` (y side-effect corpus
 `excavate(corridorId)`: `ghost → digging` (side-effect: viaje de cache; en
 modo real requiere `approval`) → al resolver, `open` + `arg:ledger`.
 
+### Line board (tablero del manipulador — WP-U30)
+
+Hermanos de `label:cast` / `excavate` con rol `dj`. El dominio materializa el
+ciclo de crecimiento de una línea (DATOS.md §4) sin tocar disco: el side-effect
+de volumen (fetch `cache_wikitext`, escritura de markdown) vive en el borde de
+autoridad / Notario.
+
+```js
+{
+  rev,
+  // snapshot compacto (presupuesto G-ARG.5):
+  regs: [ [lineId, registroId, cached:0|1, status:0|1|2, milestone:0|1], ... ]
+  // status: 0 pending | 1 draft | 2 curated
+}
+```
+
+Registro vivo (vista del reducer):
+```js
+{ id, oldid?, cached: bool, deltaStatus: 'pending'|'draft'|'curated',
+  milestone: null | { reasons: string[] } }
+```
+
+| intent | args | muta | score | ledger kind |
+| ------ | ---- | ---- | ----- | ----------- |
+| `cache` | `lineId, registroId, approval?` | `cached: false→true` | `cached++` | `cache` |
+| `curate` | `lineId, registroId, to?: 'draft'\|'curated'` | un paso `pending→draft→curated` (exige cached) | `curated++` | `curate` |
+| `milestone` | `lineId, registroId, reasons?` | ancla milestone (exige curated) | `milestoned++` | `milestone` |
+
+Rechazos explicables: `linea_invalida`, `registro_invalido`, `ya_cacheado`,
+`no_cacheado`, `status_invalido` / `status_salto` / `status_retroceso` /
+`ya_curado`, `no_curado`, `ya_milestone`, `rol_no_autorizado` (player u
+operator sobre intents `dj`). En feeds reales, `cache` exige el mismo gate
+`approval` que `excavate`.
+
 ### Contact (contacto de cloaks)
 ```js
 { id, a, b, state:'requested'|'open'|'closed', openedAt }
@@ -132,6 +166,9 @@ llamadas tools/prompts van por HORSE entre los propios sujetos (P5).
 | `emote`           | `name`                                   | expresividad, sin física |
 | `salvage`         | `dropletId, label`                       | gota hundida + proximidad mar/orilla/boya |
 | `track:cast`      | `dropletId`                              | sin mutación; emite `arg:track` firehose |
+| `cache` *(rol dj)* | `lineId, registroId, approval?`         | registro ghost → cached; ledger + score |
+| `curate` *(rol dj)* | `lineId, registroId, to?`              | pending→draft→curated (un paso; exige cached) |
+| `milestone` *(rol dj)* | `lineId, registroId, reasons?`      | ancla milestone (exige curated) |
 
 ### Outbound (autoridad → room)
 
@@ -144,6 +181,7 @@ llamadas tools/prompts van por HORSE entre los propios sujetos (P5).
   rivers: { [id]: { droplets:[[id,progress,state,label?,uri?]] } },  // arrays compactos (uri → inspector WP-25)
   sea:    { crystals, murk, murkCapacity, collapsed },
   maze:   { rev, changed?: {chambers,corridors} },  // rev + diff; full si rev=0
+  lines:  { rev, regs: [[lineId,registroId,cached,status,milestone],...] },
   contacts: { [id]: {a,b,state} },
   objetivo: { labeled:[n,N], excavated:[m,M] } }
 ```
@@ -160,7 +198,7 @@ entra). Los navegadores reales del jugador se suscriben a la room y cargan
 
 **`arg:ledger`** — cristalizaciones append-only:
 ```js
-{ v:1, seq, ts, kind:'label'|'excavate'|'burst'|'collapse'|'objetivo',
+{ v:1, seq, ts, kind:'label'|'excavate'|'burst'|'collapse'|'objetivo'|'cache'|'curate'|'milestone',
   actorId?, ref?, detail }
 ```
 

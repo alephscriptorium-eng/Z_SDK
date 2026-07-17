@@ -29,14 +29,17 @@ const EXPECTED_IDS = [
   'C-15',
   'C-16',
   'C-17',
-  'C-18'
+  'C-18',
+  'C-30',
+  'C-31',
+  'C-32'
 ];
 
 test('CASOS.md pasa coherencia del playbook-kit', () => {
   const markdown = readCasosMarkdown();
   const result = checkPlaybookCoherence(markdown, {
     expectedIds: EXPECTED_IDS,
-    toolPattern: /`player_\w+\s*\{/
+    toolPattern: /`(?:player|dj)_\w+\s*\{/
   });
   assert.equal(result.ok, true, result.errors.join('\n'));
 });
@@ -56,4 +59,11 @@ test('fase 1.6 cita tools del mar vivo (WP-32)', () => {
   const markdown = readCasosMarkdown();
   assert.match(extractCaso(markdown, 'C-17'), /player_salvage/);
   assert.match(extractCaso(markdown, 'C-18'), /player_track/);
+});
+
+test('fase DJ cita tools del manipulador (WP-U30)', () => {
+  const markdown = readCasosMarkdown();
+  assert.match(extractCaso(markdown, 'C-30'), /dj_cache/);
+  assert.match(extractCaso(markdown, 'C-31'), /dj_curate/);
+  assert.match(extractCaso(markdown, 'C-32'), /dj_milestone/);
 });
