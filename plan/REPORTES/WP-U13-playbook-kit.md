@@ -156,4 +156,48 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: aceptado ✅** — orquestador / 2026-07-17
+
+Autorizado a merge + ✅ BACKLOG en master (paso aparte; **no** hechos en
+esta revisión). Sin push.
+
+### Verificado
+
+- **Base**: `master...HEAD` = 0 detrás / 5 adelante — sin merge de master
+  necesario (`2b656e5` asigna U13 ya es ancestro).
+- **Alcance** `master...HEAD`: `@zeus/playbook-kit` nuevo, absorción
+  `casos-md` desde player-mcp-kit, coherencia arg vía kit + demolición
+  `casos.test.mjs`, e2e `e2e:playbook-kit`, scripts root, reporte.
+  Worker **no** editó `plan/BACKLOG.md` ni `packages/arg/spec/BACKLOG.md`.
+  Sin U20/otros WPs.
+- **Commits** convencionales + BREAKING donde toca:
+  `feat(playbook-kit)`, `refactor(player-mcp-kit)!`,
+  `refactor(arg-player-mcp)!`, `docs(reportes)`.
+- **CA re-ejecutado** (worktree, 2026-07-17, sin `ZEUS_OPEN_BROWSER`):
+  - `npm test -w @zeus/playbook-kit` → 13 pass / 0 fail
+  - `npm run test:arg-player-mcp` → 20 pass / 0 fail (incluye
+    «CASOS.md pasa coherencia del playbook-kit»)
+  - `npm run e2e:playbook-kit` → exit 0 · G-PB.0–.4 verdes
+    (C-01 / C-03 / C-04b / C-05 + acta MCP)
+  - `npm run gates` → `gates: OK (0 offenders)`
+- **Demolición**: `casos.test.mjs` eliminado; `casos-md` solo en
+  playbook-kit; player-mcp-kit sin export de parseo; kit src/bin sin
+  nombres de juego (D-8).
+- **PRACTICAS** §1–3 / §6: puertos vía env / aislados en e2e; pozo §1.11
+  respondida (sí); auto-revisión honesta.
+
+### Hallazgo `demo:arg` vs stack aislado — OK documentado
+
+CA literal dice «contra `demo:arg`»; la entrega usa stack aislado
+socket+autoridad+MCP (mismo patrón que `e2e:arg-mcp` / U12), documentado
+en reporte §hallazgos, cabecera del e2e y campo `comando` del acta.
+Espíritu del CA cumplido: C-01/03/04b/05 + acta pre-rellenada MCP.
+No bloquea.
+
+### Merge
+
+- Autorizado a merge en master (dep U12 ya ✅). **No** marcado ✅ en
+  BACKLOG ni merge/push en esta revisión (pedido explícito).
+- Tras merge: `git worktree remove` del worktree U13.
+- Nota menor (no bloquea): script root `test:player-mcp-kit` añadido de
+  pasada — útil; fuera del título U13.
