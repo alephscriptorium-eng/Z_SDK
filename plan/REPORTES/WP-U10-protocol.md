@@ -141,4 +141,57 @@ el handshake de room, o basta `role` en el intent hasta ola WebRTC?
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: aceptado ✅** — orquestador / 2026-07-17
+
+Autorizado a merge + ✅ BACKLOG en master (paso aparte; **no** hechos en
+esta revisión). Sin push.
+
+### Verificado
+
+- **Base**: rama 1 commit detrás de master → merge limpio
+  `6cd8cb2 chore(u10): merge master into wp/u10-protocol` (solo brief +
+  BACKLOG 🔶 de master; sin conflicto de producto).
+- **Alcance** `master...HEAD`: `@zeus/protocol` nuevo, consumo en
+  arg-domain/arg-console, demolición `session-protocol/spec:generate`,
+  scripts portal AsyncAPI, reporte. Worker **no** editó `plan/BACKLOG.md`
+  ni `packages/arg/spec/BACKLOG.md`. Sin U11/U12/U13.
+- **Commits** convencionales + BREAKING donde toca:
+  `feat(protocol)`, `refactor(arg-domain)!`, `refactor(session-protocol)!`,
+  `docs(plan)`.
+- **CA re-ejecutado** (worktree, 2026-07-17):
+  - `npm test -w @zeus/protocol` → 13 pass / 0 fail
+  - `npm run test:arg` → exit 0 (arg-domain 52 incl. «rol no autorizado ⇒
+    rechazo»; arg-feeds 4; arg-console incl. `/protocol/index.mjs`;
+    arg-player-mcp 21)
+  - `npm run gates` → `gates: OK (0 offenders)`
+  - `npm run spec:asyncapi:html` → `docs/public/api/protocol/index.html`
+  - Test rol no autorizado: `denied.error === 'rol_no_autorizado'`
+- **Demolición**:
+  - arg-domain: contrato genérico vía `@zeus/protocol`; queda delta
+    (`EVENTS` `arg:*`, `INTENT_DEFS`, room/tick, poses…)
+  - `packages/lib/session-protocol/spec/generate.mjs` ausente; script
+    `spec:generate` retirado del paquete; raíz apunta a `@zeus/protocol`
+- **Peer Card**: decisión **adoptada** documentada en reporte
+  (`makePeerCard` / scopes `role:*` / helpers); autoridad aún no exige
+  card en cada intent (correcto; cableo U11+).
+- **D-8 / §1.11**: `src/` de protocol sin nombres de juego; respuesta
+  «pozo puede consumir tal cual» = sí, coherente.
+- Auto-revisión PRACTICAS §3 honesta; evidencia literal coherente.
+
+### Hallazgos → cola (no bloquean)
+
+- Migrar wire `arg:*` → kinds canónicos cuando U11 + vistas (ya en reporte).
+- session-protocol `build.mjs` + asyncapi congelados hasta U31; comentario
+  residual «generate.mjs» en `session-protocol/spec/build.mjs` (higiene).
+- Portal VitePress ausente → U41; HTML AsyncAPI bajo `docs/public/api/`
+  (gitignored) cumple CA de render.
+- Duda worker (no bloquea): ¿U11 exige Peer Card en handshake o basta
+  `role` en intent hasta ola WebRTC? → anotar en brief U11 / DECISIONES
+  si el usuario quiere cerrarlo.
+- e2e banners «CAUDAL» residuales (cola U02) — fuera de alcance.
+
+### Merge
+
+Orden: **WP-U10 primero** (bloquea U11/U12). Tras merge en master: ✅
+BACKLOG + `git worktree remove` del worktree U10. Luego asignar U11/U12
+en paralelo.
