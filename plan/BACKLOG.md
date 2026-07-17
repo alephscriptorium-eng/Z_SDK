@@ -76,7 +76,7 @@ Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente f
 
 ## Ola 1 — El contrato único (engine nace)
 
-- ⬜ **WP-U10 · `@zeus/protocol`** — generalizar
+- 🔶 **WP-U10 · `@zeus/protocol`** — en curso (ola-1 / orquestador / 2026-07-17) — generalizar
   `packages/arg/arg-domain/src/contract.mjs` + `spec/CONTRATO.md`: eventos
   `state|intent|track|ledger` con campo `game` en el envelope, `makeIntent`,
   validación de forma, **roles** (`player|dj|operator`) declarados por intent,
