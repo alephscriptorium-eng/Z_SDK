@@ -269,12 +269,13 @@ Dispara seguido, sin parar: `player_join {}` → `player_move {"nodeId":"terraza
 - `V3.8` Al llegar el cristal: ¿**crece la islita** del mar? ¿Sube `mar 💧`?
 - `V3.9` 💡 ¿Hay feedback de que etiquetar sirvió de algo?
 
-## S-4 · Mar vivo — C-17, C-18 *(fase 1.6)*
+## S-4 · Mar vivo — C-17, C-18, C-33 *(fase 1.6 + ciclo vaciar)*
 
 Requiere gotas llegadas. `player_observe {"what":"sea"}` → localiza una con
 `label:null` → `player_cloak_equip {"presetId":"aleph-firehose-browse"}` →
 `player_goto {"nodeId":"boya-1"}` → `player_salvage {...,"label":"memoria"}`
-→ `player_observe {"what":"sea"}` → `player_track {"dropletId":"…"}`.
+→ (otra ronda de vertido) `player_empty {}` →
+`player_observe {"what":"sea"}` → `player_track {"dropletId":"…"}`.
 
 **PARADA 4 — checklist** (tablero, zona mar)
 
@@ -286,7 +287,8 @@ Requiere gotas llegadas. `player_observe {"what":"sea"}` → localiza una con
 - `V4.6` ¿Nace un cluster nuevo si la etiqueta no existía aún?
 - `V4.7` ¿El mar **se aclara** un punto al rescatar? (murk −1)
 - `V4.8` Con `player_track`: ¿el firehose-browser **carga la gota**?
-- `V4.9` 💡 ¿Invita a clicar? ¿Se entiende que las hundidas son rescatables?
+- `V4.9` Al vaciar (C-33): ¿desaparecen las hundidas **sin** destello de rescate?
+- `V4.10` 💡 ¿Se entiende la diferencia salvage (recuperar) vs empty (purgar)?
 
 ## S-5 · Cantera — C-11, C-12, C-12b *(ronda B, reinicia antes)*
 
@@ -635,3 +637,36 @@ Semilla de demo del line-board: línea `linea-aleph`, registros `P03` / `P04`
   `lines.regs` marca milestone=1. Paso 2 `error:"ya_milestone"`.
 - **Errores esperados**: `no_cacheado`, `no_curado`, `ya_milestone`,
   `rol_no_autorizado`.
+
+---
+
+## Fase ciclo crecer/vaciar (WP-U83)
+
+Crecer = cache/curate/milestone (C-30..C-32). Vaciar = `player_empty`:
+purgar gotas hundidas del mar (vertido blando). Coste narrativo: esas gotas
+**ya no se pueden rescatar** (alternativa a C-17 salvage). Roles alineados
+con `empty_playable` de volumes-ops (player|dj). El ledger del juego asienta
+`kind:"empty"` con `detail.opsIntent:"empty_playable"`; la autoridad puede
+gemelar asiento ops.
+
+## C-33 — vaciar vertido blando del mar (empty)
+
+- **Precondición**: al menos una gota **hundida** en el mar (genera vertido
+  con C-05: grifo abierto, nadie etiqueta; espera ~20 s). Actor en
+  `orilla-mar` / `boya-*` / zona mar. Verifica con
+  `player_observe {"what":"sea"}` → `droplets` con `label: null`.
+- **Pasos del agente (uno)**:
+  1. `player_observe {"what":"sea"}` → anota `murk` y cuántas hundidas hay.
+  2. `player_goto {"nodeId":"orilla-mar"}` (o `boya-1` con cloak nadador).
+  3. `player_empty {}`
+  4. `player_observe {"what":"sea"}` · `player_observe {"what":"ledger","n":5}`
+  5. `player_empty {}` *(repetir ⇒ `nada_que_vaciar`)*
+- **Qué observa el humano**: las gotas tenues bajo la superficie **desaparecen**;
+  el mar se aclara (murk baja); no hay destello de rescate (eso es salvage).
+- **Criterio de éxito**: paso 3 `ok:true` con `evidencia.ledger.kind ===
+  "empty"`, `actorId:"uno"`, `detail.removed ≥ 1`,
+  `detail.opsIntent === "empty_playable"`, `score.emptied` +1; paso 4 murk
+  menor que en el paso 1 y cero hundidas; paso 5 `ok:false`,
+  `error:"nada_que_vaciar"`.
+- **Errores esperados**: `fuera_de_mar`, `nada_que_vaciar`, `mar_colapsado`,
+  `rol_no_autorizado` (p.ej. operator).

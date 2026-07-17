@@ -102,9 +102,13 @@ de la articulación y el movimiento, no del material.
 4. En la Cantera, expediciones consultan y excavan; el laberinto crece.
 5. Todo lo cristalizado (etiquetas, excavaciones, cache/curate/milestone del
    DJ) queda en el ledger del Notario; lo caótico (riadas, vertidos) se pierde.
-6. La ronda termina por objetivo (X gotas etiquetadas, Y pasillos excavados)
+6. **Vaciar** (WP-U83): el jugador puede **purgar el vertido blando** del mar
+   (`empty`) — desechar gotas hundidas para liberar murk. El coste narrativo
+   es la oportunidad: esas gotas ya no se rescatan (alternativa a salvage).
+   Roles `player`/`dj`, gemelos de `empty_playable` en volumes-ops.
+7. La ronda termina por objetivo (X gotas etiquetadas, Y pasillos excavados)
    o por colapso (inundación). El delta resultante ES el nuevo estado de los
-   volúmenes: la partida infló los datos.
+   volúmenes: la partida infló — o liberó — los datos.
 
 ## El manipulador de líneas (rol `dj`)
 

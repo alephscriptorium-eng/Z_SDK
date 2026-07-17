@@ -46,7 +46,7 @@ room por defecto **`ARG_DELTA`**. Wire actual: eventos `arg:state|intent|track|l
   riding: { riverId, progress }, // o montado en un río (anula link)
   pose: 'idle'|'walk'|'ride'|'swim'|'sit'|'menu',
   emote: null|'wave'|'thumbsUp'|'nod'|'shake',
-  score: { labeled: 0, excavated: 0, cached: 0, curated: 0, milestoned: 0 }
+  score: { labeled: 0, excavated: 0, cached: 0, curated: 0, milestoned: 0, emptied: 0 }
 }
 ```
 
@@ -120,6 +120,20 @@ Registro vivo (vista del reducer):
 | `cache` | `lineId, registroId, approval?` | `cached: false→true` | `cached++` | `cache` |
 | `curate` | `lineId, registroId, to?: 'draft'\|'curated'` | un paso `pending→draft→curated` (exige cached) | `curated++` | `curate` |
 | `milestone` | `lineId, registroId, reasons?` | ancla milestone (exige curated) | `milestoned++` | `milestone` |
+
+### Vaciar (ciclo DATOS §4 — WP-U83)
+
+Mitad «vaciar» del mapa: purgar vertido blando del mar. Roles `player`|`dj`
+(alineados con volumes-ops `empty_playable`). Dominio puro; el gemelo ops lo
+asienta la autoridad en el borde.
+
+| intent | args | muta | score | ledger kind |
+| ------ | ---- | ---- | ----- | ----------- |
+| `empty` | _(ninguno)_ | quita gotas `sunken`; `murk − removed` | `emptied++` | `empty` (`detail.opsIntent: empty_playable`) |
+
+Rechazos: `fuera_de_mar`, `nada_que_vaciar`, `mar_colapsado`,
+`rol_no_autorizado`. Coste narrativo: las gotas purgadas no se pueden
+`salvage`.
 
 ### Operator (visor — WP-U32)
 

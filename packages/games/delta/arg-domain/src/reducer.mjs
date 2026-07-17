@@ -92,7 +92,14 @@ const HANDLERS = {
         riding: null,
         pose: 'idle',
         emote: null,
-        score: { labeled: 0, excavated: 0, cached: 0, curated: 0, milestoned: 0 }
+        score: {
+          labeled: 0,
+          excavated: 0,
+          cached: 0,
+          curated: 0,
+          milestoned: 0,
+          emptied: 0
+        }
       }
     });
   },
@@ -269,6 +276,25 @@ const HANDLERS = {
     return okOps(
       { op: 'sea:salvage', dropletId: intent.dropletId, label: intent.label, actorId: actor.id },
       { op: 'actor:score', id: actor.id, key: 'labeled' }
+    );
+  },
+
+  /**
+   * Vaciar: purgar gotas hundidas del mar (mitad «vaciar» del ciclo DATOS §4).
+   * Coste narrativo: se destruye el vertido — ya no se puede salvage.
+   */
+  empty(view, intent) {
+    if (view.sea?.collapsed) return fail('mar_colapsado');
+    const actor = view.actors[intent.actorId];
+    if (!actor) return fail('actor_desconocido');
+    const nearSea =
+      actor.zone === 'mar' || (actor.nodeId != null && SHORE_NODES.has(actor.nodeId));
+    if (!nearSea) return fail('fuera_de_mar');
+    const sunken = (view.seaDroplets?.() ?? []).filter((d) => d.state === 'sunken');
+    if (sunken.length === 0) return fail('nada_que_vaciar');
+    return okOps(
+      { op: 'sea:empty', actorId: actor.id },
+      { op: 'actor:score', id: actor.id, key: 'emptied' }
     );
   },
 

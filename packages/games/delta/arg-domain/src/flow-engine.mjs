@@ -192,6 +192,34 @@ export function createFlowEngine(scene, firehoseFeed) {
       return { ok: true, ref: droplet.ref };
     },
 
+    /**
+     * Vaciar vertido blando (DATOS §4 / WP-U83): desechar gotas hundidas.
+     * Coste narrativo = oportunidad: esas gotas ya no se pueden rescatar.
+     * @param {string|null} [actorId]
+     */
+    emptySoft(actorId = null) {
+      if (sea.collapsed) return { ok: false, error: 'colapsado' };
+      const sunken = sea.droplets.filter((d) => d.state === 'sunken');
+      if (sunken.length === 0) return { ok: false, error: 'nada_que_vaciar' };
+      const murkBefore = sea.murk;
+      const removedIds = [];
+      for (const d of sunken) {
+        const idx = sea.droplets.indexOf(d);
+        if (idx >= 0) sea.droplets.splice(idx, 1);
+        removedIds.push(d.id);
+      }
+      const removed = removedIds.length;
+      sea.murk = Math.max(0, murkBefore - removed);
+      pushEvent('empty', {
+        actorId,
+        removed,
+        murkBefore,
+        murkAfter: sea.murk,
+        dropletIds: removedIds
+      });
+      return { ok: true, removed, murkBefore, murkAfter: sea.murk, dropletIds: removedIds };
+    },
+
     /** Rescate de gota hundida (MAR.md §1) — API interna para el reducer WP-29. */
     salvage(dropletId, label, actorId = null) {
       if (sea.collapsed) return { ok: false, error: 'colapsado' };

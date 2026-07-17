@@ -32,7 +32,8 @@ const EXPECTED_IDS = [
   'C-18',
   'C-30',
   'C-31',
-  'C-32'
+  'C-32',
+  'C-33'
 ];
 
 test('CASOS.md pasa coherencia del playbook-kit', () => {
@@ -66,4 +67,10 @@ test('fase DJ cita tools del manipulador (WP-U30)', () => {
   assert.match(extractCaso(markdown, 'C-30'), /dj_cache/);
   assert.match(extractCaso(markdown, 'C-31'), /dj_curate/);
   assert.match(extractCaso(markdown, 'C-32'), /dj_milestone/);
+});
+
+test('fase vaciar cita player_empty (WP-U83)', () => {
+  const markdown = readCasosMarkdown();
+  assert.match(extractCaso(markdown, 'C-33'), /player_empty/);
+  assert.match(extractCaso(markdown, 'C-33'), /empty_playable/);
 });

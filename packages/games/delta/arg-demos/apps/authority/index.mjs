@@ -17,6 +17,7 @@ import {
 } from '@zeus/arg-domain';
 import { resolveRuntimeFeeds } from '@zeus/arg-feeds';
 import { resolveZeusMcpPorts } from '@zeus/presets-sdk';
+import { seatEmptyPlayableOps } from './empty-ops.mjs';
 
 const USER = process.env.ZEUS_SCRIPTORIUM_USER || AUTHORITY_USER;
 const ROOM = process.env.ZEUS_ARG_ROOM || DEFAULT_ARG_ROOM;
@@ -61,7 +62,16 @@ const WIRE_EVENTS = {
 };
 
 const domain = {
-  applyIntent: (payload) => state.applyIntent(payload),
+  applyIntent: (payload) => {
+    const result = state.applyIntent(payload);
+    if (result.ok && payload.intent === 'empty') {
+      const ops = seatEmptyPlayableOps(payload, { game: 'delta', volumeId: 'DISK_01' });
+      if (!ops.ok) {
+        console.warn(`[${USER}] empty_playable ops twin:`, ops.error);
+      }
+    }
+    return result;
+  },
   tick: (deltaSec, now) => state.tick(deltaSec, now),
   drainOutbox: () => state.drainOutbox(),
   contentRev: () => state.mazeRev(),
