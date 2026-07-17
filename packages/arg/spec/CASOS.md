@@ -1,4 +1,4 @@
-# CAUDAL — Playbook de casos de validación (humano + agente MCP)
+# delta — Playbook de casos de validación (humano + agente MCP)
 
 Documento bilingüe humano/agente: un **agente LLM** conectado a
 `@zeus/arg-player-mcp` ejecuta los pasos (llamadas MCP literales) mientras un
@@ -198,7 +198,7 @@ muera debajo de ti.
 | ronda | secuencias | por qué así |
 | ----- | ---------- | ----------- |
 | **A** — la espina | S-0 arranque · S-1 movimiento · S-2 grifo · S-3 río · S-4 mar | Es la cadena causal del juego: sin grifo no hay gotas, sin gotas no hay río ni mar. Abrir el grifo en S-2 **alarga** la ronda. |
-| **B** — lo seco | *(reinicia)* S-5 cantera · S-6 cloaks y social | No dependen del caudal. Ronda limpia para no arrastrar murk de A. |
+| **B** — lo seco | *(reinicia)* S-5 cantera · S-6 cloaks y social | No dependen del flujo. Ronda limpia para no arrastrar murk de A. |
 | **C** — la demolición | *(reinicia)* S-7 riada y colapso | **Destructiva**: congela el dominio. Ronda desechable, y última. |
 
 ## S-0 · Arranque *(sin reloj todavía)*
@@ -424,7 +424,7 @@ vivo. Luego deja que el murk se acumule hasta el colapso.
   1. `player_goto {"nodeId":"embarcadero-a"}`
   2. `player_ride {"riverId":"rio-a"}`
   3. `player_observe {"what":"tracks","n":5}`
-- **Qué observa el humano**: el monigote se agacha (pose `ride`) y **surfea el cauce adelantando gotas** (el jinete va un 15% más rápido que el caudal); la **franja inferior de tracking** de la vista jugador muestra la uri de la gota pisada, y un **firehose-browser** abierto con `?actor=uno` va cargando esos recursos.
+- **Qué observa el humano**: el monigote se agacha (pose `ride`) y **surfea el cauce adelantando gotas** (el jinete va un 15% más rápido que el flujo); la **franja inferior de tracking** de la vista jugador muestra la uri de la gota pisada, y un **firehose-browser** abierto con `?actor=uno` va cargando esos recursos.
 - **Criterio de éxito**: paso 2 `ok:true` con `evidencia.riding.riverId === "rio-a"` (embarca a progress 0.5); paso 3 devuelve entradas `arg:track` con `actorId:"uno"` y `hint:"firehose-browser"` cuando pisa gotas.
 - **Errores esperados**: `fuera_de_embarcadero` si no hizo el paso 1; `ya_montado` si repite.
 

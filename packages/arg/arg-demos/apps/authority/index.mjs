@@ -1,5 +1,5 @@
 /**
- * CAUDAL — la Autoridad del delta (el único proceso que muta dominio,
+ * delta — la Autoridad del juego (el único proceso que muta dominio,
  * gate G-ARG.1). Patrón heredado de game-demos/apps/map:
  *   arg:intent (room) → reducer → arg:state 10 Hz + arg:track + arg:ledger.
  */
@@ -88,12 +88,12 @@ client.io.on(EVENTS.INTENT, (data) => {
 });
 
 console.log(
-  `\n🌊 CAUDAL authority · user=${USER} · room=${ROOM} · scene=${state.scene.id} · feeds=${feeds.mode ?? FEED_MODE} · tick=${TICK_MS}ms\n`
+  `\n🌊 delta authority · user=${USER} · room=${ROOM} · scene=${state.scene.id} · feeds=${feeds.mode ?? FEED_MODE} · tick=${TICK_MS}ms\n`
 );
 
 await connectAndJoin(client, USER, {
   type: 'ArgAuthority',
-  features: ['caudal-0.1', 'arg-state', 'arg-track', 'arg-ledger'],
+  features: ['delta-0.1', 'arg-state', 'arg-track', 'arg-ledger'],
   room: ROOM
 });
 

@@ -2,7 +2,7 @@
  * View kit · bootstrap del stage 3D.
  *
  * Envuelve el scene manager de ui-3d-kit con las convenciones que comparten
- * las vistas de CAUDAL: montar en #viewer-stage, ocultar el canvas
+ * las vistas de delta: montar en #viewer-stage, ocultar el canvas
  * placeholder, escenario oscuro con grid, y una pequeña superficie
  * frame/dispose. Expone sceneManager entero (la vista jugador necesita
  * cámara y controls para el modo chase).

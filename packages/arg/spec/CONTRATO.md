@@ -1,4 +1,4 @@
-# CAUDAL — Contrato de dominio (v1)
+# delta — Contrato de dominio (v1)
 
 Contrato entre la **Autoridad** (único proceso que muta el estado del juego),
 los **visores** (arg-console: tablero y jugador), los **sujetos** (jugadores,

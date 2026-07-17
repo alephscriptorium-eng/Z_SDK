@@ -1,5 +1,5 @@
 /**
- * Inspector de caudal y cantera — wiring 3D→HTML (WP-25).
+ * Inspector de flujo y cantera — wiring 3D→HTML (WP-25).
  *
  * Raycast de click sobre los símbolos del delta-stage (grifos, cauces, mar,
  * cámaras — identificados por su `userData = {kind, id}`) que abre una

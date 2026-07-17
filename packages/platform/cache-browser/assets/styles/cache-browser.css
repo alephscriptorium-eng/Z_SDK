@@ -211,9 +211,9 @@
   min-height: 240px;
 }
 
-/* ---- franja de juego CAUDAL (WP-26): browser enganchado al ARG ---- */
+/* ---- franja de juego delta (WP-26): browser enganchado al ARG ---- */
 
-.caudal-strip {
+.delta-strip {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -227,16 +227,16 @@
   line-height: 1.6;
 }
 
-.caudal-strip-brand {
+.delta-strip-brand {
   color: #00d4ff;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
-.caudal-strip-conn[data-state='ok'] { color: #00ff88; }
-.caudal-strip-conn[data-state='off'] { color: #ff3344; }
+.delta-strip-conn[data-state='ok'] { color: #00ff88; }
+.delta-strip-conn[data-state='off'] { color: #ff3344; }
 
-.caudal-strip-focus {
+.delta-strip-focus {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -245,5 +245,5 @@
   color: #9fd8c8;
 }
 
-.caudal-strip-focus[data-state='ghost'],
-.caudal-strip-focus[data-state='synthetic'] { color: #ffb347; }
+.delta-strip-focus[data-state='ghost'],
+.delta-strip-focus[data-state='synthetic'] { color: #ffb347; }

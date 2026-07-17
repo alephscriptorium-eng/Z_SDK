@@ -1,5 +1,5 @@
 /**
- * Inspector de caudal y cantera — render PURO (WP-25, UX §UX-2.3/2.4).
+ * Inspector de flujo y cantera — render PURO (WP-25, UX §UX-2.3/2.4).
  *
  * Funciones de string sin three ni DOM: reciben el snapshot arg:state, la
  * escena pura (deltaV0) y devuelven HTML. Testables en node con fixtures.

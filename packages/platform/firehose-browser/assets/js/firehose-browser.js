@@ -446,7 +446,7 @@
       .then(showCurrentView)
       .catch(function (e) { showError(treeHost, e.message); });
 
-    // ---- franja de juego CAUDAL (WP-26): este navegador está enganchado ----
+    // ---- franja de juego delta (WP-26): este navegador está enganchado ----
     function shortFocusUri(uri, max) {
       if (!uri) return '—';
       const s = String(uri);
@@ -455,29 +455,29 @@
     }
 
     function ensureGameStrip(trackCfg) {
-      let strip = document.getElementById('caudal-game-strip');
+      let strip = document.getElementById('delta-game-strip');
       if (strip) return strip;
       strip = document.createElement('div');
-      strip.id = 'caudal-game-strip';
-      strip.className = 'caudal-strip';
+      strip.id = 'delta-game-strip';
+      strip.className = 'delta-strip';
       strip.innerHTML =
-        '<span class="caudal-strip-brand">🌊 CAUDAL</span>' +
+        '<span class="delta-strip-brand">🌊 delta</span>' +
         '<span>siguiendo a <strong>' + escapeHtml(trackCfg.actor || '?') + '</strong></span>' +
         '<span>room ' + escapeHtml(trackCfg.room || '—') + '</span>' +
-        '<span id="caudal-strip-conn" class="caudal-strip-conn">○ conectando…</span>' +
-        '<span id="caudal-strip-focus" class="caudal-strip-focus">sin focus aún — juega y este navegador te seguirá</span>';
+        '<span id="delta-strip-conn" class="delta-strip-conn">○ conectando…</span>' +
+        '<span id="delta-strip-focus" class="delta-strip-focus">sin focus aún — juega y este navegador te seguirá</span>';
       document.body.insertBefore(strip, document.body.firstChild);
       return strip;
     }
 
     function updateGameStrip(focus) {
-      const conn = document.getElementById('caudal-strip-conn');
+      const conn = document.getElementById('delta-strip-conn');
       if (conn) {
         const ok = Boolean(focus && focus.connected);
         conn.textContent = ok ? '● conectado a la room' : '○ room desconectada';
         conn.dataset.state = ok ? 'ok' : 'off';
       }
-      const focusEl = document.getElementById('caudal-strip-focus');
+      const focusEl = document.getElementById('delta-strip-focus');
       if (focusEl && focus && focus.ts) {
         const state = focus.state || 'ok';
         const stateLabel =

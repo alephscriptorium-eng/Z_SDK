@@ -1,5 +1,5 @@
 /**
- * @zeus/arg-domain — CAUDAL, dominio puro del ARG del delta.
+ * @zeus/arg-domain — delta, dominio puro del ARG.
  * Sin three, sin red. Ver packages/arg/spec/CONTRATO.md.
  */
 

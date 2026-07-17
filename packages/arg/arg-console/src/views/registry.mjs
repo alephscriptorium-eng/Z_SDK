@@ -1,5 +1,5 @@
 /**
- * Catálogo de vistas de CAUDAL. Cada vista combina el view kit (stage, HUD,
+ * Catálogo de vistas de delta. Cada vista combina el view kit (stage, HUD,
  * log panel, room wiring) con su entry de navegador bajo /assets/js/views/.
  *
  * Para añadir una vista: defineView(...) aquí + escribir su entry. El portal

@@ -93,7 +93,7 @@ function main() {
 
   const ledger = createLogPanel('view-log');
 
-  // ---- inspector de caudal y cantera (WP-25): click en un símbolo 3D ------
+  // ---- inspector de flujo y cantera (WP-25): click en un símbolo 3D ------
   const inspector = createInspector({
     stage,
     pickables: delta.pickables,

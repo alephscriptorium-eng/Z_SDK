@@ -1,5 +1,5 @@
 /**
- * Inspector de caudal y cantera (WP-25) — render puro sobre un fixture de
+ * Inspector de flujo y cantera (WP-25) — render puro sobre un fixture de
  * arg:state con gotas: el inspector tiene que LISTAR las uris de los
  * mensajes (CA WP-25) y los deep-links tienen que ser honestos (WP-26):
  * ref sintético ⇒ 「sintético」 sin enlace; cámara ghost ⇒ «no excavado aún».

@@ -1,7 +1,7 @@
 {
   "name": "@zeus/arg-feeds",
   "version": "0.1.0",
-  "description": "CAUDAL — feeds MCP de solo lectura para la autoridad (firehose + linea-system). Node-only; arg-domain sigue browser-safe.",
+  "description": "delta — feeds MCP de solo lectura para la autoridad (firehose + linea-system). Node-only; arg-domain sigue browser-safe.",
   "type": "module",
   "main": "src/index.mjs",
   "exports": {

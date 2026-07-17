@@ -1,5 +1,5 @@
 /**
- * @zeus/arg-player-mcp — servidor MCP que envuelve a UN jugador de CAUDAL.
+ * @zeus/arg-player-mcp — servidor MCP que envuelve a UN jugador de delta.
  * Una instancia = un actor (uno :4121 · dos :4122). El wrapper emite
  * arg:intent como su actor y verifica en arg:state/arg:ledger — jamás
  * instancia motores del dominio (G-ARG.1).

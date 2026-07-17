@@ -1,5 +1,5 @@
 /**
- * Cliente MCP ligero para la autoridad CAUDAL (probe + tools).
+ * Cliente MCP ligero para la autoridad delta (probe + tools).
  * Node-only — no importar desde arg-domain ni visores.
  */
 

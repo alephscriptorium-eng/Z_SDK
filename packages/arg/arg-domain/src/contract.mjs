@@ -1,5 +1,5 @@
 /**
- * CAUDAL — contrato de dominio (v1). Nombres de eventos, constantes de
+ * delta — contrato de dominio (v1). Nombres de eventos, constantes de
  * transporte y guards de intents. Ver packages/arg/spec/CONTRATO.md.
  *
  * Browser-safe: sin imports de Node.
