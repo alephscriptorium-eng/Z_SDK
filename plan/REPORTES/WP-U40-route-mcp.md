@@ -122,4 +122,35 @@ Ninguno. Pregunta §1.11: ¿pozo puede consumir la proyección tal cual? Sí —
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador). Sin merge ni ✅ BACKLOG en esta
+pasada (pedido explícito del usuario; autorización queda pendiente de
+merge+✅ en master). Sin push. Abre Ola 4 al aceptar formalmente en master.
+
+### Verificado
+
+- Diff vs master: ya al día (merge-base = master `5b343bc`); no hizo falta
+  merge. 4 commits convencionales (`feat` / `feat` / `refactor!` / docs);
+  17 archivos; +625/−169. Alcance U40 (proyección RouteEntry→MCP en
+  http-contract + firehose `corpora.get` e2e + demolición projector +
+  reporte). Worker **no** tocó `plan/BACKLOG.md` ni
+  `packages/arg/spec/BACKLOG.md`.
+- Decisión borrar projector: coherente — proyección desde RouteEntry;
+  OpenAPI YAML intermedio con `openapi://` no aportaba; 0 consumidores.
+- Re-CA (worktree):
+  - `npm test -w @zeus/http-contract` → 18/18 pass
+  - `npm test -w @zeus/firehose-browser` → 5/5 pass (incl. e2e
+    `corpora.get` → `firehose://corpus/{corpusId}` list + read)
+  - `npm run spec:generate:all` → documenta
+    `x-mcp-resource: firehose://corpus/{corpusId}` (L192); ruido EOL en
+    specs ajenos revertido (hallazgo worker confirmado, no bloquea)
+  - `npm run gates` → OK (0 offenders)
+- Demolición: `packages/lib/openapi-mcp-projector` AUSENTE; grep
+  `openapi-mcp-projector` limpio fuera de reportes/BACKLOG; script CI /
+  root limpios; cero wrappers/re-exports de compat.
+- PRACTICAS §1.11: API engine-neutral (`rest://` / `xMcpResource`);
+  §1.1 puertos vía `port: 0` en e2e; §6 commits OK.
+
+### Merge
+
+Sugerido: merge `wp/u40-route-mcp` → master solo (U41 sigue ⬜ dep U10+U40).
+Tras merge: ✅ BACKLOG en master + `git worktree remove` del worktree U40.
