@@ -110,7 +110,7 @@ test('bots-log view renders the DOM log panel', async (t) => {
   assert.match(html, /id="view-log"/);
 });
 
-test('GET /kit/index.mjs → 200 (raw kit source served)', async (t) => {
+test('GET /kit/index.mjs → 200 (raw ui-3d-kit source served)', async (t) => {
   const handle = await createMonitor3dServer({ port: 0 });
   t.after(() => handle.close());
   const { port } = handle;
@@ -119,6 +119,17 @@ test('GET /kit/index.mjs → 200 (raw kit source served)', async (t) => {
   assert.equal(res.status, 200);
   const body = await res.text();
   assert.match(body, /createTrajectoryManager/);
+});
+
+test('GET /view-kit/index.mjs → 200 (raw @zeus/view-kit served)', async (t) => {
+  const handle = await createMonitor3dServer({ port: 0 });
+  t.after(() => handle.close());
+  const { port } = handle;
+
+  const res = await fetch(`http://localhost:${port}/view-kit/index.mjs`);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /createViewerScene/);
 });
 
 test('GET /vendor/socket.io/socket.io.esm.min.js → 200', async (t) => {
@@ -149,16 +160,18 @@ test('serves the whole browser import chain (no 404s)', { skip: threeAvailable ?
   const { port } = handle;
 
   const routes = [
-    '/assets/js/kit/index.mjs',
-    '/assets/js/kit/scene.mjs',
-    '/assets/js/kit/hud.mjs',
-    '/assets/js/kit/room.mjs',
-    '/assets/js/kit/channels.mjs',
-    '/assets/js/kit/ring-layout.mjs',
-    '/assets/js/kit/markers.mjs',
-    '/assets/js/kit/log-panel.mjs',
-    '/assets/js/kit/labels.mjs',
-    '/assets/js/kit/pipes.mjs',
+    '/view-kit/index.mjs',
+    '/view-kit/scene.mjs',
+    '/view-kit/hud.mjs',
+    '/view-kit/room.mjs',
+    '/view-kit/channel-events.mjs',
+    '/view-kit/labels.mjs',
+    '/view-kit/log-panel.mjs',
+    '/assets/js/monitor/index.mjs',
+    '/assets/js/monitor/channels.mjs',
+    '/assets/js/monitor/ring-layout.mjs',
+    '/assets/js/monitor/markers.mjs',
+    '/assets/js/monitor/pipes.mjs',
     '/assets/js/views/default.mjs',
     '/assets/js/views/ecosystem.mjs',
     '/assets/js/views/flux.mjs',

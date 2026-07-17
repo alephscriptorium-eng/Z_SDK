@@ -28,15 +28,14 @@ lógica de negocio:
   (id, title, entry, campos de HUD, log panel…), `createViewRegistry` lo indexa
   y `renderViewLayout` rinde el layout compartido (stage + HUD + import map +
   `#viewer-config` + entry del navegador).
-- **Navegador** (`assets/js/kit/`): `createViewerScene` (stage 3D),
-  `setText`/`createCounters` (HUD), `connectRoom`/`readViewerConfig` (wiring de
-  room), `classifyRole`/`channelFor` (clasificación de eventos y roles),
-  `createRingLayout`, `createMarker`/`createHub`/`createBlackHole`,
-  `createLogPanel` (log DOM), `createLabelSprite`/`createGlowSprite`
-  (etiquetas y halos billboard), `createPipeNetwork` (tuberías con pulsos) y
-  `onChannelEvent` (suscripción resiliente: evento desenvuelto + sobre
-  `ROOM_MESSAGE`, con dedupe — funciona con cualquier generación de
-  socket-server).
+- **Navegador genérico** (`@zeus/view-kit`, montado en `/view-kit`):
+  `createViewerScene`, `setText`/`createCounters`, `connectRoom`/
+  `readViewerConfig`, `createLogPanel`, `createLabelSprite`/`createGlowSprite`,
+  `onChannelEvent` (suscripción resiliente dual-wire con dedupe).
+- **Helpers del monitor** (`assets/js/monitor/`): `classifyRole`/`channelFor`
+  (cast demo:bots), `createRingLayout`, `createMarker`/`createHub`/
+  `createBlackHole`, `createPipeNetwork` — específicos del tráfico de room
+  que este portal visualiza.
 
 La room de cada vista se resuelve `?room=` → `ZEUS_SCRIPTORIUM_ROOM` →
 `defaultRoom` del descriptor → `scriptorium.<sessionId>` — el mismo orden con
@@ -47,8 +46,8 @@ Para añadir una vista:
 
 1. `defineView({ id, title, entry: '/assets/js/views/mi-vista.mjs', hud: {...} })`
    en `src/views/registry.mjs`.
-2. Escribir la lógica de negocio en `assets/js/views/mi-vista.mjs` importando
-   de `../kit/index.mjs`.
+2. Escribir la lógica en `assets/js/views/mi-vista.mjs` importando de
+   `@zeus/view-kit` y, si hace falta, de `../monitor/index.mjs`.
 3. (Opcional) añadirla al `localNav` de `src/config.json`.
 
 El portal, el routing (`/views/:id`) y `/health.views` la recogen del registry.
@@ -79,8 +78,9 @@ completo.
 
 ## Rutas
 
-`/` portal · `/views/:id` vista · `/health` json ok (incluye `views`) · `/kit` ·
-`/models` · `/vendor/three` · `/vendor/socket.io` · `/assets`.
+`/` portal · `/views/:id` vista · `/health` json ok (incluye `views`) · `/kit`
+(ui-3d-kit) · `/view-kit` · `/models` · `/vendor/three` · `/vendor/socket.io` ·
+`/assets`.
 
 ## Test
 

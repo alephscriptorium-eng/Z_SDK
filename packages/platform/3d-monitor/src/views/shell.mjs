@@ -1,6 +1,6 @@
 /**
  * Shared shell for every 3d-monitor page: app-shell template + the page
- * import map (three, socket.io, ui-3d-kit and game-engine served vendored).
+ * import map (three, socket.io, ui-3d-kit, view-kit and game-engine).
  */
 
 import { createShellViews } from '@zeus/app-shell';
@@ -32,6 +32,8 @@ export const IMPORT_MAP = {
     'socket.io-client': '/vendor/socket.io/socket.io.esm.min.js',
     '@zeus/ui-3d-kit': '/kit/index.mjs',
     '@zeus/ui-3d-kit/': '/kit/',
+    '@zeus/view-kit': '/view-kit/index.mjs',
+    '@zeus/view-kit/': '/view-kit/',
     '@zeus/game-engine': '/game-engine/index.mjs',
     '@zeus/game-engine/': '/game-engine/'
   }
