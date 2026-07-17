@@ -175,4 +175,41 @@ Ninguno bloqueante. Pregunta CA cerrada:
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador; sin ✅ BACKLOG / sin merge en esta sesión)
+
+### Verificado
+
+- Diff `master...HEAD`: 21 files, alcance U54 (`.d.ts` protocol/rooms, `release:dry`,
+  smoke externo, portal handshake, examples). Sin BACKLOG tocado. Commits
+  convencionales OK. Rama al día con master (0 behind); merge master no
+  necesario.
+- **CA tipos en tarball:** re-CA `npm run release:dry` → all 15 green;
+  `@zeus/protocol` 15 entries, `@zeus/rooms` 5; bloque `REQUIRES_DTS` en
+  `verifyTarball`.
+- **CA smoke Node+Bun:** re-CA `npm run smoke:external-consumer` → GREEN
+  (tarball install fuera del workspace; join `EXTERNAL_SMOKE` + intent
+  tipado; registry ⏳ sin publish — política OK).
+- **CA handshake portal:** `docs/guide/external-handshake.md` + sidebar;
+  `docs:build` → `docs/.vitepress/dist/guide/external-handshake.html`.
+- **gates:** OK (0 offenders). D-18: sin nombres de consumidores concretos.
+  `ZEUS_OPEN_BROWSER` borrado en smoke (opt-in intacto). Game id
+  `smoke-game` genérico.
+- Install-from-registry: ⏳ aceptado bajo política no-publish (hallazgo U50).
+
+### PRACTICAS
+
+Auto-revisión honesta; demolición n/a; sin monkey-code / dual path; sin
+nombres de juego en engine.
+
+### Merge sugerido
+
+1. **WP-U53 primero** si hay choque en `scripts/release-dry.mjs` (U53 WIP
+   toca el mismo script — lockstep/changesets; U54 es dueño del bloque `.d.ts`).
+2. Luego merge `wp/u54-external-consumers` → master.
+3. Tras merge: `git worktree remove` del worktree U54; orquestador marca
+   BACKLOG 🔶→✅ en master.
+
+### Acción siguiente
+
+Usuario/orquestador: ✅ BACKLOG + merge cuando U53 esté listo o el conflicto
+blando en `release-dry` esté resuelto. No push / no publish en swarm.
