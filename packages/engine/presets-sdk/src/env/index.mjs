@@ -36,6 +36,7 @@ export function resetZeusEnvLoader() {
 export const DEFAULT_ZEUS_MCP = {
   solar: { sun: 4101, moon: 4102, earth: 4103 },
   lineas: { espana: 4111, wpHistoria: 4112 },
+  forces: { disk: 4113 },
   firehose: { disk: 3008 },
   playerDebug: { monitor: 3014 },
   argPlayer: { uno: 4121, dos: 4122 }
@@ -48,6 +49,7 @@ const MCP_PORT_ENV = {
   'solar.earth': 'ZEUS_MCP_EARTH',
   'lineas.espana': 'ZEUS_MCP_LINEA_ESPAN',
   'lineas.wpHistoria': 'ZEUS_MCP_LINEA_WP',
+  'forces.disk': 'ZEUS_MCP_FORCES',
   'firehose.disk': 'ZEUS_MCP_FIREHOSE',
   'playerDebug.monitor': 'ZEUS_PORT_PLAYER_DEBUG',
   'argPlayer.uno': 'ZEUS_MCP_ARG_UNO',

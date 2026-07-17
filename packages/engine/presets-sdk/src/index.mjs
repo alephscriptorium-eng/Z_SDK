@@ -84,7 +84,11 @@ export {
   resolveLineasLineFilePath,
   resolveLineasSatCacheDir,
   MEDIDOR_ETIQUETADOS_REL,
-  resolveMedidorCasosPath
+  resolveMedidorCasosPath,
+  FORCES_VOLUME_ID,
+  resolveForcesBasePath,
+  resolveForcesVolumeRoot,
+  resolveForcesVolumePath
 } from './paths/index.mjs';
 export {
   loadVolumesConfig,
