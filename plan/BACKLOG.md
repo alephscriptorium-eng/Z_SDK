@@ -41,7 +41,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   **CA:** `npm test -w` verde en ambos con ≥1 test real por export principal.
   **Demolición:** el `echo 'sin tests'`.
 
-- 🔶 **WP-U03 · Z_SDK + CI** (D-11; ARQUITECTURA §5) — en curso (lote-0b / orquestador / 2026-07-17) — push del monorepo a
+- ✅ **WP-U03 · Z_SDK + CI** — aceptado (orquestador / 2026-07-17) — (D-11; ARQUITECTURA §5) — push del monorepo a
   `github.com/alephscriptorium-eng/Z_SDK` (rama main) y GitHub Actions: en
   cada PR/rama `wp/*`, job con `npm ci` + `npm run lint` + `npm run gates`
   (dep U00 blanda: YA EXISTE `npm run gates` — cablearlo en CI) + matriz de
@@ -65,7 +65,14 @@ Diferidos del reporte WP-U00 (no bloquean cierre):
 - MCP catalogs ports → env
 - mesh→arg-domain hasta layout games
 - legacy/v2 session hasta ola 3
-- U03 debe cablear `gates` en CI
+- ~~U03 debe cablear `gates` en CI~~ → **cumplida en WP-U03** (workflow `.github/workflows/ci.yml`)
+
+### Cola hallazgos lote 0b (WP-U03)
+
+Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente fuera del swarm):
+- CA remoto PR ⏳ (push a `Z_SDK` fuera del swarm; sin credenciales en agente)
+- 9/31 workspaces fallan `npm test -w` (matriz CI parcialmente roja al publicar)
+- mismatch credencial git/gh (nota operativa)
 
 ## Ola 1 — El contrato único (engine nace)
 
