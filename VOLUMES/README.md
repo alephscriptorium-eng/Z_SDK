@@ -9,6 +9,7 @@ Canonical on-disk storage for Zeus preset datasets. Each volume occupies a **DIS
 | `DISK_01` | `firehose` — Firehose ONFALO (8 388 JSON) | **active** |
 | `DISK_02` | `lineas` — Lineas de poder (full tree) | **active** |
 | `DISK_03` | `forces` — Forces y cotas, la física del sistema (12 corpus, 68 escenas) | **active** |
+| `DISK_04` | `ssb` — SSB OASIS Tribes & Parliament (typed log export) | **slot** (sync via `@zeus/ssb-system`) |
 
 ## Lineas policy (DISK_02)
 
@@ -26,10 +27,12 @@ Canonical on-disk storage for Zeus preset datasets. Each volume occupies a **DIS
 | Variable / comando | Uso |
 |--------------------|-----|
 | `ZEUS_VOLUMES_ROOT` | Raíz del árbol VOLUMES |
-| `ZEUS_FIREHOSE_REMOTE_PATH` | Origen remoto para `npm run volumes:sync:firehose` |
+| `ZEUS_FIREHOSE_REMOTE_PATH` | Origen remoto para sync firehose |
+| `ZEUS_SSB_LOG_PATH` | Dump JSON del log tipado del pub OASIS (`npm run volumes:sync:ssb`) |
+| `ZEUS_SSB_PUB_URL` | Provenance del pub (anotación; el sync no abre red por sí solo) |
 | `ZEUS_LINEAS_IMPORT_SOURCE` | Re-import opcional de líneas (`volumes:init:lineas -- --import`) |
 | `ZEUS_MEDIDOR_IMPORT_SOURCE` | Re-import opcional de medidor casos |
-| `npm run volumes:*` | Sync, init, verify de volúmenes |
+| `npm run volumes:*` / `npm run sync -w @zeus/ssb-system` | Sync, init, verify de volúmenes |
 
 **Decisión `links.arg`:** en `manifest.json` se mantiene como URL GitHub (`scriptorium-network-games/ALEPH_ET_OMEGA`). El runtime no lo lee; es provenance de operador para el ARG inaugural. No eliminar sin necesidad — `segment_poder.py` regenera el mismo URL.
 
@@ -98,10 +101,35 @@ Corpus curado e importado 2026-07-15 (D-19, `plan/DATOS.md` §8); formato v0
 del linea-kit — WP-U80 lo formaliza como schema. Sin scripts dentro: solo
 datos + provenance.
 
+### DISK_04
+
+```
+DISK_04/
+  SSB/
+    manifest.json     # export snapshot (schema ssb-manifest / U80)
+    tribes/           # tribe* messages as JSON by key
+    parliament/       # parliament* messages
+    votes/            # votes* messages
+```
+
+Sync files-first (no mesh daemon): dump the OASIS pub log to JSON, then:
+
+```bash
+export ZEUS_VOLUMES_ROOT=/path/to/zeus-sdk/VOLUMES
+export ZEUS_SSB_LOG_PATH=/path/to/ssb-log.json
+# optional provenance
+# export ZEUS_SSB_PUB_URL=https://pub.example
+npm run volumes:sync:ssb
+```
+
+Offline fixture (no network): `npm run sync -w @zeus/ssb-system -- --fixture --volumes "$ZEUS_VOLUMES_ROOT"`.
+
+Worktrees do not inherit gitignored DISK trees — point `ZEUS_VOLUMES_ROOT` at the
+main-repo `VOLUMES` or a temp tree for tests.
+
 ## Git policy
 
-- `DISK_01`/`DISK_02` are gitignored (heavy operator data; sync/import via
-  `npm run volumes:*`).
+- `DISK_01`/`DISK_02`/`DISK_04` are gitignored (heavy / operator-synced data).
 - **`DISK_03` is tracked in git** (exception in `.gitignore`): curated small
   corpus (~1.3 MB text) that makes the plan self-contained. `volumes.json`
   and this README are tracked too.

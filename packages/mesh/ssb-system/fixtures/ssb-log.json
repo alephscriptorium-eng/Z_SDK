@@ -1,0 +1,188 @@
+[
+  {
+    "key": "%tribeCreate001=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@alice.ed25519",
+      "sequence": 1,
+      "timestamp": 1720000000000,
+      "hash": "sha256",
+      "content": {
+        "type": "tribe",
+        "op": "create",
+        "title": "Fixture Tribe OASIS",
+        "description": "Offline SSB fixture for WP-U84",
+        "members": ["@alice.ed25519", "@bob.ed25519"],
+        "inviteMode": "open",
+        "status": "open",
+        "createdAt": "2024-07-03T12:00:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%tribeInvite001=.sha256",
+    "value": {
+      "previous": "%tribeCreate001=.sha256",
+      "author": "@alice.ed25519",
+      "sequence": 2,
+      "timestamp": 1720000100000,
+      "hash": "sha256",
+      "content": {
+        "type": "tribe-open-invite",
+        "v": 1,
+        "tribeRootId": "%tribeCreate001=.sha256",
+        "codeHash": "abc123fixture"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%parliamentTerm001=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@alice.ed25519",
+      "sequence": 3,
+      "timestamp": 1720000200000,
+      "hash": "sha256",
+      "content": {
+        "type": "parliamentTerm",
+        "startAt": "2024-07-01T00:00:00.000Z",
+        "endAt": "2024-08-30T00:00:00.000Z",
+        "method": "MAJORITY",
+        "status": "OPEN"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%parliamentProposal001=.sha256",
+    "value": {
+      "previous": "%parliamentTerm001=.sha256",
+      "author": "@bob.ed25519",
+      "sequence": 4,
+      "timestamp": 1720000300000,
+      "hash": "sha256",
+      "content": {
+        "type": "parliamentProposal",
+        "title": "Adopt files-first volumes",
+        "description": "Export SSB typed messages to DISK_04/SSB",
+        "method": "MAJORITY",
+        "termId": "%parliamentTerm001=.sha256",
+        "voteId": "%votes001=.sha256",
+        "proposer": "@bob.ed25519",
+        "status": "OPEN",
+        "createdAt": "2024-07-03T12:05:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%parliamentLaw001=.sha256",
+    "value": {
+      "previous": "%parliamentProposal001=.sha256",
+      "author": "@alice.ed25519",
+      "sequence": 5,
+      "timestamp": 1720000400000,
+      "hash": "sha256",
+      "content": {
+        "type": "parliamentLaw",
+        "title": "Fixture Law",
+        "proposalId": "%parliamentProposal001=.sha256",
+        "enactedAt": "2024-07-03T13:00:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%candidature001=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@carol.ed25519",
+      "sequence": 6,
+      "timestamp": 1720000500000,
+      "hash": "sha256",
+      "content": {
+        "type": "parliamentCandidature",
+        "targetType": "inhabitant",
+        "targetId": "@carol.ed25519",
+        "createdAt": "2024-07-03T12:10:00.000Z",
+        "votes": 0,
+        "voters": []
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%candidatureVote001=.sha256",
+    "value": {
+      "previous": "%candidature001=.sha256",
+      "author": "@bob.ed25519",
+      "sequence": 7,
+      "timestamp": 1720000600000,
+      "hash": "sha256",
+      "content": {
+        "type": "parliamentCandidatureVote",
+        "target": "%candidature001=.sha256",
+        "createdAt": "2024-07-03T12:11:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%votes001=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@alice.ed25519",
+      "sequence": 8,
+      "timestamp": 1720000700000,
+      "hash": "sha256",
+      "content": {
+        "type": "votes",
+        "question": "Adopt DISK_04/SSB export?",
+        "options": ["YES", "NO", "ABSTENTION"],
+        "deadline": "2024-07-10T00:00:00.000Z",
+        "createdBy": "@alice.ed25519",
+        "status": "OPEN",
+        "votes": { "YES": 1, "NO": 0, "ABSTENTION": 0 },
+        "totalVotes": 1,
+        "voters": ["@bob.ed25519"],
+        "tags": ["gov:fixture"],
+        "createdAt": "2024-07-03T12:06:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%votesVote001=.sha256",
+    "value": {
+      "previous": "%votes001=.sha256",
+      "author": "@bob.ed25519",
+      "sequence": 9,
+      "timestamp": 1720000800000,
+      "hash": "sha256",
+      "content": {
+        "type": "votesVote",
+        "target": "%votes001=.sha256",
+        "choice": "YES",
+        "createdAt": "2024-07-03T12:07:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%noisePost001=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@alice.ed25519",
+      "sequence": 10,
+      "timestamp": 1720000900000,
+      "hash": "sha256",
+      "content": {
+        "type": "post",
+        "text": "unrelated gossip — must be skipped by exporter"
+      },
+      "signature": "fixture"
+    }
+  }
+]

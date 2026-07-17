@@ -54,7 +54,7 @@ packages/
   mesh/      # mundo B: operar y jugar
     socket-server/  player-ui/  operator-ui/  operator-bridge/
     cache-browser/  firehose-browser/  console-monitor/  3d-monitor/
-    linea-system/  linea-firehose/  force-system/  solar-system/
+    linea-system/  linea-firehose/  force-system/  ssb-system/  solar-system/
     webrtc-ui/         # ola 10 — visor WebRTC (salas/privados), hermano Angular de operator-ui
   games/     # en el monorepo hasta la ola 6; después, repo Z_SDK-games-library (§6)
     delta/             # el actual packages/games/delta/* (domain, feeds, console, player-mcp, demos, spec)
