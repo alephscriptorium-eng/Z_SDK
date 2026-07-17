@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U22) |
 | fecha | 2026-07-17 |
 | rama | `wp/u22-view-kit-3d` |
-| commit(s) | `798d4b1` refactor(3d-monitor)! · `4e334bd` refactor(player-3d-ui) · `d5434d4` docs(reportes) |
+| commit(s) | `798d4b1` refactor(3d-monitor)! · `4e334bd` refactor(player-3d-ui) · docs(reportes) en HEAD |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 | browsers | no launch (`ZEUS_OPEN_BROWSER` no set) |
