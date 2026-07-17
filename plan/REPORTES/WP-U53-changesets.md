@@ -169,4 +169,59 @@ política: no push).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: aceptado ✅** — orquestador / 2026-07-17
+
+Política usuario: swarm sin credenciales / no push / no publish. CA remoto
+publish+tag+GitHub Release queda **⏳ OK** (dry local + workflow cableado;
+no bloquea aceptación).
+
+### Verificado
+
+- **Base limpia**: merge-base = `master` (`f9fc6b9`); HEAD no detrás de master.
+  No hace falta merge para revisar. U54 paralelo no está en esta rama.
+- **Alcance** `master...HEAD` (15 files): `.changeset/*`, `release.yml`,
+  scripts release, `test/release`, PRACTICAS §6 / ARQUITECTURA §5, README,
+  reporte. **Sin** `plan/BACKLOG.md`. Sin producto runtime. Sin U52.
+- **Commits** convencionales: `feat(release)`, `docs(release)`, `docs(report)`.
+- **Demolición lockstep**: `LOCKSTEP` ausente en `scripts/`; `release:dry`
+  reporta `N distinct version(s)`; docs lockstep permanente retirados.
+- **Workflow** `.github/workflows/release.yml`:
+  - `release` `needs: [quality, test]` (pipeline rojo bloquea publish)
+  - publish solo si `secrets.NPM_TOKEN` → `has_npm == true`
+  - `changesets/action@v1` + `createGithubReleases: true`
+  - sin secret: skip documentado (⏳)
+- **PRACTICAS §6**: changeset obligatorio en publicables +
+  `npm run release:changeset-dry` documentado.
+- **Re-CA local** (worktree, esta revisión):
+  - `npm run release:changeset-dry` → green (bump `@zeus/protocol` +
+    `@zeus/authority-kit` → `0.1.1`, pack 15 green, restore + changeset
+    pendiente reescrito)
+  - `npm run gates` → `gates: OK (0 offenders)`
+  - `npm run test:release` → 5/5 pass
+  - `npm run test:gates` → 7/7 pass
+
+### CA remoto publish
+
+⏳ **OK** — no bloquear. Publish/tag/GitHub Release solo tras merge a `main`
+con `NPM_TOKEN` en Actions (fuera del swarm).
+
+### Solape U54 (nota merge)
+
+U54 toca también `scripts/release-dry.mjs` + `package.json` (chequeo `.d.ts`).
+Partición coherente con brief: U53 = versionado/semver; U54 = tipos en
+tarball. **Merge preferido: U53 primero**, luego U54 (rebase/resolver el
+bloque `.d.ts` sobre exports de U53).
+
+### Hallazgos → cola (no bloquean)
+
+1. Deps `file:` en `@zeus/operator-ui` (aviso changeset) — residual U50.
+2. `baseBranch: main` vs rama local `master` — `changeset status` frágil;
+   dry-run no depende de status (OK).
+3. Duplicación matriz quality/test `ci.yml` / `release.yml` → candidato
+   `workflow_call`.
+
+### Merge / BACKLOG
+
+**Listo merge+✅: SÍ** (autorizado tras OK usuario). Esta revisión: **NO
+merge / NO push / NO publish / NO ✅ BACKLOG** (pedido explícito). Tras merge
+futuro: ✅ U53 en master + `git worktree remove` del worktree U53.
