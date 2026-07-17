@@ -32,3 +32,9 @@ export {
   resolveForcesVolumeRoot,
   resolveForcesVolumePath
 } from './forces.mjs';
+export {
+  SSB_VOLUME_ID,
+  resolveSsbBasePath,
+  resolveSsbVolumeRoot,
+  resolveSsbVolumePath
+} from './ssb.mjs';

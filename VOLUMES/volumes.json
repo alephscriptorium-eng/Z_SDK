@@ -70,6 +70,38 @@
           "files": 46
         }
       ]
+    },
+    "ssb": {
+      "disk": "DISK_04",
+      "path": "DISK_04/SSB",
+      "readonly": true,
+      "label": "SSB OASIS (Tribes & Parliament)",
+      "source": {
+        "kind": "ssb-pub-export",
+        "provenance": "OASIS pub typed log (tribe*/parliament*/votes*) → JSON; sync via @zeus/ssb-system (ZEUS_SSB_LOG_PATH)",
+        "pubUrl": "${ZEUS_SSB_PUB_URL}",
+        "logPath": "${ZEUS_SSB_LOG_PATH}"
+      },
+      "corpora": [
+        {
+          "id": "tribes",
+          "path": "tribes",
+          "label": "Tribes (tribe*)",
+          "files": 0
+        },
+        {
+          "id": "parliament",
+          "path": "parliament",
+          "label": "Parliament (parliament*)",
+          "files": 0
+        },
+        {
+          "id": "votes",
+          "path": "votes",
+          "label": "Votes (votes*)",
+          "files": 0
+        }
+      ]
     }
   }
 }

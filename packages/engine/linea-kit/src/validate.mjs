@@ -33,7 +33,8 @@ export const SCHEMA_FILES = Object.freeze({
   cota: 'cota.json',
   'force-registry': 'force-registry.json',
   'force-manifest': 'force-manifest.json',
-  'triage-manifest': 'triage-manifest.json'
+  'triage-manifest': 'triage-manifest.json',
+  'ssb-manifest': 'ssb-manifest.json'
 });
 
 let ajvSingleton = null;
@@ -167,7 +168,7 @@ export function validateVolumesTree(opts = {}) {
       ok: false,
       volumesRoot: null,
       results: [{ ok: false, schemaId: 'volumes', errors: [{ message: 'VOLUMES root not found' }] }],
-      skipped: ['DISK_01', 'DISK_02', 'DISK_03']
+      skipped: ['DISK_01', 'DISK_02', 'DISK_03', 'DISK_04']
     };
   }
 
@@ -283,6 +284,18 @@ export function validateVolumesTree(opts = {}) {
     }
   } else {
     skipped.push('DISK_03/FORCES');
+  }
+
+  const ssbDir = path.join(volumesRoot, 'DISK_04', 'SSB');
+  if (fs.existsSync(ssbDir)) {
+    const manifest = path.join(ssbDir, 'manifest.json');
+    if (fs.existsSync(manifest)) {
+      pushResult(results, validateFile('ssb-manifest', manifest));
+    } else {
+      skipped.push('DISK_04/SSB/manifest.json');
+    }
+  } else {
+    skipped.push('DISK_04/SSB');
   }
 
   const ok = results.every((r) => r.ok);
