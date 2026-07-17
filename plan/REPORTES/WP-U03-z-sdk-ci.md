@@ -5,7 +5,7 @@
 | agente | worker wp/u03-z-sdk-ci |
 | fecha | 2026-07-17 |
 | rama | `wp/u03-z-sdk-ci` |
-| commit(s) | `d1ffa30` chore(ci); `dfce777` docs(reportes) |
+| commit(s) | `d1ffa30` chore(ci); `dfce777` docs(reportes); `8e4e01b` docs(hashes) |
 | estado propuesto | listo para revisión (CA remoto ⏳; push fuera del swarm) |
 
 ## Qué se hizo
