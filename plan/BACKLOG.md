@@ -435,14 +435,20 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
+> **Nota orquestador (lote-post5 / 2026-07-17):** Ola 6 / **U55** pausados —
+> swarm sin credenciales/registry. Lote paralelo asignado: **U56** + **U80**.
+> NO asignar: U55, U60+ (U60 = nuevo repo GitHub).
+
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
   registry o unificar install Angular con workspaces raíz. Sustituye los
   `file:` vivos justificados hasta publish real del engine.
   **CA:** operator-ui / threejs-ui-lib resuelven `@zeus/*` sin `file:`;
   install aislado Angular verde.
   **Demolición:** dependencias `file:` residuales en esos paquetes.
+  _(pausado — dep registry/credenciales; no asignar en swarm)_
 
-- ⬜ **WP-U56 · Retirar wire vivo `session:*` del stack DJ** — player-ui /
+- 🔶 **WP-U56 · Retirar wire vivo `session:*` del stack DJ** — en curso
+  (lote-post5 / orquestador / 2026-07-17) — player-ui /
   socket-server / console-monitor / ping-pong; alinear a contrato room
   `state`/`intent` (post-U32). Producto mesh, no solo higiene de README.
   **CA:** cero emit/on `session:*` en el stack DJ vivo; demos/e2e del stack
@@ -451,12 +457,16 @@ Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
 
+> **Pausada** (orquestador / 2026-07-17): swarm sin credenciales GitHub /
+> registry. U60+ no se asignan hasta que el usuario desbloquee.
+
 - ⬜ **WP-U60 · Repo Z_SDK-games-library** (D-11) — crear el repo en
   `github.com/alephscriptorium-eng`, con su propio `plan/`-lite (PRACTICAS y
   plantilla de reporte enlazadas desde aquí, no copiadas), `.npmrc` con los
   scopes, y CI mínima (install + tests de los juegos).
   **CA:** clone limpio + `npm install` + tests verdes en el repo nuevo.
   **Demolición:** n/a.
+  _(pausado — sin credenciales GitHub en swarm)_
 - ⬜ **WP-U61 · Migración de los juegos** *(dep U60, U51)* — `games/delta` y
   `games/pozo` se mueven a la library; consumen `@zeus/*` del registry (no
   `file:`); el monorepo se queda con engine/mesh/editor/examples.
@@ -476,11 +486,12 @@ Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 ## Ola 7 — El plano de datos (diseño en [DATOS.md](DATOS.md); paralelizable
 con olas 2–5 salvo deps indicadas)
 
-- ⬜ **WP-U80 · `@zeus/linea-kit`** — los formatos canónicos de DATOS.md §2
+- 🔶 **WP-U80 · `@zeus/linea-kit`** — en curso (lote-post5 / orquestador /
+  2026-07-17) — los formatos canónicos de DATOS.md §2
   como paquete engine: JSON Schemas + validador (nodos.yaml, manifests
   tronco/satélite, registro, snapshots, nodo-sections, registry, sidecars de
   cache, volumes.json) + **loader** de lectura generalizado desde
-  `packages/mcp/linea-system` (nodo→secciones→registros, resolución por
+  `packages/mesh/linea-system` (nodo→secciones→registros, resolución por
   año/oldid). Unificar en el schema la cadena de curación
   (`delta_status`/`labeled`/`editorialStatus` → un solo enum). Incluye la
   familia **force/cota** de DATOS.md §8 (D-19): schema de `force.json`,
