@@ -13,7 +13,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ## Ola 0 — Suelo firme
 
-- 🔶 **WP-U00 · Gates de prácticas** — en curso (lote-0a / 2026-07-17) — test raíz `npm run gates` estilo
+- ✅ **WP-U00 · Gates de prácticas** — aceptado (orquestador / 2026-07-17) — test raíz `npm run gates` estilo
   `grep-gates` (ARG WP-15): (a) puertos/URLs hardcodeados fuera de
   `presets-sdk/env`, docs y specs; (b) nombres de transición
   (`legacy|v2|-old|-new`) en código; (c) imports que violen ARQUITECTURA §4
@@ -59,6 +59,13 @@ Diferidos del reporte WP-U01 (no bloquean cierre):
 - `Date.now()` como default user
 - worktrees: `npm install` / walk-up de node_modules
 - dependencia de `--experimental-test-module-mocks`
+
+Diferidos del reporte WP-U00 (no bloquean cierre):
+- limpieza fallbacks `?? 30xx` / localhost
+- MCP catalogs ports → env
+- mesh→arg-domain hasta layout games
+- legacy/v2 session hasta ola 3
+- U03 debe cablear `gates` en CI
 
 ## Ola 1 — El contrato único (engine nace)
 
