@@ -100,8 +100,16 @@ de la articulación y el movimiento, no del material.
 2. Los grifos acumulan presión; alguien tiene que subir y pactar aperturas.
 3. Río abajo, surfistas etiquetan gotas; el mar acumula flujo cristalizado.
 4. En la Cantera, expediciones consultan y excavan; el laberinto crece.
-5. Todo lo cristalizado (etiquetas, excavaciones) queda en el ledger del
-   Notario; lo caótico (riadas, vertidos) se pierde.
+5. Todo lo cristalizado (etiquetas, excavaciones, cache/curate/milestone del
+   DJ) queda en el ledger del Notario; lo caótico (riadas, vertidos) se pierde.
 6. La ronda termina por objetivo (X gotas etiquetadas, Y pasillos excavados)
    o por colapso (inundación). El delta resultante ES el nuevo estado de los
    volúmenes: la partida infló los datos.
+
+## El manipulador de líneas (rol `dj`)
+
+El Tablero (player-ui) no es otro juego: es la vista del **manipulador de
+líneas** del mismo mundo. Con rol `dj` emite `cache` / `curate` / `milestone`
+sobre el line-board del dominio — la misma autoridad, el mismo ledger, el
+mismo score. Cadena: materializar un registro → curar su `delta_status` →
+anclar milestone. El cableado de decks en player-ui es WP-U31.
