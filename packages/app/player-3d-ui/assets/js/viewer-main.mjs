@@ -1,36 +1,30 @@
 /**
  * player-3d-ui browser entry (ESM, resolved via the page import map).
  *
- * Builds the vaivén-dos-nodos map scene from @zeus/ui-3d-kit, wires a live
- * event-choreographer, and spawns puppets ON DEMAND as presence is detected.
+ * Builds the vaivén-dos-nodos map scene from @zeus/ui-3d-kit over
+ * @zeus/view-kit stage/HUD/room wiring, wires a live event-choreographer,
+ * and spawns puppets ON DEMAND as presence is detected.
  * Map poses are **projected** via `projectSlice(session, 'player-3d')` (L-session M3);
  * the viewer emits game:intent — it is not map authority (L-session M2).
  */
 
-import * as THREE from 'three';
 import {
-  createSceneManager,
-  createMapSceneAdapter,
   createNodeMesh,
   createAnchorMarker,
   createLinkCorridorBetween,
+  createMapSceneAdapter,
   loadPuppet,
   resolveWalk,
   vaivenDosNodos
 } from '@zeus/ui-3d-kit';
+import {
+  createViewerScene,
+  setText,
+  readViewerConfig,
+  connectRoom
+} from '@zeus/view-kit';
 import { projectSlice, SCENE_IDS } from '@zeus/session-protocol/projection';
-import { createBrowserRoomClient } from '/assets/room-client/room-client.browser.mjs';
-import { readInjectedRoomConfig } from '/assets/room-client/dev-room-config.mjs';
 import { createEventChoreographer } from './event-choreographer.mjs';
-
-function readViewerConfig() {
-  return readInjectedRoomConfig('viewer-config');
-}
-
-function setText(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = value == null ? '—' : String(value);
-}
 
 function buildStage(scene) {
   for (const nodo of Object.values(vaivenDosNodos.nodos)) {
@@ -88,17 +82,12 @@ function emptyMapSlice() {
 
 async function main() {
   const cfg = readViewerConfig();
-  const container = document.getElementById('viewer-stage');
-  const canvas = document.getElementById('viewer-canvas');
-
-  const sceneManager = createSceneManager({
-    background: 0x05050a,
+  const stage = createViewerScene({
     camera: { fov: 60, near: 0.1, far: 500, position: [14, 10, 20] },
     controls: { minDistance: 4, maxDistance: 120, maxPolarAngle: Math.PI / 2 }
   });
-  if (canvas) canvas.style.display = 'none';
-  sceneManager.init(container);
-  buildStage(sceneManager.getScene());
+  const { sceneManager, scene } = stage;
+  buildStage(scene);
 
   const adapter = createMapSceneAdapter({
     scene: vaivenDosNodos,
@@ -117,7 +106,7 @@ async function main() {
     presence: ({ actorId }) => setText('hud-event', `join · ${actorId}`)
   };
 
-  const room = createBrowserRoomClient(cfg);
+  const room = connectRoom(cfg);
 
   const choreographer = createEventChoreographer({
     adapter,
@@ -128,12 +117,12 @@ async function main() {
     hud
   });
 
-  sceneManager.onBeforeRender((dt) => {
+  stage.onFrame((dt) => {
     adapter.applySnapshot(authoritativeMap);
     adapter.update(dt);
     choreographer.update?.(dt);
   });
-  sceneManager.startRenderLoop();
+  stage.start();
 
   room.onRoomEvent('PING', (payload) => choreographer.onPing(payload));
   room.onRoomEvent('PONG', (payload) => choreographer.onPong(payload));
@@ -150,18 +139,10 @@ async function main() {
     choreographer.onSnapshot(snapshot, envelope);
   });
 
-  try {
-    await room.connect();
-    setText('hud-conn', 'connected');
-  } catch (err) {
-    console.warn('[viewer] room connect failed:', err);
-    setText('hud-conn', 'offline');
-  }
-
   window.addEventListener('beforeunload', () => {
     room.disconnect();
     adapter.dispose();
-    sceneManager.dispose();
+    stage.dispose();
   });
 }
 

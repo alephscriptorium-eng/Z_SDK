@@ -16,14 +16,16 @@ import {
   createCounters,
   readViewerConfig,
   connectRoom,
+  createLogPanel
+} from '@zeus/view-kit';
+import {
   channelFor,
   emitterOf,
   classifyRole,
   roleStyle,
   KNOWN_ROLES,
-  createHub,
-  createLogPanel
-} from '../kit/index.mjs';
+  createHub
+} from '../monitor/index.mjs';
 
 const HUB_POS = new THREE.Vector3(0, 6, -6);
 const LANE_SPACING = 3.2;

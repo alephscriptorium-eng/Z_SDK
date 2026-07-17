@@ -8,6 +8,7 @@
  *   /vendor/three      → node_modules/three (build/ + examples/jsm as three/addons/)
  *   /vendor/socket.io  → socket.io-client browser ESM dist
  *   /kit               → @zeus/ui-3d-kit browser-safe src/ (raw)
+ *   /view-kit          → @zeus/view-kit browser-safe src/ (raw)
  *   /models            → @zeus/ui-3d-kit assets/models (GLBs)
  *   /health            → { status: ok }
  *   /                  → 3D viewer shell (import map + canvas + injected config)
@@ -22,6 +23,7 @@ import { assetsDir as uiKitAssetsDir, createThemeRoutes } from '@zeus/ui-kit';
 import { browserAssetsDir as roomClientAssetsDir } from '@zeus/room-client-browser';
 import { createThemeHandler } from '@zeus/app-shell/create-theme-handler';
 import { srcDir, modelsDir, getThreeDir } from '@zeus/ui-3d-kit/node';
+import { srcDir as viewKitSrcDir } from '@zeus/view-kit/node';
 import { srcDir as gameEngineSrcDir } from '@zeus/game-engine/node';
 import { srcDir as sessionProtocolSrcDir } from '@zeus/session-protocol';
 
@@ -87,6 +89,7 @@ export async function createPlayer3dServer(options = {}) {
 
   // Kit source (browser-safe) + placeholder GLB models.
   app.use('/kit', express.static(srcDir));
+  app.use('/view-kit', express.static(viewKitSrcDir));
   app.use('/game-engine', express.static(gameEngineSrcDir));
   app.use('/models', express.static(modelsDir));
   app.use('/protocol', express.static(sessionProtocolSrcDir));

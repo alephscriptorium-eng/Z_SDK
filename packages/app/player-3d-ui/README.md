@@ -2,8 +2,8 @@
 
 Visor de **sesión 3D** (:3018) — cliente room del runtime scriptorium. Express,
 server-rendered, sin bundler: sirve la shell + los assets crudos de
-[`@zeus/ui-3d-kit`](../../lib/ui-3d-kit) y three.js vendorizado, y el navegador
-resuelve todo por import map.
+[`@zeus/ui-3d-kit`](../../lib/ui-3d-kit), [`@zeus/view-kit`](../../lib/view-kit)
+y three.js vendorizado; el navegador resuelve todo por import map.
 
 ## Qué rinde
 
@@ -56,7 +56,7 @@ coreografiar.
 ## Rutas
 
 `/` shell (import map + canvas + `#viewer-config`) · `/health` json ok ·
-`/kit` fuentes crudas del kit · `/models` GLB placeholder · `/vendor/three` ·
+`/kit` ui-3d-kit · `/view-kit` · `/models` GLB placeholder · `/vendor/three` ·
 `/vendor/socket.io` · `/assets` shell ui-kit.
 
 ## Test

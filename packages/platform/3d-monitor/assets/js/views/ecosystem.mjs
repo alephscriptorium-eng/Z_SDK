@@ -16,7 +16,9 @@ import {
   setText,
   createCounters,
   readViewerConfig,
-  connectRoom,
+  connectRoom
+} from '@zeus/view-kit';
+import {
   channelFor,
   emitterOf,
   classifyRole,
@@ -25,7 +27,7 @@ import {
   createHub,
   createMarker,
   createBlackHole
-} from '../kit/index.mjs';
+} from '../monitor/index.mjs';
 
 const CENTER = new THREE.Vector3(0, 0.5, 0);
 const BLACK_HOLE_POS = new THREE.Vector3(0, 2.5, -16);

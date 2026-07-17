@@ -40,7 +40,7 @@ import {
   createLabelSprite,
   createGlowSprite,
   onChannelEvent
-} from '../kit/index.mjs';
+} from '@zeus/view-kit';
 
 const SCENE = vaivenDosNodos;
 const PUPPET_URL = '/models/SK_Alephillo.glb';
