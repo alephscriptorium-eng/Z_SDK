@@ -25,7 +25,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   actual (o lista de excepciones justificadas para lo preexistente).
   **Demolición:** n/a.
 
-- 🔶 **WP-U02 · Identidad del juego: delta** — en curso (lote-0a / 2026-07-17) — (D-8) — retirar el nombre
+- ✅ **WP-U02 · Identidad del juego: delta** — aceptado (orquestador / 2026-07-17) — (D-8) — retirar el nombre
   «CAUDAL» en favor de **delta**: títulos y prosa de
   `packages/arg/spec/*.md`, README de arg, y las cadenas/banners en código
   (~10 archivos: arg-console kit/vistas/server, authority, launch, contract).
@@ -53,6 +53,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 ### Cola hallazgos lote 0a
 
 Diferidos del reporte WP-U01 (no bloquean cierre):
+- residual CAUDAL en `e2e/arg-*.mjs` y `.vscode/tasks.json` (fuera de CA U02)
 - typo `CLIENT_SUSCRIBE`
 - `readInjectedRoomConfig` sin export
 - `Date.now()` como default user
