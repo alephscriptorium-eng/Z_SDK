@@ -28,6 +28,8 @@ const IMPORT_MAP = {
     'socket.io-client': '/vendor/socket.io/socket.io.esm.min.js',
     '@zeus/ui-3d-kit': '/kit/index.mjs',
     '@zeus/ui-3d-kit/': '/kit/',
+    '@zeus/view-kit': '/view-kit/index.mjs',
+    '@zeus/view-kit/': '/view-kit/',
     '@zeus/game-engine': '/game-engine/index.mjs',
     '@zeus/game-engine/': '/game-engine/',
     '@zeus/session-protocol/projection': '/protocol/projection/index.mjs'

@@ -1,7 +1,7 @@
 {
   "name": "@zeus/3d-monitor",
   "version": "0.1.0",
-  "description": "3D monitor — portal of 3D views over the scriptorium runtime (radial room-traffic, bots ecosystem, demo:bots visual log) built on a reusable view kit",
+  "description": "3D monitor — portal of 3D views over the scriptorium runtime (radial room-traffic, bots ecosystem, demo:bots visual log) on @zeus/view-kit",
   "type": "module",
   "main": "src/server.mjs",
   "scripts": {
@@ -19,6 +19,7 @@
     "@zeus/room-client-browser": "*",
     "@zeus/ui-3d-kit": "*",
     "@zeus/ui-kit": "*",
+    "@zeus/view-kit": "*",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "hyperaxe": "^3.0.2",

@@ -41,7 +41,7 @@ test('GET / → 200 shell with import map + viewer-config', async (t) => {
   assert.match(html, /viewer-main\.mjs/);
 });
 
-test('GET /kit/index.mjs → 200 (raw kit source served)', async (t) => {
+test('GET /kit/index.mjs → 200 (raw ui-3d-kit source served)', async (t) => {
   const handle = await createPlayer3dServer({ port: 0 });
   t.after(() => handle.close());
   const { port } = handle;
@@ -50,6 +50,17 @@ test('GET /kit/index.mjs → 200 (raw kit source served)', async (t) => {
   assert.equal(res.status, 200);
   const body = await res.text();
   assert.match(body, /createSceneManager/);
+});
+
+test('GET /view-kit/index.mjs → 200 (raw @zeus/view-kit served)', async (t) => {
+  const handle = await createPlayer3dServer({ port: 0 });
+  t.after(() => handle.close());
+  const { port } = handle;
+
+  const res = await fetch(`http://localhost:${port}/view-kit/index.mjs`);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /createViewerScene/);
 });
 
 test('GET /vendor/socket.io/socket.io.esm.min.js → 200', async (t) => {
@@ -85,6 +96,10 @@ test('serves the whole browser import+asset chain (no 404s)', { skip: threeAvail
     '/assets/js/viewer-main.mjs',
     '/assets/js/event-choreographer.mjs',
     '/assets/room-client/room-client.browser.mjs',
+    '/view-kit/index.mjs',
+    '/view-kit/scene.mjs',
+    '/view-kit/hud.mjs',
+    '/view-kit/room.mjs',
     '/kit/puppet/puppet.mjs',
     '/kit/core/scene-manager.mjs',
     '/kit/engine/walk-driver.mjs',

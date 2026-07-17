@@ -166,7 +166,7 @@ Diferidos del reporte/revisión WP-U13 (no bloquean cierre; cierra ola 1):
 
 ### Cola hallazgos ola 2
 
-Diferidos / laterales (no bloquean U21–U22; A-05 no bloquea U23):
+Diferidos / laterales (no bloquean U21/U24; A-05 no bloquea U23):
 - A-05: simetría dual-wire / transporte desnudo|envuelto+dedup en
   arg-console, 3d-monitor, player-mcp-kit (lateral; no bloquear U23)
 
@@ -174,7 +174,7 @@ Diferidos / laterales (no bloquean U21–U22; A-05 no bloquea U23):
 
 Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
 - e2e:arg G-ARG-E2E.10 flaky (timeout track:cast; 1ª rojo / 2ª verde)
-- `packages/platform/3d-monitor` aún tiene `assets/js/kit/` propio — WP-U22
+- ~~`packages/platform/3d-monitor` aún tiene `assets/js/kit/` propio — WP-U22~~ → **cumplida en WP-U22**
 - colisión de nombre: arg-console `src/view-kit/` (SSR defineView) ≠
   `@zeus/view-kit` (browser) — U21 puede alinear/renombrar el SSR
 - clave localStorage de paneles `vk:…` (antes `delta:…`): posiciones
@@ -198,8 +198,17 @@ Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
   **Demolición:** `arg-console/src/config.mjs` divergente y el comentario «a
   propósito NO usa createAppConfig».
 
-- 🔶 **WP-U22 · 3d-monitor y player-3d-ui sobre view-kit** *(dep U20)* — en
-  curso (lote-2b / orquestador / 2026-07-17) — migrar sus vistas al view-kit;
+### Cola hallazgos ola 2 (WP-U22)
+
+Diferidos del reporte/revisión WP-U22 (no bloquean cierre):
+- `plan/ARQUITECTURA.md` §1 desactualizado post-U20/U22 (kit arg-console /
+  solape 3d-monitor) — higiene orquestador
+- colisión SSR `src/view-kit/` vs `@zeus/view-kit` en 3d-monitor — misma
+  deuda U20; U21 puede alinear
+- vista humana demos 3d ⏳ (headless OK por brief)
+- escenas didácticas mínimas en `examples/` (apps quedan mesh / D-9)
+
+- ✅ **WP-U22 · 3d-monitor y player-3d-ui sobre view-kit** *(dep U20)* — aceptado (orquestador / 2026-07-17) — migrar sus vistas al view-kit;
   evaluar en el reporte si tras la migración merecen vivir como apps o pasar
   a `examples/`.
   **CA:** sus e2e (`e2e:player-3d`, vistas de 3d-monitor) verdes; diff
@@ -207,8 +216,15 @@ Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
   **Demolición:** el view-kit ancestro duplicado en 3d-monitor (de donde nació
   el de arg-console — el círculo se cierra).
 
-- 🔶 **WP-U24 · authority-kit fuerza envelope `game`** *(dep U11; gate pre-U23)* —
-  en curso (lote-2b / orquestador / 2026-07-17) — Cerrar A-02: `startAuthority`
+### Cola hallazgos ola 2 (WP-U24)
+
+Diferidos del reporte/revisión WP-U24 (no bloquean cierre ni U23):
+- Ledger `kind` vs `entryKind`: AsyncAPI/`makeEnvelope` usan `kind: 'ledger'`
+  y `entryKind` para el discriminante de hecho; consumidores aún leen
+  `entry.kind === 'label'|…`. El kit publica ambos. Migrar a `entryKind`
+  (dejar `kind: 'ledger'` en envelope) = WP futuro; no es A-05.
+
+- ✅ **WP-U24 · authority-kit fuerza envelope `game`** *(dep U11; gate pre-U23)* — aceptado (orquestador / 2026-07-17) — Cerrar A-02: `startAuthority`
   exige `game` (string no vacío) y publica `state|track|ledger` vía
   `makeEnvelope` de `@zeus/protocol` (hoy el kit no cablea `makeEnvelope` en
   producción; payloads salen sin `game`). Intent ya va tipado; objetivo 4/4
