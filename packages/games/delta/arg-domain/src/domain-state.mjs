@@ -5,6 +5,11 @@
  */
 
 import { sampleLink, linkDistance } from '@zeus/game-engine';
+import {
+  normalizeForceRegistry,
+  initialActiveForces,
+  cotasSnapshot
+} from '@zeus/linea-kit/force-activation';
 import { deltaV0, buildCanteraTopology, buildNavGraph } from './scenes/delta-v0.mjs';
 import { createFlowEngine } from './flow-engine.mjs';
 import { createMazeEngine } from './maze-engine.mjs';
@@ -30,7 +35,8 @@ export function createArgDomainState({
   scene = deltaV0,
   feeds,
   gamemap = DEFAULT_GAMEMAP,
-  lineSeed = DEFAULT_LINE_SEED
+  lineSeed = DEFAULT_LINE_SEED,
+  forcesRegistry = null
 } = {}) {
   if (!feeds) throw new Error('createArgDomainState: feeds requerido (resolveFeeds)');
 
@@ -41,6 +47,13 @@ export function createArgDomainState({
   const flow = createFlowEngine(scene, feeds.firehose);
   const nav = buildNavGraph(scene, topology);
   const lineBoard = createLineBoard(gamemap.lines ?? lineSeed);
+
+  const forcesReg =
+    forcesRegistry == null
+      ? null
+      : normalizeForceRegistry(forcesRegistry);
+  /** @type {Set<string>} */
+  const activeForces = new Set(forcesReg ? initialActiveForces(forcesReg) : []);
 
   const actors = {};
   const contacts = {};
@@ -82,6 +95,9 @@ export function createArgDomainState({
       corridors: maze.corridors,
       contacts,
       lines: lineBoard.lines,
+      forces: forcesReg
+        ? { registry: forcesReg, active: [...activeForces] }
+        : null,
       dropletUnder: (riverId, prog) => flow.dropletUnder(riverId, prog),
       seaDroplets: () => flow.sea.droplets,
       seaDropletById: (id) => flow.seaDropletById(id),
@@ -150,6 +166,12 @@ export function createArgDomainState({
             ...(op.ref != null ? { ref: op.ref } : {}),
             detail: op.detail ?? {}
           });
+          break;
+        case 'force:activate':
+          activeForces.add(op.forceId);
+          break;
+        case 'force:deactivate':
+          activeForces.delete(op.forceId);
           break;
         case 'contact:set':
           contacts[op.contact.id] = op.contact;
@@ -316,7 +338,7 @@ export function createArgDomainState({
             ts: Date.now(),
             actorId: payload.actorId,
             ref: result.trackCast.ref,
-            hint: 'firehose-browser'
+            hint: result.trackCast.hint ?? trackHintFor(result.trackCast.ref.kind)
           });
         }
       }
@@ -379,7 +401,18 @@ export function createArgDomainState({
         objetivo: {
           labeled: [progress.labeled, gamemap.objetivo.labeled],
           excavated: [progress.excavated, gamemap.objetivo.excavated]
-        }
+        },
+        forces: forcesReg
+          ? {
+              active: [...activeForces],
+              boot: forcesReg.boot,
+              session_budget: forcesReg.activation.session_budget,
+              cotas: cotasSnapshot(forcesReg, {
+                collapsed: Boolean(flow.sea.collapsed),
+                victory: progress.objetivoMet
+              })
+            }
+          : null
       };
     },
 

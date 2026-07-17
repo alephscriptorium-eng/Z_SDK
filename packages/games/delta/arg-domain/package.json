@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@zeus/game-engine": "*",
+    "@zeus/linea-kit": "*",
     "@zeus/protocol": "*"
   },
   "devDependencies": {

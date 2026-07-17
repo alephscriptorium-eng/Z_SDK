@@ -71,4 +71,64 @@ describe('pozo domain', () => {
     assert.equal(r.ok, false);
     assert.equal(r.error, 'rol_no_autorizado');
   });
+
+  const U92_FORCES = {
+    boot: 'boot-x',
+    activation: {
+      session_budget: { max_active_forces: 2, boot_always_on: true },
+      exclusions: [{ pair: ['force-p', 'force-q'], reason: 'exclusive' }],
+      cotas: { lower: 'cota-lo', upper: 'cota-hi' }
+    },
+    forces: [
+      { id: 'boot-x', kind: 'boot', anchor_scene: 'sesion-01/01-boot' },
+      { id: 'force-p', kind: 'force', anchor_scene: 'sesion-01/01-p' },
+      { id: 'force-q', kind: 'force', anchor_scene: 'sesion-01/01-q' },
+      { id: 'force-r', kind: 'force', anchor_scene: 'sesion-01/01-r' }
+    ],
+    cotas: [
+      { id: 'cota-lo', bound: 'lower', pole: 'colapso' },
+      { id: 'cota-hi', bound: 'upper', pole: 'victoria' }
+    ]
+  };
+
+  it('WP-U92 force:activate — ledger + track; 3ª force y par excluido', () => {
+    const d = createPozoDomainState({ now: () => 5000, forcesRegistry: U92_FORCES });
+    assert.deepEqual(d.snapshot('t').forces.active, ['boot-x']);
+
+    const ok = d.applyIntent(
+      makeIntent('op', 'force:activate', { forceId: 'force-p' }, { role: 'operator' })
+    );
+    assert.equal(ok.ok, true);
+    const out = d.drainOutbox();
+    assert.equal(out.ledger[0].kind, 'force:activate');
+    assert.equal(out.tracks[0].ref.uri, 'force://force-p/scene/sesion-01/01-p');
+
+    const third = d.explainIntent(
+      makeIntent('op', 'force:activate', { forceId: 'force-r' }, { role: 'dj' })
+    );
+    assert.equal(third.error, 'session_budget_exceeded');
+
+    const wide = createPozoDomainState({
+      now: () => 1,
+      forcesRegistry: {
+        ...U92_FORCES,
+        activation: {
+          ...U92_FORCES.activation,
+          session_budget: { max_active_forces: 3, boot_always_on: true }
+        }
+      }
+    });
+    assert.equal(
+      wide.applyIntent(
+        makeIntent('op', 'force:activate', { forceId: 'force-p' }, { role: 'operator' })
+      ).ok,
+      true
+    );
+    assert.equal(
+      wide.explainIntent(
+        makeIntent('op', 'force:activate', { forceId: 'force-q' }, { role: 'operator' })
+      ).error,
+      'pair_excluded'
+    );
+  });
 });

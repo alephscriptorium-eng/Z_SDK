@@ -316,3 +316,82 @@ test('WP-U32 operator: inspect → ledger; player rechazado', () => {
   assert.equal(entry.detail?.targetId, 'spawn');
   assert.equal(entry.detail?.label, 'look');
 });
+
+const U92_FORCES = {
+  boot: 'boot-x',
+  activation: {
+    session_budget: { max_active_forces: 2, boot_always_on: true },
+    exclusions: [{ pair: ['force-p', 'force-q'], reason: 'exclusive' }],
+    cotas: { lower: 'cota-lo', upper: 'cota-hi' }
+  },
+  forces: [
+    { id: 'boot-x', kind: 'boot', anchor_scene: 'sesion-01/01-boot' },
+    { id: 'force-p', kind: 'force', anchor_scene: 'sesion-01/01-p' },
+    { id: 'force-q', kind: 'force', anchor_scene: 'sesion-01/01-q' },
+    { id: 'force-r', kind: 'force', anchor_scene: 'sesion-01/01-r' }
+  ],
+  cotas: [
+    { id: 'cota-lo', bound: 'lower', pole: 'colapso', anchor_scene: 'sesion-01/01-lo' },
+    { id: 'cota-hi', bound: 'upper', pole: 'victoria', anchor_scene: 'sesion-01/01-hi' }
+  ]
+};
+
+test('WP-U92 force:activate → ledger + track; budget y exclusión en dry-run', () => {
+  const state = createArgDomainState({
+    feeds: resolveFeeds({ mode: 'synthetic', seed: 11 }),
+    gamemap: { id: 'gm-force', objetivo: { labeled: 99, excavated: 99 } },
+    forcesRegistry: U92_FORCES
+  });
+
+  const snap0 = state.snapshot();
+  assert.deepEqual(snap0.forces.active, ['boot-x']);
+  assert.equal(snap0.forces.cotas.lower, 'cota-lo');
+  assert.equal(snap0.forces.cotas.upper, 'cota-hi');
+  assert.equal(snap0.forces.cotas.pole, 'entre');
+
+  const asPlayer = state.applyIntent(
+    makeIntent('p', 'force:activate', { forceId: 'force-p' }, { role: 'player' })
+  );
+  assert.equal(asPlayer.error, 'rol_no_autorizado');
+
+  const ok = state.applyIntent(
+    makeIntent('dj-1', 'force:activate', { forceId: 'force-p' }, { role: 'dj' })
+  );
+  assert.equal(ok.ok, true);
+  assert.deepEqual(state.snapshot().forces.active, ['boot-x', 'force-p']);
+
+  const out = state.drainOutbox();
+  const led = out.ledger.find((e) => e.kind === 'force:activate');
+  assert.ok(led, 'ledger force:activate');
+  assert.equal(led.detail.forceId, 'force-p');
+  const tr = out.tracks.find((t) => t.hint === 'force-browser');
+  assert.ok(tr, 'track ancla');
+  assert.equal(tr.ref.uri, 'force://force-p/scene/sesion-01/01-p');
+
+  const third = state.applyIntent(
+    makeIntent('dj-1', 'force:activate', { forceId: 'force-r' }, { role: 'operator' })
+  );
+  assert.equal(third.ok, false);
+  assert.equal(third.error, 'session_budget_exceeded');
+  assert.equal(state.drainOutbox().ledger.length, 0);
+
+  const wide = createArgDomainState({
+    feeds: resolveFeeds({ mode: 'synthetic', seed: 12 }),
+    gamemap: { id: 'gm-force2', objetivo: { labeled: 99, excavated: 99 } },
+    forcesRegistry: {
+      ...U92_FORCES,
+      activation: {
+        ...U92_FORCES.activation,
+        session_budget: { max_active_forces: 3, boot_always_on: true }
+      }
+    }
+  });
+  assert.equal(
+    wide.applyIntent(makeIntent('op', 'force:activate', { forceId: 'force-p' }, { role: 'operator' })).ok,
+    true
+  );
+  assert.equal(
+    wide.applyIntent(makeIntent('op', 'force:activate', { forceId: 'force-q' }, { role: 'operator' })).error,
+    'pair_excluded'
+  );
+});

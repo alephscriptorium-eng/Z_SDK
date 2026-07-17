@@ -9,8 +9,8 @@ Segundo juego mínimo del monorepo (D-8 / regla de los dos juegos). Nace en
 
 | pieza | ruta |
 | ----- | ---- |
-| Dominio puro | `src/domain.mjs` — pozo, nodos, feed drip, intent `draw_drop` → ledger |
-| Contrato | `src/contract.mjs` — `game: 'pozo'`, catálogo intents |
+| Dominio puro | `src/domain.mjs` — pozo, nodos, feed drip, `draw_drop` + `force:activate`/`force:deactivate` (WP-U92) |
+| Contrato | `src/contract.mjs` — `game: 'pozo'`, catálogo intents (player + operator/dj forces) |
 | Autoridad | `src/authority.mjs` — `startAuthority({ game: 'pozo', … })` |
 | MCP jugador | `src/player-mcp/` — tools `player_join` / `player_draw_drop` / `player_state` |
 | Vista | `src/view/` + `assets/js/pozo-main.mjs` — view-kit |

@@ -436,3 +436,93 @@ test('milestone (dj): solo sobre curated sin milestone previo', () => {
     'no_curado'
   );
 });
+
+/** Registry sintético para WP-U92 (ids de fixture, no corpus DISK_03). */
+function forcesView(active = ['boot-x']) {
+  return {
+    registry: {
+      boot: 'boot-x',
+      activation: {
+        session_budget: { max_active_forces: 2, boot_always_on: true },
+        exclusions: [{ pair: ['force-p', 'force-q'], reason: 'exclusive' }],
+        cotas: { lower: 'cota-lo', upper: 'cota-hi' }
+      },
+      forcesById: {
+        'boot-x': { id: 'boot-x', kind: 'boot', anchor_scene: 'sesion-01/01-boot' },
+        'force-p': { id: 'force-p', kind: 'force', anchor_scene: 'sesion-01/01-p' },
+        'force-q': { id: 'force-q', kind: 'force', anchor_scene: 'sesion-01/01-q' },
+        'force-r': { id: 'force-r', kind: 'force', anchor_scene: 'sesion-01/01-r' }
+      },
+      cotasById: {
+        'cota-lo': { id: 'cota-lo', bound: 'lower', pole: 'colapso' },
+        'cota-hi': { id: 'cota-hi', bound: 'upper', pole: 'victoria' }
+      }
+    },
+    active
+  };
+}
+
+test('force:activate: válido → ops + trackCast ancla; 3ª force y par excluido rechazan', () => {
+  const view = deepFreeze({ ...makeView(), forces: forcesView(['boot-x']) });
+  const ok = reduceArgIntent(
+    view,
+    makeIntent('op', 'force:activate', { forceId: 'force-p', role: 'operator' })
+  );
+  assert.equal(ok.ok, true);
+  assert.equal(ok.ops[0].op, 'force:activate');
+  assert.equal(ok.ops[1].op, 'ledger:push');
+  assert.equal(ok.ops[1].entryKind, 'force:activate');
+  assert.equal(ok.trackCast.ref.uri, 'force://force-p/scene/sesion-01/01-p');
+  assert.equal(ok.trackCast.hint, 'force-browser');
+
+  const full = deepFreeze({ ...makeView(), forces: forcesView(['boot-x', 'force-p']) });
+  assert.equal(
+    reduceArgIntent(
+      full,
+      makeIntent('op', 'force:activate', { forceId: 'force-r', role: 'dj' })
+    ).error,
+    'session_budget_exceeded'
+  );
+
+  const exclReg = {
+    ...forcesView(['boot-x', 'force-p']).registry,
+    activation: {
+      ...forcesView().registry.activation,
+      session_budget: { max_active_forces: 3, boot_always_on: true }
+    }
+  };
+  const excl = deepFreeze({
+    ...makeView(),
+    forces: { registry: exclReg, active: ['boot-x', 'force-p'] }
+  });
+  assert.equal(
+    reduceArgIntent(
+      excl,
+      makeIntent('op', 'force:activate', { forceId: 'force-q', role: 'operator' })
+    ).error,
+    'pair_excluded'
+  );
+
+  assert.equal(
+    reduceArgIntent(makeView(), makeIntent('op', 'force:activate', { forceId: 'force-p', role: 'operator' }))
+      .error,
+    'forces_no_configuradas'
+  );
+});
+
+test('force:deactivate: quita force; boot bloqueado', () => {
+  const view = deepFreeze({ ...makeView(), forces: forcesView(['boot-x', 'force-p']) });
+  const ok = reduceArgIntent(
+    view,
+    makeIntent('op', 'force:deactivate', { forceId: 'force-p', role: 'dj' })
+  );
+  assert.equal(ok.ok, true);
+  assert.equal(ok.ops[0].op, 'force:deactivate');
+  assert.equal(
+    reduceArgIntent(
+      view,
+      makeIntent('op', 'force:deactivate', { forceId: 'boot-x', role: 'operator' })
+    ).error,
+    'boot_no_desactivable'
+  );
+});
