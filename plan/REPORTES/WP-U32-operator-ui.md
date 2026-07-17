@@ -130,4 +130,45 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador). Sin merge ni ✅ BACKLOG en esta
+pasada (pedido explícito del usuario; autorización queda pendiente de
+merge+✅ en master). Sin push. Cierra Ola 3 al aceptar formalmente en master.
+
+### Verificado
+
+- Diff vs master: ya al día (merge-base = master `041a3f3`); no hizo falta
+  merge. 6 commits convencionales (`refactor!` / `feat` / `feat!` / `test` /
+  docs reporte); 35 archivos; +1453/−897. Alcance U32 (operator-bridge
+  contrato único + room-client-browser + intent `inspect` + operator-ui +
+  e2e). Worker **no** tocó `plan/BACKLOG.md` ni `packages/arg/spec/BACKLOG.md`.
+- operator-bridge: `onState`/`onLedger` + `projectOperatorSlice` +
+  `makeOperatorIntent` (rol `operator`); WIRE `state`/`arg:state` + ledger;
+  cero `session:*` / `onSessionEvent` en código vivo.
+- operator-ui: `ZeusOperatorBridgeService` + `OperatorHud`; borrados
+  ZeusSession*, session-hud, local-projection stub. Bundle e2e sin
+  `session:*` (G-U32.3 / G-DUI.3).
+- Demolición: grep `session:state|selection:cast|ZeusSession|local-projection|
+  onSessionEvent` → solo nota histórica en `INTEGRATION.md`. Comentarios
+  threejs «Live session» = UI layout (hallazgo cleanup; no protocolo).
+- CA roles e2e: inspect operator → ledger; inspect player →
+  `rol_no_autorizado` (G-U32.5 / G-DUI.2 + unit arg-domain).
+- PRACTICAS §1.11: delta verde (e2e + arg-domain); pozo sin operator-ui
+  (documentado) + `test:pozo` verde; `gates` limpio. Auto-revisión §3
+  honesta. Hallazgos (OpenAPI CRLF, lock ghost, threejs rename, session.js
+  debug) fuera de alcance — cola cleanup.
+
+### Re-CA (worktree, sin browser)
+
+- `npm run test:arg-domain` → **60 pass**, 0 fail
+- `npm run test:pozo` → **6 pass**, 0 fail
+- `npm run gates` → `gates: OK (0 offenders)`
+- `npm run test:operator-bridge` → **9 pass**, 0 fail
+- `npm run build:operator-ui` → OK
+- `npm run e2e:operator-ui` → OK (G-U32.0–G-U32.5; G-U32.5 player rejected)
+- `npm run e2e:dual-ui` → OK (G-DUI.0–G-DUI.3; G-DUI.2 player rejected)
+
+### Merge (cuando el usuario autorice)
+
+1. Merge `wp/u32-operator-ui` → master
+2. Orquestador en master: BACKLOG U32 🔶 → ✅ (cierra Ola 3)
+3. `git worktree remove` del worktree U32
