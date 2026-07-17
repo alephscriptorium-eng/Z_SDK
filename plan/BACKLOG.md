@@ -423,13 +423,31 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
   **Demolición:** el versionado lockstep manual y cualquier script de publish
   provisional de WP-U50 que el pipeline sustituya.
 
-- 🔶 **WP-U52 · Auditoría de vías muertas** *(última)* — en curso
-  (ola-5 / orquestador / 2026-07-17) — barrido final: por
+- ✅ **WP-U52 · Auditoría de vías muertas** *(última)* — aceptado
+  (orquestador / 2026-07-17) — barrido final: por
   cada paquete, lista de consumidores reales (grep de imports); cero
   huérfanos, cero TODO sin backlog, cero código comentado, READMEs veraces.
   Produce el reporte de cierre de la refundación.
   **CA:** reporte con la tabla paquete→consumidores completa; gates verdes.
   **Demolición:** todo lo que la auditoría encuentre, o WP nuevo si es grande.
+
+### Cola residual post-Ola 5 (WP-U52)
+
+Hallazgos grandes diferidos (no bloquean cierre de ola 5):
+
+- ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
+  registry o unificar install Angular con workspaces raíz. Sustituye los
+  `file:` vivos justificados hasta publish real del engine.
+  **CA:** operator-ui / threejs-ui-lib resuelven `@zeus/*` sin `file:`;
+  install aislado Angular verde.
+  **Demolición:** dependencias `file:` residuales en esos paquetes.
+
+- ⬜ **WP-U56 · Retirar wire vivo `session:*` del stack DJ** — player-ui /
+  socket-server / console-monitor / ping-pong; alinear a contrato room
+  `state`/`intent` (post-U32). Producto mesh, no solo higiene de README.
+  **CA:** cero emit/on `session:*` en el stack DJ vivo; demos/e2e del stack
+  usan el contrato room actual.
+  **Demolición:** allowlists y handlers `session:*` en esos paquetes.
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
 
