@@ -143,4 +143,43 @@ Ninguno. CA del WP cumplido localmente; push no intentado (política swarm).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17. Sin merge ni ✅ BACKLOG en esta
+pasada (pedido explícito); queda autorizado para merge+✅ en master. Sin push.
+Cierra Ola 4 al aceptar formalmente en master.
+
+### Verificado
+
+- Diff `master...wp/u41-docs-portal`: 29 archivos, alcance docs + READMEs +
+  reporte. Sin `plan/BACKLOG.md`. Sin código de producto fuera de alcance.
+  Rama al día con master (behind 0).
+- **CA `docs:build`:** re-ejecutado en worktree → exit 0 (vitepress 1.6.4,
+  build ~9.5s). Dist incluye guide/engine/editor/mesh/games/contracts/playbook
+  + `api/protocol/` + Redoc HTML.
+- **CA navegación / dead links:** `ignoreDeadLinks: false` en
+  `docs/.vitepress/config.mjs`; build verde ⇒ enlaces internos OK.
+- **CA protocolo muerto:** `rg` sin coincidencias en `docs/` + README raíz +
+  READMEs tocados (`session-protocol` / `MASTER de sesión` /
+  `sesión Scriptorium` / `session:state`).
+- Demolición coherente: portal nace limpio; framing muerto del README raíz /
+  `packages/arg` sustituido; no convive con contrato único.
+- Commits convencionales (`docs(portal)` / `docs(reportes)`). PRACTICAS §1–3
+  auto-revisión honesta (docs:dev navegador y gates marcados ⏳ — razonable
+  para WP puro docs).
+- Hallazgos mesh residuales (`player-3d-ui`, `3d-monitor`, `ping-pong-bots`)
+  confirmados en cola — **no bloquean** cierre U41 / Ola 4.
+
+### Merge
+
+Autorizado. Orden: merge `wp/u41-docs-portal` → master (cierra Ola 4). Tras
+merge: `git worktree remove` del worktree U41. ✅ BACKLOG en master lo aplica
+el orquestador en el ritual de merge (no en este commit de revisión).
+
+### Hallazgos → cola (no bloquean)
+
+1. READMEs mesh con protocolo muerto vivo (player-3d-ui, 3d-monitor,
+   ping-pong-bots).
+2. `@zeus/rooms` API residual `makeMaster` / `setState` + description
+   package.json.
+3. Varios `packages/lib/*` publicables sin README.
+4. Ruido CRLF/lockfile al regenerar specs (fuera del commit; esperado).
+5. `eslint.config.mjs` residual `session-protocol/browser` (post-U31).
