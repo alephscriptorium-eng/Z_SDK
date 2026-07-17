@@ -114,4 +114,31 @@ Ninguno. Listo para revisión del orquestador (sin tocar `plan/BACKLOG.md`).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-17 (orquestador)
+
+### Verificado
+
+- Diff `master...HEAD`: alcance acotado a identidad CAUDAL→delta en `packages/`
+  (+ reporte). Sin edición de `plan/BACKLOG.md`. `packages/arg/spec/BACKLOG.md`
+  solo títulos/prosa (no features). Rooms (`ARG_DELTA`), eventos `arg:*` y rutas
+  HTTP intactos; handshake `caudal-0.1`→`delta-0.1` es identidad (anotado por
+  el worker).
+- Demolición: `grep -ri CAUDAL packages/` limpio (exit 1); sin
+  «(antes CAUDAL)» en specs. Historia en git + D-8.
+- CA re-ejecutados en worktree:
+  - `grep -ri CAUDAL packages/` → sin matches (exit 1)
+  - `npm run test:arg` → exit 0
+  - `npm run e2e:arg` → 1ª corrida flake en G-ARG-E2E.10; 2ª y 3ª exit 0
+    (mismo gate verde). No atribuible al renombre; no bloquea aceptación.
+- Auto-revisión PRACTICAS §3 honesta; evidencia literal coherente.
+
+### Hallazgo e2e / `.vscode` (CAUDAL)
+
+Fuera del CA (`packages/` limpio). **Aceptable como follow-up** — no bloquear.
+Candidato a micro-WP de higiene (banners `e2e/*.mjs` + `.vscode/tasks.json`).
+
+### Merge
+
+Autorizado a merge en master. Preferencia ola 0: **U02 antes** de U00/U01 si
+hay choque de strings. Tras merge: ✅ en BACKLOG (solo orquestador, en master)
+y `git worktree remove` del worktree U02.
