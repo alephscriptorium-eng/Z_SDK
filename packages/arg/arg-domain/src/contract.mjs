@@ -25,9 +25,9 @@ export const GAME_ID = 'delta';
 
 /**
  * Nombres wire históricos de delta (`arg:*`).
- * El contrato canónico usa `state|intent|track|ledger` + `game` en envelope;
- * estos alias preservan comportamiento de transporte hasta que la autoridad
- * (U11) y las vistas migren al nombre canónico.
+ * El contrato canónico usa `state|intent|track|ledger` + `game` en envelope.
+ * La autoridad (U11) publica dual canónico + `arg:*`; las vistas siguen en
+ * `arg:*` hasta su migración.
  */
 export const EVENTS = {
   STATE: 'arg:state',

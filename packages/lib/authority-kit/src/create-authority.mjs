@@ -1,0 +1,279 @@
+/**
+ * Autoridad genérica: room client + tick + intents → reducer + state/ledger/track.
+ * El dominio (applyIntent/tick/snapshot/drainOutbox) lo aporta el juego.
+ * Node-only. Sin nombres de juego.
+ *
+ * `@zeus/rooms` se carga en diferido solo si no se inyectan createClient /
+ * connectAndJoin (permite unit tests sin el grafo de socket deps).
+ */
+
+import {
+  EVENTS as PROTOCOL_EVENTS,
+  checkSnapshotBudget,
+  SNAPSHOT_BUDGET_BYTES
+} from '@zeus/protocol';
+
+/**
+ * @param {string|string[]} value
+ * @returns {string[]}
+ */
+function asList(value) {
+  if (value == null) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+/**
+ * Normaliza el mapa de eventos (string o lista por kind).
+ * Default: kinds canónicos de `@zeus/protocol`.
+ *
+ * @param {Partial<{ STATE: string|string[], INTENT: string|string[], TRACK: string|string[], LEDGER: string|string[] }>|null} [events]
+ * @returns {{ STATE: string[], INTENT: string[], TRACK: string[], LEDGER: string[] }}
+ */
+export function normalizeEvents(events = null) {
+  const src = events ?? PROTOCOL_EVENTS;
+  return {
+    STATE: asList(src.STATE ?? PROTOCOL_EVENTS.STATE),
+    INTENT: asList(src.INTENT ?? PROTOCOL_EVENTS.INTENT),
+    TRACK: asList(src.TRACK ?? PROTOCOL_EVENTS.TRACK),
+    LEDGER: asList(src.LEDGER ?? PROTOCOL_EVENTS.LEDGER)
+  };
+}
+
+/**
+ * Estrategia por defecto de presupuesto de snapshot: si el dominio expone
+ * `contentRev()`, publica snapshot «lleno» cuando cambia la rev o vence el
+ * heartbeat; si no, siempre opts vacíos (el dominio decide qué incluir).
+ *
+ * @param {object} ctx
+ * @returns {{ opts: object, contentRev: number, isFull: boolean }}
+ */
+export function resolveContentRevSnapshotOpts(ctx) {
+  const { domain, now, lastContentRev, lastFullAt, heartbeatMs } = ctx;
+  if (typeof domain.contentRev !== 'function') {
+    return { opts: {}, contentRev: lastContentRev, isFull: true };
+  }
+  const contentRev = domain.contentRev();
+  const isFull =
+    contentRev !== lastContentRev || now - lastFullAt >= heartbeatMs;
+  return { opts: { full: isFull }, contentRev, isFull };
+}
+
+/**
+ * @param {object} client
+ * @param {string[]} names
+ * @param {object} payload
+ * @param {string} room
+ */
+function publishAll(client, names, payload, room) {
+  for (const name of names) {
+    client.room(name, payload, room);
+  }
+}
+
+/**
+ * @param {object} options
+ * @returns {Promise<{ createClient: Function, connectAndJoin: Function }>}
+ */
+async function resolveRoomFns(options) {
+  if (typeof options.createClient === 'function' && typeof options.connectAndJoin === 'function') {
+    return {
+      createClient: options.createClient,
+      connectAndJoin: options.connectAndJoin
+    };
+  }
+  const rooms = await import('@zeus/rooms');
+  return {
+    createClient: options.createClient ?? rooms.createClient,
+    connectAndJoin: options.connectAndJoin ?? rooms.connectAndJoin
+  };
+}
+
+/**
+ * Arranca la autoridad: conecta a la room, escucha intents, tickea y publica.
+ *
+ * @param {object} options
+ * @param {string} options.user
+ * @param {string} options.room
+ * @param {number} [options.tickMs=100]
+ * @param {number} [options.heartbeatMs=1000]
+ * @param {object} options.domain — { applyIntent, tick, snapshot, drainOutbox, contentRev? }
+ * @param {{ type?: string, features?: string[] }} [options.join]
+ * @param {object} [options.events] — mapa kind→nombre(s) wire; default canónico
+ * @param {(ctx: object) => { opts: object, contentRev: number, isFull: boolean }} [options.resolveSnapshotOpts]
+ * @param {boolean|((snap: object) => { ok: boolean, bytes: number, budget: number })} [options.snapshotBudget]
+ * @param {() => Promise<void>|void} [options.onShutdown]
+ * @param {(entry: object) => void} [options.onLedger]
+ * @param {(payload: object) => void} [options.onIntentAccepted]
+ * @param {(payload: object, error: string) => void} [options.onIntentRejected]
+ * @param {(msg: string, ...args: unknown[]) => void} [options.log]
+ * @param {(msg: string, ...args: unknown[]) => void} [options.warn]
+ * @param {Function} [options.createClient]
+ * @param {Function} [options.connectAndJoin]
+ * @param {boolean} [options.installSignalHandlers=true]
+ * @param {number|null} [options.exitOnSignal=0]
+ * @param {() => number} [options.now]
+ * @returns {Promise<{ client: object, stop: (exitCode?: number|null) => Promise<void>, publishState: (reason: string) => object, publishOutbox: () => number, events: object }>}
+ */
+export async function startAuthority(options) {
+  const {
+    user,
+    room,
+    tickMs = 100,
+    heartbeatMs = 1000,
+    domain,
+    join = {},
+    events: eventsOpt = null,
+    resolveSnapshotOpts = resolveContentRevSnapshotOpts,
+    snapshotBudget = false,
+    onShutdown = null,
+    onLedger = null,
+    onIntentAccepted = null,
+    onIntentRejected = null,
+    log = console.log.bind(console),
+    warn = console.warn.bind(console),
+    installSignalHandlers = true,
+    exitOnSignal = 0,
+    now = () => Date.now()
+  } = options;
+
+  if (!user || typeof user !== 'string') {
+    throw new TypeError('startAuthority: user (string) es obligatorio');
+  }
+  if (!room || typeof room !== 'string') {
+    throw new TypeError('startAuthority: room (string) es obligatorio');
+  }
+  if (!domain || typeof domain.applyIntent !== 'function') {
+    throw new TypeError('startAuthority: domain.applyIntent es obligatorio');
+  }
+  if (typeof domain.tick !== 'function') {
+    throw new TypeError('startAuthority: domain.tick es obligatorio');
+  }
+  if (typeof domain.snapshot !== 'function') {
+    throw new TypeError('startAuthority: domain.snapshot es obligatorio');
+  }
+  if (typeof domain.drainOutbox !== 'function') {
+    throw new TypeError('startAuthority: domain.drainOutbox es obligatorio');
+  }
+
+  const { createClient, connectAndJoin } = await resolveRoomFns(options);
+  const events = normalizeEvents(eventsOpt);
+  const budgetChecker =
+    snapshotBudget === true
+      ? (snap) => checkSnapshotBudget(snap, SNAPSHOT_BUDGET_BYTES)
+      : typeof snapshotBudget === 'function'
+        ? snapshotBudget
+        : null;
+
+  const client = createClient(user, { room });
+  let lastFullAt = 0;
+  let lastContentRev = Number.NaN;
+  let interval = null;
+  let stopped = false;
+  const signalCleanups = [];
+
+  function publishState(reason) {
+    const t = now();
+    const resolved = resolveSnapshotOpts({
+      domain,
+      now: t,
+      lastContentRev,
+      lastFullAt,
+      heartbeatMs
+    });
+    if (resolved.isFull) {
+      lastFullAt = t;
+      lastContentRev = resolved.contentRev;
+    }
+    const snapshot = domain.snapshot(reason, resolved.opts);
+    if (budgetChecker) {
+      const budget = budgetChecker(snapshot);
+      if (!budget.ok) {
+        warn(
+          `[${user}] snapshot over budget: ${budget.bytes} > ${budget.budget} bytes (reason=${reason})`
+        );
+      }
+    }
+    publishAll(client, events.STATE, { from: user, ...snapshot }, room);
+    return snapshot;
+  }
+
+  function publishOutbox() {
+    const out = domain.drainOutbox();
+    for (const track of out.tracks) {
+      publishAll(client, events.TRACK, track, room);
+    }
+    for (const entry of out.ledger) {
+      publishAll(client, events.LEDGER, entry, room);
+      if (onLedger) onLedger(entry);
+    }
+    return out.ledger.length + out.tracks.length;
+  }
+
+  function onIntent(data) {
+    const result = domain.applyIntent(data);
+    if (!result.ok) {
+      if (onIntentRejected) onIntentRejected(data, result.error);
+      else warn(`[${user}] intent rechazada (${result.error}):`, JSON.stringify(data));
+      return;
+    }
+    if (onIntentAccepted) onIntentAccepted(data);
+    else log(`[${user}] ← ${data.intent} · ${data.actorId}`);
+    publishOutbox();
+    publishState('change');
+  }
+
+  for (const intentEvent of events.INTENT) {
+    client.io.on(intentEvent, onIntent);
+  }
+
+  await connectAndJoin(client, user, {
+    type: join.type ?? 'Authority',
+    features: join.features ?? [],
+    room
+  });
+
+  publishState('change');
+
+  interval = setInterval(() => {
+    domain.tick(tickMs / 1000, now());
+    const emitted = publishOutbox();
+    publishState(emitted > 0 ? 'change' : 'heartbeat');
+  }, tickMs);
+
+  async function stop(exitCode = null) {
+    if (stopped) return;
+    stopped = true;
+    if (interval != null) {
+      clearInterval(interval);
+      interval = null;
+    }
+    for (const cleanup of signalCleanups) cleanup();
+    signalCleanups.length = 0;
+    log(`\n[${user}] saliendo`);
+    try {
+      client.io.close();
+    } catch {
+      /* ignore */
+    }
+    if (typeof onShutdown === 'function') await onShutdown();
+    if (exitCode != null) process.exit(exitCode);
+  }
+
+  if (installSignalHandlers) {
+    for (const signal of ['SIGINT', 'SIGTERM']) {
+      const handler = () => {
+        stop(exitOnSignal);
+      };
+      process.on(signal, handler);
+      signalCleanups.push(() => process.off(signal, handler));
+    }
+  }
+
+  return {
+    client,
+    stop,
+    publishState,
+    publishOutbox,
+    events
+  };
+}

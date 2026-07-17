@@ -1,0 +1,22 @@
+{
+  "name": "@zeus/authority-kit",
+  "version": "0.1.0",
+  "description": "Autoridad genérica Zeus: tick, intents vía reducer, state/ledger/track, presupuesto snapshot, arranque/parada",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./create-authority": "./src/create-authority.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/protocol": "*",
+    "@zeus/rooms": "*"
+  }
+}
