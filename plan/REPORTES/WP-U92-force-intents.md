@@ -116,4 +116,34 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (2026-07-18) — autorización de merge; **BACKLOG
+aún 🔶** (usuario/orquestador en master tras merge; este chat no marca ✅).
+
+### Verificado
+
+- Diff `master...wp/u92-force-intents` (5 commits: `be26ab3`…`253d578`):
+  19 archivos, alcance acotado — `linea-kit/force-activation`,
+  arg-domain + pozo (contract/reducer|domain + tests + README), changeset
+  linea-kit, reporte. Sin BACKLOG, sin CASOS U83, sin MCP mutate.
+- Re-CA (worktree): `linea-kit` 26/26 · `arg-domain` 63/63 · `pozo` 7/7 ·
+  `gates: OK (0 offenders)`.
+- Regla dos juegos: motor puro con registry inyectado; ids sintéticos en
+  tests (`boot-x`/`force-p`…); delta y pozo importan
+  `@zeus/linea-kit/force-activation`. Roles `operator`/`dj` en ambos
+  contratos.
+- PRACTICAS: sin símbolos legacy; commits convencionales; auto-revisión
+  honesta (`⏳` arranque authority). Worker no tocó BACKLOG.
+
+### Hallazgos → cola (no arreglar aquí)
+
+1. Authority/demo sin `forcesRegistry` → `forces_no_configuradas`.
+2. `resolveTrackRef` no resuelve `force://` (deep-link pendiente).
+3. Worktree: hace falta `npm install` local para exports nuevos.
+4. `pairs_with` blando (solo exclusiones hard) — WP aparte si se endurece.
+
+### Merge
+
+Serializar vs **WP-U83** (ambos pueden tocar delta/pozo). Hoy U83 worktree
+sigue en `cc67841` sin commits de producto — solape de archivos vacío.
+Orden sugerido: merge U92 primero (mecanismo acotado); luego U83. Push:
+no intentado.
