@@ -523,8 +523,8 @@ Hallazgos diferidos U80 (no bloquean):
   gitignored del árbol principal; hace falta `ZEUS_VOLUMES_ROOT` o
   symlinks locales (runbook; no WP si basta documentar).
 
-- 🔶 **WP-U81 · Herramientas de segmentación del dramaturgo** *(dep U80)* —
-  en curso (lote-7a / orquestador / 2026-07-17) — migrar el CONCEPTO de los
+- ✅ **WP-U81 · Herramientas de segmentación del dramaturgo** *(dep U80)* —
+  aceptado (orquestador / 2026-07-18) — migrar el CONCEPTO de los
   pythons (segment_linea, segment_poder, fetch_wp_historia, fetch_snapshot —
   punteros en DATOS.md §7) a herramientas JS del kit de línea: `crear-linea` (scaffolding desde placeholders:
   nodos.yaml de ejemplo, registry, carpetas), `segmentar` (historial →
@@ -548,6 +548,14 @@ Hallazgos diferidos U80 (no bloquean):
   sirve por un linea-system apuntado a ella; documentado como tutorial.
   **Demolición:** n/a (nacimiento; los pythons viven en network-engine, fuera
   de este repo).
+
+### Cola hallazgos ola 7 (WP-U81)
+
+Diferidos del reporte/revisión WP-U81 (no bloquean cierre):
+- `release-dry` vs export `./schemas/*` (verificador busca literal `schemas/*`;
+  candidata: `scripts/release-dry.mjs` saltar globs `*`)
+- Gate two-games vs `byte-delta` (CLI usa `--byte-threshold`; documentar o
+  afinar gate si el dominio necesita el término)
 
 - 🔶 **WP-U82 · CRUD de volúmenes: medir y vaciar** *(dep U80; encaja con la
   ola 4)* — en curso (lote-7a / orquestador / 2026-07-17) — capa de operación
