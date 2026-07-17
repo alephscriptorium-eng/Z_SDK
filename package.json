@@ -8,7 +8,8 @@
     "packages/app/*",
     "packages/mcp/*",
     "packages/platform/*",
-    "packages/arg/*"
+    "packages/arg/*",
+    "packages/games/*"
   ],
   "engines": {
     "node": ">=18.0.0"
@@ -32,6 +33,7 @@
     "demo:game": "npm run demo -w @zeus/game-demos",
     "demo:bots": "npm run demo -w @zeus/ping-pong-bots",
     "demo:arg": "npm run demo -w @zeus/arg-demos",
+    "demo:pozo": "npm run demo -w @zeus/pozo",
     "start:arg-console": "npm run start -w @zeus/arg-console",
     "start:arg-player-mcp": "npm run start -w @zeus/arg-player-mcp",
     "start:arg-player-mcp:dos": "node packages/arg/arg-player-mcp/src/start.mjs --actor=dos",
@@ -113,7 +115,9 @@
     "e2e:arg-track": "node e2e/arg-track-demo.mjs",
     "e2e:arg-horse": "node e2e/arg-horse-demo.mjs",
     "e2e:arg-mcp": "node e2e/arg-mcp-demo.mjs",
-    "e2e:playbook-kit": "node e2e/playbook-kit-demo.mjs"
+    "e2e:playbook-kit": "node e2e/playbook-kit-demo.mjs",
+    "e2e:pozo-mcp": "node e2e/pozo-mcp-demo.mjs",
+    "test:pozo": "npm test -w @zeus/pozo"
   },
   "devDependencies": {
     "@alephscript/mcp-core-sdk": "^1.5.0",
