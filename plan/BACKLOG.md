@@ -277,8 +277,8 @@ Diferidos del reporte/revisión WP-U23 (no bloquean cierre; cierra ola 2):
 ### Cola hallazgos ola 3 (WP-U30)
 
 Diferidos del reporte/revisión WP-U30 (no bloquean cierre; van a U31 / cleanup):
-- tools MCP `dj_*` / decks player-ui — cablear en **WP-U31** (casos C-30..C-32
-  ya redactados con tools provisionales)
+- tools MCP `dj_*` / decks player-ui — diferido (U31: CA por HTTP/decks;
+  cableado MCP opcional — ver cola U31)
 - side-effect de disco `cache_wikitext` / escritura markdown — borde
   autoridad/Notario; U30 dejó dominio puro (como excavate sintético)
 
@@ -292,8 +292,18 @@ Diferidos del reporte/revisión WP-U30 (no bloquean cierre; van a U31 / cleanup)
   evidencia; casos nuevos redactados en CASOS.md (formato playbook-kit).
   **Demolición:** n/a (es adición al dominio).
 
-- 🔶 **WP-U31 · player-ui = vista manipuladora** *(dep U30, U11)* — en curso
-  (ola-3 / orquestador / 2026-07-17) — player-ui
+### Cola hallazgos ola 3 (WP-U31)
+
+Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup):
+- tools MCP `dj_*` / playbook C-30..C-32 — cableado opcional (CA cubierta por
+  HTTP/decks + e2e player-ui-dj)
+- e2e legacy (`deck-demo`, `dual-ui`, etc.): SKIPPED; rewire → **WP-U32** /
+  cleanup
+- operator-ui / player-3d stubs (`local-projection`) → **WP-U32**
+- `package-lock.json` entradas `extraneous` de session-*/tablero-core (ghost npm)
+
+- ✅ **WP-U31 · player-ui = vista manipuladora** *(dep U30, U11)* — aceptado
+  (orquestador / 2026-07-17) — player-ui
   deja de ser master de su room: se une a la room del juego como vista con rol
   `dj`, emite los intents de U30 desde sus decks (mismas líneas, misma cache),
   proyecta `state`/`ledger` donde le toque. El estado xstate local se queda
