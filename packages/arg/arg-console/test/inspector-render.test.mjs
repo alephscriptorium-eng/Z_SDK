@@ -13,7 +13,7 @@ import {
   dropletDeepLink,
   isSyntheticUri,
   inspectorTitle
-} from '../assets/js/kit/inspector-render.mjs';
+} from '../assets/js/delta/inspector-render.mjs';
 
 // ---- fixture: snapshot compacto con gotas reales y sintéticas ----------------
 

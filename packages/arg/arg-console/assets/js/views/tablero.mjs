@@ -17,13 +17,15 @@ import {
   connectRoom,
   onChannelEvent,
   createLogPanel,
+  createActorsLayer,
+  createPanel
+} from '@zeus/view-kit';
+import {
   createDeltaStage,
   createRiverDroplets,
   createSeaDroplets,
-  createActorsLayer,
-  createPanel,
   createInspector
-} from '../kit/index.mjs';
+} from '../delta/index.mjs';
 import { EVENTS } from '@zeus/arg-domain';
 
 const LEDGER_COLORS = {

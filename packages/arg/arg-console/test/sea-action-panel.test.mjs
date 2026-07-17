@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { renderSeaActionPanel, bindSeaActionPanel } from '../assets/js/kit/sea-action-panel.mjs';
+import { renderSeaActionPanel, bindSeaActionPanel } from '../assets/js/delta/sea-action-panel.mjs';
 
 test('sea-action-panel: salvage solo si hundida y proximidad', () => {
   const sunken = renderSeaActionPanel({
