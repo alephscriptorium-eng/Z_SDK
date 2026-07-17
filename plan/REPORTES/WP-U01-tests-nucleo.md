@@ -178,4 +178,39 @@ que inyectar `io` (cambio de API) en un WP aparte.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: aceptado ✅** — autorizado a merge (BACKLOG ✅ y merge los hace el
+orquestador en master en un paso aparte; este WP no marca BACKLOG aquí).
+
+### Verificado
+
+- **Alcance**: 1 WP; diff = scripts `package.json` + `test/` + reporte. Sin
+  tocar `plan/BACKLOG.md` ni `packages/arg/spec/BACKLOG.md`. Sin lógica de
+  producto.
+- **Commits** (`master..HEAD`): convencionales
+  `test(firehose-core)`, `test(room-client-browser)`, `docs(plan)`.
+- **CA re-ejecutado** (worktree, 2026-07-17):
+  - `npm test -w @zeus/firehose-core` → 11 pass / 0 fail (exit 0)
+  - `npm test -w @zeus/room-client-browser` → 7 pass / 0 fail (exit 0)
+  - Cobertura: exports principales de firehose-core (schema/loader/browse) y
+    room-client-browser (`createBrowserRoomClient`, config, re-exports) con
+    ≥1 test de comportamiento cada uno.
+- **Demolición**: `echo 'sin tests'` sustituido por `node --test test/*.mjs`;
+  `rg "sin tests" packages/lib/firehose-core` → cero matches.
+- **PRACTICAS**: auto-revisión honesta; evidencia literal en el reporte;
+  dependencia de `--experimental-test-module-mocks` anotada (aceptable para
+  este WP; inyección de `io` sería WP aparte si se endurece).
+
+### Hallazgos del worker → notas / WPs futuros (no bloquean)
+
+1. Documentar/`npm install` en worktrees (resolución walk-up de `@zeus/*`).
+2. Typo de protocolo `CLIENT_SUSCRIBE` (contrato runtime ajeno).
+3. `readInjectedRoomConfig` sin export en `package.json`.
+4. `createBrowserRoomClient` usa `Date.now()` para `user` por defecto (borde).
+5. Flag experimental de module mocks — valorar inyección de `io` si Node
+   cambia el API de mocks.
+
+### Merge
+
+- Orden sugerido: independiente de U00/U02 en contenido; merge cuando el padre
+  haga el ritual en master (merge rama + BACKLOG 🔶→✅). Tras merge:
+  `git worktree remove` del worktree U01.
