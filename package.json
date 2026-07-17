@@ -17,6 +17,7 @@
   "scripts": {
     "start:solar": "npm run start -w @zeus/solar-system",
     "start:lineas": "npm run start -w @zeus/linea-system",
+    "start:forces": "npm run start -w @zeus/force-system",
     "start:editor": "npm run start -w @zeus/editor-ui",
     "start:player": "npm run start -w @zeus/player-ui",
     "start:console-monitor": "npm run start -w @zeus/console-monitor",
@@ -44,6 +45,7 @@
     "test:sdk": "npm test -w @zeus/presets-sdk",
     "test:solar": "npm test -w @zeus/solar-system",
     "test:lineas": "npm test -w @zeus/linea-system",
+    "test:forces": "npm test -w @zeus/force-system",
     "test:firehose-mcp": "npm test -w @zeus/linea-firehose",
     "test:console-monitor": "npm test -w @zeus/console-monitor",
     "test:http-contract": "npm test -w @zeus/http-contract",
