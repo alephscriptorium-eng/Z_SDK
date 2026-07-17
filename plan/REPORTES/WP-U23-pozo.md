@@ -139,4 +139,33 @@ Ninguno. CA cumplido en local.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17
+
+### Verificado
+- Diff acotado (23 archivos): `packages/games/pozo/**` + `e2e/pozo-mcp-demo.mjs`
+  + workspace/scripts raíz + reporte. **Cero** cambios en `packages/lib/*`
+  (commits y working tree limpio tras refresh CRLF). Worker no tocó BACKLOG.
+- Base = `master` (`0baa4c2`, ya con U21); no hace falta merge master→rama.
+- CA re-ejecutado en worktree:
+  - `npm test -w @zeus/pozo` → 6/0
+  - `npm run e2e:pozo-mcp` → G-POZO.0–4 verde (C-01/C-02 + sin imports
+    arg/delta)
+  - `npm run gates` → OK (0 offenders)
+  - `demo:pozo` smoke (puertos 13066/14152/13067, room `POZO_DEMO_SMOKE_REV`,
+    `ZEUS_OPEN_BROWSER` unset): MCP health `ok` + `connected:true`; vista
+    `/health` `ok` service=pozo-view game=pozo; `/views/pozo` HTML 200
+- Greps: `packages/games/pozo` sin imports `@zeus/arg` / `packages/arg` /
+  `games/delta`. Engine kits (`src`/`bin`/*.mjs|js): sin nombres `pozo`/`delta`
+  en código (solo docs/README de kits, preexistente).
+- PRACTICAS §1.11: pozo solo consume kits; `startAuthority({ game: GAME_ID })`.
+  Commits convencionales.
+
+### Hallazgos a cola (no bloquean)
+1. Slots `pozoPlayer` / `pozoView` ausentes en `presets-sdk/env` +
+   `KNOWN_ZEUS_PORTS` — WP aparte (reporte §hallazgos #1).
+2. Vista sin `@zeus/app-shell` — opcional post-U21; no es CA (reporte #2).
+
+### Merge
+Autorizado. Orden: solo; master ya tiene U21/U22/U24. Tras merge por el
+usuario/orquestador: ✅ BACKLOG en **master** + `git worktree remove`
+`.worktrees/wp-u23-pozo`. **Este ritual no mergea, no pushea, no marca ✅.**
