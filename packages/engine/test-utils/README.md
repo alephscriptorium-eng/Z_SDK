@@ -1,8 +1,9 @@
 # `@zeus/test-utils`
 
 Helpers compartidos de smoke-test para paquetes MCP/HTTP Zeus (contratos,
-clientes de prueba). Publicado en lockstep con el resto del engine para que
-consumidores externos puedan reutilizar los mismos fixtures de handshake.
+clientes de prueba). Publicado como `@zeus/test-utils` (semver por paquete /
+changesets) para que consumidores externos reutilicen los mismos fixtures de
+handshake.
 
 ```js
 import { /* smoke helpers */ } from '@zeus/test-utils';

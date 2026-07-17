@@ -1,0 +1,129 @@
+# Release — changesets → bump → publish (WP-U53 / D-12 / ARQUITECTURA §5 paso 3).
+# Condición dura: quality + test verdes. Publish solo si existe secret NPM_TOKEN.
+# Sin credenciales el job documenta skip (⏳); no inventa publish.
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    name: lint + gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Gates (PRACTICAS §5)
+        run: npm run gates
+      - name: Gate unit tests
+        run: npm run test:gates
+
+  test:
+    name: test ${{ matrix.workspace }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - '@zeus/presets-sdk'
+          - '@zeus/firehose-core'
+          - '@zeus/room-client-browser'
+          - '@zeus/http-contract'
+          - '@zeus/rooms'
+          - '@zeus/protocol'
+          - '@zeus/authority-kit'
+          - '@zeus/game-engine'
+          - '@zeus/operator-bridge'
+          - '@zeus/ui-3d-kit'
+          - '@zeus/ui-kit'
+          - '@zeus/app-shell'
+          - '@zeus/test-utils'
+          - '@zeus/solar-system'
+          - '@zeus/linea-system'
+          - '@zeus/linea-firehose'
+          - '@zeus/console-monitor'
+          - '@zeus/socket-server'
+          - '@zeus/cache-browser'
+          - '@zeus/firehose-browser'
+          - '@zeus/editor-ui'
+          - '@zeus/player-ui'
+          - '@zeus/player-3d-ui'
+          - '@zeus/3d-monitor'
+          - '@zeus/ping-pong-bots'
+          - '@zeus/arg-domain'
+          - '@zeus/arg-feeds'
+          - '@zeus/arg-console'
+          - '@zeus/arg-player-mcp'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Test workspace
+        run: npm test -w "${{ matrix.workspace }}"
+
+  release:
+    name: changesets release
+    needs: [quality, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          registry-url: https://npm.scriptorium.escrivivir.co
+          scope: '@zeus'
+      - name: Install
+        run: npm ci
+      - name: Detect publish credentials
+        id: creds
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "${NPM_TOKEN}" ]; then
+            echo "has_npm=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_npm=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::NPM_TOKEN absent — publish/tag/GitHub Release skipped (⏳)"
+          fi
+      - name: Create Release PR or publish
+        if: steps.creds.outputs.has_npm == 'true'
+        uses: changesets/action@v1
+        with:
+          version: npm run version-packages
+          publish: npm run release:publish
+          title: 'chore(release): version packages'
+          commit: 'chore(release): version packages'
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Skip publish without credentials
+        if: steps.creds.outputs.has_npm != 'true'
+        run: |
+          echo "Pipeline verde (quality+test) OK; publish blocked by missing NPM_TOKEN."
+          echo "Local CA path: npm run release:changeset-dry"
+          npx changeset status || true

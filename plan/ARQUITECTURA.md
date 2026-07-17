@@ -125,40 +125,35 @@ distribuyen desde la games-library (§6).
   `@zeus:registry=https://npm.scriptorium.escrivivir.co` al `.npmrc` junto a
   la línea `@alephscript` existente, y publica.
 - Cada paquete publicable: `publishConfig.registry`, `files`, `exports`
-  completos, `README.md` propio, y versión gestionada en **lockstep 0.x**
-  (una versión para todo el engine por release; simple y honesto con «estamos
-  creando»). Semver por paquete llegará cuando haya consumidores externos.
+  completos, `README.md` propio, y **versión semver por paquete** gestionada
+  con **changesets** (WP-U53; el lockstep 0.x de U50 quedó demolido).
 - `private: true` explícito en lo no publicable (demos, launchers, viewers si
-  se decide no publicarlos).
+  se decide no publicarlos; juegos fuera de este pipeline).
 - Script raíz `npm run release:dry` que empaqueta todo (`npm pack`) y verifica
   que cada tarball contiene lo que dice `files` y nada más.
+  `npm run release:changeset-dry` añade bump+changelog local y restaura el
+  árbol (sin publish).
 
-### Camino a semver + CI/CD (el después de las olas)
+### Camino a semver + CI/CD
 
-Tras la refundación, monorepo y repos hermanos siguen **versionado semántico
-por paquete integrado en el bucle CI/CD**. Se llega en tres pasos, no de golpe:
+Monorepo y repos hermanos siguen **versionado semántico por paquete
+integrado en el bucle CI/CD**. Tres pasos (el 3 ya cableado en WP-U53):
 
-1. **Desde ya (ola 0)** — commits convencionales (PRACTICAS §6): el histórico
-   queda legible por máquina desde el primer WP. Y CI desde WP-U03: push del
-   monorepo a `Z_SDK` + Actions que corren `lint` + `gates` + matriz de tests
-   en cada rama `wp/*`/PR — la revisión del orquestador deja de ser el único
-   filtro.
-2. **Durante las olas (hasta la 5)** — versión **lockstep 0.x**: una versión
-   para todo el engine por release; en 0.x los breaking se marcan en el
-   commit («!») pero no disparan majors. Simple y honesto con «estamos
-   creando».
-3. **Al cerrar la ola 5 (WP-U53)** — **changesets** + release desde CI:
-   - Se elige changesets (y no semantic-release) porque es la herramienta
-     pensada para monorepos npm-workspaces con bumps **por paquete** y
-     registry propio; semantic-release es por-repo/paquete-único.
-   - Cada WP que toque un paquete publicable añade su changeset; el pipeline
-     de release acumula changesets → bump semver por paquete + changelog →
-     `npm publish` al registry propio + tag git + GitHub Release en `Z_SDK`.
+1. **Ola 0** — commits convencionales (PRACTICAS §6) + CI (WP-U03): `lint` +
+   `gates` + matriz de tests en cada rama `wp/*`/PR.
+2. **Hasta la ola 5** — versión **lockstep 0.x** provisional (U50): una
+   versión para todo el engine por release. **Demolido en U53.**
+3. **WP-U53** — **changesets** + release desde CI
+   (`.github/workflows/release.yml`):
+   - Changesets (no semantic-release): monorepo npm-workspaces, bumps **por
+     paquete**, registry propio.
+   - Cada WP que toque un paquete publicable añade su changeset (PRACTICAS
+     §6); el job `release` **necesita** `quality` + `test` verdes → bump +
+     changelog → `npm publish` (si hay `NPM_TOKEN`) + tag + GitHub Release.
    - `Z_SDK-games-library` replica el patrón con su propio ritmo: release de
      juego = versión de paquetes + start pack (`@zeus/startpack-<game>`) +
      Release espejo + **acta en verde** (sin acta no hay release, VISION §5).
-   - El gate de calidad del release es el mismo `gates` + tests + e2e de CI:
-     un release no puede salir de un pipeline rojo.
+   - Un release no puede salir de un pipeline rojo.
 
 ## 5-bis. El plano de datos
 
@@ -183,8 +178,9 @@ Decisiones D-10/D-11 — topología de repos en `github.com/alephscriptorium-eng
 **Dos repos y ya** durante la refundación. Criterio para que algo merezca repo
 propio (los tres a la vez): (a) cadencia de release propia, (b) consumidores
 fuera del monorepo, (c) no necesita cambios atómicos con el resto. La
-games-library los cumple; el engine no los cumple entre sí (lockstep + las
-olas cruzan paquetes constantemente). Único candidato futuro: `operator-ui`,
+games-library los cumple; el engine no los cumple entre sí (olas que cruzan
+paquetes de forma atómica; semver por paquete vía changesets no implica
+repos separados). Único candidato futuro: `operator-ui`,
 a revisar tras la ola 5. La extracción de los juegos es la **ola 6**: hasta
 que el engine se publique de verdad (WP-U50), `games/*` se desarrolla en el
 monorepo — separar antes obligaría al swarm a hacer round-trips por el

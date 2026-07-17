@@ -410,8 +410,8 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
   portal.
   **Demolición:** n/a.
 
-- 🔶 **WP-U53 · Semver + release desde CI** *(dep U50, U03; ARQUITECTURA §5)*
-  — en curso (lote-5b / orquestador / 2026-07-17) — adoptar **changesets**
+- ✅ **WP-U53 · Semver + release desde CI** *(dep U50, U03; ARQUITECTURA §5)*
+  — aceptado (orquestador / 2026-07-17) — adoptar **changesets**
   en el monorepo: bump semver por paquete, changelog generado, `npm publish`
   al registry propio desde CI (con el pipeline en verde como condición
   dura), tag git + GitHub Release en Z_SDK. Cierra el periodo lockstep 0.x.

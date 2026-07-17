@@ -1,30 +1,38 @@
 #!/usr/bin/env node
 /**
  * release:dry — pack publicable @zeus engine packages and verify tarball contents.
- * No publish. No registry credentials. Local verification only (WP-U50).
+ * No publish. No registry credentials. Local verification only (WP-U50 / U53).
+ * Versions are independent per package (changesets); lockstep check demolished in U53.
  */
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const libDir = path.join(root, 'packages', 'engine');
 const outDir = path.join(root, '.release-dry');
-const REGISTRY = 'https://npm.scriptorium.escrivivir.co';
-const LOCKSTEP = '0.1.0';
+export const REGISTRY = 'https://npm.scriptorium.escrivivir.co';
+
+/** Semver core (optional pre-release / build metadata). */
+export const SEMVER_RE =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 const FORBIDDEN_PREFIXES = ['node_modules/', 'test/', '.git/', '.env'];
 const FORBIDDEN_NAMES = new Set(['.DS_Store', '.npmrc', '.env']);
+
+export function isSemver(version) {
+  return typeof version === 'string' && SEMVER_RE.test(version);
+}
 
 function readPkg(dir) {
   return JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8'));
 }
 
-function listPublicable() {
-  return readdirSync(libDir, { withFileTypes: true })
+export function listPublicable(engineRoot = libDir) {
+  return readdirSync(engineRoot, { withFileTypes: true })
     .filter((d) => d.isDirectory())
-    .map((d) => path.join(libDir, d.name))
+    .map((d) => path.join(engineRoot, d.name))
     .filter((dir) => {
       const pkg = readPkg(dir);
       return pkg.private !== true && pkg.publishConfig?.registry;
@@ -49,7 +57,14 @@ function matchesFilesField(relPath, files) {
   });
 }
 
-function verifyTarball(pkgDir, pkg, entriesRaw) {
+/**
+ * @param {string} pkgDir
+ * @param {object} pkg
+ * @param {string[]} entriesRaw
+ * @param {{ registry?: string }} [opts]
+ */
+export function verifyTarball(pkgDir, pkg, entriesRaw, opts = {}) {
+  const registry = opts.registry ?? REGISTRY;
   const errors = [];
   const entries = entriesRaw.map(normalizePackPath);
   const files = pkg.files;
@@ -58,12 +73,12 @@ function verifyTarball(pkgDir, pkg, entriesRaw) {
     errors.push('missing package.json files[]');
   }
 
-  if (pkg.version !== LOCKSTEP) {
-    errors.push(`version ${pkg.version} ≠ lockstep ${LOCKSTEP}`);
+  if (!isSemver(pkg.version)) {
+    errors.push(`version ${pkg.version} is not valid semver`);
   }
 
-  if (pkg.publishConfig?.registry !== REGISTRY) {
-    errors.push(`publishConfig.registry ≠ ${REGISTRY}`);
+  if (pkg.publishConfig?.registry !== registry) {
+    errors.push(`publishConfig.registry ≠ ${registry}`);
   }
 
   if (!existsSync(path.join(pkgDir, 'README.md'))) {
@@ -199,7 +214,7 @@ function packOne(pkgDir, pkg) {
   };
 }
 
-function main() {
+export function main() {
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
 
@@ -209,7 +224,10 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`release:dry — ${dirs.length} publicable package(s), lockstep ${LOCKSTEP}`);
+  const versions = new Set(dirs.map((d) => readPkg(d).version));
+  console.log(
+    `release:dry — ${dirs.length} publicable package(s), ${versions.size} distinct version(s)`
+  );
   console.log(`registry: ${REGISTRY}`);
   console.log(`outdir:   ${outDir}`);
   console.log('');
@@ -247,4 +265,10 @@ function main() {
   console.log(`release:dry — all ${dirs.length} green`);
 }
 
-main();
+const invokedAsMain =
+  Boolean(process.argv[1]) &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+
+if (invokedAsMain) {
+  main();
+}
