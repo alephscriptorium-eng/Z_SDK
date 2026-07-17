@@ -655,8 +655,8 @@ Diferidos del reporte/revisión WP-U92 (no bloquean cierre):
 
 ## Ola 8 — Feeds federados (dep U80)
 
-- 🔶 **WP-U84 · Conector SSB → VOLUMES (Tribes y Parliament)** — (lote-8a /
-  orquestador / 2026-07-18) — exportador del log del pub OASIS (mensajes
+- ✅ **WP-U84 · Conector SSB → VOLUMES (Tribes y Parliament)** — aceptado
+  (orquestador / 2026-07-18) — exportador del log del pub OASIS (mensajes
   tipados `tribe*`, `parliament*`, votos — modelos en DATOS.md §7) a **JSON
   en disco**: volumen `DISK_04/SSB` (el slot DISK_03 lo ocupa FORCES desde
   2026-07-15) con entrada en volumes.json (readonly, provenance del pub),
@@ -667,6 +667,17 @@ Diferidos del reporte/revisión WP-U92 (no bloquean cierre):
   (U80) → resources MCP navegables; documentado el runbook contra el pub real
   (`ZEUS_SSB_*`), ejecutado si hay acceso (⏳ si no, honesto).
   **Demolición:** n/a.
+
+### Cola hallazgos ola 8 (WP-U84)
+
+Diferidos del reporte/revisión WP-U84 (no bloquean cierre):
+- ⬜ **tribe box / tribeCrypto** — mensajes tribe cifrados no se desencriptan
+  en el exportador (solo contents tipados legibles); WP si el dump del pub
+  trae envelopes opacos.
+- Nota: scripts fantasma `volumes:sync:firehose` en VOLUMES/README — ya en
+  cola U82; aquí solo se añadió `volumes:sync:ssb` real.
+- Nota: `ZEUS_VOLUMES_ROOT` / worktrees — mismo hilo U80/U91 (DISK gitignored
+  no heredado; runbook o symlink).
 
 - ⬜ **WP-U85 · Familias de feed unificadas en el engine** *(dep U84)* — la
   interfaz de feeds (hoy en el juego delta, patrón arg-feeds §4) se
