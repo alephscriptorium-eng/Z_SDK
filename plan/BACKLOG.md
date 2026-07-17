@@ -166,11 +166,21 @@ Diferidos del reporte/revisión WP-U13 (no bloquean cierre; cierra ola 1):
 
 ### Cola hallazgos ola 2
 
-Diferidos / laterales (no bloquean U20–U22; A-05 no bloquea U23):
+Diferidos / laterales (no bloquean U21–U22; A-05 no bloquea U23):
 - A-05: simetría dual-wire / transporte desnudo|envuelto+dedup en
   arg-console, 3d-monitor, player-mcp-kit (lateral; no bloquear U23)
 
-- 🔶 **WP-U20 · `@zeus/view-kit`** — en curso (ola-2 / orquestador / 2026-07-17) — extraer el kit de navegador de
+### Cola hallazgos ola 2 (WP-U20)
+
+Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
+- e2e:arg G-ARG-E2E.10 flaky (timeout track:cast; 1ª rojo / 2ª verde)
+- `packages/platform/3d-monitor` aún tiene `assets/js/kit/` propio — WP-U22
+- colisión de nombre: arg-console `src/view-kit/` (SSR defineView) ≠
+  `@zeus/view-kit` (browser) — U21 puede alinear/renombrar el SSR
+- clave localStorage de paneles `vk:…` (antes `delta:…`): posiciones
+  guardadas del usuario se resetean (aceptable en extracción)
+
+- ✅ **WP-U20 · `@zeus/view-kit`** — aceptado (orquestador / 2026-07-17) — extraer el kit de navegador de
   `arg-console/assets/js/kit/` (~4.600 LOC: escena, ventanitas/panel, HUD,
   inspector raycast, stick-puppet, droplets, deep-links honestos) a paquete
   engine browser-safe servido por import-map. arg-console pasa a consumirlo.
