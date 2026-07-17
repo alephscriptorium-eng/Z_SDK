@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U12) |
 | fecha | 2026-07-17 |
 | rama | `wp/u12-player-mcp-kit` |
-| commit(s) | _(hashes al cerrar)_ |
+| commit(s) | `127c473` feat(player-mcp-kit) · `b3365f0` refactor(arg-player-mcp)! · `38ea3bb` docs(plan) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 
