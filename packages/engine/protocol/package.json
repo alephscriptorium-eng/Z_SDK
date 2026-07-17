@@ -4,8 +4,12 @@
   "description": "Contrato único Zeus: envelope state|intent|track|ledger, makeIntent, roles, gates, Peer Card, AsyncAPI",
   "type": "module",
   "main": "src/index.mjs",
+  "types": "./types/index.d.ts",
   "exports": {
-    ".": "./src/index.mjs",
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
     "./contract": "./src/contract.mjs",
     "./roles": "./src/roles.mjs",
     "./gates": "./src/gates.mjs",
@@ -16,7 +20,8 @@
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "spec:generate": "node spec/generate.mjs"
+    "spec:generate": "node spec/generate.mjs",
+    "types:generate": "node spec/generate-types.mjs"
   },
   "license": "AIPLv1",
   "zeus": {
@@ -34,6 +39,7 @@
   "files": [
     "src",
     "spec",
+    "types",
     "README.md"
   ]
 }

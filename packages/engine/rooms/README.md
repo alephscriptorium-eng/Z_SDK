@@ -8,6 +8,11 @@ sin hardcodear URL: resuelve vía `ZEUS_SCRIPTORIUM_URL` / presets-sdk.
 import { createClient, connectAndJoin } from '@zeus/rooms';
 ```
 
+Auth de handshake: `{ token, room, user }` — documentado en el portal
+(Guía → Handshake externo).
+
+Tipos: `types/index.d.ts` (incluidos en el tarball).
+
 Browser: `@zeus/room-client-browser`.
 
 ## Tests

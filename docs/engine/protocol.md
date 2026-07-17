@@ -36,3 +36,7 @@ validateIntent(
 - HTML en el portal: [AsyncAPI](/contracts/asyncapi) · [render HTML](/api/protocol/)
 
 README del paquete: `packages/engine/protocol/README.md`.
+
+Tipos TypeScript (`.d.ts`) generados desde el contrato:
+`npm run types:generate -w @zeus/protocol` → `types/index.d.ts` (van en el tarball).
+Handshake de rooms para consumidores externos: [guía](/guide/external-handshake).

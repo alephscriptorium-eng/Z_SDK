@@ -138,7 +138,46 @@ export function verifyTarball(pkgDir, pkg, entriesRaw, opts = {}) {
     }
   }
 
+  // WP-U54: promised .d.ts (package.json types / exports.types) must be in tarball
+  const promisedDts = collectPromisedDts(pkg);
+  for (const rel of promisedDts) {
+    if (!entries.includes(rel) && !entries.some((e) => e.startsWith(rel + '/'))) {
+      errors.push(`types entry missing from tarball: ${rel}`);
+    }
+  }
+  if (REQUIRES_DTS.has(pkg.name) && promisedDts.length === 0) {
+    errors.push(`package requires types/.d.ts (WP-U54) but none declared`);
+  }
+  if (REQUIRES_DTS.has(pkg.name)) {
+    const hasDts = entries.some((e) => e.endsWith('.d.ts'));
+    if (!hasDts) errors.push(`tarball missing .d.ts files (WP-U54)`);
+  }
+
   return { errors, entryCount: entries.length };
+}
+
+/** Packages that must ship TypeScript declarations for anonymous consumers (D-18 / U54). */
+const REQUIRES_DTS = new Set(['@zeus/protocol', '@zeus/rooms']);
+
+/** Collect paths promised by `types` / `typings` / `exports.*.types`. */
+function collectPromisedDts(pkg) {
+  const paths = new Set();
+  const add = (p) => {
+    if (typeof p !== 'string' || !p.startsWith('./')) return;
+    paths.add(p.slice(2));
+  };
+  add(pkg.types);
+  add(pkg.typings);
+  const walk = (v) => {
+    if (!v || typeof v !== 'object') return;
+    if (typeof v.types === 'string') add(v.types);
+    for (const child of Object.values(v)) {
+      if (child && typeof child === 'object') walk(child);
+      else if (typeof child === 'string' && child.endsWith('.d.ts')) add(child);
+    }
+  };
+  if (pkg.exports && typeof pkg.exports === 'object') walk(pkg.exports);
+  return [...paths];
 }
 
 function packOne(pkgDir, pkg) {

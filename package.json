@@ -114,7 +114,8 @@
     "version-packages": "changeset version",
     "release:publish": "changeset publish",
     "release:dry": "node scripts/release-dry.mjs",
-    "release:changeset-dry": "node scripts/release-changeset-dry.mjs"
+    "release:changeset-dry": "node scripts/release-changeset-dry.mjs",
+    "smoke:external-consumer": "node scripts/smoke-external-consumer.mjs"
   },
   "devDependencies": {
     "@alephscript/mcp-core-sdk": "^1.5.0",

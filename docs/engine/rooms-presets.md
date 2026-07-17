@@ -18,3 +18,9 @@ Columna vertebral operativa:
 - `openBrowser` **opt-in**: solo si `ZEUS_OPEN_BROWSER=1`
 
 Paquete hermano en browser: `@zeus/room-client-browser`.
+
+## Handshake externo
+
+Clientes anónimos (Node/Bun/TS) usan `ZEUS_SCRIPTORIUM_URL` + auth
+`{ token, room, user }` y emiten eventos del contrato (`intent|state|track|ledger`).
+Guía: [Handshake externo](/guide/external-handshake).
