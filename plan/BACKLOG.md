@@ -247,8 +247,17 @@ Diferidos del reporte/revisión WP-U24 (no bloquean cierre ni U23):
   **Demolición:** publicación de payloads sueltos sin envelope en el kit.
   **Nota:** no mezclar A-05 (dual-wire); paralelizable con U21/U22 tras U20.
 
-- 🔶 **WP-U23 · pozo, el segundo juego** *(dep U10–U13, U20; D-8)* — en curso
-  (lote-2c / orquestador / 2026-07-17) — juego mínimo A PROPÓSITO: un pozo,
+### Cola hallazgos ola 2 (WP-U23)
+
+Diferidos del reporte/revisión WP-U23 (no bloquean cierre; cierra ola 2):
+- slots `pozoPlayer` / `pozoView` ausentes en `presets-sdk/env` (+
+  `KNOWN_ZEUS_PORTS`) — defaults MCP/vista viven en el juego vía
+  `readEnvPort`; WP aparte
+- vista sin `@zeus/app-shell` — CA no lo exige; shell SSR opcional cuando
+  createAppConfig se generalice a juegos
+
+- ✅ **WP-U23 · pozo, el segundo juego** *(dep U10–U13, U20; D-8)* — aceptado
+  (orquestador / 2026-07-17) — juego mínimo A PROPÓSITO: un pozo,
   un puñado de nodos, un feed, UN intent con ledger (p. ej. sacar una gota
   del pozo y etiquetarla), una vista sobre view-kit, un MCP de jugador sobre
   player-mcp-kit, y un CASOS.md corto en formato playbook-kit. Regla dura: se
