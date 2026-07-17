@@ -10,7 +10,7 @@
 
 ## Qué se hizo
 
-Barrido final de vías muertas post-U50/U51/U53/U54. Inventario de **35**
+Barrido final de vías muertas post-U50/U51/U53/U54. Inventario de **37**
 paquetes workspace (`packages/{engine,editor,mesh,games}` + `examples/` +
 `threejs-ui-lib` anidado): **cero huérfanos**. Grep `TODO|FIXME|HACK` en
 código de producto: **cero**. Demolición en este WP: ejemplo Angular muerto
@@ -45,7 +45,7 @@ Script one-shot (no commiteado): walk de `package.json` bajo `packages/` +
 (none)
 ```
 
-35 paquetes; todos con ≥1 consumidor real (otro paquete, scripts raíz,
+37 paquetes; todos con ≥1 consumidor real (otro paquete, scripts raíz,
 `e2e/`/`scripts/`/`docs/`) o rol de entrypoint documentado.
 
 ### `TODO|FIXME|HACK` (producto)
@@ -260,4 +260,43 @@ Push: **no intentado** (política brief).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17
+
+### Verificado (re-CA en worktree)
+
+- Diff acotado a higiene/docs/demolición + changeset + reporte; **sin**
+  `plan/BACKLOG.md`. Rama al día con master (0 behind).
+- **CA tabla:** 37 filas = 37 `package.json` bajo `packages/`+`examples/`
+  (walk orquestador); cero missing/extra. Prosa del reporte decía «35» →
+  corregido a **37** en esta revisión (tabla ya estaba completa).
+- **CA gates:** `npm run gates` → `gates: OK (0 offenders)`.
+- Lint spot: `npm run lint` → 0 errors / 12 warnings (preexistentes).
+- `npm test -w @zeus/game-engine` → 4/4 pass.
+- Demolición: `EJEMPLO-MODULAR*` ausente; `for the ARG` ausente;
+  README paths `lib/`/`packages/app/` corregidos; TODO/FIXME/HACK producto = 0.
+- Residuales grandes **justificados** → WP-U55 (`file:` operator-ui) y
+  WP-U56 (wire `session:*` DJ local); **no** insertados en BACKLOG aquí
+  (cola al merge en master).
+- Acta cierre Ola 5 presente y coherente (U50–U54 ✅ + U52).
+
+### PRACTICAS
+
+Alcance limpio; commits convencionales; D-8 (sin ARG en engine); residuales
+grandes no demolidos a medias sino promovidos a WP. Arranque visual ⏳ OK
+para WP de auditoría.
+
+### Merge (cuando el usuario autorice)
+
+1. Merge `wp/u52-auditoria` → master.
+2. En master: BACKLOG U52 🔶→✅; insertar **WP-U55** y **WP-U56** (cola
+   hallazgos / ola ≥6 mesh) desde §hallazgos.
+3. `git worktree remove` del árbol `wp-u52-auditoria`.
+4. **No** push / publish en este ritual.
+
+### WP-U55 / WP-U56 (cola al merge — no insertados aún)
+
+- **WP-U55 · Demoler `file:` operator-ui / threejs-ui-lib** — post-publish
+  registry o unificar install Angular con workspaces raíz.
+- **WP-U56 · Retirar wire `session:*` del stack DJ** — player-ui,
+  socket-server allowlist, console-monitor, ping-pong; alinear a contrato
+  room `state`/`intent` (post-U32).
