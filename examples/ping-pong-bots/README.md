@@ -58,9 +58,9 @@ romper su juego actual.
   `ZEUS_SCRIPTORIUM_ROOM` (por defecto `scriptorium.default`). Los bots se
   conectan al **socket-server** (`ZEUS_SCRIPTORIUM_URL`, por defecto
   `http://localhost:3017` `/runtime`), no al servidor rooms remoto.
-- Cada bot cachea el último snapshot que difunde el master por `SET_STATE`
-  (wire local player-ui: payload `{type:'session:state', snapshot}` — no es el
-  contrato room `state`/`intent` del engine), escoge una rev del **deck B**
+- Cada bot cachea el último snapshot que difunde el player por evento `state`
+  (contrato room: payload con `decks` / playhead — el mismo nombre de evento
+  que el engine), escoge una rev del **deck B**
   (`snapshot.decks.B.resolved.registros.items[].oldid`) y emite
   `ROOM_MESSAGE {event:'selection:cast', room, data:{actorId, kind:'registro', deckId:'B', targetId, label, meta}}`.
 - **Estrategias distintas** para que se vea disputa de atribución:
@@ -74,8 +74,8 @@ romper su juego actual.
 
 ### Cómo arrancar
 
-Requiere **socket-server** (`:3017`) y **player-ui en modo room** (el
-master de sesión) levantados, ambos en `zeus-sdk`. Luego, desde este paquete:
+Requiere **socket-server** (`:3017`) y **player-ui** (vista DJ con deck-io)
+levantados, ambos en `zeus-sdk`. Luego, desde este paquete:
 
 ```bash
 # emisor (elige el PRIMER item del deck B)

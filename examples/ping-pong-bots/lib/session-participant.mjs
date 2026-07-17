@@ -1,16 +1,15 @@
 /**
  * session-participant — opt-in helper that lets a rooms client act as a
- * participant of a ZEUS session master.
+ * participant of a ZEUS player deck (DJ stack).
  *
- * The session master (player-ui in room mode, in zeus-sdk) broadcasts
- * `SET_STATE {type:'session:state', snapshot, seq}` on the session room
- * (`scriptorium.<sessionId>`, default `scriptorium.default`). Participants read
- * that snapshot and can emit an attributed `selection:cast` back to the room:
+ * The player-ui deck-io (and any relay that forwards it) broadcasts contrato
+ * `state` snapshots (`{ phase, playhead, decks, … }`). Participants cache that
+ * snapshot and can emit an attributed `selection:cast` back to the room:
  *
  *   ROOM_MESSAGE { event:'selection:cast', room, data:{ actorId, kind, deckId, targetId, label, meta } }
  *
  * which the master applies (registers the selection in context `selections`,
- * re-resolves deck B, and re-broadcasts `session:state`).
+ * re-resolves deck B, and re-broadcasts `state`).
  *
  * This module is pure glue: it never imports the game logic, and PING/PONG is
  * unaffected unless an app opts in.
@@ -18,7 +17,7 @@
 
 /**
  * Pick a rev `oldid` from a session snapshot's deck.
- * @param {object|null|undefined} snapshot  the master snapshot (`msg.snapshot`)
+ * @param {object|null|undefined} snapshot  the master snapshot (`msg` or `msg.snapshot`)
  * @param {string} [deckId]
  * @param {(items: any[]) => number} [strategy] index selector over the items array
  * @returns {string|number|null} an `oldid`, or null when unavailable
@@ -80,12 +79,25 @@ export function castSelection(client, room, sel) {
 }
 
 /**
+ * Normalize inbound wire payloads to a deck snapshot.
+ * Accepts contrato `state` (snapshot object) or wrapped `{ snapshot }`.
+ * @param {unknown} msg
+ * @returns {object|null}
+ */
+function snapshotFromWire(msg) {
+  if (!msg || typeof msg !== 'object') return null;
+  if (msg.decks) return msg;
+  if (msg.snapshot?.decks) return msg.snapshot;
+  return null;
+}
+
+/**
  * Attach a session participant to an already-connected rooms client.
  *
- * Caches the last `session:state` snapshot seen on SET_STATE and exposes
- * helpers to read it and cast selections. It does NOT join the room itself —
- * the caller is expected to have joined `room` already (the SAME room the
- * master owns), keeping room ownership in one place.
+ * Caches the last `state` snapshot and exposes helpers to read it and cast
+ * selections. It does NOT join the room itself — the caller is expected to
+ * have joined `room` already (the SAME room the master owns), keeping room
+ * ownership in one place.
  *
  * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
  * @param {{ room: string, actorId: string, deckId?: string }} opts
@@ -98,10 +110,8 @@ export function attachSessionParticipant(client, opts) {
   let lastSnapshot = null;
   const listeners = [];
 
-  const onSetState = (msg) => {
-    // The master wraps the snapshot as { type:'session:state', snapshot, seq }.
-    if (msg && msg.type && msg.type !== 'session:state') return;
-    const snapshot = msg?.snapshot ?? null;
+  const onState = (msg) => {
+    const snapshot = snapshotFromWire(msg);
     if (!snapshot) return;
     lastSnapshot = snapshot;
     for (const cb of listeners) {
@@ -109,7 +119,7 @@ export function attachSessionParticipant(client, opts) {
     }
   };
 
-  client.io.on('SET_STATE', onSetState);
+  client.io.on('state', onState);
 
   return {
     room,
@@ -153,9 +163,9 @@ export function attachSessionParticipant(client, opts) {
         meta: sel.meta
       });
     },
-    /** detach the SET_STATE listener */
+    /** detach the state listener */
     dispose() {
-      client.io.off('SET_STATE', onSetState);
+      client.io.off('state', onState);
       listeners.length = 0;
     }
   };
