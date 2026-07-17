@@ -1,11 +1,13 @@
 import { spawn } from 'node:child_process';
 
 /**
- * Open a URL in the default system browser (no-op when ZEUS_OPEN_BROWSER=0).
+ * Open a URL in the default system browser.
+ * Opt-in: only opens when `ZEUS_OPEN_BROWSER=1`. Unset, `0`, empty, or any
+ * other value → no-op (default: do not open; keeps swarm/CI headless).
  * @param {string} url
  */
 export function openBrowser(url) {
-  if (process.env.ZEUS_OPEN_BROWSER === '0') return;
+  if (process.env.ZEUS_OPEN_BROWSER !== '1') return;
 
   const child =
     process.platform === 'win32'
