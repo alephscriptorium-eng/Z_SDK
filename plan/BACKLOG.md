@@ -274,8 +274,16 @@ Diferidos del reporte/revisión WP-U23 (no bloquean cierre; cierra ola 2):
 
 ## Ola 3 — Un solo juego
 
-- 🔶 **WP-U30 · Intents del manipulador de líneas** *(dep U10)* — en curso
-  (ola-3 / orquestador / 2026-07-17) — el dominio
+### Cola hallazgos ola 3 (WP-U30)
+
+Diferidos del reporte/revisión WP-U30 (no bloquean cierre; van a U31 / cleanup):
+- tools MCP `dj_*` / decks player-ui — cablear en **WP-U31** (casos C-30..C-32
+  ya redactados con tools provisionales)
+- side-effect de disco `cache_wikitext` / escritura markdown — borde
+  autoridad/Notario; U30 dejó dominio puro (como excavate sintético)
+
+- ✅ **WP-U30 · Intents del manipulador de líneas** *(dep U10)* — aceptado
+  (orquestador / 2026-07-17) — el dominio
   del juego gana los intents del DJ con rol `dj`: `cache` (cachear línea),
   `curate`, `milestone` — hermanos de `label:cast` y `excavate`, con ledger y
   scoring. Diseño previo corto en el spec del juego delta (qué muta cada uno,
