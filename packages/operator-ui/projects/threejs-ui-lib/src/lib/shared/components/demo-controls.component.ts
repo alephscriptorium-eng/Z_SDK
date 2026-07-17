@@ -257,6 +257,6 @@ export class DemoControlsComponent {
     if (!this.state.liveSessionMode && !this.state.isRunning) {
       return 'Start demo first';
     }
-    return this.state.liveSessionMode ? 'selection:cast to session' : 'Send demo message';
+    return this.state.liveSessionMode ? 'inspect (operator intent)' : 'Send demo message';
   }
 }

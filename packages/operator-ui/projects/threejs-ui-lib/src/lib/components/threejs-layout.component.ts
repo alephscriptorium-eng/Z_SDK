@@ -114,12 +114,12 @@ export class ThreeJSLayoutComponent implements OnInit, OnDestroy, OnChanges {
     this.controlsState.isLoading = status === 'connecting';
     this.cdr.detectChanges();
   }
-  /** When false, Send One (selection:cast) is disabled — deck B has no resolved target. */
+  /** When false, Send One (operator inspect) is disabled. */
   @Input() set operatorCastEnabled(enabled: boolean) {
     this.controlsState.operatorCastEnabled = enabled;
     this.cdr.detectChanges();
   }
-  /** Outbound selection:cast — host calls zeusBridge.cast(). */
+  /** Outbound operator inspect — host calls zeusBridge.inspect(). */
   @Output() operatorCast = new EventEmitter<void>();
   @Output() operatorConnect = new EventEmitter<void>();
   @Output() operatorDisconnect = new EventEmitter<void>();

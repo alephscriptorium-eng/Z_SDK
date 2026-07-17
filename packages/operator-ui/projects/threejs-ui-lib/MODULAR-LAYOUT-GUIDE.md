@@ -184,6 +184,6 @@ const fullConfig: ThreeJSLayoutConfig = {
 
 ## Integración zeus recomendada
 
-1. Host conecta sesión (`ZeusSessionBridgeService`) y demo offline (`DemoFallbackService`)
+1. Host conecta room del juego (`ZeusOperatorBridgeService`) y demo offline (`DemoFallbackService`)
 2. `merge(zeusMessages$, demoMessages$)` → `[externalMessages$]`
 3. Controles outbound (`cast()`) viven en el host, no en la lib

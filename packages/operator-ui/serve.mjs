@@ -1,9 +1,9 @@
 /**
- * @zeus/operator-ui serve (block-13 L-serve).
+ * @zeus/operator-ui serve.
  *
- * Serves the built Angular host app (dist/public) behind its own route and
- * injects the live zeus session config as `window.__ZEUS__`, so the app's
- * ZeusSessionBridgeService connects to the running socket-server.
+ * Serves the built Angular host app (dist/public) and injects the live game
+ * room config as `window.__ZEUS__`, so ZeusOperatorBridgeService joins the
+ * authority room (contrato único).
  *
  * Build first: `npm run build:all` (lib + dev-app). Then: `node serve.mjs`.
  */
@@ -21,13 +21,12 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.join(here, 'dist', 'public', 'browser');
 
 function defaultZeusConfig() {
-  const base = resolveRoomClientConfig({
-    sessionId: process.env.ZEUS_SESSION_ID ?? 'default'
-  });
+  const base = resolveRoomClientConfig({});
   return {
     ...base,
-    room: process.env.ZEUS_SCRIPTORIUM_ROOM ?? base.room,
-    user: process.env.ZEUS_SCRIPTORIUM_USER ?? 'operator-ui'
+    room: process.env.ZEUS_ARG_ROOM ?? base.room,
+    user: process.env.ZEUS_SCRIPTORIUM_USER ?? 'operator-ui',
+    game: process.env.ZEUS_GAME ?? 'delta'
   };
 }
 
@@ -50,9 +49,18 @@ export async function createOperatorUiServer({ port, host = 'localhost', zeus } 
 
   const app = express();
 
-  app.get('/health', (_req, res) => res.json({ ok: true, service: 'operator-ui', port: resolvedPort }));
+  app.get('/health', (_req, res) =>
+    res.json({
+      ok: true,
+      service: 'operator-ui',
+      port: resolvedPort,
+      role: 'operator',
+      room: ZEUS.room,
+      game: ZEUS.game ?? 'delta'
+    })
+  );
 
-  // Inject the session config into index.html as window.__ZEUS__ before the app boots.
+  // Inject the room config into index.html as window.__ZEUS__ before the app boots.
   app.get(['/', '/index.html'], (_req, res) => {
     const indexPath = path.join(distDir, 'index.html');
     if (!fs.existsSync(indexPath)) {
@@ -96,5 +104,5 @@ if (isMain) {
   );
   const ZEUS = defaultZeusConfig();
   const handle = await createOperatorUiServer({ port: PORT, zeus: ZEUS });
-  console.log(`Serving at http://localhost:${PORT}`);
+  console.log(`Serving at http://localhost:${handle.port} · room=${ZEUS.room}`);
 }

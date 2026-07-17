@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "license": "AIPLv1",
-  "description": "Angular gamified operator UI (tier-2), absorbed from gea-sdk threejs-gamify-ui (block-13). Hosts @zeus/threejs-ui-lib; renders the zeus session as a bot-hub via @zeus/operator-bridge. Isolated Angular workspace (own install + ng build → dist), NOT part of the zeus npm workspace.",
+  "description": "Angular gamified operator UI (tier-2). Hosts @zeus/threejs-ui-lib; projects game state via @zeus/operator-bridge; emits intents with role operator. Isolated Angular workspace (own install + ng build → dist), NOT part of the zeus npm workspace.",
   "main": "dist/index.js",
   "files": [
     "dist/**/*",
