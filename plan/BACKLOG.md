@@ -122,7 +122,7 @@ Diferidos del reporte/revisión WP-U11 (no bloquean cierre):
 - `stop:services` no limpia puertos e2e aislados (≠ env canónico; p.ej. 13027 huérfano)
 - Peer Card handshake diferido (no exigida en U11; `role` en intent basta hasta ola WebRTC / DECISIONES)
 
-- 🔶 **WP-U12 · `@zeus/player-mcp-kit`** *(dep U10)* — en curso (lote-1b / orquestador / 2026-07-17) — generalizar
+- ✅ **WP-U12 · `@zeus/player-mcp-kit`** *(dep U10)* — aceptado (orquestador / 2026-07-17) — generalizar
   `arg-player-mcp`: patrón «un MCP por actor» con semántica verificable
   (emitir intent → esperar evidencia en state/ledger), dry-run de rechazos,
   resources estándar (`<game>://player/state`, `<game>://scene`,
@@ -130,6 +130,15 @@ Diferidos del reporte/revisión WP-U11 (no bloquean cierre):
   **CA:** arg-player-mcp instancia el kit; `e2e:arg-mcp` verde;
   `test:arg-player-mcp` verde.
   **Demolición:** lo genérico duplicado en arg-player-mcp.
+
+
+### Cola hallazgos lote 1b (WP-U12)
+
+Diferidos del reporte/revisión WP-U12 (no bloquean cierre):
+- ruido ambiente e2e: `EADDRINUSE` / health null por huérfanos MCP (:14121/:13027) tras arranques interrumpidos — misma clase que cola U11 `stop:services`
+- banner e2e «CAUDAL» residual (cola U02) — fuera de alcance
+- parseo `casos-md` del kit podrá absorberse/coordinarse en U13 (`playbook-kit`)
+- URI histórico de delta sigue `arg://…` (no `delta://`); el kit solo parametriza el prefijo
 
 - ⬜ **WP-U13 · `@zeus/playbook-kit`** *(dep U12)* — el método CASOS como
   producto: formato de caso (precondición/pasos MCP/observación humana/
