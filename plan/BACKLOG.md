@@ -557,8 +557,8 @@ Diferidos del reporte/revisión WP-U81 (no bloquean cierre):
 - Gate two-games vs `byte-delta` (CLI usa `--byte-threshold`; documentar o
   afinar gate si el dominio necesita el término)
 
-- 🔶 **WP-U82 · CRUD de volúmenes: medir y vaciar** *(dep U80; encaja con la
-  ola 4)* — en curso (lote-7a / orquestador / 2026-07-17) — capa de operación
+- ✅ **WP-U82 · CRUD de volúmenes: medir y vaciar** *(dep U80; encaja con la
+  ola 4)* — aceptado (orquestador / 2026-07-18) — capa de operación
   sobre volumes.json/DISKs, files-first: medición (tamaño por
   volumen/corpus/línea) y **vaciado** con roles (DATOS.md §4: operator =
   purga dura con asiento; player/dj = vaciado jugable vía intent). Todo
@@ -568,6 +568,14 @@ Diferidos del reporte/revisión WP-U81 (no bloquean cierre):
   por rol operator (asiento en ledger, archivos fuera) y rechazo del mismo
   vaciado con rol player; `volumes.json` refleja contadores.
   **Demolición:** scripts sueltos de limpieza si los hubiera (auditar).
+
+### Cola hallazgos ola 7 (WP-U82)
+
+Diferidos del reporte/revisión WP-U82 (no bloquean cierre):
+- VOLUMES/README.md scripts fantasma (`volumes:sync:firehose` /
+  `volumes:init:lineas` no existen en package.json raíz)
+- `release:changeset-dry` sobre paquete aún untracked ensucia el árbol
+  (checkout falla al restaurar package.json nuevo)
 
 - ⬜ **WP-U83 · Las tramas integran crecer/vaciar** *(dep U82, U30, U23)* —
   delta y pozo incorporan el ciclo completo del mapa a su trama y CASOS:
