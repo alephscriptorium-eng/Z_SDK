@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok 4.5) |
 | fecha | 2026-07-18 |
 | rama | `wp/u82-volumenes-crud` |
-| commit(s) | _(ver log de la rama; feat + docs)_ |
+| commit(s) | `cc46241` feat volumes-ops · `84a471c` docs reporte |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
