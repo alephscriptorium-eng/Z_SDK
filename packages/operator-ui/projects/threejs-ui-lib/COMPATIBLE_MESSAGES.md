@@ -40,8 +40,8 @@ Todos los mensajes deben seguir esta estructura base (tipo `HubMessage` en la li
 ## API canónica: `externalMessages$`
 
 La forma preferida de alimentar la escena es el `@Input() externalMessages$: Observable<HubMessage>`
-en `ThreeJSScenePureComponent`. El host (p. ej. `@zeus/operator-ui` con `ZeusSessionBridgeService`)
-posee la sesión y el demo offline; la escena solo renderiza.
+en `ThreeJSScenePureComponent`. El host (p. ej. `@zeus/operator-ui` con `ZeusOperatorBridgeService`)
+posee la room y el demo offline; la escena solo renderiza.
 
 ```typescript
 // Host (operator-ui dev-app)

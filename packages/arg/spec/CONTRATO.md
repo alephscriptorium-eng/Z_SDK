@@ -121,7 +121,15 @@ Registro vivo (vista del reducer):
 | `curate` | `lineId, registroId, to?: 'draft'\|'curated'` | un paso `pending→draft→curated` (exige cached) | `curated++` | `curate` |
 | `milestone` | `lineId, registroId, reasons?` | ancla milestone (exige curated) | `milestoned++` | `milestone` |
 
-Rechazos explicables: `linea_invalida`, `registro_invalido`, `ya_cacheado`,
+### Operator (visor — WP-U32)
+
+| intent | args | muta | ledger kind |
+| ------ | ---- | ---- | ----------- |
+| `inspect` | `targetId?, label?` | ninguna (asiento ledger) | `inspect` |
+
+Solo rol `operator`. `rol_no_autorizado` si llega con rol `player`/`dj`.
+
+Rechazos explicables (DJ): `linea_invalida`, `registro_invalido`, `ya_cacheado`,
 `no_cacheado`, `status_invalido` / `status_salto` / `status_retroceso` /
 `ya_curado`, `no_curado`, `ya_milestone`, `rol_no_autorizado` (player u
 operator sobre intents `dj`). En feeds reales, `cache` exige el mismo gate

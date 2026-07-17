@@ -171,7 +171,7 @@ export const EXCEPTIONS = [
     reason: 'catálogo local de bodies con ports espejo de DEFAULT_ZEUS_MCP; pre-U00'
   },
   {
-    path: 'packages/operator-ui/projects/dev-app/src/app/zeus-session-bridge.service.ts',
+    path: 'packages/operator-ui/projects/dev-app/src/app/zeus-operator-bridge.service.ts',
     rule: 'ports',
     reason: 'comentario TypeScript e.g. localhost:3017; pre-U00'
   },

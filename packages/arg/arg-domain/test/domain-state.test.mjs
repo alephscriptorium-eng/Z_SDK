@@ -294,3 +294,25 @@ test('WP-U30 dj: cache/curate/milestone → ledger + score; player rechazado', (
   const lines = state.snapshot().lines;
   assert.ok(lines.regs.some((r) => r[1] === 'P03' && r[2] === 1 && r[3] === 2 && r[4] === 1));
 });
+
+test('WP-U32 operator: inspect → ledger; player rechazado', () => {
+  const state = makeState();
+
+  const asPlayer = state.applyIntent(
+    makeIntent('spoof', 'inspect', { targetId: 'spawn' }, { role: 'player' })
+  );
+  assert.equal(asPlayer.ok, false);
+  assert.equal(asPlayer.error, 'rol_no_autorizado');
+
+  const asOp = state.applyIntent(
+    makeIntent('op-1', 'inspect', { targetId: 'spawn', label: 'look' }, { role: 'operator' })
+  );
+  assert.equal(asOp.ok, true);
+
+  const out = state.drainOutbox();
+  const entry = out.ledger.find((e) => e.kind === 'inspect');
+  assert.ok(entry, 'ledger inspect');
+  assert.equal(entry.actorId, 'op-1');
+  assert.equal(entry.detail?.targetId, 'spawn');
+  assert.equal(entry.detail?.label, 'look');
+});

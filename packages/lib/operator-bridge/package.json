@@ -3,13 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Pure protocol bridge: zeus session-state slice + events → gamify-ui AlephMessage bot-hub model (block-13 AV-B/L-bridge). No Angular, no three, no network — testable in node. Reconstructs the lost INTEGRATION-GAMIFY-UI.md as code.",
+  "description": "Pure protocol bridge: contrato único state/ledger slice → gamify-ui AlephMessage bot-hub. No Angular, no three, no network — testable in node.",
   "main": "src/index.mjs",
   "exports": {
     ".": "./src/index.mjs"
   },
   "scripts": {
     "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@zeus/protocol": "*"
   },
   "license": "AIPLv1",
   "zeus": {

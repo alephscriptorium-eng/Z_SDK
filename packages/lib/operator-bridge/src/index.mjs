@@ -1,17 +1,12 @@
 /**
- * @zeus/operator-bridge — protocol bridge (block-13 AV-B).
+ * @zeus/operator-bridge — puente puro contrato único → bot-hub AlephMessage.
  *
- * Translates the zeus session (the single source of truth: `session:state`
- * snapshots + room events on /runtime) into the **bot-hub AlephMessage** model
- * that the gamify-ui Angular framework (`@zeus/threejs-ui-lib`) already knows how
- * to animate (see COMPATIBLE_MESSAGES). This is the reconstruction, as code, of
- * the lost `INTEGRATION-GAMIFY-UI.md` — the mapping IS the integration contract.
- *
- * PURE: no Angular, no three, no network, no node builtins. A caller (the
- * operator-ui data source, or a test) feeds it session events/snapshots and gets
- * AlephMessage[] back. Direction is inbound only (session → UI); outbound
- * (controls → intents) is L-outbound, not here.
+ * Traduce `state` / `ledger` del contrato único (proyección de slice) al modelo
+ * AlephMessage que anima `@zeus/threejs-ui-lib`. Sin Angular, sin red, sin Node.
+ * Outbound (controles → intents rol `operator`) vive en el host operator-ui.
  */
+
+import { makeIntent, EVENTS as PROTOCOL_EVENTS } from '@zeus/protocol';
 
 /** AlephMessage channels (COMPATIBLE_MESSAGES) → hub animation colour buckets. */
 export const CHANNELS = Object.freeze({
@@ -32,18 +27,86 @@ export const TYPES = Object.freeze({
 /** Canonical hub bot name (centre of the circle). */
 export const HUB = 'CentralHub';
 
-/** Session room events this bridge understands (mirror of player-3d choreographer). */
-export const SESSION_EVENTS = Object.freeze([
-  'presence',
-  'PING',
-  'PONG',
-  'selection:cast',
-]);
+/** Wire events the operator vista listens to (canónico + dual delta donde aplica). */
+export const WIRE = Object.freeze({
+  STATE: Object.freeze([PROTOCOL_EVENTS.STATE, 'arg:state']),
+  /** Solo canónico — authority dual-escucha; emitir ambos duplicaría applyIntent. */
+  INTENT: Object.freeze([PROTOCOL_EVENTS.INTENT]),
+  LEDGER: Object.freeze([PROTOCOL_EVENTS.LEDGER, 'arg:ledger']),
+});
+
+/** Scene ids for operator / sibling visors (HUD slice). */
+export const SCENE_IDS = Object.freeze({
+  operator: 'operator',
+  player3d: 'player-3d',
+  firehose: 'firehose',
+});
+
+/**
+ * Ledger kind → short content for the hub. Table, not switch (PRACTICAS §1.2).
+ * @type {Record<string, (entry: object) => string>}
+ */
+const LEDGER_CONTENT = Object.freeze({
+  inspect: (e) => {
+    const target = e.detail?.targetId ?? e.targetId ?? '—';
+    const label = e.detail?.label ? ` (${e.detail.label})` : '';
+    return `inspect ${target}${label}`;
+  },
+  label: (e) => `label ${e.detail?.label ?? '—'}`,
+  cache: (e) => `cache ${e.detail?.registroId ?? e.ref?.id ?? '—'}`,
+  curate: (e) => `curate ${e.detail?.registroId ?? '—'} → ${e.detail?.status ?? ''}`,
+  milestone: (e) => `milestone ${e.detail?.registroId ?? '—'}`,
+  excavate: (e) => `excavate ${e.detail?.corridorId ?? '—'}`,
+  join: (e) => `${e.actorId ?? 'actor'} join`,
+  objetivo: () => 'objetivo cumplido',
+  burst: (e) => `burst ${e.detail?.riverId ?? ''}`,
+  collapse: () => 'collapse',
+  error: (e) => `error: ${e.detail?.message ?? e.detail?.reason ?? '—'}`,
+});
+
+/**
+ * Project operator HUD slice from a game `state` envelope/snapshot.
+ * @param {object} [state]
+ * @param {string} [_sceneId]
+ */
+export function projectOperatorSlice(state = {}, _sceneId = SCENE_IDS.operator) {
+  const actors = state.actors ?? {};
+  const lines = state.lines ?? {};
+  const objetivo = state.objetivo ?? null;
+  const actorIds = Object.keys(actors);
+  return {
+    sceneId: state.sceneId ?? null,
+    gamemapId: state.gamemapId ?? null,
+    reason: state.reason ?? null,
+    ts: state.ts ?? null,
+    actorCount: actorIds.length,
+    actors,
+    lines,
+    objetivo,
+    maze: state.maze ?? null,
+    contacts: state.contacts ?? null,
+  };
+}
+
+/**
+ * Build an intent with role `operator` (caller injects game id — PRACTICAS §1.11).
+ * @param {string} actorId
+ * @param {string} intent
+ * @param {object} [args]
+ * @param {{ game?: string, from?: string, ts?: number }} [opts]
+ */
+export function makeOperatorIntent(actorId, intent, args = {}, opts = {}) {
+  return makeIntent(actorId, intent, args, {
+    from: opts.from ?? actorId,
+    game: opts.game,
+    role: 'operator',
+    ...(opts.ts != null ? { ts: opts.ts } : {}),
+  });
+}
 
 /**
  * Create a stateful-but-deterministic bridge. State is only a monotonic message
- * counter (for stable ids) and the set of actors already announced — both are a
- * pure function of the inputs fed so far, so tests are reproducible.
+ * counter and the set of actors already announced — pure function of inputs.
  *
  * @param {{ hub?: string }} [opts]
  */
@@ -65,78 +128,48 @@ export function createOperatorBridge({ hub = HUB } = {}) {
   }
 
   /**
-   * Map one session room event to zero or more AlephMessages.
-   * @param {string} event  one of SESSION_EVENTS
-   * @param {object} [payload]
+   * Reconcile a full game `state` snapshot: announce actors not seen yet.
+   * Idempotent across repeated snapshots.
+   * @param {object} [state]
    * @returns {Array<object>} AlephMessage[]
    */
-  function onSessionEvent(event, payload = {}) {
-    const actorId = payload.actorId ?? payload.from ?? null;
-    const ts = payload.ts;
-
-    switch (event) {
-      case 'presence': {
-        if (!actorId) return [];
-        announced.add(actorId);
-        return [make({ channel: CHANNELS.SYS, from: actorId, content: `${actorId} conectado`, ts })];
-      }
-      case 'PING': {
-        if (!actorId) return [];
-        const n = payload.n != null ? ` #${payload.n}` : '';
-        const expr = payload.expr ? ` · ${payload.expr}` : '';
-        return [make({ channel: CHANNELS.GAME, from: actorId, content: `PING${n}${expr}`, ts })];
-      }
-      case 'PONG': {
-        if (!actorId) return [];
-        const ans = payload.answer != null ? ` = ${payload.answer}` : '';
-        const err = payload.error ? ` · error: ${payload.error}` : '';
-        return [make({ channel: CHANNELS.GAME, from: actorId, content: `PONG${ans}${err}`, ts })];
-      }
-      case 'selection:cast': {
-        if (!actorId) return [];
-        const { targetId, label } = payload;
-        const tail = label ? ` (${label})` : '';
-        return [make({
-          channel: CHANNELS.GAME,
-          from: actorId,
-          content: `escogió ${targetId ?? '—'}${tail}`,
-          ts,
-        })];
-      }
-      default:
-        return [];
-    }
-  }
-
-  /**
-   * Reconcile a full `session:state` snapshot: announce actors not seen yet, and
-   * surface the last attributed selection. Idempotent across repeated snapshots.
-   * @param {object} [snapshot]
-   * @returns {Array<object>} AlephMessage[]
-   */
-  function onSnapshot(snapshot = {}) {
-    const actors = snapshot.actors ?? snapshot.map?.actors ?? {};
-    const ts = snapshot.ts;
+  function onState(state = {}) {
+    const actors = state.actors ?? {};
+    const ts = state.ts;
     const out = [];
 
     for (const id of Object.keys(actors)) {
       if (announced.has(id)) continue;
       announced.add(id);
-      out.push(make({ channel: CHANNELS.SYS, from: id, content: `${id} presente`, ts }));
-    }
-
-    const last = snapshot.selections?.last;
-    if (last?.actorId) {
-      const tail = last.label ? ` (${last.label})` : '';
-      out.push(make({
-        channel: CHANNELS.GAME,
-        from: last.actorId,
-        content: `escogió ${last.targetId ?? '—'}${tail}`,
-        ts: last.ts ?? ts,
-      }));
+      const zone = actors[id]?.zone;
+      const tail = zone ? ` · ${zone}` : '';
+      out.push(make({ channel: CHANNELS.SYS, from: id, content: `${id} presente${tail}`, ts }));
     }
 
     return out;
+  }
+
+  /**
+   * Map one ledger entry to zero or more AlephMessages.
+   * @param {object} [entry]
+   * @returns {Array<object>} AlephMessage[]
+   */
+  function onLedger(entry = {}) {
+    const kind = entry.kind ?? entry.entryKind;
+    if (!kind || typeof kind !== 'string') return [];
+    const actorId = entry.actorId ?? entry.from ?? HUB;
+    const formatter = LEDGER_CONTENT[kind];
+    const content = formatter
+      ? formatter(entry)
+      : `${kind}${entry.detail ? ` ${JSON.stringify(entry.detail)}` : ''}`;
+    return [
+      make({
+        channel: CHANNELS.GAME,
+        from: actorId,
+        content,
+        ts: entry.ts,
+      }),
+    ];
   }
 
   /** Reset announced-actor tracking (e.g. on reconnect). Keeps the id counter. */
@@ -144,5 +177,7 @@ export function createOperatorBridge({ hub = HUB } = {}) {
     announced.clear();
   }
 
-  return { onSessionEvent, onSnapshot, reset };
+  return { onState, onLedger, reset, projectSlice: projectOperatorSlice };
 }
+
+export { PROTOCOL_EVENTS, makeIntent };

@@ -1,109 +1,114 @@
 /**
- * @zeus/operator-bridge tests — the session→bot-hub mapping contract.
- * Pure, no Angular/three/network. This is the executable spec of the bridge.
+ * @zeus/operator-bridge tests — state/ledger → bot-hub mapping contract.
+ * Pure, no Angular/three/network. Executable spec of the bridge.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createOperatorBridge, CHANNELS, TYPES, HUB } from '../src/index.mjs';
+import {
+  createOperatorBridge,
+  projectOperatorSlice,
+  makeOperatorIntent,
+  CHANNELS,
+  TYPES,
+  HUB,
+  WIRE,
+  SCENE_IDS,
+} from '../src/index.mjs';
 
-test('presence → sys bot-to-center toward the hub', () => {
+test('onState announces each actor exactly once (idempotent)', () => {
   const b = createOperatorBridge();
-  const [m] = b.onSessionEvent('presence', { actorId: 'ping-demo', ts: 100 });
-  assert.equal(m.fromBot, 'ping-demo');
-  assert.equal(m.toBot, HUB);
-  assert.equal(m.channel, CHANNELS.SYS);
-  assert.equal(m.type, TYPES.BOT_TO_CENTER);
-  assert.equal(m.timestamp, 100);
-  assert.match(m.content, /conectado/);
+  const state = {
+    ts: 5,
+    actors: {
+      uno: { zone: 'terraza' },
+      dos: { zone: 'rio' },
+    },
+  };
+  const first = b.onState(state);
+  assert.equal(first.length, 2);
+  assert.deepEqual(first.map((m) => m.fromBot).sort(), ['dos', 'uno']);
+  assert.ok(first.every((m) => m.channel === CHANNELS.SYS));
+  assert.ok(first.every((m) => m.toBot === HUB && m.type === TYPES.BOT_TO_CENTER));
+  assert.deepEqual(b.onState(state), []);
 });
 
-test('PING/PONG → game channel with expression + answer', () => {
+test('onLedger inspect → game message with target', () => {
   const b = createOperatorBridge();
-  const [ping] = b.onSessionEvent('PING', { from: 'ping-demo', n: 3, expr: '2+2', ts: 1 });
-  assert.equal(ping.channel, CHANNELS.GAME);
-  assert.match(ping.content, /PING #3 · 2\+2/);
-  const [pong] = b.onSessionEvent('PONG', { from: 'pong-demo', answer: 4, ts: 2 });
-  assert.match(pong.content, /PONG = 4/);
-});
-
-test('PONG error surfaces in content', () => {
-  const b = createOperatorBridge();
-  const [m] = b.onSessionEvent('PONG', { from: 'pong-demo', error: 'timeout' });
-  assert.match(m.content, /error: timeout/);
-});
-
-test('selection:cast → attributed game message', () => {
-  const b = createOperatorBridge();
-  const [m] = b.onSessionEvent('selection:cast', {
-    actorId: 'ping-demo', targetId: 164540211, label: 'ping pick #1', deckId: 'B', ts: 9,
+  const [m] = b.onLedger({
+    kind: 'inspect',
+    actorId: 'op-1',
+    ts: 9,
+    detail: { targetId: 'nodo-a', label: 'look' },
   });
   assert.equal(m.channel, CHANNELS.GAME);
-  assert.equal(m.fromBot, 'ping-demo');
-  assert.match(m.content, /escogió 164540211 \(ping pick #1\)/);
+  assert.equal(m.fromBot, 'op-1');
+  assert.match(m.content, /inspect nodo-a \(look\)/);
   assert.equal(m.timestamp, 9);
 });
 
-test('events without an actor id produce nothing', () => {
+test('onLedger unknown kind still surfaces', () => {
   const b = createOperatorBridge();
-  assert.deepEqual(b.onSessionEvent('PING', {}), []);
-  assert.deepEqual(b.onSessionEvent('selection:cast', { targetId: 1 }), []);
-  assert.deepEqual(b.onSessionEvent('unknown-event', { from: 'x' }), []);
+  const [m] = b.onLedger({ kind: 'custom-fact', actorId: 'x', detail: { n: 1 } });
+  assert.equal(m.channel, CHANNELS.GAME);
+  assert.match(m.content, /custom-fact/);
 });
 
-test('snapshot announces each actor exactly once (idempotent)', () => {
+test('onLedger without kind produces nothing', () => {
   const b = createOperatorBridge();
-  const snap = { ts: 5, actors: { 'ping-demo': {}, 'pong-demo': {} } };
-  const first = b.onSnapshot(snap);
-  assert.equal(first.length, 2);
-  assert.deepEqual(first.map((m) => m.fromBot).sort(), ['ping-demo', 'pong-demo']);
-  assert.ok(first.every((m) => m.channel === CHANNELS.SYS));
-  // re-applying the same snapshot announces nobody new
-  assert.deepEqual(b.onSnapshot(snap), []);
+  assert.deepEqual(b.onLedger({ actorId: 'x' }), []);
 });
 
-test('snapshot with map.actors shape is also accepted', () => {
-  const b = createOperatorBridge();
-  const out = b.onSnapshot({ ts: 1, map: { actors: { 'robot-ping': { zone: 'nodo-a' } } } });
-  assert.equal(out.length, 1);
-  assert.equal(out[0].fromBot, 'robot-ping');
-});
-
-test('snapshot surfaces the last attributed selection', () => {
-  const b = createOperatorBridge();
-  const out = b.onSnapshot({
-    ts: 7,
-    actors: {},
-    selections: { last: { actorId: 'pong-demo', targetId: 42, label: 'pong pick', ts: 6 } },
+test('projectOperatorSlice derives HUD fields from state', () => {
+  const slice = projectOperatorSlice({
+    sceneId: 'delta-v0',
+    gamemapId: 'gm',
+    ts: 1,
+    actors: { a: { zone: 'mar' } },
+    lines: { L1: {} },
+    objetivo: { labeled: [0, 10], excavated: [0, 2] },
   });
-  const sel = out.find((m) => m.channel === CHANNELS.GAME);
-  assert.ok(sel);
-  assert.equal(sel.fromBot, 'pong-demo');
-  assert.match(sel.content, /escogió 42 \(pong pick\)/);
-  assert.equal(sel.timestamp, 6);
+  assert.equal(slice.sceneId, 'delta-v0');
+  assert.equal(slice.actorCount, 1);
+  assert.equal(slice.actors.a.zone, 'mar');
+  assert.ok(slice.lines.L1);
+  assert.equal(SCENE_IDS.operator, 'operator');
+});
+
+test('makeOperatorIntent stamps role=operator and game from caller', () => {
+  const intent = makeOperatorIntent('op', 'inspect', { targetId: 'x' }, { game: 'demo' });
+  assert.equal(intent.role, 'operator');
+  assert.equal(intent.intent, 'inspect');
+  assert.equal(intent.game, 'demo');
+  assert.equal(intent.actorId, 'op');
+  assert.equal(intent.targetId, 'x');
+});
+
+test('WIRE lists canonical intent + dual state/ledger', () => {
+  assert.deepEqual([...WIRE.STATE], ['state', 'arg:state']);
+  assert.deepEqual([...WIRE.INTENT], ['intent']);
+  assert.deepEqual([...WIRE.LEDGER], ['ledger', 'arg:ledger']);
 });
 
 test('message ids are unique and stable per stream order', () => {
   const b = createOperatorBridge();
   const ids = [
-    ...b.onSessionEvent('presence', { from: 'a' }),
-    ...b.onSessionEvent('PING', { from: 'a', n: 1 }),
-    ...b.onSessionEvent('PONG', { from: 'b', answer: 2 }),
+    ...b.onState({ actors: { a: {} } }),
+    ...b.onLedger({ kind: 'label', actorId: 'a', detail: { label: 'agora' } }),
+    ...b.onLedger({ kind: 'cache', actorId: 'dj', detail: { registroId: 'r1' } }),
   ].map((m) => m.id);
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test('end-to-end: a session flow produces a coherent hub stream', () => {
+test('end-to-end: state + ledger produce a coherent hub stream', () => {
   const b = createOperatorBridge();
   const stream = [
-    ...b.onSnapshot({ ts: 0, actors: { 'ping-demo': {}, 'pong-demo': {} } }),
-    ...b.onSessionEvent('PING', { from: 'ping-demo', n: 1, expr: '3*3', ts: 10 }),
-    ...b.onSessionEvent('PONG', { from: 'pong-demo', answer: 9, ts: 12 }),
-    ...b.onSessionEvent('selection:cast', { actorId: 'ping-demo', targetId: 100, label: 'pick', ts: 13 }),
+    ...b.onState({ ts: 0, actors: { uno: { zone: 'terraza' }, dos: {} } }),
+    ...b.onLedger({ kind: 'inspect', actorId: 'op', detail: { targetId: 42 }, ts: 10 }),
+    ...b.onLedger({ kind: 'label', actorId: 'uno', detail: { label: 'agora' }, ts: 12 }),
   ];
-  // 2 presence (sys) + ping + pong + selection (game)
-  assert.equal(stream.length, 5);
+  assert.equal(stream.length, 4);
   assert.equal(stream.filter((m) => m.channel === CHANNELS.SYS).length, 2);
-  assert.equal(stream.filter((m) => m.channel === CHANNELS.GAME).length, 3);
+  assert.equal(stream.filter((m) => m.channel === CHANNELS.GAME).length, 2);
   assert.ok(stream.every((m) => m.toBot === HUB && typeof m.id === 'string'));
 });

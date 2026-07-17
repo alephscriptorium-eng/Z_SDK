@@ -1,28 +1,28 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { merge, Observable, Subscription } from 'rxjs';
-import { ZeusSessionBridgeService, ZeusSessionConfig } from './zeus-session-bridge.service';
+import { ZeusOperatorBridgeService, ZeusOperatorConfig } from './zeus-operator-bridge.service';
 import { DemoFallbackService } from './demo-fallback.service';
-import { SessionHudComponent } from './session-hud.component';
+import { OperatorHudComponent } from './operator-hud.component';
 import {
   ThreeJSLayoutComponent,
   ThreeJSLayoutConfig,
   HubMessage,
 } from '@zeus/threejs-ui-lib';
-import { DEV_ROOM_CLIENT_CONFIG } from '@zeus/room-client-browser';
+import { DEV_ROOM_CLIENT_CONFIG } from '@zeus/room-client-browser/dev-config';
 
 @Component({
   selector: 'app-root',
-  imports: [ThreeJSLayoutComponent, SessionHudComponent],
+  imports: [ThreeJSLayoutComponent, OperatorHudComponent],
   template: `
     <div class="operator-host">
-      <app-session-hud />
+      <app-operator-hud />
       <tjs-threejs-layout
         [config]="layoutConfig"
         [externalMessages$]="sceneMessages$"
         [enableDemoFallback]="enableDemoFallback"
         [operatorConnectionStatus]="connectionStatus"
-        [operatorCastEnabled]="operatorCastEnabled"
-        (operatorCast)="handleOperatorCast()"
+        [operatorCastEnabled]="operatorInspectEnabled"
+        (operatorCast)="handleOperatorInspect()"
         (operatorConnect)="handleConnect()"
         (operatorDisconnect)="handleDisconnect()">
       </tjs-threejs-layout>
@@ -31,7 +31,7 @@ import { DEV_ROOM_CLIENT_CONFIG } from '@zeus/room-client-browser';
   styleUrl: './app.css'
 })
 export class App implements OnInit, OnDestroy {
-  protected readonly zeusBridge = inject(ZeusSessionBridgeService);
+  protected readonly zeusBridge = inject(ZeusOperatorBridgeService);
   private readonly demoFallback = inject(DemoFallbackService);
   private sliceSub: Subscription | null = null;
 
@@ -53,12 +53,12 @@ export class App implements OnInit, OnDestroy {
 
   connectionStatus = 'disconnected';
   enableDemoFallback = true;
-  operatorCastEnabled = false;
-  private castCount = 0;
+  operatorInspectEnabled = false;
+  private inspectCount = 0;
 
   async ngOnInit(): Promise<void> {
-    this.sliceSub = this.zeusBridge.operatorSlice$.subscribe(() => {
-      this.operatorCastEnabled = this.zeusBridge.canCast('B');
+    this.sliceSub = this.zeusBridge.operatorSlice$.subscribe((slice) => {
+      this.operatorInspectEnabled = this.zeusBridge.isLive() && slice != null;
     });
     await this.tryAutoConnect();
   }
@@ -67,14 +67,14 @@ export class App implements OnInit, OnDestroy {
     this.sliceSub?.unsubscribe();
   }
 
-  private zeusConfig(): ZeusSessionConfig {
-    const cfg = (globalThis as { __ZEUS__?: ZeusSessionConfig }).__ZEUS__;
+  private zeusConfig(): ZeusOperatorConfig {
+    const cfg = (globalThis as { __ZEUS__?: ZeusOperatorConfig }).__ZEUS__;
     return {
       scriptoriumUrl: cfg?.scriptoriumUrl ?? DEV_ROOM_CLIENT_CONFIG.scriptoriumUrl,
-      room: cfg?.room,
-      sessionId: cfg?.sessionId ?? DEV_ROOM_CLIENT_CONFIG.sessionId,
+      room: cfg?.room ?? DEV_ROOM_CLIENT_CONFIG.room,
       token: cfg?.token ?? DEV_ROOM_CLIENT_CONFIG.token,
       user: cfg?.user ?? 'operator-ui',
+      game: cfg?.game ?? 'delta',
     };
   }
 
@@ -85,7 +85,7 @@ export class App implements OnInit, OnDestroy {
       this.demoFallback.disable();
       this.setConnectionStatus('connected');
     } catch (err) {
-      console.warn('[operator-ui] zeus session not reachable, demo-only mode:', err);
+      console.warn('[operator-ui] game room not reachable, demo-only mode:', err);
       this.demoFallback.enable();
       this.setConnectionStatus('demo');
     }
@@ -116,16 +116,15 @@ export class App implements OnInit, OnDestroy {
     this.setConnectionStatus('disconnected');
   }
 
-  handleOperatorCast(): void {
-    this.castCount++;
+  handleOperatorInspect(): void {
+    this.inspectCount++;
     if (!this.zeusBridge.isLive()) return;
-    if (!this.zeusBridge.canCast('B')) {
-      console.warn('[operator-ui] cast skipped — cue deck B and wait for registros (lineas required)');
-      return;
-    }
-    const cast = this.zeusBridge.cast({ label: `operator pick #${this.castCount}` });
+    const cast = this.zeusBridge.inspect({
+      targetId: 'spawn',
+      label: `operator inspect #${this.inspectCount}`,
+    });
     if (cast) {
-      console.log('📤 [operator-ui] → selection:cast', cast);
+      console.log('📤 [operator-ui] → intent inspect', cast);
     }
   }
 }

@@ -362,6 +362,23 @@ const HANDLERS = {
       },
       { op: 'actor:score', id: actor.id, key: 'milestoned' }
     );
+  },
+
+  /**
+   * Operator: anotar inspección (no exige actor join de jugador).
+   * Asiento en ledger vía op `ledger:push`.
+   */
+  inspect(_view, intent) {
+    const targetId = intent.targetId ?? intent.nodeId ?? intent.ref ?? null;
+    return okOps({
+      op: 'ledger:push',
+      entryKind: 'inspect',
+      actorId: intent.actorId,
+      detail: {
+        ...(targetId != null ? { targetId } : {}),
+        ...(intent.label != null ? { label: intent.label } : {})
+      }
+    });
   }
 };
 
