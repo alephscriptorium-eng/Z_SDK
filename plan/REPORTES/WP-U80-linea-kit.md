@@ -123,4 +123,46 @@ Ninguno bloqueante. Push: **no intentado** (política del brief).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17 (revisión; sin merge ni ✅ BACKLOG
+en este paso — pedido explícito del usuario).
+
+### Verificado
+
+- **Merge master:** rama estaba en `e70b4e2` (pre-U56); merge ort limpio →
+  `8dd16dc` (`merge(master): integra U56`). Tras merge: 0 behind master.
+- **Alcance** `master...HEAD` (~44 files): `packages/engine/linea-kit/**`,
+  fachada `linea-system` loader, consumo `arg-feeds` curation, changeset,
+  reporte. **Sin** `plan/BACKLOG.md` tocado por el worker. Commits
+  convencionales OK.
+- **Re-CA** (worktree post-merge):
+  - `npm test -w @zeus/linea-kit` → 8/8 pass; live VOLUMES
+    `DISK_01/02/03` ok (`checked=111; skipped=[]`) vía árbol master
+    `…/zeus-sdk/VOLUMES` (symlinks locales en worktree)
+  - `npm test -w @zeus/linea-system` → 2/2 + **SMOKE TEST PASSED**
+  - `npm test -w @zeus/arg-feeds` → 4/4 pass
+  - `npm run gates` → `gates: OK (0 offenders)`
+- **Demolición:** `linea-system/src/loader.mjs` = 72 LOC fachada sobre
+  `@zeus/linea-kit/loader`; `loadWpHistoriaIndex` / `slimRegistro` ausentes
+  en linea-system.
+- **Regla dos juegos:** cero `delta`/`pozo` y cero forces concretas en
+  `packages/engine/linea-kit/{src,schemas}`; README documenta browser-safe
+  vs node-only.
+
+### PRACTICAS
+
+Auto-revisión honesta; demolición completa (no dual path); sin nombres de
+transición; curación unificada por mapas; alcance acotado a U80 (no U81).
+
+### Hallazgos → cola (no bloquean; al merge en master)
+
+1. **DISK_03 no viaja en git** pese a comentario D-19 en `.gitignore`
+   (`VOLUMES/*` sin `!VOLUMES/DISK_03/**`). Corpus local del operador;
+   fixtures del kit cubren CI. Candidato WP: exceptuar DISK_03 + add.
+2. Worktrees no heredan DISK gitignored → hace falta `ZEUS_VOLUMES_ROOT`
+   o symlinks (documentado en reporte worker; no WP si es runbook).
+
+### Merge
+
+**Listo** para merge a master + ✅ BACKLOG por el orquestador en master
+(paso separado). Orden: U80 solo (U56 ya en master). Tras merge:
+`git worktree remove` de `.worktrees/wp-u80-linea-kit`. **No** push.
