@@ -105,7 +105,7 @@ Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
 - duda worker (brief U11 / DECISIONES si el usuario cierra): ¿Peer Card en handshake U11 o basta `role` en intent hasta ola WebRTC?
 - e2e banners «CAUDAL» residuales (cola U02) — fuera de alcance
 
-- ⬜ **WP-U11 · `@zeus/authority-kit`** *(dep U10)* — autoridad genérica
+- 🔶 **WP-U11 · `@zeus/authority-kit`** *(dep U10)* — en curso (lote-1b / orquestador / 2026-07-17) — autoridad genérica
   extraída de `arg-demos/apps/authority`: loop de tick, aplicación de intents
   vía reducer registrado, emisión state/ledger/track, presupuesto de snapshot,
   arranque/parada limpios (sin huérfanos: cascada SIGINT ya resuelta en
@@ -114,7 +114,7 @@ Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
   arg-demos); `e2e:arg` y `test:arg` verdes sin tocar los tests.
   **Demolición:** el código genérico que quede duplicado en arg-demos.
 
-- ⬜ **WP-U12 · `@zeus/player-mcp-kit`** *(dep U10)* — generalizar
+- 🔶 **WP-U12 · `@zeus/player-mcp-kit`** *(dep U10)* — en curso (lote-1b / orquestador / 2026-07-17) — generalizar
   `arg-player-mcp`: patrón «un MCP por actor» con semántica verificable
   (emitir intent → esperar evidencia en state/ledger), dry-run de rechazos,
   resources estándar (`<game>://player/state`, `<game>://scene`,
