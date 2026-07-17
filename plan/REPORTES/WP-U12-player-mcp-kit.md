@@ -142,4 +142,22 @@ Ninguno bloqueante. Nota: el esquema URI histórico de delta sigue siendo
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-17
+
+### Verificado
+- Diff `master...HEAD` acotado a U12 (`player-mcp-kit` + instancia `arg-player-mcp` + reporte); sin tocar `plan/BACKLOG.md`; sin U11/U13.
+- Merge de master en rama antes de cerrar: `69aedae` (`ZEUS_OPEN_BROWSER` opt-in) → merge commit `ef860b5`.
+- CA re-ejecutados en worktree tras el merge:
+  - `npm test -w @zeus/player-mcp-kit` → 10/10 pass
+  - `npm run test:arg-player-mcp` → 21/21 pass
+  - `npm run e2e:arg-mcp` → 8/8 gates verdes (headless por default tras `69aedae`; no se forzó `=1`)
+- Demolición: sin `confirmIntent`/`sleep`/`fail`/`createStandardMcpServer` locales en `arg-player-mcp/src`; kit sin `delta`/`pozo`/`grifo`/`cantera` (fuera README). Instancia vía `createPlayerRoomBridge` / `createPlayerMcpServer` / `confirmIntent`.
+- PRACTICAS §1–3 / §6: commits convencionales; pozo §1.11 respondida en reporte; health `connected`+`lastStateTs` en kit.
+
+### Nota ambiente (no cambia veredicto)
+- Primeros intentos de re-CA e2e fallaron por `EADDRINUSE` / huérfanos tras una interrupción previa; tras liberar puertos + merge master el e2e quedó verde. Misma clase de ruido que documentó el worker.
+
+### Merge
+- Autorizado a merge en master **después** de U11 si conviene (U11∥U12 independientes). **No** marcado ✅ en BACKLOG ni merge/push en esta revisión (pedido explícito del usuario).
+- Tras merge: `git worktree remove` del worktree U12.
+- Siguiente: asignar WP-U13 (`playbook-kit`, dep U12).
