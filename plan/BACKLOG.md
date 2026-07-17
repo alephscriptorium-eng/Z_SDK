@@ -577,12 +577,13 @@ Diferidos del reporte/revisión WP-U82 (no bloquean cierre):
 - `release:changeset-dry` sobre paquete aún untracked ensucia el árbol
   (checkout falla al restaurar package.json nuevo)
 
-- ⬜ **WP-U83 · Las tramas integran crecer/vaciar** *(dep U82, U30, U23)* —
-  delta y pozo incorporan el ciclo completo del mapa a su trama y CASOS:
-  crecer (cachear/curar/milestone ya en WP-U30) y **vaciar** como mecánica
-  con coste narrativo (qué significa purgar en el delta; qué en el pozo), con
-  casos C-* nuevos en formato playbook-kit y checklist visual. Los WPs de
-  detalle por juego se espejan en el backlog del juego cuando se tomen.
+- 🔶 **WP-U83 · Las tramas integran crecer/vaciar** *(dep U82, U30, U23)* —
+  (lote-7b / orquestador / 2026-07-18) — delta y pozo incorporan el ciclo
+  completo del mapa a su trama y CASOS: crecer (cachear/curar/milestone ya
+  en WP-U30) y **vaciar** como mecánica con coste narrativo (qué significa
+  purgar en el delta; qué en el pozo), con casos C-* nuevos en formato
+  playbook-kit y checklist visual. Los WPs de detalle por juego se espejan
+  en el backlog del juego cuando se tomen.
   **CA:** casos nuevos pasan el test de coherencia; e2e MCP de al menos un
   caso de vaciado por juego; scoring/ledger reflejan el ciclo.
   **Demolición:** n/a.
@@ -611,14 +612,15 @@ Diferidos del reporte/revisión WP-U91 (no bloquean cierre):
   strings crudos; YAML CRLF vs generate LF falla sync sin drift de contenido.
   Candidato: normalizar LF en la comparación o `.gitattributes` para `*.yaml`.
 
-- ⬜ **WP-U92 · Intents de force: el sistema inyecta entropía** *(dep U91,
-  U30)* — el dominio gana `force:activate`/`force:deactivate` con roles
-  `operator`/`dj`: la autoridad valida contra el registry del volumen
-  (`session_budget`, `pairs_with`, exclusiones declaradas — las reglas
-  viven en los datos, el reducer solo las aplica) y asienta en ledger; las
-  escenas ancla de las forces activas se sirven como tracks. Cotas: el
-  estado de ronda expone su posición entre sima y cima (los polos
-  colapso/victoria ya existentes ganan corpus navegable como track).
+- 🔶 **WP-U92 · Intents de force: el sistema inyecta entropía** *(dep U91,
+  U30)* — (lote-7b / orquestador / 2026-07-18) — el dominio gana
+  `force:activate`/`force:deactivate` con roles `operator`/`dj`: la
+  autoridad valida contra el registry del volumen (`session_budget`,
+  `pairs_with`, exclusiones declaradas — las reglas viven en los datos, el
+  reducer solo las aplica) y asienta en ledger; las escenas ancla de las
+  forces activas se sirven como tracks. Cotas: el estado de ronda expone
+  su posición entre sima y cima (los polos colapso/victoria ya existentes
+  ganan corpus navegable como track).
   **CA:** tests de reducer — activar una 3ª force = rechazo explicable por
   dry-run; par excluido = rechazo; activación válida = asiento + track
   navegable; delta y pozo consumen el mecanismo (regla de los dos juegos).
