@@ -423,7 +423,8 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
   **Demolición:** el versionado lockstep manual y cualquier script de publish
   provisional de WP-U50 que el pipeline sustituya.
 
-- ⬜ **WP-U52 · Auditoría de vías muertas** *(última)* — barrido final: por
+- 🔶 **WP-U52 · Auditoría de vías muertas** *(última)* — en curso
+  (ola-5 / orquestador / 2026-07-17) — barrido final: por
   cada paquete, lista de consumidores reales (grep de imports); cero
   huérfanos, cero TODO sin backlog, cero código comentado, READMEs veraces.
   Produce el reporte de cierre de la refundación.
