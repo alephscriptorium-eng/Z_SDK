@@ -436,7 +436,7 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
 > **Nota orquestador (lote-post5 / 2026-07-17):** Ola 6 / **U55** pausados —
-> swarm sin credenciales/registry. **U56** aceptado; **U80** sigue en curso.
+> swarm sin credenciales/registry. **U56** y **U80** aceptados.
 > NO asignar: U55, U60+ (U60 = nuevo repo GitHub).
 
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
@@ -494,8 +494,8 @@ Hallazgos diferidos U56 (no bloquean):
 ## Ola 7 — El plano de datos (diseño en [DATOS.md](DATOS.md); paralelizable
 con olas 2–5 salvo deps indicadas)
 
-- 🔶 **WP-U80 · `@zeus/linea-kit`** — en curso (lote-post5 / orquestador /
-  2026-07-17) — los formatos canónicos de DATOS.md §2
+- ✅ **WP-U80 · `@zeus/linea-kit`** — aceptado (orquestador / 2026-07-17) —
+  los formatos canónicos de DATOS.md §2
   como paquete engine: JSON Schemas + validador (nodos.yaml, manifests
   tronco/satélite, registro, snapshots, nodo-sections, registry, sidecars de
   cache, volumes.json) + **loader** de lectura generalizado desde
@@ -512,6 +512,16 @@ con olas 2–5 salvo deps indicadas)
   consumen el kit (diff negativo); regla de los dos juegos respetada (el kit
   no nombra juegos ni forces concretas).
   **Demolición:** el loader duplicado en linea-system.
+
+Hallazgos diferidos U80 (no bloquean):
+
+- ⬜ **DISK_03 gitignore vs D-19** — `.gitignore` ignora `VOLUMES/*` sin
+  `!VOLUMES/DISK_03/**` pese a D-19 (FORCES debería viajar en git). Corpus
+  local del operador; fixtures del kit cubren CI. Candidato WP: exceptuar
+  DISK_03 + add.
+- ⬜ **ZEUS_VOLUMES_ROOT / worktrees** — worktrees no heredan DISK
+  gitignored del árbol principal; hace falta `ZEUS_VOLUMES_ROOT` o
+  symlinks locales (runbook; no WP si basta documentar).
 
 - ⬜ **WP-U81 · Herramientas de segmentación del dramaturgo** *(dep U80)* —
   migrar el CONCEPTO de los pythons (segment_linea, segment_poder,
