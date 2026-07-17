@@ -9,6 +9,9 @@
  *   G-MCP.4  C-04b: player_tap_set sin contacto ⇒ ok:false sin_contacto
  *   G-MCP.5  C-04+C-05: player_contact + player_tap_set 0.75 ⇒ apertura en estado
  *   G-MCP.6  MCP de dos: join+goto embarcadero+ride+label ⇒ ledger label
+ *   G-MCP.7  C-17 salvage
+ *   G-MCP.8  C-18 track
+ *   G-MCP.9  C-33 empty (vaciado) ⇒ ledger empty + score.emptied
  *
  * Uso: npm run e2e:arg-mcp
  */
@@ -156,7 +159,8 @@ try {
       toolNames.includes('player_goto') &&
       toolNames.includes('player_label') &&
       toolNames.includes('player_salvage') &&
-      toolNames.includes('player_track'),
+      toolNames.includes('player_track') &&
+      toolNames.includes('player_empty'),
     `uno/dos connected · ${toolNames.filter((n) => n.startsWith('player_')).length} tools player_*`
   );
 
@@ -257,6 +261,31 @@ try {
       track.evidencia?.track?.hint === 'firehose-browser' &&
       tracksObs.data?.some?.((t) => t.actorId === 'uno' && t.hint === 'firehose-browser'),
     track.ok ? track.evidencia.track.ref?.uri ?? 'ok' : track.error ?? 'sin gota'
+  );
+
+  // G-MCP.9 — C-33: player_empty sobre hundidas ya presentes (sin más vertido:
+  // reabrir el grifo tras murk~28 colapsa la ronda en e2e).
+  const seaPreEmpty = await callTool(MCP_UNO_PORT, 'player_observe', { what: 'sea' });
+  const sunkenCount = (seaPreEmpty.data?.droplets || []).filter((d) => d.label == null).length;
+  const murkPre = seaPreEmpty.data?.murk ?? 0;
+  const collapsed = seaPreEmpty.data?.collapsed === true;
+  const gotoOrilla = await callTool(MCP_UNO_PORT, 'player_goto', { nodeId: 'orilla-mar' });
+  const emptyRes = await callTool(MCP_UNO_PORT, 'player_empty', {});
+  const seaPostEmpty = await callTool(MCP_UNO_PORT, 'player_observe', { what: 'sea' });
+  const emptyAgain = await callTool(MCP_UNO_PORT, 'player_empty', {});
+  gate(
+    'G-MCP.9 empty (C-33)',
+    !collapsed &&
+      gotoOrilla.ok === true &&
+      sunkenCount >= 1 &&
+      emptyRes.ok === true &&
+      emptyRes.evidencia?.ledger?.kind === 'empty' &&
+      emptyRes.evidencia?.ledger?.detail?.opsIntent === 'empty_playable' &&
+      (emptyRes.evidencia?.score?.emptied ?? 0) >= 1 &&
+      (seaPostEmpty.data?.murk ?? murkPre) < murkPre,
+    emptyRes.ok
+      ? `removed=${emptyRes.evidencia?.ledger?.detail?.removed} · murk ${murkPre}→${seaPostEmpty.data?.murk} · again=${emptyAgain.error ?? emptyAgain.ok}`
+      : `collapsed=${collapsed} sunken=${sunkenCount} · err=${emptyRes.error ?? gotoOrilla.error}`
   );
 } catch (err) {
   gate('E2E MCP', false, err.message);

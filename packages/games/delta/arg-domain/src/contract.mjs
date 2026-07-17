@@ -62,6 +62,11 @@ export const INTENT_DEFS = {
   emote: { roles: ['player'] },
   salvage: { roles: ['player'] },
   'track:cast': { roles: ['player'] },
+  /**
+   * Vaciar vertido blando del mar (WP-U83 / DATOS §4).
+   * Roles alineados con volumes-ops `empty_playable` (player|dj).
+   */
+  empty: { roles: ['player', 'dj'] },
   /** Manipulador de líneas (WP-U30): crecer el volumen desde el tablero DJ. */
   cache: { roles: ['dj'] },
   curate: { roles: ['dj'] },

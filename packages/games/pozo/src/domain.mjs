@@ -1,6 +1,6 @@
 /**
  * pozo — dominio puro (sin red, sin fs, sin Date.now escondido).
- * Un pozo, nodos, feed que gotea, draw_drop + force activate/deactivate (WP-U92).
+ * Intents: draw_drop + empty (WP-U83) y force activate/deactivate (WP-U92).
  */
 
 import {
@@ -23,7 +23,7 @@ export function createPozoDomainState(opts = {}) {
   /** @type {Set<string>} */
   const activeForces = new Set(forcesReg ? initialActiveForces(forcesReg) : []);
 
-  /** @type {Record<string, { id: string, kind: string, nodeId: string, joinedAt: number }>} */
+  /** @type {Record<string, { id: string, kind: string, nodeId: string, joinedAt: number, score?: object }>} */
   const actors = {};
   let wellLevel = POZO_SCENE.well.startLevel;
   let dripAcc = 0;
@@ -48,7 +48,8 @@ export function createPozoDomainState(opts = {}) {
           id: actorId,
           kind: payload.kind === 'operator' ? 'operator' : 'player',
           nodeId: 'orilla',
-          joinedAt: clock()
+          joinedAt: clock(),
+          score: { labeled: 0, emptied: 0 }
         };
         contentRev += 1;
       }
@@ -73,6 +74,7 @@ export function createPozoDomainState(opts = {}) {
       const ts = clock();
       const dropId = `drop-${dropSeq}`;
       lastDrop = { id: dropId, label: trimmed, actorId, ts };
+      actors[actorId].score.labeled = (actors[actorId].score.labeled ?? 0) + 1;
       ledgerOut.push({
         kind: 'label',
         seq: ledgerSeq,
@@ -87,6 +89,37 @@ export function createPozoDomainState(opts = {}) {
         hint: 'drop-label',
         ref: { kind: 'drop', id: dropId, label: trimmed },
         ts
+      });
+      contentRev += 1;
+      return { ok: true, error: null };
+    },
+
+    /** Vaciar el vaso: derrama todo el nivel (coste = agua no etiquetable). */
+    empty(payload) {
+      const { actorId } = payload;
+      if (!actors[actorId]) {
+        return { ok: false, error: 'actor_desconocido' };
+      }
+      if (wellLevel < 1) {
+        return { ok: false, error: 'pozo_ya_vacio' };
+      }
+      const drained = wellLevel;
+      wellLevel = 0;
+      dripAcc = 0;
+      ledgerSeq += 1;
+      const ts = clock();
+      actors[actorId].score.emptied = (actors[actorId].score.emptied ?? 0) + 1;
+      ledgerOut.push({
+        kind: 'empty',
+        seq: ledgerSeq,
+        actorId,
+        ts,
+        detail: {
+          drained,
+          wellLevel: 0,
+          nodeId: actors[actorId].nodeId,
+          opsIntent: 'empty_playable'
+        }
       });
       contentRev += 1;
       return { ok: true, error: null };
@@ -178,7 +211,15 @@ export function createPozoDomainState(opts = {}) {
         ts: clock(),
         reason,
         sceneId: POZO_SCENE.id,
-        actors: { ...actors },
+        actors: Object.fromEntries(
+          Object.entries(actors).map(([id, a]) => [
+            id,
+            {
+              ...a,
+              score: { labeled: a.score?.labeled ?? 0, emptied: a.score?.emptied ?? 0 }
+            }
+          ])
+        ),
         well: {
           level: wellLevel,
           capacity: POZO_SCENE.well.capacity,
@@ -226,6 +267,11 @@ export function createPozoDomainState(opts = {}) {
           return { ok: false, error: 'label_requerido' };
         }
         if (wellLevel < 1) return { ok: false, error: 'pozo_seco' };
+        return { ok: true, error: null };
+      }
+      if (payload.intent === 'empty') {
+        if (!actors[payload.actorId]) return { ok: false, error: 'actor_desconocido' };
+        if (wellLevel < 1) return { ok: false, error: 'pozo_ya_vacio' };
         return { ok: true, error: null };
       }
       if (payload.intent === 'force:activate') {

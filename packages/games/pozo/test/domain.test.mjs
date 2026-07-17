@@ -72,6 +72,24 @@ describe('pozo domain', () => {
     assert.equal(r.error, 'rol_no_autorizado');
   });
 
+  it('empty drena el pozo, asienta ledger y score.emptied', () => {
+    const d = createPozoDomainState({ now: () => 5000 });
+    d.applyIntent(makeIntent('uno', 'join', {}));
+    const levelBefore = d.snapshot('t').well.level;
+    assert.ok(levelBefore >= 1);
+    const r = d.applyIntent(makeIntent('uno', 'empty', {}));
+    assert.equal(r.ok, true);
+    const snap = d.snapshot('t');
+    assert.equal(snap.well.level, 0);
+    assert.equal(snap.actors.uno.score.emptied, 1);
+    const out = d.drainOutbox();
+    assert.equal(out.ledger.length, 1);
+    assert.equal(out.ledger[0].kind, 'empty');
+    assert.equal(out.ledger[0].detail.drained, levelBefore);
+    assert.equal(out.ledger[0].detail.opsIntent, 'empty_playable');
+    assert.equal(d.applyIntent(makeIntent('uno', 'empty', {})).error, 'pozo_ya_vacio');
+  });
+
   const U92_FORCES = {
     boot: 'boot-x',
     activation: {

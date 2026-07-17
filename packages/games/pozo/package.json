@@ -31,6 +31,7 @@
     "@zeus/rooms": "*",
     "@zeus/ui-3d-kit": "*",
     "@zeus/view-kit": "*",
+    "@zeus/volumes-ops": "*",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "socket.io-client": "^4.8.1",

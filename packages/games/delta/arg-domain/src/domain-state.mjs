@@ -116,7 +116,9 @@ export function createArgDomainState({
           actors[op.id].position = computeActorPosition(actors[op.id]);
           break;
         case 'actor:score':
-          actors[op.id].score[op.key] += 1;
+          if (actors[op.id]?.score) {
+            actors[op.id].score[op.key] = (actors[op.id].score[op.key] ?? 0) + 1;
+          }
           break;
         case 'tap:aperture':
           flow.setAperture(op.tapId, op.value);
@@ -126,6 +128,9 @@ export function createArgDomainState({
           break;
         case 'sea:salvage':
           flow.salvage(op.dropletId, op.label, op.actorId);
+          break;
+        case 'sea:empty':
+          flow.emptySoft(op.actorId);
           break;
         case 'corridor:excavate': {
           const external = feeds.externalDig === true;
@@ -270,6 +275,17 @@ export function createArgDomainState({
         pushLedger('burst', { detail: { tapId: ev.tapId, riverId: ev.riverId } });
       } else if (ev.kind === 'collapse') {
         pushLedger('collapse', { detail: { murk: ev.murk, capacity: ev.capacity } });
+      } else if (ev.kind === 'empty') {
+        pushLedger('empty', {
+          actorId: ev.actorId,
+          detail: {
+            removed: ev.removed,
+            murkBefore: ev.murkBefore,
+            murkAfter: ev.murkAfter,
+            dropletIds: ev.dropletIds,
+            opsIntent: 'empty_playable'
+          }
+        });
       } else if (ev.kind === 'commit:error') {
         pushLedger('error', { detail: { message: ev.message, ref: ev.ref, label: ev.label } });
       }

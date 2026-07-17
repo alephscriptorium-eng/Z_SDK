@@ -9,12 +9,12 @@ Segundo juego mínimo del monorepo (D-8 / regla de los dos juegos). Nace en
 
 | pieza | ruta |
 | ----- | ---- |
-| Dominio puro | `src/domain.mjs` — pozo, nodos, feed drip, `draw_drop` + `force:activate`/`force:deactivate` (WP-U92) |
+| Dominio puro | `src/domain.mjs` — pozo, nodos, feed drip, `draw_drop` + `empty` (WP-U83) + `force:activate`/`force:deactivate` (WP-U92) |
 | Contrato | `src/contract.mjs` — `game: 'pozo'`, catálogo intents (player + operator/dj forces) |
-| Autoridad | `src/authority.mjs` — `startAuthority({ game: 'pozo', … })` |
-| MCP jugador | `src/player-mcp/` — tools `player_join` / `player_draw_drop` / `player_state` |
+| Autoridad | `src/authority.mjs` — `startAuthority({ game: 'pozo', … })` + gemelo ops `empty_playable` |
+| MCP jugador | `src/player-mcp/` — `player_join` / `player_draw_drop` / `player_empty` / `player_state` |
 | Vista | `src/view/` + `assets/js/pozo-main.mjs` — view-kit |
-| Playbook | `spec/CASOS.md` — C-01 join, C-02 draw_drop |
+| Playbook | `spec/CASOS.md` — C-01 join, C-02 draw_drop, C-03 empty |
 | Launcher | `launch.mjs` — `npm run demo:pozo` |
 
 ## Arranque

@@ -339,6 +339,41 @@ export function buildMcp(server, bridge, cfg) {
   );
 
   server.registerTool(
+    'player_empty',
+    {
+      title: 'Vaciar vertido blando del mar',
+      description:
+        'Purga gotas hundidas (ciclo vaciar DATOS §4). Coste narrativo: ya no se pueden ' +
+        'rescatar. Ledger kind "empty" + score.emptied. Requiere orilla/boya/mar con hundidas.',
+      inputSchema: {
+        timeoutMs: z.number().optional()
+      }
+    },
+    async ({ timeoutMs }) => {
+      const sinceSeq = bridge.maxLedgerSeq();
+      return jsonContent(
+        await confirm(bridge, cfg, {
+          intent: 'empty',
+          args: {},
+          timeoutMs,
+          done: () => {
+            const hit = bridge
+              .ledgerTail()
+              .find((e) => e.kind === 'empty' && e.actorId === actor && e.seq > sinceSeq);
+            return hit ?? null;
+          },
+          evidence: (state, hit) => ({
+            ledger: hit ?? null,
+            score: compactActor(state, actor)?.score ?? null,
+            sea: projectSea(state)
+          }),
+          timeoutHint: '¿fuera del mar o nada_que_vaciar?'
+        })
+      );
+    }
+  );
+
+  server.registerTool(
     'player_track',
     {
       title: 'Lanzar gota del mar al firehose-browser',

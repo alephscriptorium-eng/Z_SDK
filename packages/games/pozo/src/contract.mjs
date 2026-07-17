@@ -34,7 +34,10 @@ export const EVENTS = Object.freeze({
   LEDGER: PROTOCOL_EVENTS.LEDGER
 });
 
-/** Catálogo: join + draw_drop + force activate/deactivate (WP-U92). */
+/**
+ * Catálogo: join, draw_drop (crecer), empty (vaciar, WP-U83) y
+ * force activate/deactivate (WP-U92).
+ */
 export const INTENTS = createIntentCatalog({
   join: {
     roles: ['player'],
@@ -43,6 +46,15 @@ export const INTENTS = createIntentCatalog({
   draw_drop: {
     roles: ['player'],
     description: 'Sacar una gota del pozo y etiquetarla (asiento en ledger)'
+  },
+  /**
+   * Vaciar el pozo de un golpe (WP-U83 / DATOS §4).
+   * Roles alineados con volumes-ops empty_playable (player).
+   * Coste narrativo: se pierde el agua que se podría haber etiquetado.
+   */
+  empty: {
+    roles: ['player'],
+    description: 'Derramar el pozo (liberar el vaso) con asiento en ledger'
   },
   'force:activate': {
     roles: ['operator', 'dj'],

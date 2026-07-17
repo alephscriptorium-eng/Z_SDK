@@ -17,7 +17,12 @@ import { CASOS_PATH } from './config.mjs';
 function compactActor(state, actorId) {
   const a = state?.actors?.[actorId];
   if (!a) return null;
-  return { id: a.id, nodeId: a.nodeId, kind: a.kind };
+  return {
+    id: a.id,
+    nodeId: a.nodeId,
+    kind: a.kind,
+    score: a.score ?? { labeled: 0, emptied: 0 }
+  };
 }
 
 function summarizeState(state, actorId) {
@@ -45,6 +50,12 @@ function explainDraw(state, actorId, label) {
     return { ok: false, error: 'label_requerido' };
   }
   if ((state.well?.level ?? 0) < 1) return { ok: false, error: 'pozo_seco' };
+  return { ok: true, error: null };
+}
+
+function explainEmpty(state, actorId) {
+  if (!state?.actors?.[actorId]) return { ok: false, error: 'actor_desconocido' };
+  if ((state.well?.level ?? 0) < 1) return { ok: false, error: 'pozo_ya_vacio' };
   return { ok: true, error: null };
 }
 
@@ -131,6 +142,48 @@ export function buildMcp(server, bridge, cfg) {
       );
     }
   );
+
+  server.registerTool(
+    'player_empty',
+    {
+      title: 'Vaciar el pozo',
+      description:
+        'Derrama todo el nivel del pozo (ciclo vaciar). Coste narrativo: pierdes el agua ' +
+        'que podrías haber etiquetado. Ledger kind "empty" + score.emptied.',
+      inputSchema: {
+        timeoutMs: z.number().optional()
+      }
+    },
+    async ({ timeoutMs }) => {
+      if (!bridge.myActor()) {
+        return jsonContent(fail('actor_desconocido', { nota: 'llama antes a player_join' }));
+      }
+      const levelBefore = bridge.lastState()?.well?.level ?? 0;
+      const emptiedBefore = bridge.myActor()?.score?.emptied ?? 0;
+      return jsonContent(
+        await confirmIntent(bridge, cfg, {
+          intent: 'empty',
+          args: {},
+          timeoutMs,
+          done: (state) => {
+            const a = state.actors?.[actor];
+            if (!a) return null;
+            if ((a.score?.emptied ?? 0) <= emptiedBefore) return null;
+            if ((state.well?.level ?? 1) !== 0) return null;
+            return { drained: levelBefore, well: state.well, score: a.score };
+          },
+          unchanged: (state) => (state.well?.level ?? 0) === levelBefore,
+          evidence: (state, value) => ({
+            ...(value ?? {}),
+            well: state?.well ?? null,
+            actor: compactActor(state, actor)
+          }),
+          explain: (state) => explainEmpty(state, actor),
+          timeoutHint: '¿pozo ya vacío?'
+        })
+      );
+    }
+  );
 }
 
 /**
@@ -164,6 +217,6 @@ export function getPromptRegistry() {
 export function buildCardExamples(bridge) {
   return {
     actor: bridge.actor,
-    tools: ['player_join', 'player_draw_drop', 'player_state']
+    tools: ['player_join', 'player_draw_drop', 'player_empty', 'player_state']
   };
 }

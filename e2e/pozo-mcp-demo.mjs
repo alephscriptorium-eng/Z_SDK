@@ -24,7 +24,7 @@ const MCP_PORT = 14141;
 const VIEW_PORT = 13055;
 const ROOM = 'POZO_MCP_E2E';
 const SECRET = 'dev-secret';
-const CA_IDS = ['C-01', 'C-02'];
+const CA_IDS = ['C-01', 'C-02', 'C-03'];
 
 const children = [];
 let failures = 0;
@@ -101,6 +101,7 @@ try {
     'G-POZO.1 tools',
     names.includes('player_join') &&
       names.includes('player_draw_drop') &&
+      names.includes('player_empty') &&
       names.includes('player_state'),
     names.filter((n) => String(n).startsWith('player_')).join(',')
   );
@@ -141,7 +142,7 @@ await sleep(500);
 
 console.log(
   failures === 0
-    ? '\n🟢 e2e pozo-mcp: C-01/C-02 + gates en verde\n'
+    ? '\n🟢 e2e pozo-mcp: C-01/C-02/C-03 + gates en verde\n'
     : `\n🔴 e2e pozo-mcp: ${failures} gate(s) en rojo\n`
 );
 process.exit(failures === 0 ? 0 : 1);

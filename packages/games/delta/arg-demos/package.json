@@ -17,7 +17,8 @@
     "@zeus/arg-feeds": "*",
     "@zeus/authority-kit": "*",
     "@zeus/presets-sdk": "*",
-    "@zeus/rooms": "*"
+    "@zeus/rooms": "*",
+    "@zeus/volumes-ops": "*"
   },
   "license": "AIPLv1"
 }
