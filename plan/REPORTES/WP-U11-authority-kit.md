@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U11) |
 | fecha | 2026-07-17 |
 | rama | `wp/u11-authority-kit` |
-| commit(s) | _(ver git log de la rama)_ |
+| commit(s) | `140d6a2` feat(authority-kit) · `64cde68` refactor(arg-demos)! · `807f339`/`b7b7612` docs(plan) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 | browsers | no launch (orden usuario) — `ZEUS_OPEN_BROWSER=0` |
