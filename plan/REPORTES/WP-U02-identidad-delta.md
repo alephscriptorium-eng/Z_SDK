@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U02) |
 | fecha | 2026-07-17 |
 | rama | `wp/u02-identidad-delta` |
-| commit(s) | _(ver `git log` en la rama; hashes tras commit)_ |
+| commit(s) | `e34cd1a` refactor(arg)! · `aec5493` docs(plan) reporte |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
