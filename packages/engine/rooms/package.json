@@ -4,8 +4,12 @@
   "description": "Scriptorium rooms client (E1 slot)",
   "type": "module",
   "main": "src/index.mjs",
+  "types": "./types/index.d.ts",
   "exports": {
-    ".": "./src/index.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    }
   },
   "scripts": {
     "test": "node --test test/*.mjs"
@@ -23,6 +27,7 @@
   },
   "files": [
     "src",
+    "types",
     "README.md"
   ]
 }
