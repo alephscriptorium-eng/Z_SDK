@@ -26,6 +26,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@zeus/arg-domain": "*",
+    "@zeus/playbook-kit": "*",
     "@zeus/player-mcp-kit": "*",
     "@zeus/presets-sdk": "*",
     "cors": "^2.8.6",

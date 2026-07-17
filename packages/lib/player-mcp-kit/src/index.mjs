@@ -11,4 +11,3 @@ export {
   buildStandardPlayerResources
 } from './resources.mjs';
 export { createPlayerMcpServer } from './server.mjs';
-export { listCasoIds, extractCaso } from './casos-md.mjs';

@@ -17,10 +17,9 @@ import {
   createPlayerRoomBridge,
   createPlayerMcpServer,
   confirmIntent,
-  buildStandardPlayerResources,
-  listCasoIds,
-  extractCaso
+  buildStandardPlayerResources
 } from '@zeus/player-mcp-kit';
+import { listCasoIds } from '@zeus/playbook-kit';
 import { EVENTS, makeIntent } from '@zeus/protocol'; // o wire/alias del juego
 
 const bridge = createPlayerRoomBridge({
@@ -63,8 +62,10 @@ const server = createPlayerMcpServer({
 | `confirmIntent` | intent → evidencia / dry-run |
 | `createPlayerMcpServer` | `createStandardMcpServer` + health estándar |
 | `buildStandardPlayerResources` / `standardPlayerResourceUris` | URIs estándar |
-| `listCasoIds` / `extractCaso` | parseo de playbook markdown |
 | `fail` / `sleep` | helpers de tools |
+
+Parseo de playbook (`listCasoIds` / `extractCaso`) y coherencia/acta/runner:
+`@zeus/playbook-kit`.
 
 ## Tests
 
