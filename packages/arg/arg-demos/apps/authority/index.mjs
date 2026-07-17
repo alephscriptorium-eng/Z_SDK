@@ -7,6 +7,7 @@ import { startAuthority } from '@zeus/authority-kit';
 import {
   createArgDomainState,
   EVENTS,
+  GAME_ID,
   DEFAULT_ARG_ROOM,
   AUTHORITY_USER,
   ARG_TICK_MS,
@@ -68,12 +69,13 @@ const domain = {
 };
 
 console.log(
-  `\n🌊 delta authority · user=${USER} · room=${ROOM} · scene=${state.scene.id} · feeds=${feeds.mode ?? FEED_MODE} · tick=${TICK_MS}ms\n`
+  `\n🌊 delta authority · game=${GAME_ID} · user=${USER} · room=${ROOM} · scene=${state.scene.id} · feeds=${feeds.mode ?? FEED_MODE} · tick=${TICK_MS}ms\n`
 );
 
 await startAuthority({
   user: USER,
   room: ROOM,
+  game: GAME_ID,
   tickMs: TICK_MS,
   heartbeatMs: HEARTBEAT_MS,
   domain,
