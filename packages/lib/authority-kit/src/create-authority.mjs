@@ -9,6 +9,7 @@
 
 import {
   EVENTS as PROTOCOL_EVENTS,
+  makeEnvelope,
   checkSnapshotBudget,
   SNAPSHOT_BUDGET_BYTES
 } from '@zeus/protocol';
@@ -90,10 +91,12 @@ async function resolveRoomFns(options) {
 
 /**
  * Arranca la autoridad: conecta a la room, escucha intents, tickea y publica.
+ * `state` / `track` / `ledger` salen siempre vía `makeEnvelope` (campo `game`).
  *
  * @param {object} options
  * @param {string} options.user
  * @param {string} options.room
+ * @param {string} options.game — id de juego (lo aporta el caller; el kit no hardcodea)
  * @param {number} [options.tickMs=100]
  * @param {number} [options.heartbeatMs=1000]
  * @param {object} options.domain — { applyIntent, tick, snapshot, drainOutbox, contentRev? }
@@ -112,12 +115,13 @@ async function resolveRoomFns(options) {
  * @param {boolean} [options.installSignalHandlers=true]
  * @param {number|null} [options.exitOnSignal=0]
  * @param {() => number} [options.now]
- * @returns {Promise<{ client: object, stop: (exitCode?: number|null) => Promise<void>, publishState: (reason: string) => object, publishOutbox: () => number, events: object }>}
+ * @returns {Promise<{ client: object, stop: (exitCode?: number|null) => Promise<void>, publishState: (reason: string) => object, publishOutbox: () => number, events: object, game: string }>}
  */
 export async function startAuthority(options) {
   const {
     user,
     room,
+    game,
     tickMs = 100,
     heartbeatMs = 1000,
     domain,
@@ -141,6 +145,9 @@ export async function startAuthority(options) {
   }
   if (!room || typeof room !== 'string') {
     throw new TypeError('startAuthority: room (string) es obligatorio');
+  }
+  if (typeof game !== 'string' || !game) {
+    throw new TypeError('startAuthority: game (string no vacío) es obligatorio');
   }
   if (!domain || typeof domain.applyIntent !== 'function') {
     throw new TypeError('startAuthority: domain.applyIntent es obligatorio');
@@ -193,18 +200,49 @@ export async function startAuthority(options) {
         );
       }
     }
-    publishAll(client, events.STATE, { from: user, ...snapshot }, room);
+    const { kind: _snapKind, ...snapRest } = snapshot;
+    const payload = makeEnvelope({
+      game,
+      kind: PROTOCOL_EVENTS.STATE,
+      from: user,
+      ts: snapshot.ts ?? t,
+      ...snapRest
+    });
+    publishAll(client, events.STATE, payload, room);
     return snapshot;
   }
 
   function publishOutbox() {
     const out = domain.drainOutbox();
+    const t = now();
     for (const track of out.tracks) {
-      publishAll(client, events.TRACK, track, room);
+      const { kind: _trackKind, ...trackRest } = track;
+      const payload = makeEnvelope({
+        game,
+        kind: PROTOCOL_EVENTS.TRACK,
+        from: user,
+        ts: track.ts ?? t,
+        ...trackRest
+      });
+      publishAll(client, events.TRACK, payload, room);
     }
     for (const entry of out.ledger) {
-      publishAll(client, events.LEDGER, entry, room);
-      if (onLedger) onLedger(entry);
+      // El discriminante de hecho del juego vive hoy en `kind` (label/burst/…).
+      // makeEnvelope exige kind ∈ state|intent|track|ledger; se separa a
+      // entryKind y se restaura `kind` en el payload publicado para no romper
+      // consumidores (e2e/vistas) que aún leen entry.kind.
+      const { kind: entryKind, ...rest } = entry;
+      const payload = makeEnvelope({
+        game,
+        kind: PROTOCOL_EVENTS.LEDGER,
+        from: user,
+        ts: entry.ts ?? t,
+        ...rest,
+        ...(entryKind != null ? { entryKind } : {})
+      });
+      if (entryKind != null) payload.kind = entryKind;
+      publishAll(client, events.LEDGER, payload, room);
+      if (onLedger) onLedger(payload);
     }
     return out.ledger.length + out.tracks.length;
   }
@@ -274,6 +312,7 @@ export async function startAuthority(options) {
     stop,
     publishState,
     publishOutbox,
-    events
+    events,
+    game
   };
 }
