@@ -106,4 +106,47 @@ Ninguno bloqueante. Push: **no intentado** (política del brief).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador). **No** merge / **no** ✅ BACKLOG
+en esta pasada (autorización pendiente de sesión de merge).
+
+### Verificado
+
+- Diff acotado a `@zeus/linea-kit` tools/starterkits/CLI/docs/tests +
+  changeset minor + este reporte (21 files; sin BACKLOG; sin U82/U91).
+- Rama al día de master (`merge-base` = `3d78e06`); sin merge extra.
+- Re-CA: `npm test -w @zeus/linea-kit` → **16/16 pass** (incluye
+  `CA: juguete E2E + linea-system`: 3 nodos + 10 registros, validate U80,
+  `createServer` + GET `/mcp/health`).
+- `npm run gates` → OK (0 offenders). ESLint del alcance WP → exit 0.
+- Tutoriales: `docs/tutorial-linea-30min.md`, `docs/tutorial-force-30min.md`.
+- Tools presentes: `crear-linea`, `segmentar`, `conectar-satelite`, `fetch`
+  (gate `approve`), `segmentar-force`, `crear-cotas` + starterkits.
+- PRACTICAS: sin nombres de juego en tools/starterkits; flag CLI
+  `--byte-threshold` (evita `\bdelta\b` en two-games); demolición n/a;
+  commits convencionales.
+
+### CA
+
+- [x] Starterkit línea juguete E2E (tronco 3 nodos + satélite 10 registros)
+- [x] Valida schemas U80
+- [x] Se sirve por linea-system apuntado a ella (health OK)
+- [x] Tutorial documentado
+
+### Cola hallazgos (no bloquean; añadir a BACKLOG en master al ✅)
+
+1. **`release-dry` vs export `./schemas/*`** — verificador busca entrada
+   literal `schemas/*` en tarball; pack `@zeus/linea-kit` falla aunque
+   `schemas/` viaja. Preexistente U80. Candidato: `scripts/release-dry.mjs`
+   (saltar globs `*`).
+2. **Gate two-games vs `byte-delta`** — el flag CLI se renombró a
+   `--byte-threshold` porque `byte-delta` matcheaba `\bdelta\b`. Documentar
+   o afinar el gate si el dominio necesita el término en flags/API pública.
+3. Hallazgos U80 diferidos (DISK_03 gitignore, ZEUS_VOLUMES_ROOT/worktrees)
+   y el de changeset-dry que pisa `package.json` uncommitted — siguen en
+   cola previa.
+
+### Merge sugerido
+
+Tras autorización usuario: merge `wp/u81-segmentacion` → master; luego ✅
+BACKLOG + cola hallazgos arriba; `git worktree remove` del árbol U81.
+Paralelo lote-7a: U82/U91 no chocan (partición respetada).
