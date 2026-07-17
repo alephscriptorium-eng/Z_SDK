@@ -5,7 +5,7 @@
 | agente | worker lote-2c (Cursor Grok) |
 | fecha | 2026-07-17 |
 | rama | `wp/u23-pozo` |
-| commit(s) | `9c929fb` feat(pozo); `711a74c` docs(reportes) |
+| commit(s) | `9c929fb` feat(pozo); `febfe09` docs(reportes) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
