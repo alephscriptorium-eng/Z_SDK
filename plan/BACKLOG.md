@@ -140,7 +140,8 @@ Diferidos del reporte/revisión WP-U12 (no bloquean cierre):
 - parseo `casos-md` del kit podrá absorberse/coordinarse en U13 (`playbook-kit`)
 - URI histórico de delta sigue `arg://…` (no `delta://`); el kit solo parametriza el prefijo
 
-- ⬜ **WP-U13 · `@zeus/playbook-kit`** *(dep U12)* — el método CASOS como
+- 🔶 **WP-U13 · `@zeus/playbook-kit`** *(dep U12)* — en curso (lote-1c /
+  orquestador / 2026-07-17) — el método CASOS como
   producto: formato de caso (precondición/pasos MCP/observación humana/
   criterio/errores), test de coherencia (generalizar `casos.test.mjs`),
   plantilla de acta (generalizar `spec/VALIDACION.md`), y runner e2e que
