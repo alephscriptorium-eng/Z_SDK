@@ -53,6 +53,16 @@ export default [
     }
   },
   {
+    files: ['packages/lib/view-kit/src/**'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser
+      }
+    }
+  },
+  {
     files: ['packages/lib/room-client-browser/browser/**'],
     languageOptions: {
       ecmaVersion: 'latest',

@@ -71,6 +71,7 @@
     "test:protocol": "npm test -w @zeus/protocol",
     "test:authority-kit": "npm test -w @zeus/authority-kit",
     "test:playbook-kit": "npm test -w @zeus/playbook-kit",
+    "test:view-kit": "npm test -w @zeus/view-kit",
     "test:player-mcp-kit": "npm test -w @zeus/player-mcp-kit",
     "spec:redoc": "node scripts/spec-redoc.mjs",
     "spec:asyncapi:html": "node scripts/spec-asyncapi-html.mjs",
