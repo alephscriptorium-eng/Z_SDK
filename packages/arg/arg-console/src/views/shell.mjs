@@ -40,6 +40,8 @@ export const IMPORT_MAP = {
     '@zeus/game-engine/': '/game-engine/',
     '@zeus/arg-domain': '/arg-domain/index.mjs',
     '@zeus/arg-domain/scenes/delta-v0': '/arg-domain/scenes/delta-v0.mjs',
-    '@zeus/arg-domain/': '/arg-domain/'
+    '@zeus/arg-domain/': '/arg-domain/',
+    '@zeus/protocol': '/protocol/index.mjs',
+    '@zeus/protocol/': '/protocol/'
   }
 };

@@ -211,3 +211,14 @@ test('contacto: cerca del grifo en la cima abre contacto', () => {
   const contacts = state.snapshot().contacts;
   assert.equal(Object.values(contacts)[0].state, 'open');
 });
+
+test('rol no autorizado ⇒ rechazo (WP-U10)', () => {
+  const state = makeState();
+  assert.equal(state.applyIntent(makeIntent('uno', 'join')).ok, true);
+  const denied = state.applyIntent(
+    makeIntent('uno', 'move', { nodeId: 'terraza-a', role: 'dj' })
+  );
+  assert.equal(denied.ok, false);
+  assert.equal(denied.error, 'rol_no_autorizado');
+  assert.equal(actor(state, 'uno').nodeId, deltaV0.spawnNodeId);
+});

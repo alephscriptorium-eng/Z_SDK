@@ -68,8 +68,10 @@ for (const [id, entry] of [
     assert.ok(includesJson(html, 'view', id), `vista ${id} sin id en el config inyectado`);
     // el import map debe mapear el dominio crudo
     assert.ok(
-      html.includes('/arg-domain/index.mjs') && html.includes('/arg-domain/scenes/delta-v0.mjs'),
-      `vista ${id} sin @zeus/arg-domain en el import map`
+      html.includes('/arg-domain/index.mjs') &&
+        html.includes('/arg-domain/scenes/delta-v0.mjs') &&
+        html.includes('/protocol/index.mjs'),
+      `vista ${id} sin @zeus/arg-domain/@zeus/protocol en el import map`
     );
   });
 }
@@ -130,6 +132,17 @@ test('el tablero renderiza el panel DOM del ledger', async (t) => {
   const res = await fetch(`http://localhost:${port}/views/tablero`);
   const html = await res.text();
   assert.match(html, /id="view-log"/);
+});
+
+test('GET /protocol/index.mjs → 200 (contrato único servido)', async (t) => {
+  const handle = await createArgConsoleServer({ port: 0 });
+  t.after(() => handle.close());
+  const { port } = handle;
+
+  const res = await fetch(`http://localhost:${port}/protocol/index.mjs`);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert.match(body, /makeIntent|PROTOCOL_VERSION/);
 });
 
 test('GET /arg-domain/contract.mjs → 200 (dominio crudo servido)', async (t) => {
@@ -195,6 +208,8 @@ test('sirve toda la cadena de imports del navegador (sin 404s)', { skip: threeAv
     '/arg-domain/index.mjs',
     '/arg-domain/contract.mjs',
     '/arg-domain/scenes/delta-v0.mjs',
+    '/protocol/index.mjs',
+    '/protocol/contract.mjs',
     '/game-engine/index.mjs',
     '/kit/core/scene-manager.mjs',
     '/models/SK_Alephillo.glb',

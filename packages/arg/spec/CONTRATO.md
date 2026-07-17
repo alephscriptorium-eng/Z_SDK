@@ -1,14 +1,18 @@
 # delta — Contrato de dominio (v1)
 
+Capa de juego sobre el contrato único [`@zeus/protocol`](../../lib/protocol/spec/CONTRATO.md)
+(`state|intent|track|ledger` + `game` + roles + Peer Card). Este documento
+conserva lo específico de delta; lo genérico no se duplica.
+
 Contrato entre la **Autoridad** (único proceso que muta el estado del juego),
 los **visores** (arg-console: tablero y jugador), los **sujetos** (jugadores,
 agentes, artilugios con cloak MCP) y los **navegadores reales** (cache-browser
 / firehose-browser que reciben tracking).
 
-Transporte: room Socket.IO del socket-server (:3017, ns `/runtime`), room por
-defecto **`ARG_DELTA`**. Todos los eventos viajan como `ROOM_MESSAGE`
-`{event, room, data}` y los visores los consumen con `onChannelEvent`
-(dual direct/envelope + dedupe, patrón 3d-monitor).
+Transporte: room Socket.IO del socket-server (puerto vía `presets-sdk/env`),
+room por defecto **`ARG_DELTA`**. Wire actual: eventos `arg:state|intent|track|ledger`
+(alias históricos); el envelope lleva `game: "delta"`. Los visores consumen con
+`onChannelEvent` (dual direct/envelope + dedupe, patrón 3d-monitor).
 
 ## 1. Principios (heredan la disciplina session-domain)
 
