@@ -3,13 +3,14 @@
  */
 
 import { z } from 'zod';
-import { DeckId } from '@zeus/session-protocol/schemas';
 import { promptMessages, resolveMcpApprovalToken, mcpApprovalGateLine } from '@zeus/presets-sdk';
 import { createStandardMcpServer } from '@zeus/presets-sdk/mcp';
 import { inspectSnapshotAt } from './snapshot-inspect.mjs';
-import { DECK_IDS } from '@zeus/tablero-core';
+import { DECK_IDS } from './deck-slots.mjs';
 import * as logic from './logic.mjs';
 import * as logicSession from './logic-session.mjs';
+
+const DeckId = z.enum(DECK_IDS);
 
 export const SERVER_NAME = 'console-monitor';
 export const SERVER_VERSION = '0.1.0';

@@ -4,7 +4,7 @@ import { map } from 'rxjs/operators';
 
 import { createBrowserRoomClient } from '@zeus/room-client-browser/browser';
 import { createOperatorBridge, AlephMessage } from '@zeus/operator-bridge';
-import { projectSlice, SCENE_IDS, OperatorSlice } from '@zeus/session-protocol/projection';
+import { projectSlice, SCENE_IDS, OperatorSlice } from '../local-projection';
 
 export interface ZeusSessionConfig {
   scriptoriumUrl: string;   // e.g. http://localhost:3017/runtime

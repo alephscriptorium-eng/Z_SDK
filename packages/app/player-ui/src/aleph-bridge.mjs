@@ -13,7 +13,7 @@ import {
   DEFAULT_LINEA_SERVERS,
   DEFAULT_PRESET_NAMES_BY_DECK,
   FIREHOSE_SERVER_NAME
-} from '@zeus/tablero-core';
+} from './deck-kit.mjs';
 
 function lineasSourceRoot() {
   return resolveLineasBasePath();

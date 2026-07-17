@@ -16,7 +16,7 @@ export const E2E_DOMAIN_TIMEOUT_MS = 30_000;
 export const SCRIPTORIUM_PORT = 13027;
 export const PLAYER_PORT = 13029;
 export const SESSION_ID = 'domain-e2e';
-export const ROOM = `scriptorium.${SESSION_ID}`;
+export const ROOM = 'ARG_DOMAIN_E2E';
 export const RUNTIME_URL = `http://localhost:${SCRIPTORIUM_PORT}/runtime`;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -67,8 +67,8 @@ export async function startStack(ctx) {
   fs.rmSync(dataDir, { recursive: true, force: true });
   fs.mkdirSync(dataDir, { recursive: true });
 
-  process.env.ZEUS_SESSION_TRANSPORT = 'room';
   process.env.ZEUS_SCRIPTORIUM_URL = `http://localhost:${SCRIPTORIUM_PORT}`;
+  process.env.ZEUS_ARG_ROOM = ROOM;
   delete process.env.ZEUS_SCRIPTORIUM_ROOM;
 
   console.log('Starting socket-server (programmatic)...');
@@ -78,14 +78,15 @@ export async function startStack(ctx) {
     bridge: 'local'
   });
 
-  console.log('Starting player-ui room master...');
+  console.log('Starting player-ui DJ...');
   ctx.player = await createPlayerServer({
     port: PLAYER_PORT,
     host: 'localhost',
     dataDir,
     discoveryUrls: [],
     discoveryExclusive: true,
-    sessionId: SESSION_ID
+    sessionId: SESSION_ID,
+    room: ROOM
   });
 }
 

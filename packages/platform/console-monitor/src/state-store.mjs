@@ -3,7 +3,7 @@
  * Subscribes to socket client and REST poller; owns the typed event ring buffer.
  */
 
-import { emptyDeckSlots, DECK_IDS } from '@zeus/tablero-core';
+import { emptyDeckSlots } from './deck-slots.mjs';
 
 /** @typedef {'1.0'} PlayerSnapshotSchemaVersion */
 

@@ -1,10 +1,17 @@
 import { z } from 'zod';
-import { DeckId, Corpus } from '@zeus/session-protocol/schemas';
 import { jsonContent } from '@zeus/presets-sdk';
-import { findAnchorCell, normalizeNodoId, FIREHOSE_DECK_ID, WIKITEXT_DECK_IDS } from '@zeus/tablero-core';
+import {
+  findAnchorCell,
+  normalizeNodoId,
+  FIREHOSE_DECK_ID,
+  WIKITEXT_DECK_IDS,
+  DECK_IDS
+} from './deck-slots.mjs';
 import { inspectSnapshotAt } from './snapshot-inspect.mjs';
 import { createSessionWait } from './session-wait.mjs';
 
+const DeckId = z.enum(DECK_IDS);
+const Corpus = z.enum(['candidate', 'raw', 'discarded', 'labeled']);
 const WikitextDeckId = z.enum(WIKITEXT_DECK_IDS);
 const FirehoseDeckId = z.literal(FIREHOSE_DECK_ID);
 

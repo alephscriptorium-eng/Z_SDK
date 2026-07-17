@@ -1,20 +1,40 @@
 /**
- * Zeus Tablero ALEPH — room client + LED strip + crossover + drawer.
+ * Zeus Tablero ALEPH — local deck-io + DJ projection (game room via server).
  */
 
-import { createBrowserRoomClient } from '/assets/room-client/room-client.browser.mjs';
-import { readInjectedRoomConfig } from '/assets/room-client/dev-room-config.mjs';
+import { io } from 'socket.io-client';
 
-const room = createBrowserRoomClient(readInjectedRoomConfig('room-config'));
-const socket = room.getSocket();
-
-function emit(event, data) {
-  room.emit(event, data);
+function readDjConfig() {
+  const el = document.getElementById('dj-config');
+  if (!el) return { room: 'ARG_DELTA', role: 'dj', deckPath: '/deck-io' };
+  try {
+    return JSON.parse(el.textContent);
+  } catch {
+    return { room: 'ARG_DELTA', role: 'dj', deckPath: '/deck-io' };
+  }
 }
 
-room.connect().catch((err) => console.warn('room connect failed:', err));
+const djCfg = readDjConfig();
+const socket = io({ path: djCfg.deckPath || '/deck-io', transports: ['websocket', 'polling'] });
+
+function emit(event, data) {
+  socket.emit(event, data);
+}
 
 socket.on('session:error', (err) => console.warn('session:error', err));
+socket.on('dj:ledger', (entry) => {
+  const badge = document.getElementById('dj-room-badge');
+  if (badge && entry?.kind) {
+    badge.textContent = `dj · ledger ${entry.kind}`;
+  }
+});
+socket.on('dj:projection', (proj) => {
+  const lines = proj?.state?.lines;
+  if (lines?.regs) {
+    const badge = document.getElementById('dj-room-badge');
+    if (badge) badge.textContent = `dj · lines rev ${lines.rev ?? 0}`;
+  }
+});
 
   const slider = document.getElementById('playhead-slider');
   const playheadValue = document.getElementById('playhead-value');
@@ -713,9 +733,9 @@ socket.on('session:error', (err) => console.warn('session:error', err));
   }
 
   socket.on('catalog:servers', populateServerSelects);
-  room.onState(renderState);
+  socket.on('session:state', renderState);
 
-  room.onRoomEvent('deck:resolved', (payload) => {
+  socket.on('deck:resolved', (payload) => {
     updateDeckResolved(payload.deckId, payload);
     if (payload.deckId === 'B' && payload.wikitext?.cached) {
       setCacheButtonVisible('B', false);
@@ -733,7 +753,7 @@ socket.on('session:error', (err) => console.warn('session:error', err));
     }
   });
 
-  room.onRoomEvent('wikitext:cache-result', (payload) => {
+  socket.on('wikitext:cache-result', (payload) => {
     const deckId = 'B';
     const statusEl = document.querySelector(`.wikitext-status[data-deck="${deckId}"]`);
     if (!payload?.ok) {

@@ -25,7 +25,6 @@ import { createThemeHandler } from '@zeus/app-shell/create-theme-handler';
 import { srcDir, modelsDir, getThreeDir } from '@zeus/ui-3d-kit/node';
 import { srcDir as viewKitSrcDir } from '@zeus/view-kit/node';
 import { srcDir as gameEngineSrcDir } from '@zeus/game-engine/node';
-import { srcDir as sessionProtocolSrcDir } from '@zeus/session-protocol';
 
 import {
   getConfig,
@@ -92,7 +91,6 @@ export async function createPlayer3dServer(options = {}) {
   app.use('/view-kit', express.static(viewKitSrcDir));
   app.use('/game-engine', express.static(gameEngineSrcDir));
   app.use('/models', express.static(modelsDir));
-  app.use('/protocol', express.static(sessionProtocolSrcDir));
 
   // Theme API (selector parity with other Zeus UIs).
   app.use('/api', createThemeRoutes(themeHandler, getConfig));

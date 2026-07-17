@@ -31,8 +31,7 @@ const IMPORT_MAP = {
     '@zeus/view-kit': '/view-kit/index.mjs',
     '@zeus/view-kit/': '/view-kit/',
     '@zeus/game-engine': '/game-engine/index.mjs',
-    '@zeus/game-engine/': '/game-engine/',
-    '@zeus/session-protocol/projection': '/protocol/projection/index.mjs'
+    '@zeus/game-engine/': '/game-engine/'
   }
 };
 

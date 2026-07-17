@@ -7,7 +7,22 @@ import { McpResourceError } from '@zeus/http-contract';
 const Health = z.object({
   status: z.literal('ok'),
   service: z.string().optional(),
+  role: z.literal('dj').optional(),
+  room: z.string().optional(),
   timestamp: z.string().optional()
+});
+
+const DjIntentResponse = z.object({
+  ok: z.boolean(),
+  payload: z.looseObject({}).optional(),
+  room: z.string().optional(),
+  error: z.string().optional()
+});
+
+const DjProjection = z.object({
+  room: z.string(),
+  state: z.unknown().nullable(),
+  ledger: z.array(z.unknown())
 });
 
 const PresetSummary = z.array(z.object({
@@ -149,6 +164,31 @@ export const PLAYER_ROUTES = defineRoutes('player-ui', [
     summary: 'Discovered MCP servers',
     tags: ['mcp'],
     responses: { 200: ServersList },
+    envelope: 'plain'
+  },
+  {
+    id: 'dj.projection',
+    method: 'GET',
+    path: '/api/dj/projection',
+    summary: 'Projected game state/ledger as seen by DJ vista',
+    tags: ['dj'],
+    responses: { 200: DjProjection },
+    envelope: 'plain'
+  },
+  {
+    id: 'dj.intent',
+    method: 'POST',
+    path: '/api/dj/:intent',
+    summary: 'Emit DJ intent (cache|curate|milestone) to game authority',
+    tags: ['dj'],
+    request: {
+      params: z.object({ intent: z.enum(['cache', 'curate', 'milestone']) }),
+      body: z.looseObject({
+        lineId: z.string().optional(),
+        registroId: z.string().optional()
+      })
+    },
+    responses: { 200: DjIntentResponse, 400: DjIntentResponse, 503: DjIntentResponse },
     envelope: 'plain'
   },
   {

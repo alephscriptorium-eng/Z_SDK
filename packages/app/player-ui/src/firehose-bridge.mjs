@@ -11,7 +11,7 @@ import {
   loadPostFile
 } from '@zeus/firehose-core';
 
-import { FIREHOSE_SERVER_NAME } from '@zeus/tablero-core';
+import { FIREHOSE_SERVER_NAME } from './deck-kit.mjs';
 
 export { FIREHOSE_SERVER_NAME };
 

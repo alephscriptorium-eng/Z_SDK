@@ -6,7 +6,21 @@ import express from 'express';
 import { z } from 'zod';
 import { validate } from '@zeus/http-contract/express';
 import { resolveAppPort } from '@zeus/presets-sdk/env';
-import { firehoseDeckContextFromSession } from '@zeus/session-protocol/projection';
+
+/**
+ * Firehose deck context from local xstate snapshot (no session-protocol projection).
+ * @param {object|null} sessionSnap
+ */
+function firehoseDeckContextFromSnapshot(sessionSnap) {
+  const deck = sessionSnap?.decks?.C;
+  const resolved = deck?.resolved;
+  if (!resolved || resolved.kind !== 'firehose') return {};
+  return {
+    corpus: resolved.corpus ?? null,
+    path: resolved.path ?? null,
+    selectedFilePath: resolved.selected?.filePath ?? resolved.selected?.path ?? null
+  };
+}
 
 /**
  * @param {object} deps — injected handlers from server.mjs
@@ -86,7 +100,7 @@ export function createAlephRoutes(deps) {
       }
 
       const sessionSnap = deps.getSessionSnapshot?.() ?? null;
-      const projected = sessionSnap ? firehoseDeckContextFromSession(sessionSnap) : {};
+      const projected = firehoseDeckContextFromSnapshot(sessionSnap);
 
       const deckContext = {
         corpus: req.query.corpus ? String(req.query.corpus) : projected.corpus,

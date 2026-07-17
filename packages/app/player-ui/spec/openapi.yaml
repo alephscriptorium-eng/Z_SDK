@@ -430,6 +430,78 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/health_error"
+  /api/dj/projection:
+    get:
+      operationId: dj.projection
+      summary: Projected game state/ledger as seen by DJ vista
+      tags:
+        - dj
+      responses:
+        "200":
+          description: Projected game state/ledger as seen by DJ vista
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dj.projection_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+  /api/dj/{intent}:
+    post:
+      operationId: dj.intent
+      summary: Emit DJ intent (cache|curate|milestone) to game authority
+      tags:
+        - dj
+      responses:
+        "200":
+          description: Emit DJ intent (cache|curate|milestone) to game authority
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dj.intent_200"
+        "400":
+          description: Emit DJ intent (cache|curate|milestone) to game authority
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dj.intent_200"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health_error"
+        "503":
+          description: Emit DJ intent (cache|curate|milestone) to game authority
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dj.intent_200"
+      parameters:
+        - name: intent
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - cache
+              - curate
+              - milestone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/dj.intent_body"
   /api/debug/health:
     get:
       operationId: debug.health
@@ -530,6 +602,11 @@ components:
           type: string
           const: ok
         service:
+          type: string
+        role:
+          type: string
+          const: dj
+        room:
           type: string
         timestamp:
           type: string
@@ -749,6 +826,63 @@ components:
       $schema: https://json-schema.org/draft/2020-12/schema
       type: array
       items: {}
+    dj.projection_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        room:
+          type: string
+        state:
+          anyOf:
+            - {}
+            - type: "null"
+        ledger:
+          type: array
+          items: {}
+      required:
+        - room
+        - state
+        - ledger
+      additionalProperties: false
+    dj.intent_params:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        intent:
+          type: string
+          enum:
+            - cache
+            - curate
+            - milestone
+      required:
+        - intent
+      additionalProperties: false
+    dj.intent_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        lineId:
+          type: string
+        registroId:
+          type: string
+      additionalProperties: {}
+    dj.intent_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        ok:
+          type: boolean
+        payload:
+          type: object
+          properties: {}
+          additionalProperties: {}
+        room:
+          type: string
+        error:
+          type: string
+      required:
+        - ok
+      additionalProperties: false
     debug.health_200:
       $schema: https://json-schema.org/draft/2020-12/schema
       anyOf:

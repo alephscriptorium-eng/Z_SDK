@@ -48,9 +48,6 @@
     "test:lineas": "npm test -w @zeus/linea-system",
     "test:firehose-mcp": "npm test -w @zeus/linea-firehose",
     "test:console-monitor": "npm test -w @zeus/console-monitor",
-    "test:session-domain": "npm test -w @zeus/session-domain",
-    "test:session-protocol": "npm test -w @zeus/session-protocol",
-    "test:tablero-core": "npm test -w @zeus/tablero-core",
     "test:http-contract": "npm test -w @zeus/http-contract",
     "test:rooms": "npm test -w @zeus/rooms",
     "test:openapi-mcp-projector": "npm test -w @zeus/openapi-mcp-projector",
@@ -64,6 +61,7 @@
     "test:player-3d": "npm test -w @zeus/player-3d-ui",
     "test:3d-monitor": "npm test -w @zeus/3d-monitor",
     "test:bots": "npm test -w @zeus/ping-pong-bots",
+    "test:player-ui": "npm test -w @zeus/player-ui",
 
 
 
@@ -111,6 +109,7 @@
     "e2e:domain:firehose": "node e2e/domain-firehose.mjs",
     "e2e:domain:selection": "node e2e/domain-selection.mjs",
     "e2e:arg": "node e2e/arg-demo.mjs",
+    "e2e:player-ui-dj": "node e2e/player-ui-dj-demo.mjs",
     "e2e:arg-feeds": "node e2e/arg-feeds-demo.mjs",
     "e2e:arg-track": "node e2e/arg-track-demo.mjs",
     "e2e:arg-horse": "node e2e/arg-horse-demo.mjs",
@@ -126,7 +125,6 @@
     "@eslint/js": "^9.39.1",
     "@modelcontextprotocol/inspector": "^0.17.0",
     "@redocly/cli": "^1.34.3",
-    "@zeus/session-protocol": "*",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "prettier": "^3.6.2",

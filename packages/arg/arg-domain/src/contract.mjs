@@ -86,12 +86,17 @@ export function trackHintFor(refKind) {
 
 /**
  * Construye un arg:intent bien formado (misma firma pública que antes).
- * Añade `game: 'delta'` en el envelope sin romper callers existentes.
+ * Añade `game: 'delta'` en el envelope. El 4º arg puede ser `from` (string)
+ * u options `{ from, role, game, ts, v }` (rol dj para cache/curate/milestone).
  */
-export function makeIntent(actorId, intent, args = {}, from = actorId) {
+export function makeIntent(actorId, intent, args = {}, fromOrOpts = actorId) {
+  const opts =
+    typeof fromOrOpts === 'string' || fromOrOpts == null
+      ? { from: fromOrOpts ?? actorId }
+      : fromOrOpts;
   return protocolMakeIntent(actorId, intent, args, {
-    from,
-    game: GAME_ID
+    ...opts,
+    game: opts.game ?? GAME_ID
   });
 }
 

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { DeckId } from '@zeus/session-protocol/schemas';
 import { jsonContent } from '@zeus/presets-sdk';
 import {
   DECK_IDS,
@@ -10,9 +9,10 @@ import {
   summarizeDecks,
   buildDeckLoadPayloads,
   resolveTableroDefaults
-} from '@zeus/tablero-core';
+} from './deck-slots.mjs';
 import { createSessionWait } from './session-wait.mjs';
 
+const DeckId = z.enum(DECK_IDS);
 const WikitextDeckId = z.enum(WIKITEXT_DECK_IDS);
 
 const DEFAULT_TIMEOUT_MS = 8000;

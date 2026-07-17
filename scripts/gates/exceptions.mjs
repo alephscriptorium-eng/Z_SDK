@@ -131,11 +131,6 @@ export const EXCEPTIONS = [
     reason: 'JSDoc ejemplo localhost:3017; pre-U00'
   },
   {
-    path: 'packages/lib/session-protocol/src/room-session-client.mjs',
-    rule: 'ports',
-    reason: 'JSDoc ejemplo localhost:3017; pre-U00'
-  },
-  {
     path: 'packages/lib/app-shell/src/create-app-config.mjs',
     rule: 'ports',
     reason: 'fallback genérico 3000 si no hay mesh; pre-U00'
@@ -195,29 +190,9 @@ export const EXCEPTIONS = [
   // Dominio Wikipedia: «oldid» NO es sufijo de transición (-old); se excluye
   // por patrón en el scanner. Aquí van legacy/v2 preexistentes.
   {
-    path: 'packages/lib/session-domain/src/manifest.mjs',
-    rule: 'transition',
-    reason: 'API LegacySessionSnapshot / buildSessionManifest(legacy) pre-U00; ola 3 absorbe'
-  },
-  {
-    path: 'packages/lib/session-protocol/src/projection/project-slice.mjs',
-    rule: 'transition',
-    reason: 'comentarios SessionManifest v2; versión de protocolo, no carpeta -v2'
-  },
-  {
     path: 'packages/lib/http-contract/src/envelope.mjs',
     rule: 'transition',
     reason: 'comentario «firehose legacy» en envelope plano; pre-U00'
-  },
-  {
-    path: 'packages/app/player-ui/src/session-machine.mjs',
-    rule: 'transition',
-    reason: 'variable legacy + comentario v2 snapshot; pre-U00 hasta ola 3'
-  },
-  {
-    path: 'packages/app/player-ui/src/session-transport.mjs',
-    rule: 'transition',
-    reason: 'comentario histórico cutover; pre-U00'
   },
   {
     path: 'packages/operator-ui/projects/threejs-ui-lib/src/lib/components/threejs-scene-pure.component.spec.ts',

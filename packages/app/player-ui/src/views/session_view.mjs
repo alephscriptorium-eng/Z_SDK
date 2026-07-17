@@ -92,8 +92,6 @@ export function sessionView(viewData = {}) {
         '/assets/js/json-path.js',
         '/assets/js/object-explorer.js',
         '/assets/js/mcp-monitor.js',
-        '/socket.io/socket.io.js',
-        { src: '/assets/session-protocol/session-client.mjs', type: 'module' },
         { src: '/assets/js/session-console.js', type: 'module' },
         { src: '/assets/js/session.js', type: 'module' }
       ]

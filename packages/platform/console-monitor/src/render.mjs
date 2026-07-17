@@ -3,7 +3,7 @@
  */
 
 import chalk from 'chalk';
-import { DECK_IDS, emptyDeckSlots } from '@zeus/tablero-core';
+import { DECK_IDS, emptyDeckSlots } from './deck-slots.mjs';
 import { isServerConnected, serverDisplayName, sortServersForDisplay } from './servers.mjs';
 
 function fmtMs(ms) {
