@@ -44,8 +44,8 @@ export const ARG_TICK_MS = 100;
 export const ARG_HEARTBEAT_MS = 1000;
 
 /**
- * Catálogo delta: intents de jugador + manipulador de líneas (rol `dj`).
- * Operator llega en olas posteriores; el gate de rol ya está en @zeus/protocol.
+ * Catálogo delta: intents de jugador + manipulador de líneas (rol `dj`) +
+ * visor de operador (rol `operator`, WP-U32).
  */
 export const INTENT_DEFS = {
   join: { roles: ['player'] },
@@ -65,7 +65,9 @@ export const INTENT_DEFS = {
   /** Manipulador de líneas (WP-U30): crecer el volumen desde el tablero DJ. */
   cache: { roles: ['dj'] },
   curate: { roles: ['dj'] },
-  milestone: { roles: ['dj'] }
+  milestone: { roles: ['dj'] },
+  /** Visor de operador (WP-U32): anotar inspección con asiento en ledger. */
+  inspect: { roles: ['operator'] }
 };
 
 export const INTENT_CATALOG = createIntentCatalog(INTENT_DEFS);

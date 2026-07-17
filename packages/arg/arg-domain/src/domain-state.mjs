@@ -144,6 +144,13 @@ export function createArgDomainState({
           lineBoard.milestone(op.lineId, op.registroId, op.reasons, op.actorId);
           break;
         }
+        case 'ledger:push':
+          pushLedger(op.entryKind, {
+            actorId: op.actorId,
+            ...(op.ref != null ? { ref: op.ref } : {}),
+            detail: op.detail ?? {}
+          });
+          break;
         case 'contact:set':
           contacts[op.contact.id] = op.contact;
           break;
