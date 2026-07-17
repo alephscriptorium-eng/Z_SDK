@@ -359,7 +359,7 @@ Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
 
 ## Ola 5 — Monorepo publicable y layout final
 
-- ⬜ **WP-U50 · Scope y publicación** (D-7: scope `@zeus` al registry propio;
+- 🔶 **WP-U50 · Scope y publicación** (ola-5 / orquestador / 2026-07-17) — (D-7: scope `@zeus` al registry propio;
   añadir `@zeus:registry=https://npm.scriptorium.escrivivir.co` al `.npmrc`;
   los juegos NO se publican desde aquí: ola 6) — todos los
   `engine/*`: `publishConfig.registry` al registry propio
