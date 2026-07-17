@@ -1,0 +1,82 @@
+# CI monorepo Z_SDK (WP-U03 / D-12 / ARQUITECTURA §5 paso 1).
+# Sin publish (eso es WP-U53). Cablea npm run gates (U00) en cada PR / wp/*.
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'wp/**'
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint + gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Gates (PRACTICAS §5)
+        run: npm run gates
+      - name: Gate unit tests
+        run: npm run test:gates
+
+  test:
+    name: test ${{ matrix.workspace }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - '@zeus/presets-sdk'
+          - '@zeus/firehose-core'
+          - '@zeus/room-client-browser'
+          - '@zeus/session-domain'
+          - '@zeus/session-protocol'
+          - '@zeus/tablero-core'
+          - '@zeus/http-contract'
+          - '@zeus/rooms'
+          - '@zeus/openapi-mcp-projector'
+          - '@zeus/game-engine'
+          - '@zeus/operator-bridge'
+          - '@zeus/ui-3d-kit'
+          - '@zeus/ui-kit'
+          - '@zeus/app-shell'
+          - '@zeus/test-utils'
+          - '@zeus/solar-system'
+          - '@zeus/linea-system'
+          - '@zeus/linea-firehose'
+          - '@zeus/console-monitor'
+          - '@zeus/socket-server'
+          - '@zeus/cache-browser'
+          - '@zeus/firehose-browser'
+          - '@zeus/editor-ui'
+          - '@zeus/player-ui'
+          - '@zeus/player-3d-ui'
+          - '@zeus/3d-monitor'
+          - '@zeus/ping-pong-bots'
+          - '@zeus/arg-domain'
+          - '@zeus/arg-feeds'
+          - '@zeus/arg-console'
+          - '@zeus/arg-player-mcp'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Test workspace
+        run: npm test -w "${{ matrix.workspace }}"
