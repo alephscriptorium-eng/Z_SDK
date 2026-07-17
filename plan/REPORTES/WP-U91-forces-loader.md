@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u91-forces-loader` |
-| commit(s) | _(hashes al final de esta entrega)_ |
+| commit(s) | `5500dd3`, `6b28d7a`, `d5c9b69`, `6131403` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
