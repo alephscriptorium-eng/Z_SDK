@@ -379,7 +379,8 @@ Diferidos del reporte/revisión WP-U50 (no bloquean cierre):
 - `file:` residual operator-ui
 - game-engine «ARG» (identidad residual)
 
-- ⬜ **WP-U51 · Layout final** *(dep olas 1–4)* — mover a
+- 🔶 **WP-U51 · Layout final** *(dep olas 1–4)* — en curso (ola-5 /
+  orquestador / 2026-07-17) — mover a
   `packages/{engine,editor,mesh,games}` + `examples/` según ARQUITECTURA §2,
   (D-8/D-9: `games/{delta,pozo}`, visores en `mesh/`), actualizar workspaces,
   scripts raíz e imports. Un solo WP, mecánico, con el repo ya convergido.
