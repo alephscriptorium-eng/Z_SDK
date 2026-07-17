@@ -128,4 +128,54 @@ haya acceso operador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (2026-07-18) — autorización de merge; **BACKLOG
+aún 🔶** (usuario/orquestador en master tras merge; este chat no marca ✅).
+Sin push.
+
+### Verificado
+
+- Diff `master...wp/u84-ssb-volumes` (6 commits producto+docs; merge-base
+  `ce59d38`; master 1 ahead = solo `chore(plan): asigna lote 8a` + brief —
+  merge limpio, sin conflicto de producto). 31 archivos / +1718/−15.
+  Alcance acotado: `@zeus/ssb-system`, schema `ssb-manifest` + validate
+  DISK_04, presets paths/`ZEUS_MCP_SSB`, slot `ssb` en `volumes.json`,
+  scripts raíz, changeset publicables, reporte. Worker **no** tocó
+  `plan/BACKLOG.md`. Sin U85.
+- Slot duro: **DISK_04/SSB**; DISK_03/FORCES **intacto** (cero paths
+  force-system en el diff; validate solo *añade* rama DISK_04).
+- Files-first: sync CLI (`volumes:sync:ssb` / `--fixture`); MCP
+  `createStandardMcpServer` read-only hermano firehose/force-system;
+  `private: true` como siblings mesh.
+- PRACTICAS: cero delta/pozo en `ssb-system`; sin legacy/v2; puertos vía
+  `resolveZeusMcpPorts().ssb.disk` / `ZEUS_MCP_SSB`; commits convencionales
+  (`feat(ssb-system)`, `feat(linea-kit)`, `docs(reportes)`); auto-revisión
+  §3 honesta. Demolición n/a.
+
+### CA (re-ejecutados en worktree, 2026-07-18)
+
+- [x] e2e fixture sin red: export → volumen U80 → MCP navegable —
+  `npm test -w @zeus/ssb-system` → **4/4 pass** (validate skipped
+  DISK_01..03; `ssb://stats`/`manifest`/tools OK; DISK_04/SSB)
+- [x] `npm test -w @zeus/linea-kit` → **26/26 pass** (live VOLUMES
+  `DISK_04/SSB` skipped hasta materializar)
+- [x] `npm run gates` → `gates: OK (0 offenders)`
+- [x] Runbook `ZEUS_SSB_LOG_PATH` / `ZEUS_SSB_PUB_URL` en README
+  ssb-system + VOLUMES + `.env.example`; pub real **⏳ sin verificar** OK
+
+### Hallazgos → cola (no arreglar aquí)
+
+1. Mensajes tribe cifrados (box) no se desencriptan — solo contents tipados
+   legibles; WP si el dump del pub trae envelopes opacos.
+2. VOLUMES/README aún cita `volumes:sync:firehose` fantasma (arrastre U82);
+   aquí solo se añadió `volumes:sync:ssb` real.
+3. `volumes.json` slot `ssb` deja `corpora[].files: 0` estáticos (el sync
+   escribe counts en el manifest del volumen, no reescribe el registry).
+4. `spec:generate:http` regenera OpenAPI ajenos por CRLF Windows — ruido
+   fuera del diff (correcto no meterlo).
+
+### Merge
+
+Orden sugerido: merge `wp/u84-ssb-volumes` → master (tras `git merge master`
+  si se quiere absorber el chore de asignación; solo BACKLOG/brief). Luego
+  orquestador en master: BACKLOG 🔶→✅. U85 sigue ⬜ (dep U84). Push: no
+  intentado.
