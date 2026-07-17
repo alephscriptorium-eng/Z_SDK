@@ -31,7 +31,7 @@ WPs** salvo micro-ajustes de plan (BACKLOG, DECISIONES, briefs, roles).
 - Implementar un WP entero («haz U10 en background»).
 - Marcar ✅ sin reporte con evidencia literal y auto-revisión honesta.
 - Arreglar de pasada bugs fuera del WP durante la revisión.
-- Mezclar backlog de refundación con `packages/arg/spec/BACKLOG.md`.
+- Mezclar backlog de refundación con `packages/games/delta/spec/BACKLOG.md`.
 
 ## Ritual de inicio de sesión
 

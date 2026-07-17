@@ -6,52 +6,52 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildMcpResourceCatalog } from '../packages/lib/http-contract/spec/build.mjs';
-import { buildMcpHttpSpec } from '../packages/lib/presets-sdk/spec/build.mjs';
-import { buildHorsePresetSpec } from '../packages/lib/presets-sdk/src/horse/build.mjs';
-import { buildEditorSpec } from '../packages/app/editor-ui/spec/build.mjs';
-import { buildPlayerSpec } from '../packages/app/player-ui/spec/build.mjs';
-import { buildViewSpec } from '../packages/platform/cache-browser/spec/build.mjs';
-import { buildFirehoseSpec } from '../packages/platform/firehose-browser/spec/build.mjs';
+import { buildMcpResourceCatalog } from '../packages/engine/http-contract/spec/build.mjs';
+import { buildMcpHttpSpec } from '../packages/engine/presets-sdk/spec/build.mjs';
+import { buildHorsePresetSpec } from '../packages/engine/presets-sdk/src/horse/build.mjs';
+import { buildEditorSpec } from '../packages/editor/editor-ui/spec/build.mjs';
+import { buildPlayerSpec } from '../packages/mesh/player-ui/spec/build.mjs';
+import { buildViewSpec } from '../packages/mesh/cache-browser/spec/build.mjs';
+import { buildFirehoseSpec } from '../packages/mesh/firehose-browser/spec/build.mjs';
 import { buildAllSpecs } from '@alephscript/mcp-core-sdk/spec';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const generators = [
   {
-    rel: 'packages/lib/http-contract/spec/mcp-resources.md',
+    rel: 'packages/engine/http-contract/spec/mcp-resources.md',
     build: buildMcpResourceCatalog
   },
   {
-    rel: 'packages/lib/presets-sdk/spec/mcp-http.openapi.yaml',
+    rel: 'packages/engine/presets-sdk/spec/mcp-http.openapi.yaml',
     build: buildMcpHttpSpec
   },
   {
-    rel: 'packages/lib/presets-sdk/spec/horse-preset.openapi.yaml',
+    rel: 'packages/engine/presets-sdk/spec/horse-preset.openapi.yaml',
     build: buildHorsePresetSpec
   },
   {
-    rel: 'packages/app/editor-ui/spec/openapi.yaml',
+    rel: 'packages/editor/editor-ui/spec/openapi.yaml',
     build: buildEditorSpec
   },
   {
-    rel: 'packages/app/player-ui/spec/openapi.yaml',
+    rel: 'packages/mesh/player-ui/spec/openapi.yaml',
     build: buildPlayerSpec
   },
   {
-    rel: 'packages/platform/cache-browser/spec/openapi.yaml',
+    rel: 'packages/mesh/cache-browser/spec/openapi.yaml',
     build: buildViewSpec
   },
   {
-    rel: 'packages/platform/firehose-browser/spec/openapi.yaml',
+    rel: 'packages/mesh/firehose-browser/spec/openapi.yaml',
     build: buildFirehoseSpec
   },
   {
-    rel: 'packages/lib/http-contract/spec/mcp-core/runtime.asyncapi.yaml',
+    rel: 'packages/engine/http-contract/spec/mcp-core/runtime.asyncapi.yaml',
     build: () => buildAllSpecs().asyncapi
   },
   {
-    rel: 'packages/lib/http-contract/spec/mcp-core/control-plane.openapi.yaml',
+    rel: 'packages/engine/http-contract/spec/mcp-core/control-plane.openapi.yaml',
     build: () => buildAllSpecs().openapi
   }
 ];

@@ -14,7 +14,7 @@
     "ui": "editor",
     "docs": {
       "repo": [
-        "packages/app/editor-ui/spec/openapi.yaml"
+        "packages/editor/editor-ui/spec/openapi.yaml"
       ]
     }
   },

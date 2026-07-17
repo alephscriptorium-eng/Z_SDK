@@ -57,7 +57,7 @@ Si no se quiere usar worktrees, los workers van en serie, no en paralelo.
 1. Un WP = un chat worker = una rama = (si hay paralelo) un worktree.
 2. Solo el orquestador escribe en BACKLOG; solo el usuario cierra DECISIONES.
 3. No mezclar refundación (`plan/`) con features de delta
-   (`packages/arg/spec/BACKLOG.md`) en un mismo WP.
+   (`packages/games/delta/spec/BACKLOG.md`) en un mismo WP.
 4. El historial del chat orquestador no se asume en los workers: el brief +
    `plan/` bastan.
 5. ✅ implica autorización de merge. Orden de merge lo sugiere la revisión;

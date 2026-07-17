@@ -1,4 +1,4 @@
-# delta — ARG (`packages/arg/*`)
+# delta — ARG (`packages/games/delta/*`)
 
 Juego multijugador three.js sobre el runtime Zeus (rooms + contrato único):
 el tablero son los volúmenes de datos (firehose + wikicache) y jugar los hace

@@ -48,9 +48,9 @@ const { ok, acta } = await runMcpCases({
 ## CLI
 
 ```bash
-npm exec -w @zeus/playbook-kit -- zeus-playbook-run --casos packages/arg/spec/CASOS.md --check
+npm exec -w @zeus/playbook-kit -- zeus-playbook-run --casos packages/games/delta/spec/CASOS.md --check
 npm exec -w @zeus/playbook-kit -- zeus-playbook-run \
-  --casos packages/arg/spec/CASOS.md \
+  --casos packages/games/delta/spec/CASOS.md \
   --ids C-01,C-03,C-04b,C-05 \
   --game delta \
   --out /tmp/acta-delta.md

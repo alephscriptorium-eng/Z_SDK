@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(__dirname, '../../../..');
+const repoRoot = path.resolve(__dirname, '../../../../..');
 
 function collectSourceFiles(dir) {
   const abs = path.join(repoRoot, dir);
@@ -24,12 +24,12 @@ function collectSourceFiles(dir) {
 }
 
 const viewerRoots = [
-  'packages/arg/arg-console/assets/js',
-  'packages/arg/arg-console/src',
-  'packages/platform/cache-browser/assets/js',
-  'packages/platform/cache-browser/src',
-  'packages/platform/firehose-browser/assets/js',
-  'packages/platform/firehose-browser/src'
+  'packages/games/delta/arg-console/assets/js',
+  'packages/games/delta/arg-console/src',
+  'packages/mesh/cache-browser/assets/js',
+  'packages/mesh/cache-browser/src',
+  'packages/mesh/firehose-browser/assets/js',
+  'packages/mesh/firehose-browser/src'
 ];
 
 const forbiddenInViewers = [
@@ -78,7 +78,7 @@ test('G-ARG.3 arg-domain/src sin imports de red/MCP', { timeout: 5000 }, () => {
     /from\s+['"]node:http/,
     /from\s+['"]node:https/
   ];
-  for (const file of collectSourceFiles('packages/arg/arg-domain/src')) {
+  for (const file of collectSourceFiles('packages/games/delta/arg-domain/src')) {
     const text = fs.readFileSync(file, 'utf8');
     for (const pattern of forbidden) {
       if (pattern.test(text)) offenders.push(`${path.relative(repoRoot, file)} (${pattern})`);

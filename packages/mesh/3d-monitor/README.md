@@ -6,7 +6,8 @@ sin bundler, kit + three vendorizados por import map), pero ya **no es una
 vista**: es un **portal de vistas** construido sobre un **view kit** reutilizable.
 
 > Antes se llamaba `@zeus/player-debug-3d-ui` y vivía en `packages/app/`;
-> ahora vive en `packages/platform/3d-monitor`.
+> ahora está en `packages/mesh/3d-monitor`.
+> ahora vive en `packages/mesh/3d-monitor`.
 
 ## Vistas
 

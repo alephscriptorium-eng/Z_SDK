@@ -20,7 +20,7 @@ import {
 } from '@zeus/playbook-kit';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const CASOS_PATH = join(root, 'packages/arg/spec/CASOS.md');
+const CASOS_PATH = join(root, 'packages/games/delta/spec/CASOS.md');
 const ACTA_OUT = join(os.tmpdir(), `zeus-playbook-kit-acta-${process.pid}.md`);
 
 const HOST = 'localhost';
@@ -88,10 +88,10 @@ const coherence = checkPlaybookCoherence(markdown, {
 });
 gate('G-PB.0 coherencia CASOS.md', coherence.ok, coherence.ok ? `${coherence.ids.length} casos` : coherence.errors[0]);
 
-startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
 await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
-startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'));
-startApp('mcp-uno', join(root, 'packages/arg/arg-player-mcp/src/start.mjs'), {
+startApp('authority', join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+startApp('mcp-uno', join(root, 'packages/games/delta/arg-player-mcp/src/start.mjs'), {
   ZEUS_ARG_PLAYER_ACTOR: 'uno'
 });
 

@@ -14,7 +14,7 @@ import { io } from 'socket.io-client';
 /** Default game room when caller omits `room` (caller/env may override). */
 export const DEFAULT_GAME_ROOM = 'ARG_DELTA';
 
-/** State wire events (canónico + dual delta). */
+/** State wire events (canónico + dual-wire alias). */
 const STATE_EVENTS = Object.freeze(['state', 'arg:state']);
 
 /**

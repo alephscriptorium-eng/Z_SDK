@@ -21,162 +21,162 @@ export const EXCEPTIONS = [
   // Fallbacks preexistentes que duplican DEFAULT_ZEUS_* hasta que un WP
   // posterior los retire (no es demolición de U00).
   {
-    path: 'packages/arg/arg-console/src/config.mjs',
+    path: 'packages/games/delta/arg-console/src/config.mjs',
     rule: 'ports',
     reason: 'DEFAULT_*_PORT pre-U00; defaults canónicos viven en presets-sdk/env'
   },
   {
-    path: 'packages/arg/arg-console/src/server.mjs',
+    path: 'packages/games/delta/arg-console/src/server.mjs',
     rule: 'ports',
     reason: 'comentario de cabecera cita :3021; puerto real sale de config'
   },
   {
-    path: 'packages/arg/arg-demos/launch.mjs',
+    path: 'packages/games/delta/arg-demos/launch.mjs',
     rule: 'ports',
     reason: 'fallback ZEUS_PORT_* pre-U00; pendiente alinear con resolveZeusUiPorts'
   },
   {
-    path: 'packages/arg/arg-feeds/src/real.mjs',
+    path: 'packages/games/delta/arg-feeds/src/real.mjs',
     rule: 'ports',
     reason: 'comentario de cabecera cita puertos MCP; no hay literal de bind'
   },
   {
-    path: 'packages/mcp/linea-firehose/src/config.mjs',
+    path: 'packages/mesh/linea-firehose/src/config.mjs',
     rule: 'ports',
     reason: 'DEFAULT_PORT 3008 pre-U00; espejo de DEFAULT_ZEUS_MCP.firehose.disk'
   },
   {
-    path: 'packages/mcp/linea-firehose/src/start.mjs',
+    path: 'packages/mesh/linea-firehose/src/start.mjs',
     rule: 'ports',
     reason: 'comentario de cabecera cita default 3008'
   },
   {
-    path: 'packages/app/editor-ui/src/server.mjs',
+    path: 'packages/editor/editor-ui/src/server.mjs',
     rule: 'ports',
     reason: 'fallback ?? 3012 pre-U00; mesh canónico en presets-sdk/env'
   },
   {
-    path: 'packages/app/player-ui/src/server.mjs',
+    path: 'packages/mesh/player-ui/src/server.mjs',
     rule: 'ports',
     reason: 'fallback ?? 3013 pre-U00'
   },
   {
-    path: 'packages/app/player-ui/src/views/deck_view.mjs',
+    path: 'packages/mesh/player-ui/src/views/deck_view.mjs',
     rule: 'ports',
     reason: 'fallback scriptorium 3017 si mesh vacío; pre-U00'
   },
   {
-    path: 'packages/app/player-ui/src/link-recipes/firehose-link-recipes.mjs',
+    path: 'packages/mesh/player-ui/src/link-recipes/firehose-link-recipes.mjs',
     rule: 'ports',
     reason: 'JSDoc cita :3016; no es bind'
   },
   {
-    path: 'packages/app/player-ui/src/aleph-routes.mjs',
+    path: 'packages/mesh/player-ui/src/aleph-routes.mjs',
     rule: 'ports',
     reason: 'resolveAppPort fallback 3015 pre-U00'
   },
   {
-    path: 'packages/app/player-3d-ui/src/server.mjs',
+    path: 'packages/mesh/player-3d-ui/src/server.mjs',
     rule: 'ports',
     reason: 'fallback ?? 3018 pre-U00'
   },
   {
-    path: 'packages/app/ping-pong-bots/launch.mjs',
+    path: 'examples/ping-pong-bots/launch.mjs',
     rule: 'ports',
     reason: 'fallback ZEUS_SCRIPTORIUM_URL localhost:3017 en log; pre-U00'
   },
   {
-    path: 'packages/platform/cache-browser/src/server.mjs',
+    path: 'packages/mesh/cache-browser/src/server.mjs',
     rule: 'ports',
     reason: 'fallback ?? 3015 pre-U00'
   },
   {
-    path: 'packages/platform/firehose-browser/src/server.mjs',
+    path: 'packages/mesh/firehose-browser/src/server.mjs',
     rule: 'ports',
     reason: 'fallback ?? 3016 pre-U00'
   },
   {
-    path: 'packages/platform/firehose-browser/src/views/firehose_view.mjs',
+    path: 'packages/mesh/firehose-browser/src/views/firehose_view.mjs',
     rule: 'ports',
     reason: 'texto UI menciona MCP :3008; no es bind'
   },
   {
-    path: 'packages/platform/3d-monitor/src/server.mjs',
+    path: 'packages/mesh/3d-monitor/src/server.mjs',
     rule: 'ports',
     reason: 'fallback ?? 3019 pre-U00'
   },
   {
-    path: 'packages/platform/console-monitor/src/config.mjs',
+    path: 'packages/mesh/console-monitor/src/config.mjs',
     rule: 'ports',
     reason: 'fallback scriptorium 3017 si mesh vacío; pre-U00'
   },
   {
-    path: 'packages/lib/rooms/src/config.mjs',
+    path: 'packages/engine/rooms/src/config.mjs',
     rule: 'ports',
     reason: 'fallback ZEUS_SCRIPTORIUM_URL localhost:3017; pre-U00'
   },
   {
-    path: 'packages/lib/room-client-browser/src/index.mjs',
+    path: 'packages/engine/room-client-browser/src/index.mjs',
     rule: 'ports',
     reason: 'fallback scriptorium 3017 si mesh vacío; pre-U00'
   },
   {
-    path: 'packages/lib/room-client-browser/browser/dev-room-config.mjs',
+    path: 'packages/engine/room-client-browser/browser/dev-room-config.mjs',
     rule: 'ports',
     reason: 'config de desarrollo con URL de ejemplo; pre-U00'
   },
   {
-    path: 'packages/lib/room-client-browser/browser/room-client.browser.mjs',
+    path: 'packages/engine/room-client-browser/browser/room-client.browser.mjs',
     rule: 'ports',
     reason: 'JSDoc ejemplo localhost:3017; pre-U00'
   },
   {
-    path: 'packages/lib/app-shell/src/create-app-config.mjs',
+    path: 'packages/engine/app-shell/src/create-app-config.mjs',
     rule: 'ports',
     reason: 'fallback genérico 3000 si no hay mesh; pre-U00'
   },
   {
-    path: 'packages/lib/http-contract/src/endpoint.mjs',
+    path: 'packages/engine/http-contract/src/endpoint.mjs',
     rule: 'ports',
     reason: 'fallback genérico 3000 si appId desconocido; pre-U00'
   },
   {
-    path: 'packages/arg/arg-player-mcp/src/index.mjs',
+    path: 'packages/games/delta/arg-player-mcp/src/index.mjs',
     rule: 'ports',
     reason: 'comentario de cabecera cita :4121/:4122; bind vía env'
   },
   {
-    path: 'packages/arg/arg-player-mcp/src/start.mjs',
+    path: 'packages/games/delta/arg-player-mcp/src/start.mjs',
     rule: 'ports',
     reason: 'comentario de cabecera cita puertos MCP arg; bind vía env'
   },
   {
-    path: 'packages/lib/presets-sdk/src/mcp/runtime.mjs',
+    path: 'packages/engine/presets-sdk/src/mcp/runtime.mjs',
     rule: 'ports',
     reason: 'JSDoc ejemplo localhost:4101; no es default de bind'
   },
   {
-    path: 'packages/lib/test-utils/src/fetch-and-validate.mjs',
+    path: 'packages/engine/test-utils/src/fetch-and-validate.mjs',
     rule: 'ports',
     reason: 'JSDoc ejemplo localhost:3013; util de test helpers'
   },
   {
-    path: 'packages/mcp/linea-system/src/lineas.mjs',
+    path: 'packages/mesh/linea-system/src/lineas.mjs',
     rule: 'ports',
     reason: 'catálogo local de lineas con ports espejo de DEFAULT_ZEUS_MCP; pre-U00'
   },
   {
-    path: 'packages/mcp/solar-system/src/bodies.mjs',
+    path: 'packages/mesh/solar-system/src/bodies.mjs',
     rule: 'ports',
     reason: 'catálogo local de bodies con ports espejo de DEFAULT_ZEUS_MCP; pre-U00'
   },
   {
-    path: 'packages/operator-ui/projects/dev-app/src/app/zeus-operator-bridge.service.ts',
+    path: 'packages/mesh/operator-ui/projects/dev-app/src/app/zeus-operator-bridge.service.ts',
     rule: 'ports',
     reason: 'comentario TypeScript e.g. localhost:3017; pre-U00'
   },
   {
-    path: 'packages/platform/cache-browser/assets/js/cache-browser.js',
+    path: 'packages/mesh/cache-browser/assets/js/cache-browser.js',
     rule: 'ports',
     reason: 'fallback || 3013 en browser asset; pre-U00'
   },
@@ -190,34 +190,34 @@ export const EXCEPTIONS = [
   // Dominio Wikipedia: «oldid» NO es sufijo de transición (-old); se excluye
   // por patrón en el scanner. Aquí van legacy/v2 preexistentes.
   {
-    path: 'packages/lib/http-contract/src/envelope.mjs',
+    path: 'packages/engine/http-contract/src/envelope.mjs',
     rule: 'transition',
     reason: 'comentario «firehose legacy» en envelope plano; pre-U00'
   },
   {
-    path: 'packages/operator-ui/projects/threejs-ui-lib/src/lib/components/threejs-scene-pure.component.spec.ts',
+    path: 'packages/mesh/operator-ui/projects/threejs-ui-lib/src/lib/components/threejs-scene-pure.component.spec.ts',
     rule: 'transition',
     reason: 'nombre de test «without legacy AlephScript»; pre-U00'
   },
 
   // --- (c) imports de packages/arg fuera de arg ---
   {
-    path: 'packages/platform/cache-browser/src/server.mjs',
+    path: 'packages/mesh/cache-browser/src/server.mjs',
     rule: 'arg-import',
     reason: 'suscripción ARG track vía @zeus/arg-domain; se corta al mover games/ (ola 5)'
   },
   {
-    path: 'packages/platform/cache-browser/src/arg-track-subscriber.mjs',
+    path: 'packages/mesh/cache-browser/src/arg-track-subscriber.mjs',
     rule: 'arg-import',
     reason: 'puente mesh→ARG pre-layout games/; ola 5'
   },
   {
-    path: 'packages/platform/firehose-browser/src/server.mjs',
+    path: 'packages/mesh/firehose-browser/src/server.mjs',
     rule: 'arg-import',
     reason: 'suscripción ARG track vía @zeus/arg-domain; ola 5'
   },
   {
-    path: 'packages/platform/firehose-browser/src/arg-track-subscriber.mjs',
+    path: 'packages/mesh/firehose-browser/src/arg-track-subscriber.mjs',
     rule: 'arg-import',
     reason: 'puente mesh→ARG pre-layout games/; ola 5'
   }

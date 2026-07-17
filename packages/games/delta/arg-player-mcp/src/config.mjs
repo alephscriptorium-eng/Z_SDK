@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { resolveZeusMcpPorts, resolveZeusHost } from '@zeus/presets-sdk/env';
 import { DEFAULT_ARG_ROOM } from '@zeus/arg-domain/contract';
 
-/** Raíz del paquete (para localizar packages/arg/spec/CASOS.md). */
+/** Raíz del paquete (para localizar packages/games/delta/spec/CASOS.md). */
 export const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Ruta del playbook de casos de validación. */

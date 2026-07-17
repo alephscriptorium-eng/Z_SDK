@@ -18,8 +18,8 @@
     "mcp": "argPlayer",
     "docs": {
       "repo": [
-        "packages/arg/spec/CASOS.md",
-        "packages/arg/spec/CONTRATO.md"
+        "packages/games/delta/spec/CASOS.md",
+        "packages/games/delta/spec/CONTRATO.md"
       ]
     }
   },

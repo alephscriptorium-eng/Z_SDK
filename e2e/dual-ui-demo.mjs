@@ -15,15 +15,15 @@ import { spawn } from 'node:child_process';
 import { io as ioClient } from 'socket.io-client';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { makeIntent } from '@zeus/arg-domain';
-import { createPlayerServer } from '../packages/app/player-ui/src/server.mjs';
-import { createPlayer3dServer } from '../packages/app/player-3d-ui/src/server.mjs';
-import { createOperatorUiServer } from '../packages/operator-ui/serve.mjs';
+import { createPlayerServer } from '../packages/mesh/player-ui/src/server.mjs';
+import { createPlayer3dServer } from '../packages/mesh/player-3d-ui/src/server.mjs';
+import { createOperatorUiServer } from '../packages/mesh/operator-ui/serve.mjs';
 import { assert, safeClose } from './helpers.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const dataDir = path.join(repoRoot, 'data', 'e2e-dual-ui-run');
-const distBrowser = path.join(repoRoot, 'packages', 'operator-ui', 'dist', 'public', 'browser');
+const distBrowser = path.join(repoRoot, 'packages', 'mesh', 'operator-ui', 'dist', 'public', 'browser');
 
 const HOST = 'localhost';
 const SCRIPTORIUM_PORT = 13047;
@@ -111,9 +111,9 @@ try {
   assert(fs.statSync(mainBundle).size > 0, 'operator-ui main bundle is empty');
 
   console.log('2. Starting socket-server + authority...');
-  startApp('socket', path.join(repoRoot, 'packages/platform/socket-server/src/index.mjs'));
+  startApp('socket', path.join(repoRoot, 'packages/mesh/socket-server/src/index.mjs'));
   await waitForHttp(`http://${HOST}:${SCRIPTORIUM_PORT}/health`);
-  startApp('authority', path.join(repoRoot, 'packages/arg/arg-demos/apps/authority/index.mjs'));
+  startApp('authority', path.join(repoRoot, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
 
   console.log('3. Starting player-ui (DJ)...');
   const player = await createPlayerServer({

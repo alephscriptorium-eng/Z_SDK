@@ -10,4 +10,4 @@ Patrón **un MCP por actor** con semántica verificable:
 El juego inyecta wire events, `makeIntent`, puerto (`presets-sdk/env`) y
 lectores de resources. Parseo de playbook: [`@zeus/playbook-kit`](/engine/playbook-kit).
 
-README: `packages/lib/player-mcp-kit/README.md`.
+README: `packages/engine/player-mcp-kit/README.md`.

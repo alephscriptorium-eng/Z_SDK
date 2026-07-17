@@ -31,8 +31,8 @@ validateIntent(
 
 ## Specs
 
-- Markdown: `packages/lib/protocol/spec/CONTRATO.md`
-- AsyncAPI generado: `npm run spec:generate` → `packages/lib/protocol/spec/asyncapi.yaml`
+- Markdown: `packages/engine/protocol/spec/CONTRATO.md`
+- AsyncAPI generado: `npm run spec:generate` → `packages/engine/protocol/spec/asyncapi.yaml`
 - HTML en el portal: [AsyncAPI](/contracts/asyncapi) · [render HTML](/api/protocol/)
 
-README del paquete: `packages/lib/protocol/README.md`.
+README del paquete: `packages/engine/protocol/README.md`.

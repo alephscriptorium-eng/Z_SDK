@@ -85,7 +85,7 @@ const coherence = checkPlaybookCoherence(markdown, {
 });
 gate('G-POZO.0 coherencia CASOS.md', coherence.ok, coherence.ok ? coherence.ids.join(',') : coherence.errors[0]);
 
-startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
 await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
 startApp('authority', join(root, 'packages/games/pozo/src/authority.mjs'));
 startApp('mcp-uno', join(root, 'packages/games/pozo/src/player-mcp/start.mjs'));

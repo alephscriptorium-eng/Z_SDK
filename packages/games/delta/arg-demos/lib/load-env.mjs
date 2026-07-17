@@ -2,8 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Raíz del monorepo (donde vive .env) — packages/arg/arg-demos/lib → ../../../.. */
-const MONOREPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
+/** Raíz del monorepo (donde vive .env) — packages/games/delta/arg-demos/lib → ../../../../.. */
+const MONOREPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../../..');
 
 export const monorepoRoot = MONOREPO_ROOT;
 

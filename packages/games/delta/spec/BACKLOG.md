@@ -7,7 +7,7 @@ Referencias: [CONTRATO.md](CONTRATO.md), [UX.md](UX.md), [LORE.md](LORE.md).
 
 ## Fase 0 — Fundación (✅ slice)
 
-- **WP-00 · Esqueleto workspace** — `packages/arg/{arg-domain,arg-console,arg-demos}`
+- **WP-00 · Esqueleto workspace** — `packages/games/delta/{arg-domain,arg-console,arg-demos}`
   en workspaces raíz, scripts `start:arg-console`, `demo:arg`, `test:arg`.
   CA: `npm install` limpio; `npm run test:arg` verde.
 - **WP-01 · arg-domain: escena y nav-graph** — `delta-v0` (cimas, terrazas,

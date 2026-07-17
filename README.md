@@ -5,19 +5,19 @@
 que emiten intents, bots MCP por actor, y validación con playbook CASOS.
 
 Dos juegos de referencia (**delta** y **pozo**) demuestran que el engine sirve
-a ambos (D-8). Layout objetivo: **engine · editor · mesh · games** (move físico
-en WP-U51).
+a ambos (D-8). Layout: **engine · editor · mesh · games · examples**.
 
 ![](./SCRIPTORIUM_SKINS.png)
 
-## Mapa (hoy → objetivo)
+## Mapa
 
-| Capa | Hoy | Piezas |
-| ---- | --- | ------ |
-| **Engine** | `packages/lib/*` | `protocol`, `authority-kit`, `player-mcp-kit`, `playbook-kit`, `view-kit`, `http-contract`, `rooms`, `presets-sdk`, `game-engine`, `ui-*-kit`… |
-| **Editor** | `packages/app/editor-ui` | crear presets / camino a gamemap |
-| **Mesh** | `packages/app/*`, `platform/*`, `operator-ui` | socket-server, player-ui (DJ), browsers, monitores 3D |
-| **Games** | `packages/arg/*`, `packages/games/pozo` | delta (ARG) · pozo |
+| Capa | Ruta | Piezas |
+| ---- | ---- | ------ |
+| **Engine** | `packages/engine/*` | `protocol`, `authority-kit`, `player-mcp-kit`, `playbook-kit`, `view-kit`, `http-contract`, `rooms`, `presets-sdk`, `game-engine`, `ui-*-kit`… |
+| **Editor** | `packages/editor/editor-ui` | crear presets / camino a gamemap |
+| **Mesh** | `packages/mesh/*` | socket-server, player-ui (DJ), operator-ui, browsers, monitores 3D, MCPs |
+| **Games** | `packages/games/delta/*`, `packages/games/pozo` | delta · pozo |
+| **Examples** | `examples/*` | game-demos, ping-pong-bots |
 
 ## Arranque rápido
 

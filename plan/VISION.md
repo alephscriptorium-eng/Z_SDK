@@ -3,7 +3,7 @@
 ## El punto de partida (2026-07-15)
 
 zeus-sdk creció por olas: sesión Scriptorium (player-ui como master), visores
-3D, catálogo MCP de presets, y finalmente el ARG del delta (`packages/arg/*`),
+3D, catálogo MCP de presets, y finalmente el ARG del delta (`packages/games/delta/*`),
 que llegó el último y se convirtió en lo primero. **delta** demostró el patrón
 bueno:
 **dominio puro + autoridad única + intents + ledger + gates + playbook validable
@@ -83,7 +83,7 @@ MCP de corpus. Habitan aquí operadores del sitio (operator-ui), DJs
 | ------- | ---------- |
 | **engine** | las librerías genéricas del SDK (`packages/engine/*` en el layout objetivo): protocol, authority-kit, player-mcp-kit, view-kit, playbook-kit, game-engine, rooms, presets-sdk, http-contract, ui-kit, ui-3d-kit… |
 | **game** | un juego definido sobre el engine: dominio puro + escena + reducer + vistas + feeds + CASOS.md. |
-| **delta** | el primer juego (antes «CAUDAL», nombre retirado en D-8): el ARG del delta de datos — grifos, ríos, mar, cantera. `packages/arg/*` hoy; `games/delta` en el objetivo. |
+| **delta** | el primer juego (antes «CAUDAL», nombre retirado en D-8): el ARG del delta de datos — grifos, ríos, mar, cantera. `packages/games/delta/*` hoy; `games/delta` en el objetivo. |
 | **pozo** | el segundo juego, mínimo a propósito (un pozo, pocos nodos, un intent con ledger): existe para forzar la regla de los dos juegos. |
 | **games-library** | el repo independiente `Z_SDK-games-library` (ola 6) donde se distribuyen los juegos y sus datos pesados (start packs vía Releases + registry propio; ver ARQUITECTURA §6). |
 | **room** | canal de una partida en el socket-server; UNA autoridad por room, N vistas/actores. |

@@ -636,7 +636,7 @@ export function getResourceRegistry(bridge) {
       scene:
         'Nodos/enlaces del nav-graph, ríos, grifos y cantera (cámaras+pasillos con estados) para planificar rutas.',
       casos:
-        'packages/arg/spec/CASOS.md completo + índice de ids. Usa el prompt validar-caso para un caso concreto.'
+        'packages/games/delta/spec/CASOS.md completo + índice de ids. Usa el prompt validar-caso para un caso concreto.'
     },
     readPlayerState: () => summarizeState(bridge.lastState(), bridge.actor),
     readScene: () => {

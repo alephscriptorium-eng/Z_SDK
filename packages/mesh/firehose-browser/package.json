@@ -14,7 +14,7 @@
     "ui": "firehose",
     "docs": {
       "repo": [
-        "packages/platform/firehose-browser/spec/openapi.yaml"
+        "packages/mesh/firehose-browser/spec/openapi.yaml"
       ]
     }
   },

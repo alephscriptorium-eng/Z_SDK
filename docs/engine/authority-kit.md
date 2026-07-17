@@ -22,4 +22,4 @@ await startAuthority({
 ```
 
 Consumidores de referencia: autoridad de delta (`arg-demos`) y de pozo.
-README: `packages/lib/authority-kit/README.md`.
+README: `packages/engine/authority-kit/README.md`.

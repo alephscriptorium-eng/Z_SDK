@@ -4,7 +4,7 @@ El AsyncAPI del **contrato único** se genera desde `@zeus/protocol`, no a
 mano.
 
 ```bash
-npm run spec:generate              # → packages/lib/protocol/spec/asyncapi.yaml
+npm run spec:generate              # → packages/engine/protocol/spec/asyncapi.yaml
 npm run spec:asyncapi:html         # → docs/public/api/protocol/ (gitignored)
 ```
 

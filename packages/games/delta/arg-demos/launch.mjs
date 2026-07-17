@@ -121,7 +121,7 @@ if (socketAlready) {
   console.log(`[launch] socket-server ya corriendo en :${SOCKET_PORT} — lo reutilizo`);
 } else {
   console.log(`[launch] levantando socket-server en :${SOCKET_PORT}`);
-  startApp('socket', join(monorepoRoot, 'packages/platform/socket-server/src/index.mjs'), {}, { quiet: true });
+  startApp('socket', join(monorepoRoot, 'packages/mesh/socket-server/src/index.mjs'), {}, { quiet: true });
   for (let i = 0; i < 40; i++) {
     if (await portOpen(SOCKET_PORT, HOST)) break;
     await new Promise((r) => setTimeout(r, 250));
@@ -136,13 +136,13 @@ const browserEnv = {
 await ensureService(
   'cache',
   CACHE_PORT,
-  join(monorepoRoot, 'packages/platform/cache-browser/src/server.mjs'),
+  join(monorepoRoot, 'packages/mesh/cache-browser/src/server.mjs'),
   browserEnv
 );
 await ensureService(
   'firehose',
   FIREHOSE_PORT,
-  join(monorepoRoot, 'packages/platform/firehose-browser/src/server.mjs'),
+  join(monorepoRoot, 'packages/mesh/firehose-browser/src/server.mjs'),
   browserEnv
 );
 
@@ -161,7 +161,7 @@ setTimeout(() => {
 // Control MCP de jugadores: una instancia = un actor (uno/dos).
 setTimeout(() => {
   for (const actor of Object.keys(PLAYER_MCP_PORTS)) {
-    startApp(`mcp-${actor}`, join(monorepoRoot, 'packages/arg/arg-player-mcp/src/start.mjs'), {
+    startApp(`mcp-${actor}`, join(monorepoRoot, 'packages/games/delta/arg-player-mcp/src/start.mjs'), {
       ZEUS_ARG_PLAYER_ACTOR: actor,
       ZEUS_ARG_ROOM: ROOM,
       ZEUS_SCRIPTORIUM_URL: process.env.ZEUS_SCRIPTORIUM_URL || `http://${HOST}:${SOCKET_PORT}`,
@@ -172,7 +172,7 @@ setTimeout(() => {
 }, 500);
 
 setTimeout(() => {
-  startApp('console', join(monorepoRoot, 'packages/arg/arg-console/src/server.mjs'), {
+  startApp('console', join(monorepoRoot, 'packages/games/delta/arg-console/src/server.mjs'), {
     ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT),
     ZEUS_ARG_ROOM: ROOM
   });
@@ -210,7 +210,7 @@ setTimeout(async () => {
       `[launch]   ${actor} → http://${HOST}:${port}/mcp (health http://${HOST}:${port}/mcp/health)`
     );
   }
-  console.log('[launch]   playbook: packages/arg/spec/CASOS.md (resource arg://casos · prompt validar-caso)');
+  console.log('[launch]   playbook: packages/games/delta/spec/CASOS.md (resource arg://casos · prompt validar-caso)');
   console.log('[launch] ──────────────────────────────────────────────');
   console.log('');
 

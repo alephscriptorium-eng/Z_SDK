@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 const packageRoot = dirname(fileURLToPath(import.meta.url));
 // bots now live inside zeus-sdk (block-11 GA-C): packageRoot is
-// zeus-sdk/packages/app/ping-pong-bots → zeus-sdk root is 3 levels up.
-const zeusSdkRoot = join(packageRoot, '..', '..', '..');
+// zeus-sdk/examples/ping-pong-bots → zeus-sdk root is 2 levels up.
+const zeusSdkRoot = join(packageRoot, '..', '..');
 const children = [];
 
 const ROLES = [

@@ -1,7 +1,7 @@
 # plan/ — Refundación de zeus-sdk
 
 Esta carpeta es el **centro de mando de la refundación**: convertir zeus-sdk en
-una herramienta para crear juegos, con **delta** (`packages/arg/*`, antes
+una herramienta para crear juegos, con **delta** (`packages/games/delta/*`, antes
 «CAUDAL» hasta WP-U02) como primer juego construido con ella, **pozo** como
 segundo juego mínimo que fuerza la abstracción, y el playbook de validación
 como primer producto del método.
@@ -27,7 +27,7 @@ agente de sesión del usuario). La regla de reparto:
 | [REPORTES/](REPORTES/) | un acta por WP ejecutado, según [REPORTES/PLANTILLA.md](REPORTES/PLANTILLA.md) | swarm |
 | [recursos/](recursos/README.md) | clones externos de referencia (gitignorados salvo su README, con procedencia y hallazgos) | orquestador |
 
-Relación con otros backlogs: `packages/arg/spec/BACKLOG.md` sigue vivo y manda
+Relación con otros backlogs: `packages/games/delta/spec/BACKLOG.md` sigue vivo y manda
 sobre las **features del juego delta** (fases 1.6 y 2). Este `plan/` manda
 sobre la **refundación del SDK**. Un agente trabaja en uno u otro, nunca mezcla
 ambos en un mismo WP.

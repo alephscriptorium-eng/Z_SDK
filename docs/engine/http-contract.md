@@ -33,4 +33,4 @@ const { resources, templates } = projectRoutesToMcp(routes);
   `spec/mcp-resources.md` (schemas curados linea/firehose/solar).
 
 Detalle: [Resources MCP](/contracts/mcp-resources) · [OpenAPI](/contracts/openapi).
-README: `packages/lib/http-contract/README.md`.
+README: `packages/engine/http-contract/README.md`.

@@ -39,7 +39,7 @@ orquestador).
 - Alcance = el WP y nada más. Descubrimientos → §hallazgos del reporte, **no fixes**.
 - Demolición obligatoria: viejo y nuevo no conviven; git es la historia.
 - Evidencia literal en el reporte. Si no ejecutaste algo: `⏳ sin verificar`.
-- No mezclar este backlog con `packages/arg/spec/BACKLOG.md`.
+- No mezclar este backlog con `packages/games/delta/spec/BACKLOG.md`.
 - Si el WP está mal especificado: **para**, reporta §dudas/bloqueos, no reinterpretes.
 
 ## Al terminar

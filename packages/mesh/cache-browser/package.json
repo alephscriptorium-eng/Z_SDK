@@ -14,7 +14,7 @@
     "ui": "view",
     "docs": {
       "repo": [
-        "packages/platform/cache-browser/spec/openapi.yaml",
+        "packages/mesh/cache-browser/spec/openapi.yaml",
         "docs/manuals/view-ui.md"
       ]
     }

@@ -1,5 +1,5 @@
 /**
- * Lectura del playbook packages/arg/spec/CASOS.md.
+ * Lectura del playbook packages/games/delta/spec/CASOS.md.
  * Parseo genérico vive en @zeus/playbook-kit.
  */
 

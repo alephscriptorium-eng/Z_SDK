@@ -5,4 +5,4 @@ y wiring de room. Lo específico del juego (escenario, intents de dominio)
 vive junto a las vistas del juego.
 
 Consumidores actuales: `arg-console`, `3d-monitor`, `player-3d-ui`, vistas de
-pozo. README: `packages/lib/view-kit/README.md`.
+pozo. README: `packages/engine/view-kit/README.md`.

@@ -13,7 +13,7 @@ que un WP **se devuelve**. El orquestador revisa contra esto.
    (Excepción: docs y specs pueden citar puertos concretos como ejemplo.)
 2. **Tablas y maps, no cadenas de if/else-if o switch crecientes.** El patrón
    de la casa es la tabla de handlers del reducer
-   (`packages/arg/arg-domain/src/reducer.mjs`): objeto `{ intent: handler }`.
+   (`packages/games/delta/arg-domain/src/reducer.mjs`): objeto `{ intent: handler }`.
    Tres o más ramas sobre el mismo discriminante = tabla. Sin excepciones «es
    que solo son cuatro casos» — el quinto lo añade otro que no leyó esto.
 3. **Dominio puro.** Reducers y motores sin red, sin fs, sin `Date.now()`

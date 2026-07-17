@@ -101,15 +101,15 @@ spawnSync('bash', [join(root, 'scripts/stop-ports.sh'), 'e2e arg-track cleanup',
 });
 await sleep(500);
 
-startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
 await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
-startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'));
-startApp('cache', join(root, 'packages/platform/cache-browser/src/server.mjs'), {
+startApp('authority', join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+startApp('cache', join(root, 'packages/mesh/cache-browser/src/server.mjs'), {
   ZEUS_PORT_VIEW: String(CACHE_PORT),
   ZEUS_ARG_TRACK_ACTOR: ACTOR,
   ZEUS_ARG_ROOM: ROOM
 });
-startApp('firehose', join(root, 'packages/platform/firehose-browser/src/server.mjs'), {
+startApp('firehose', join(root, 'packages/mesh/firehose-browser/src/server.mjs'), {
   ZEUS_PORT_FIREHOSE: String(FIREHOSE_PORT),
   ZEUS_ARG_TRACK_ACTOR: ACTOR,
   ZEUS_ARG_ROOM: ROOM

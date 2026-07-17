@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** Raíz del monorepo (donde vive .env) */
-const MONOREPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
+const MONOREPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 export const monorepoRoot = MONOREPO_ROOT;
 

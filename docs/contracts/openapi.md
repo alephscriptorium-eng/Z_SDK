@@ -16,4 +16,4 @@ npm run spec:redoc    # → docs/public/api/<slug>.html (gitignored)
 | MCP HTTP transport | [/api/mcp-http.html](/api/mcp-http.html) |
 
 YAML fuente: `packages/**/spec/openapi.yaml` y
-`packages/lib/presets-sdk/spec/mcp-http.openapi.yaml`.
+`packages/engine/presets-sdk/spec/mcp-http.openapi.yaml`.

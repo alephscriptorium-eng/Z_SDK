@@ -27,9 +27,9 @@
     "devapp": "ng serve dev-app"
   },
   "dependencies": {
-    "@zeus/operator-bridge": "file:../lib/operator-bridge",
-    "@zeus/room-client-browser": "file:../lib/room-client-browser",
-    "@zeus/ui-3d-kit": "file:../../lib/ui-3d-kit",
+    "@zeus/operator-bridge": "file:../operator-bridge",
+    "@zeus/room-client-browser": "file:../../engine/room-client-browser",
+    "@zeus/ui-3d-kit": "file:../../engine/ui-3d-kit",
     "@angular-devkit/build-angular": "^20.2.1",
     "@angular/animations": "^20.2.3",
     "@angular/cli": "^20.2.1",

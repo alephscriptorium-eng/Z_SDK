@@ -33,9 +33,9 @@ antigüedad real. El mapa salió de leer imports reales, no de suposiciones.
 - `arg-console` evita `app-shell` a propósito (config con whitelist molesta) y
   lleva su propio kit de navegador (~4.600 LOC en `assets/js/kit/`) que solapa
   con `ui-3d-kit` y el view-kit del `3d-monitor` del que nació.
-- `packages/arg/README.md` lista 3 de 5 paquetes.
+- `packages/games/delta/README.md` lista 3 de 5 paquetes.
 - `arg-demos/launch.mjs` lanza cache/firehose-browser por **ruta de archivo**
-  a `packages/platform/*`, no por import.
+  a `packages/mesh/*`, no por import.
 
 ## 2. Layout objetivo del monorepo
 
@@ -57,7 +57,7 @@ packages/
     linea-system/  linea-firehose/  solar-system/
     webrtc-ui/         # ola 10 — visor WebRTC (salas/privados), hermano Angular de operator-ui
   games/     # en el monorepo hasta la ola 6; después, repo Z_SDK-games-library (§6)
-    delta/             # el actual packages/arg/* (domain, feeds, console, player-mcp, demos, spec)
+    delta/             # el actual packages/games/delta/* (domain, feeds, console, player-mcp, demos, spec)
     pozo/              # el segundo juego, mínimo a propósito (gate de abstracción, D-8)
 examples/    # game-demos, ping-pong-bots + escenas mínimas de view-kit — material didáctico
 ```
@@ -81,7 +81,7 @@ Notas:
 
 ## 3. El contrato único (lo que implementa `engine/protocol`)
 
-Generalización directa de `packages/arg/arg-domain/src/contract.mjs` +
+Generalización directa de `packages/games/delta/arg-domain/src/contract.mjs` +
 `spec/CONTRATO.md`, que ya funcionan:
 
 - Eventos: `state` (snapshot @Hz de la autoridad), `intent` (petición de

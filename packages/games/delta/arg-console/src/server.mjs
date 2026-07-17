@@ -47,7 +47,7 @@ import { portalView } from './views/portal.mjs';
 
 const require = createRequire(import.meta.url);
 
-const monorepoRoot = path.resolve(packageDir, '../../..');
+const monorepoRoot = path.resolve(packageDir, '../../../..');
 const defaultDataDir = path.join(monorepoRoot, 'data');
 const alephSeedsPath = path.join(defaultDataDir, 'seeds', 'aleph-presets.json');
 

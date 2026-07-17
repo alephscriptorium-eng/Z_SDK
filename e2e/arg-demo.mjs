@@ -91,10 +91,10 @@ async function fetchText(path) {
 // ── arranque ────────────────────────────────────────────────────────────
 console.log('\n🌊 e2e CAUDAL · puertos aislados', { SOCKET_PORT, CONSOLE_PORT, ROOM }, '\n');
 
-startApp('socket', join(root, 'packages/platform/socket-server/src/index.mjs'));
+startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
 await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
-startApp('authority', join(root, 'packages/arg/arg-demos/apps/authority/index.mjs'));
-startApp('console', join(root, 'packages/arg/arg-console/src/server.mjs'), {
+startApp('authority', join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+startApp('console', join(root, 'packages/games/delta/arg-console/src/server.mjs'), {
   ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT)
 });
 await waitForHttp(`http://${HOST}:${CONSOLE_PORT}/health`);

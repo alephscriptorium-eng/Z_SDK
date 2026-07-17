@@ -17,7 +17,7 @@
     "role": "lib",
     "docs": {
       "repo": [
-        "packages/app/player-ui/spec/openapi.yaml"
+        "packages/mesh/player-ui/spec/openapi.yaml"
       ]
     }
   },

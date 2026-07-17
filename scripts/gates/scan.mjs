@@ -79,9 +79,9 @@ export function collectFiles(dir, include = () => true, repoRoot = REPO_ROOT) {
  */
 export function isPortsPathExempt(rel) {
   const n = rel.replace(/\\/g, '/');
-  if (n.startsWith('packages/lib/presets-sdk/src/env/')) return true;
+  if (n.startsWith('packages/engine/presets-sdk/src/env/')) return true;
   if (n.startsWith('docs/') || n.startsWith('plan/')) return true;
-  if (n.includes('/spec/') || n.startsWith('packages/arg/spec/')) return true;
+  if (n.includes('/spec/') || n.startsWith('packages/games/delta/spec/')) return true;
   if (n.endsWith('.md')) return true;
   if (
     n.includes('/test/') ||
@@ -133,7 +133,7 @@ export function scanHardcodedPorts(opts = {}) {
     [
       ...collectFiles('packages', () => true, repoRoot),
       ...collectFiles('scripts', () => true, repoRoot),
-      ...collectFiles('operator-ui', () => true, repoRoot)
+      ...collectFiles('examples', () => true, repoRoot)
     ];
   /** @type {Offender[]} */
   const offenders = [];
@@ -188,7 +188,7 @@ export function scanTransitionNames(opts = {}) {
     [
       ...collectFiles('packages', () => true, repoRoot),
       ...collectFiles('scripts', () => true, repoRoot),
-      ...collectFiles('operator-ui', () => true, repoRoot)
+      ...collectFiles('examples', () => true, repoRoot)
     ];
   /** @type {Offender[]} */
   const offenders = [];
@@ -223,10 +223,10 @@ export function scanTransitionNames(opts = {}) {
 }
 
 const ARG_IMPORT_RE =
-  /(?:from|import)\s+['"](@zeus\/arg(?:-[a-z0-9]+)*)['"]|(?:from|import)\s+['"]([^'"]*packages\/arg\/[^'"]+)['"]|require\(\s*['"](@zeus\/arg(?:-[a-z0-9]+)*)['"]\s*\)/;
+  /(?:from|import)\s+['"](@zeus\/arg(?:-[a-z0-9]+)*)['"]|(?:from|import)\s+['"]([^'"]*packages\/games\/delta\/[^'"]+)['"]|require\(\s*['"](@zeus\/arg(?:-[a-z0-9]+)*)['"]\s*\)/;
 
 /**
- * (c) nada fuera de packages/arg importa @zeus/arg-* o packages/arg/*
+ * (c) nada fuera de packages/games/delta importa @zeus/arg-* o packages/games/delta/*
  * @param {{ repoRoot?: string, files?: string[] }} [opts]
  * @returns {Offender[]}
  */
@@ -235,16 +235,16 @@ export function scanArgImportViolations(opts = {}) {
   const files =
     opts.files ??
     [
-      ...collectFiles('packages', (rel) => !rel.startsWith('packages/arg/'), repoRoot),
+      ...collectFiles('packages', (rel) => !rel.startsWith('packages/games/delta/'), repoRoot),
       ...collectFiles('scripts', () => true, repoRoot),
-      ...collectFiles('operator-ui', () => true, repoRoot)
+      ...collectFiles('examples', () => true, repoRoot)
     ];
   /** @type {Offender[]} */
   const offenders = [];
   for (const file of files) {
     const rel = normalizeRel(repoRoot, file);
     if (rel.startsWith('scripts/gates/') || rel.startsWith('test/gates/')) continue;
-    if (rel.startsWith('packages/arg/')) continue;
+    if (rel.startsWith('packages/games/delta/')) continue;
     const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
     lines.forEach((line, idx) => {
       if (!ARG_IMPORT_RE.test(line)) return;
@@ -267,8 +267,28 @@ export const GAME_EXCLUSIVE_RE =
   /\bdelta\b|\bpozo\b|\bgrifo\b|\bcantera\b|\bcaudal\b|\bCAUDAL\b/gi;
 
 /**
+ * Docs/specs/tests pueden ilustrar con nombres de juego; el gate mira código
+ * de producción bajo packages/engine (activado con layout U51).
+ */
+export function isTwoGamesPathExempt(rel) {
+  const n = rel.replace(/\\/g, '/');
+  if (n.startsWith('docs/') || n.startsWith('plan/')) return true;
+  if (n.includes('/spec/') || n.endsWith('.md')) return true;
+  if (
+    n.includes('/test/') ||
+    n.includes('/tests/') ||
+    /\.test\./.test(n) ||
+    /\.spec\./.test(n) ||
+    n.startsWith('e2e/')
+  ) {
+    return true;
+  }
+  if (n.startsWith('scripts/gates/') || n.startsWith('test/gates/')) return true;
+  return false;
+}
+
+/**
  * (d) paquetes bajo packages/engine no nombran juegos ni conceptos exclusivos.
- * Mientras no exista el layout (ola 1+), el scan es no-op (cero archivos).
  * @param {{ repoRoot?: string, files?: string[] }} [opts]
  * @returns {Offender[]}
  */
@@ -279,7 +299,7 @@ export function scanTwoGamesRule(opts = {}) {
   const offenders = [];
   for (const file of files) {
     const rel = normalizeRel(repoRoot, file);
-    if (rel.startsWith('scripts/gates/') || rel.startsWith('test/gates/')) continue;
+    if (isTwoGamesPathExempt(rel)) continue;
     const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
     lines.forEach((line, idx) => {
       GAME_EXCLUSIVE_RE.lastIndex = 0;

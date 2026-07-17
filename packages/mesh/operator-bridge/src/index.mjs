@@ -27,7 +27,7 @@ export const TYPES = Object.freeze({
 /** Canonical hub bot name (centre of the circle). */
 export const HUB = 'CentralHub';
 
-/** Wire events the operator vista listens to (canónico + dual delta donde aplica). */
+/** Wire events the operator vista listens to (canónico + dual-wire alias donde aplica). */
 export const WIRE = Object.freeze({
   STATE: Object.freeze([PROTOCOL_EVENTS.STATE, 'arg:state']),
   /** Solo canónico — authority dual-escucha; emitir ambos duplicaría applyIntent. */

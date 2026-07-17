@@ -6,7 +6,7 @@ sirve a los dos o no es engine.
 - `engine/*` **no nombra** un juego concreto ni conceptos exclusivos
   (grifo, cantera, pozo…). Si una abstracción necesita saber a qué juego
   sirve, es el ejemplo con disfraz.
-- Lo específico de un juego vive en su paquete (`packages/arg/*`,
+- Lo específico de un juego vive en su paquete (`packages/games/delta/*`,
   `packages/games/pozo`).
 - Docs de engine no presentan ejemplos de un solo juego como si fueran el kit.
 - Todo WP que toque engine deja verdes los tests de **ambos** juegos.

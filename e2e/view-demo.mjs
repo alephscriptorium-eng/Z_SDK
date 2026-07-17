@@ -3,7 +3,7 @@
  */
 
 import { resolveLineasBasePath } from '@zeus/presets-sdk';
-import { createViewServer } from '../packages/platform/cache-browser/src/server.mjs';
+import { createViewServer } from '../packages/mesh/cache-browser/src/server.mjs';
 
 const lineasBase = resolveLineasBasePath();
 

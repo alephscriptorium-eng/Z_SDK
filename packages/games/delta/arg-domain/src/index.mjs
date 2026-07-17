@@ -1,6 +1,6 @@
 /**
  * @zeus/arg-domain — delta, dominio puro del ARG.
- * Sin three, sin red. Ver packages/arg/spec/CONTRATO.md.
+ * Sin three, sin red. Ver packages/games/delta/spec/CONTRATO.md.
  */
 
 export * from './contract.mjs';
