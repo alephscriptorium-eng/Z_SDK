@@ -168,4 +168,33 @@ arriba (orquestador / custodio).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (código; CA remoto ⏳ tick usuario)
+
+**Fecha:** 2026-07-18 · orquestador (Cursor Grok 4.5)
+
+### Qué se verificó
+
+- Diff `main...wp/u106-docs-custom-domain`: 3 archivos — `docs/.vitepress/config.mjs`,
+  comentario `.github/workflows/docs.yml`, este reporte. Sin BACKLOG. Alcance OK.
+- `resolveDocsBase()`: demolido `GITHUB_ACTIONS → '/Z_SDK/'` y fallback MSYS a
+  `/Z_SDK/`; bajo Actions `base= /`.
+- Re-CA local: `GITHUB_ACTIONS=true npm run docs:build` exit 0; dist sin
+  `/Z_SDK/`; nav `href="/…"`; API HTML presentes (`protocol`, `editor-ui`,
+  `player-ui`, `cache-browser`, `firehose-browser`, `mcp-http`).
+- Demolición: `rg '/Z_SDK/'` en `docs/.vitepress/` + `docs.yml` → cero.
+- Checklist ops (DNS CNAME `z-sdk` → `alephscriptorium-eng.github.io` + Custom
+  domain + Enforce HTTPS) documentado; CA remoto `https://z-sdk.escrivivir.co/`
+  ⏳ OK según brief (no fingir verde).
+- PRACTICAS §1–3 / §6: commits convencionales; auto-revisión honesta; sin
+  monkey-code / legacy / fuera de alcance.
+
+### Merge (cuando usuario autorice)
+
+1. Merge `wp/u106-docs-custom-domain` → `main` (después o en paralelo con U60/U105
+   del lote; sin dependencia de código entre ellos).
+2. Tras deploy Pages: tick ops del checklist §reporte (DNS + Custom domain +
+   HTTPS) y verificar URL viva.
+3. `git worktree remove` `.worktrees/wp-u106-docs-custom-domain`.
+
+**Nota:** ✅ BACKLOG / merge / push = fuera de este chat (instrucción
+revisión). Código autorizado a merge cuando el usuario lo pida.
