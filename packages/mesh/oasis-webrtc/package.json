@@ -1,0 +1,24 @@
+{
+  "name": "@zeus/oasis-webrtc",
+  "version": "0.1.0",
+  "description": "Oasis /webrtc module adaptation: SSB private signaling via pub (WP-U90). No copy-paste SDP.",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "start": "node src/start.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "ui"
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*",
+    "@zeus/webrtc-signaling": "*",
+    "express": "^5.2.1"
+  },
+  "private": true
+}
