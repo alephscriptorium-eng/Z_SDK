@@ -19,7 +19,7 @@
 export const EXCEPTIONS = [
   // --- (a) puertos/URLs hardcodeados fuera de presets-sdk/env ---
   // Fallbacks preexistentes que duplican DEFAULT_ZEUS_* hasta que un WP
-  // posterior los retire (no es demolición de U00).
+  // posterior los retire (no es demolición de U00).
   {
     path: 'packages/mesh/linea-firehose/src/config.mjs',
     rule: 'ports',
@@ -119,7 +119,7 @@ export const EXCEPTIONS = [
     path: 'packages/engine/http-contract/src/endpoint.mjs',
     rule: 'ports',
     reason: 'fallback genérico 3000 si appId desconocido; pre-U00'
-  },
+  },
   {
     path: 'packages/engine/presets-sdk/src/mcp/runtime.mjs',
     rule: 'ports',
@@ -170,10 +170,5 @@ export const EXCEPTIONS = [
     reason: 'nombre de test «without legacy AlephScript»; pre-U00'
   },
 
-  // --- (c) imports de packages/arg fuera de arg ---
-  {
-    path: 'packages/mesh/firehose-browser/src/arg-track-subscriber.mjs',
-    rule: 'arg-import',
-    reason: 'puente mesh→ARG pre-layout games/; ola 5'
-  }
+  // (c) arg-import: post-U61 sin imports estáticos @zeus/arg-* en monorepo
 ];
