@@ -1,0 +1,42 @@
+{
+  "name": "@zeus/webrtc-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AIPLv1",
+  "description": "WebRTC mesh viewer (rooms + private): Angular sibling of operator-ui over adapted WebRTCEngine (WP-U89 / D-17)",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./serve": "./serve.mjs",
+    "./game-bridge": "./src/game-bridge.mjs",
+    "./game-actions": "./src/browser/game-actions.mjs"
+  },
+  "scripts": {
+    "start": "node serve.mjs",
+    "test": "node --test test/*.mjs",
+    "build": "node scripts/check-angular.mjs",
+    "build:all": "npm run build",
+    "devapp": "node serve.mjs"
+  },
+  "zeus": {
+    "role": "app",
+    "ui": "webrtcViewer"
+  },
+  "dependencies": {
+    "@zeus/linea-kit": "*",
+    "@zeus/presets-sdk": "*",
+    "@zeus/room-client-browser": "*",
+    "@zeus/webrtc-signaling": "*",
+    "express": "^5.1.0",
+    "socket.io-client": "^4.8.1"
+  },
+  "optionalDependencies": {
+    "@roamhq/wrtc": "^0.10.0"
+  },
+  "devDependencies": {
+    "@zeus/socket-server": "*",
+    "@zeus/rooms": "*",
+    "@zeus/test-utils": "*"
+  }
+}

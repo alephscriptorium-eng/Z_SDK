@@ -9,7 +9,9 @@
     ".": {
       "types": "./types/index.d.ts",
       "default": "./src/index.mjs"
-    }
+    },
+    "./peer-session": "./src/peer-session.mjs",
+    "./messages": "./src/messages.mjs"
   },
   "scripts": {
     "test": "node --test test/*.mjs"

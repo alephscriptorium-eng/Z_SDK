@@ -1,0 +1,79 @@
+/* Procedencia estilos: compactación de web-rtc-gamify-ui peer/media/chat @ 4b9271b */
+:root {
+  --bg: #0f1419;
+  --fg: #e7ecf1;
+  --accent: #3d9a6a;
+  --muted: #8a9aa8;
+  --panel: #1a222c;
+  --border: #2a3540;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 10% -10%, #1b2a22, var(--bg));
+  color: var(--fg);
+  min-height: 100vh;
+}
+#app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+.wrtc-header h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.02em; }
+.wrtc-sub { color: var(--muted); margin: 0.25rem 0 0.5rem; }
+.wrtc-status {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  font-size: 0.85rem;
+}
+section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+section h2 { margin: 0 0 0.6rem; font-size: 1rem; }
+.wrtc-media { display: grid; gap: 0.75rem; }
+.wrtc-media video {
+  width: 100%;
+  max-height: 220px;
+  background: #000;
+  border-radius: 6px;
+}
+.wrtc-media-btns, .wrtc-btn { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.wrtc-btn, button {
+  background: var(--accent);
+  color: #04140c;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.45rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chat-log, .bulk-log, #game-state-log {
+  min-height: 4rem;
+  max-height: 12rem;
+  overflow: auto;
+  background: #0c1014;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+#chat-form { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+#chat-form input, #peer-id {
+  flex: 1;
+  background: #0c1014;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 4px;
+  padding: 0.4rem 0.55rem;
+}
+#peer-list { margin: 0; padding-left: 1.2rem; }

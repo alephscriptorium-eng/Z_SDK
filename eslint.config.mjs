@@ -63,6 +63,16 @@ export default [
     }
   },
   {
+    files: ['packages/mesh/webrtc-viewer/src/browser/**'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser
+      }
+    }
+  },
+  {
     files: ['packages/mesh/oasis-webrtc/public/**'],
     languageOptions: {
       ecmaVersion: 'latest',

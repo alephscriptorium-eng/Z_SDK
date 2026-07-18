@@ -44,6 +44,7 @@ export const IMPORT_MAP = {
     '@zeus/arg-domain/scenes/delta-v0': '/arg-domain/scenes/delta-v0.mjs',
     '@zeus/arg-domain/': '/arg-domain/',
     '@zeus/protocol': '/protocol/index.mjs',
-    '@zeus/protocol/': '/protocol/'
+    '@zeus/protocol/': '/protocol/',
+    '@zeus/webrtc-viewer/game-actions': '/webrtc-viewer/browser/game-actions.mjs'
   }
 };

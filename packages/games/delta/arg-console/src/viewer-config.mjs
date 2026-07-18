@@ -6,10 +6,11 @@
  *
  * Además del wiring de room lleva `actor` (query `?actor=`) para la vista
  * jugador — la identidad encarnada viaja en el mismo JSON inyectado.
+ * WP-U89: `webrtcViewerUrl` desde presets-sdk (botones llamar/compartir/colgar).
  */
 
 import { DEFAULT_ARG_ROOM } from '@zeus/arg-domain';
-import { resolveZeusUiPorts } from '@zeus/presets-sdk/env';
+import { resolveZeusUiPorts, DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk/env';
 import { getConfig } from './config.mjs';
 
 /**
@@ -18,7 +19,7 @@ import { getConfig } from './config.mjs';
  * @param {string} [opts.actor]     id de actor encarnado (`?actor=`)
  * @param {string} [opts.sessionId]
  * @param {NodeJS.ProcessEnv} [env]
- * @returns {{ scriptoriumUrl: string, room: string, sessionId: string, token: string, actor: string|null, startPack: string[], browsers: { cache: string, firehose: string } }}
+ * @returns {{ scriptoriumUrl: string, room: string, sessionId: string, token: string, actor: string|null, startPack: string[], webrtcViewerUrl: string, browsers: { cache: string, firehose: string } }}
  */
 export function resolveViewerConfig(opts = {}, env = process.env) {
   const scr = getConfig().scriptorium;
@@ -26,6 +27,7 @@ export function resolveViewerConfig(opts = {}, env = process.env) {
   const ui = resolveZeusUiPorts();
   const startPackRaw = env.ZEUS_ARG_START_PACK || 'aleph-tronco-puro,aleph-firehose-browse';
   const startPack = startPackRaw.split(',').map((s) => s.trim()).filter(Boolean);
+  const webrtc = ui.webrtcViewer || DEFAULT_ZEUS_UI_MESH.webrtcViewer;
   return {
     scriptoriumUrl: `http://${scr.host}:${scr.port}${scr.path}`,
     room: opts.room || env.ZEUS_ARG_ROOM || DEFAULT_ARG_ROOM,
@@ -33,6 +35,7 @@ export function resolveViewerConfig(opts = {}, env = process.env) {
     token: scr.secret,
     actor: opts.actor ?? null,
     startPack,
+    webrtcViewerUrl: `http://${webrtc.host || host}:${webrtc.port}`,
     browsers: {
       cache: `http://${host}:${ui.view.port}`,
       firehose: `http://${host}:${ui.firehose.port}`

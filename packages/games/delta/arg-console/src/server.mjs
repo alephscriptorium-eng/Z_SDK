@@ -47,6 +47,9 @@ import { portalView } from './views/portal.mjs';
 
 const require = createRequire(import.meta.url);
 
+/** Browser-safe sources of @zeus/webrtc-viewer (game-actions for contact buttons). */
+const webrtcViewerSrcDir = path.resolve(packageDir, '../../../mesh/webrtc-viewer/src');
+
 const monorepoRoot = path.resolve(packageDir, '../../../..');
 const defaultDataDir = path.join(monorepoRoot, 'data');
 const alephSeedsPath = path.join(defaultDataDir, 'seeds', 'aleph-presets.json');
@@ -169,6 +172,7 @@ export async function createArgConsoleServer(options = {}) {
   app.use('/game-engine', express.static(gameEngineSrcDir));
   app.use('/arg-domain', express.static(argDomainSrcDir));
   app.use('/protocol', express.static(protocolSrcDir));
+  app.use('/webrtc-viewer', express.static(webrtcViewerSrcDir));
   app.use('/models', express.static(modelsDir));
 
   mountReadOnlyPresetRoutes(app, { registry, store });
