@@ -11,9 +11,12 @@ import {
   makeFeedItem,
   resolveRuntimeFeeds,
   probeFeedMcpHealth,
-  syncJetstreamFixture
+  syncJetstreamFixture,
+  ensureFirehoseVolumeLayout,
+  refreshFirehoseCorpusCounts
 } from '../src/index.mjs';
 import { isJetstreamPost } from '@zeus/firehose-core';
+import { loadVolumesConfig, resetVolumesCache } from '@zeus/presets-sdk/volumes';
 
 test('FEED_FAMILIES has static/stream/gossip', () => {
   assert.deepEqual([...FEED_FAMILIES], ['static', 'stream', 'gossip']);
@@ -101,6 +104,35 @@ test('syncJetstreamFixture writes DISK_01 posts', () => {
     const raw = JSON.parse(fs.readFileSync(path.join(postPath, files[0]), 'utf8'));
     assert.equal(isJetstreamPost(raw), true);
   } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('refreshFirehoseCorpusCounts counts any file type and invalidates cache', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-feed-u97-'));
+  const prev = process.env.ZEUS_VOLUMES_ROOT;
+  try {
+    ensureFirehoseVolumeLayout(tmp);
+    const rawDir = path.join(tmp, 'DISK_01', 'FIREHOSE', 'raw', 'mixed');
+    fs.mkdirSync(rawDir, { recursive: true });
+    fs.writeFileSync(path.join(rawDir, 'a.json'), '{}\n', 'utf8');
+    fs.writeFileSync(path.join(rawDir, 'b.bin'), Buffer.alloc(8, 1));
+    fs.writeFileSync(path.join(rawDir, 'c.txt'), 'note', 'utf8');
+
+    const corpora = refreshFirehoseCorpusCounts(tmp);
+    assert.ok(Array.isArray(corpora));
+    const raw = corpora.find((c) => c.id === 'raw');
+    assert.ok(raw);
+    assert.equal(raw.files, 3);
+
+    process.env.ZEUS_VOLUMES_ROOT = tmp;
+    resetVolumesCache();
+    const cfg = loadVolumesConfig();
+    assert.equal(cfg.volumes.firehose.corpora.find((c) => c.id === 'raw').files, 3);
+  } finally {
+    if (prev == null) delete process.env.ZEUS_VOLUMES_ROOT;
+    else process.env.ZEUS_VOLUMES_ROOT = prev;
+    resetVolumesCache();
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });

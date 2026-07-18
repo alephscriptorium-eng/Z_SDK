@@ -11,6 +11,32 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { isJetstreamPost, normalizeFirehosePost } from '@zeus/firehose-core';
+import {
+  loadVolumesConfig,
+  resolveVolumesRoot,
+  resetVolumesCache
+} from '@zeus/presets-sdk/volumes';
+import { syncVolumeCounters } from '@zeus/volumes-ops';
+
+/**
+ * Run `fn` with ZEUS_VOLUMES_ROOT pointing at `volumesRoot`, restoring env + cache.
+ * @template T
+ * @param {string} volumesRoot
+ * @param {() => T} fn
+ * @returns {T}
+ */
+function withVolumesRoot(volumesRoot, fn) {
+  const prev = process.env.ZEUS_VOLUMES_ROOT;
+  process.env.ZEUS_VOLUMES_ROOT = volumesRoot;
+  resetVolumesCache();
+  try {
+    return fn();
+  } finally {
+    if (prev == null) delete process.env.ZEUS_VOLUMES_ROOT;
+    else process.env.ZEUS_VOLUMES_ROOT = prev;
+    resetVolumesCache();
+  }
+}
 
 /** Default public Jetstream (override with ZEUS_JETSTREAM_URL). */
 export const DEFAULT_JETSTREAM_URL = 'wss://jetstream2.us-east.bsky.network/subscribe';
@@ -57,41 +83,44 @@ export function ensureFirehoseVolumeLayout(volumesRoot, { label = 'Firehose ONFA
     fs.mkdirSync(path.join(firehoseRoot, corpus), { recursive: true });
   }
 
-  const volumesPath = path.join(volumesRoot, 'volumes.json');
-  let doc = {
-    root: '.',
-    volumes: {}
-  };
-  if (fs.existsSync(volumesPath)) {
-    doc = JSON.parse(fs.readFileSync(volumesPath, 'utf8'));
-    doc.volumes = doc.volumes ?? {};
-  }
+  return withVolumesRoot(volumesRoot, () => {
+    let doc;
+    try {
+      doc = structuredClone(loadVolumesConfig());
+      doc.volumes = doc.volumes ?? {};
+    } catch {
+      doc = { root: '.', volumes: {} };
+    }
 
-  const existing = doc.volumes.firehose;
-  const corpora = (existing?.corpora ?? []).length
-    ? existing.corpora
-    : [
-        { id: 'candidate', path: 'candidate', label: 'Candidatos', files: 0 },
-        { id: 'raw', path: 'raw', label: 'Raw', files: 0 },
-        { id: 'discarded', path: 'discarded', label: 'Descartados', files: 0 },
-        { id: 'labeled', path: 'labeled', label: 'Etiquetados', files: 0 }
-      ];
+    const existing = doc.volumes.firehose;
+    const corpora = (existing?.corpora ?? []).length
+      ? existing.corpora
+      : [
+          { id: 'candidate', path: 'candidate', label: 'Candidatos', files: 0 },
+          { id: 'raw', path: 'raw', label: 'Raw', files: 0 },
+          { id: 'discarded', path: 'discarded', label: 'Descartados', files: 0 },
+          { id: 'labeled', path: 'labeled', label: 'Etiquetados', files: 0 }
+        ];
 
-  doc.volumes.firehose = {
-    disk: 'DISK_01',
-    path: 'DISK_01/FIREHOSE',
-    readonly: true,
-    label: existing?.label ?? label,
-    source: {
-      ...(existing?.source ?? {}),
-      kind: 'atproto-jetstream',
-      syncedAt: new Date().toISOString()
-    },
-    corpora
-  };
+    doc.volumes.firehose = {
+      disk: 'DISK_01',
+      path: 'DISK_01/FIREHOSE',
+      readonly: true,
+      label: existing?.label ?? label,
+      source: {
+        ...(existing?.source ?? {}),
+        kind: 'atproto-jetstream',
+        syncedAt: new Date().toISOString()
+      },
+      corpora
+    };
 
-  fs.writeFileSync(volumesPath, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
-  return { firehoseRoot, volumesPath };
+    const root = resolveVolumesRoot();
+    const configPath = path.join(root, 'volumes.json');
+    fs.writeFileSync(configPath, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
+    resetVolumesCache();
+    return { firehoseRoot, volumesPath: configPath };
+  });
 }
 
 /**
@@ -124,39 +153,21 @@ export function writeJetstreamPost(firehoseRoot, raw, { corpus = 'raw', batch = 
 }
 
 /**
- * Recount corpus files and patch volumes.json.
+ * Recount corpus files via volumes-ops (any file type) and invalidate cache.
  * @param {string} volumesRoot
  */
 export function refreshFirehoseCorpusCounts(volumesRoot) {
-  const firehoseRoot = path.join(volumesRoot, 'DISK_01', 'FIREHOSE');
-  const volumesPath = path.join(volumesRoot, 'volumes.json');
-  if (!fs.existsSync(volumesPath)) return null;
-  const doc = JSON.parse(fs.readFileSync(volumesPath, 'utf8'));
-  const fh = doc.volumes?.firehose;
-  if (!fh?.corpora) return null;
-
-  for (const corpus of fh.corpora) {
-    const dir = path.join(firehoseRoot, corpus.path);
-    corpus.files = countJsonFiles(dir);
-  }
-  fh.source = {
-    ...(fh.source ?? {}),
-    kind: 'atproto-jetstream',
-    syncedAt: new Date().toISOString()
-  };
-  fs.writeFileSync(volumesPath, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
-  return fh.corpora;
-}
-
-function countJsonFiles(dir) {
-  if (!fs.existsSync(dir)) return 0;
-  let n = 0;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const abs = path.join(dir, entry.name);
-    if (entry.isDirectory()) n += countJsonFiles(abs);
-    else if (entry.isFile() && entry.name.endsWith('.json')) n += 1;
-  }
-  return n;
+  return withVolumesRoot(volumesRoot, () => {
+    let config;
+    try {
+      config = loadVolumesConfig();
+    } catch {
+      return null;
+    }
+    if (!config.volumes?.firehose?.corpora) return null;
+    const { corpora } = syncVolumeCounters('firehose');
+    return corpora;
+  });
 }
 
 /**
