@@ -33,14 +33,13 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 | Publish real → demoler `file:` | ops + **U55** | gated (tras U122) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Orden Sprint 1:** ~~**U119**~~ ✅ → **U120 ∥ U121** → **U122** → GO U55 natural.
+**Orden Sprint 1:** ~~**U119**~~ ✅ → **U120** ∥ ~~**U121**~~ ✅ → **U122** → GO U55 natural.
 
 **En curso:**
 - 🔶 **WP-U120** · prosa zeus/docs (orquestador / 2026-07-18)
-- 🔶 **WP-U121** · prosa library/docs (orquestador / 2026-07-18)
 
 **⬜ en cola (Sprint 1):**
-- **U122** auth `_password` (tras U120/U121 o post-U119 suave)
+- **U122** auth `_password` (tras U120)
 
 **⬜ / bloqueados (fuera Sprint 1):**
 - **U55** — demoler `file:` (dep publish real; **no 🔶** hasta tick ops post-U122)
@@ -84,23 +83,17 @@ Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
   muertos (puertos/versiones/fechas) en páginas de producto.
   **Deps:** U119 ✅. **Paralelo con U121.** Repo: solo zeus.
 
-### WP-U121 · Prosa portal library/docs — 🔶
+### WP-U121 · Prosa portal library/docs — ✅
 
-- 🔶 **WP-U121 · Refactor prosa `Z_SDK-games-library/docs/` (~6 md)** —
-  asignado (orquestador / 2026-07-18). Brief:
-  [REPORTES/briefs/WP-U121-prosa-library-docs.md](REPORTES/briefs/WP-U121-prosa-library-docs.md).
-  Worktree zeus: `.worktrees/wp-u121-prosa-library-docs` · rama
-  `wp/u121-prosa-library-docs`. Worktree library:
-  `../Z_SDK-games-library/.worktrees/wp-u121-prosa-library-docs`.
-  `releases.md` describe mecanismo + apunta a GitHub Releases (verdad
-  viva; fuera fechas «consultado» / versiones a mano);
-  `startpacks.md` separa pipeline de publish-⏳; `file:` / `.deps`
-  encajonado como «modo provisional». **Heros/lemas intactos** (D-24).
-  **CA:** `docs:build` verde (library); doctrinales: mismo grep → 0;
-  comandos spot-check; heros intactos.
-  **Demolición:** fechas/versiones a mano en releases; publish-⏳ mezclado
-  con pipeline doctrinal.
-  **Deps:** U119 ✅. **Paralelo con U120.** Repo: library (+ reporte zeus).
+- ✅ **WP-U121 · Refactor prosa `Z_SDK-games-library/docs/` (~6 md)** —
+  aceptado (orquestador / 2026-07-18). Library merge tip `2314b8e` · zeus
+  reporte `b196075`+. Reporte:
+  [REPORTES/WP-U121-prosa-library-docs.md](REPORTES/WP-U121-prosa-library-docs.md).
+  Releases=mecanismo+GitHub vivo; startpacks separa publish; `file:`
+  provisional; futuros=estado; heros intactos. Re-smoke `docs:build` +
+  grep → 0.
+  **CA:** cumplido. **Demolición:** fechas/versiones a mano; publish-⏳ en
+  doctrina. Hallazgo: scrub README raíz library → cola residual.
 
 ### WP-U122 · Auth durable registry (`_password`) — ⬜
 
@@ -144,6 +137,8 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U102) `resolveStopServicePorts` switch→tabla; fixture firehose duplicada;
   linea-system fixture mínima; `ZEUS_SCRIPTORIUM_ROOM` en room-client
 - (U114) env sibling library sin link `@zeus/startpack-kit` (ops/link)
+- (U121) scrub `README.md` raíz library (WP-U/D-#/file: temporal) — fuera
+  del portal VitePress; coherencia repo↔portal
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
