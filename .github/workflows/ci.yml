@@ -8,7 +8,15 @@ on:
     branches:
       - main
       - 'wp/**'
+    # WP-U104 / D-22: bookkeeping plan + markdown no dispara matriz ~31 jobs.
+    # `**.md` = todos los .md del repo (docs GHA: Pattern matching).
+    paths-ignore:
+      - 'plan/**'
+      - '**.md'
   pull_request:
+    paths-ignore:
+      - 'plan/**'
+      - '**.md'
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}

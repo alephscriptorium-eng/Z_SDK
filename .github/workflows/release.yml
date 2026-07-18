@@ -7,6 +7,11 @@ on:
   push:
     branches:
       - main
+    # WP-U104 / D-22: solo changesets o código de paquetes (no cada push a main).
+    # Conserva quality+test+secrets más abajo; este filtro solo acota el trigger.
+    paths:
+      - '.changeset/**'
+      - 'packages/**'
 
 concurrency:
   group: release-${{ github.workflow }}-${{ github.ref }}
