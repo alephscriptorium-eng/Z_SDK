@@ -57,6 +57,7 @@ packages/
     cache-browser/  firehose-browser/  console-monitor/  3d-monitor/
     linea-system/  linea-firehose/  force-system/  ssb-system/  solar-system/
     blob-sync-harness/ # WP-U100 — harness validación blobs (no sidecar producto)
+    blobstore-client/  # WP-U101 — cliente HTTP /x/blobstore/v0 (saliente; no blobs.*)
     webrtc-ui/         # ola 10 — visor WebRTC (salas/privados), hermano Angular de operator-ui
   games/     # en el monorepo hasta la ola 6; después, repo Z_SDK-games-library (§6)
     delta/             # el actual packages/games/delta/* (domain, feeds, console, player-mcp, demos, spec)
