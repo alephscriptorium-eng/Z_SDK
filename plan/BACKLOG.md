@@ -11,7 +11,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 ✅ · U116 ⬜ · U117 ⬜)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 ✅ · U116 🔶 · U117 ⬜)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
 > **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 ✅**; **U114 ✅**;
@@ -27,8 +27,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 > · ~~**U114**~~ ✅ · **lote 1–4+8 cerrado** · (3)
 > diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable) ·
 > (4) triaje vigilante → ~~**U115**~~ ✅ (schema story-board real / AJV
-> en kit carpeta) · (5) vigilante post-U114 → **U116** ⬜ (alias neutro
-> view-kit / id-por-dialecto; **sin 🔶** hasta GO diseño alias vs map) ·
+> en kit carpeta) · (5) vigilante post-U114 → **U116** 🔶 (GO diseño
+> **A** · alias `cast-table` + `panel-elenco`; swarm 2026-07-18) ·
 > (6) vigilante post-U115 → **U117** ⬜ (schema story-board único en
 > zeus; library+editor consumen; **sin 🔶**).
 
@@ -59,7 +59,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ✅ |
 | Post-U87 — dialectos story-board en editor | **U114** | ✅ |
 | Vigilante — schema story-board real (kit) | **U115** | ✅ |
-| Vigilante post-U114 — alias neutro view-kit | **U116** | ⬜ |
+| Vigilante post-U114 — alias neutro view-kit | **U116** | 🔶 |
 | Vigilante post-U115 — schema story-board único (zeus) | **U117** | ⬜ |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
@@ -68,8 +68,9 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
-**En curso:** — (ninguno; **U116** ⬜ sin 🔶 hasta GO diseño;
-**U117** ⬜ sin 🔶)
+**En curso:** **U116** 🔶 (swarm / 2026-07-18 · GO diseño **A** ·
+rama `wp/u116-cast-table-alias` · worktree `.worktrees/wp-u116-cast-table-alias`);
+**U117** ⬜ sin 🔶 (puede ir en paralelo en otro worktree)
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -107,8 +108,8 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
     `79c042c` (sin library); revisión `188e4a2` · **lote 1–4+8 cerrado**
 20. ~~**WP-U115**~~ ✅ — schema story-board real (AJV kit); merge zeus
     `aedd4f3` · library `ff30419`; revisión `d2b6604`
-21. **WP-U116** ⬜ — view-kit: alias neutro `cast-table` (o map
-    id-por-dialecto); **sin 🔶** hasta GO diseño (ver WP abajo)
+21. **WP-U116** 🔶 — view-kit: alias neutro `cast-table` (**GO A** ·
+    factory; swarm 2026-07-18; ver WP abajo)
 22. **WP-U117** ⬜ — schema story-board único en zeus (library+editor);
     **sin 🔶** (ver WP abajo)
 23. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP;
@@ -1386,7 +1387,7 @@ cerrado):
 > revisión `be86bad`); ~~**U114**~~ ✅ (merge zeus `79c042c`; sin
 > library; revisión `188e4a2`) · **lote 1–4+8 cerrado**; ~~**U115**~~ ✅
 > (merge zeus `aedd4f3` · library `ff30419`; revisión `d2b6604`);
-> **U116** ⬜ (alias view-kit; sin 🔶 hasta GO diseño);
+> **U116** 🔶 (GO **A** · alias factory; swarm 2026-07-18);
 > **U117** ⬜ (schema story-board único en zeus; sin 🔶).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
@@ -1415,7 +1416,7 @@ cerrado):
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
 > Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; ~~**U113**~~ ✅;
 > ~~**U114**~~ ✅ — **cerrado**. ~~**U115**~~ ✅ (schema kit).
-> Candidatos: **U116** ⬜ · **U117** ⬜ (sin 🔶).
+> Candidatos: **U116** 🔶 (GO **A**) · **U117** ⬜ (sin 🔶).
 
 - ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
   *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
@@ -1467,36 +1468,29 @@ cerrado):
   README kit: schema = contrato.
   **Deps:** U86 ✅.
 
-- ⬜ **WP-U116 · view-kit: id neutro del cast-table (post-U113)**
-  *(vigilante post-U114; dep U113 ✅)* — **sin 🔶** hasta GO de
-  diseño (abajo). Hallazgo: `createDefaultWidgetRegistry` solo registra
-  el id `panel-elenco` (convención uichain / dialecto solve-inline);
-  el renderer ya es genérico (`renderCastTableWidget`, CSS
-  `vk-cast-table`). Un segundo juego narrativo no debería adoptar el
-  nombre SOLVE para reusar la fábrica. **No solapa U115** (AJV
-  carpeta; distinto paquete/capa).
-  **Diseño pendiente (elige uno antes de 🔶):**
-  - **(A) Alias en factory** — registrar canónico `cast-table` **y**
-    sinónimo `panel-elenco` → mismo render (tabla de ids; no camino
-    legacy). SOLVE puede seguir declarando `panel-elenco`; otros juegos
-    usan `cast-table`.
-  - **(B) Map id-por-dialecto** — factory **solo** `cast-table`; el
-    dialecto `solve-inline` (vista solve y/o registro dialectos) traduce
-    `panel-elenco` → `cast-table` al montar. Un solo id en engine.
-  **Recomendación orquestador:** **(A)** si se quiere micro barato sin
-  tocar story-boards SOLVE; **(B)** si se quiere cero vocabulario
-  solve-inline en keys de fábrica (más alineado PRACTICAS §1.11).
+- 🔶 **WP-U116 · view-kit: id neutro del cast-table (post-U113)**
+  *(vigilante post-U114; dep U113 ✅)* — **en curso** (swarm /
+  2026-07-18) · rama `wp/u116-cast-table-alias` · worktree
+  `.worktrees/wp-u116-cast-table-alias` · brief
+  `plan/REPORTES/briefs/WP-U116-cast-table-alias.md`.
+  **GO diseño: (A) Alias en factory** — canónico `cast-table` **y**
+  sinónimo `panel-elenco` → mismo `renderCastTableWidget` (tabla de
+  ids; no camino legacy). SOLVE no migra boards. Hallazgo: factory
+  solo registraba `panel-elenco`; renderer ya genérico (`vk-cast-table`).
+  **No solapa U115 / U117** (schema; distinto paquete/capa).
+  **(B) descartada** en este GO (map id-por-dialecto).
   **CA:** factory expone id neutro usable sin conocer SOLVE; test que
-  monta por ese id; SOLVE (fixture/board o map) sigue verde; gate
-  two-games limpio; README view-kit veraz (qué id es canónico).
+  monta por ese id; SOLVE (`panel-elenco`) sigue verde; gate
+  two-games limpio; README view-kit veraz (canónico = `cast-table`).
   **Demolición:** default de fábrica que *solo* conoce `panel-elenco`
-  como id de producto (el sinónimo, si (A), queda documentado como
-  alias de dialecto, no como único entry); fallback
-  `ctx.id || 'panel-elenco'` en el render → id neutro.
-  **Deps:** U113 ✅. Coord. U114 (dialectos) solo si se elige (B).
-  **Residual opcional (mismo WP o cola):** labels ES hardwired
+  como id de producto (el sinónimo queda documentado como alias de
+  dialecto, no como único entry); fallback
+  `ctx.id || 'panel-elenco'` en el render → id neutro `cast-table`.
+  **Deps:** U113 ✅. Sin coord. U114 (solo hacía falta para B).
+  **Residual opcional (cola, no bloquea CA):** labels ES hardwired
   («elenco vacío», columnas participante/rol/eje) — parametrizar vía
-  `data` si el WP ya toca el render.
+  `data` en WP futuro si hace falta.
+
 
 - ⬜ **WP-U117 · Schema story-board único en zeus (post-U115)**
   *(vigilante post-U115; dep U115 ✅ · U114 ✅)* — **sin 🔶**.
@@ -1561,7 +1555,7 @@ Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
   colas existentes). Meta-lecciones → addenda [RE-PLAN.md](RE-PLAN.md)
   §3.1/3.3/3.7/3.8.
 - Vigilante **post-U114** · factory view-kit solo `panel-elenco` →
-  **WP-U116** ⬜ (arriba; GO diseño alias vs map antes de 🔶).
+  **WP-U116** 🔶 (arriba; GO **A** · swarm 2026-07-18).
 - Vigilante **post-U115** · editor regex vs schema AJV library →
   **WP-U117** ⬜ (arriba; schema único en zeus; sin 🔶).
 
