@@ -95,4 +95,8 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(pendiente)_
+**Aceptado ✅** (orquestador / 2026-07-18).
+
+Verificado: install limpio sin `file:`; `npm test` EXIT 0; `.deps` =
+fallback DEV documentado (no camino install). Merge autorizado
+(library + reporte zeus).
