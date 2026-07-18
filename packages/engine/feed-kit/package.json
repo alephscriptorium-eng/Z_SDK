@@ -1,6 +1,6 @@
 {
   "name": "@zeus/feed-kit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Unified feed families (static / stream / gossip) for games: synthetic + MCP real + jetstream→DISK_01 sync",
   "type": "module",
   "main": "src/index.mjs",

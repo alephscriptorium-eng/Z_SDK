@@ -1,6 +1,6 @@
 {
   "name": "@zeus/authority-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Autoridad genérica Zeus: tick, intents vía reducer, state/ledger/track, presupuesto snapshot, arranque/parada",
   "type": "module",
   "main": "src/index.mjs",
@@ -16,7 +16,7 @@
     "role": "lib"
   },
   "dependencies": {
-    "@zeus/protocol": "0.1.0",
+    "@zeus/protocol": "0.2.0",
     "@zeus/rooms": "0.1.0"
   },
   "publishConfig": {

@@ -123,8 +123,7 @@ export function verifyTarball(pkgDir, pkg, entriesRaw, opts = {}) {
     walk(exports);
     for (const t of targets) {
       if (!t.startsWith('./')) continue;
-      const rel = t.slice(2);
-      if (!entries.includes(rel) && !entries.some((e) => e.startsWith(rel + '/'))) {
+      if (!exportTargetInTarball(t.slice(2), entries)) {
         errors.push(`exports target missing from tarball: ${t}`);
       }
     }
@@ -154,6 +153,27 @@ export function verifyTarball(pkgDir, pkg, entriesRaw, opts = {}) {
   }
 
   return { errors, entryCount: entries.length };
+}
+
+/**
+ * Whether an exports target path (no leading `./`) is present in the tarball.
+ * Supports Node subpath patterns with a single `*` (e.g. `schemas/*`).
+ */
+export function exportTargetInTarball(rel, entries) {
+  if (!rel.includes('*')) {
+    return entries.includes(rel) || entries.some((e) => e.startsWith(rel + '/'));
+  }
+  const star = rel.indexOf('*');
+  const prefix = rel.slice(0, star);
+  const suffix = rel.slice(star + 1);
+  return entries.some((e) => {
+    if (!e.startsWith(prefix)) return false;
+    const rest = e.slice(prefix.length);
+    if (!rest) return false;
+    // Node `*` replaces one path segment (no `/` inside the match).
+    if (rest.includes('/')) return false;
+    return suffix === '' || (rest.endsWith(suffix) && rest.length > suffix.length);
+  });
 }
 
 /** Packages that must ship TypeScript declarations for anonymous consumers (D-18 / U54). */

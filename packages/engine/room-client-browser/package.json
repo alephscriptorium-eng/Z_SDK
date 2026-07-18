@@ -1,6 +1,6 @@
 {
   "name": "@zeus/room-client-browser",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser room-session client for scriptorium /runtime (SET_STATE + ROOM_MESSAGE)",
   "type": "module",
   "main": "src/index.mjs",
@@ -13,7 +13,7 @@
     "test": "node --experimental-test-module-mocks --test test/*.mjs"
   },
   "dependencies": {
-    "@zeus/presets-sdk": "0.1.0",
+    "@zeus/presets-sdk": "0.1.1",
     "@zeus/rooms": "0.1.0",
     "socket.io-client": "^4.8.1"
   },
