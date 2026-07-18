@@ -11,15 +11,15 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18g · lote-ola6-c)
+## Remate — estado swarm (2026-07-18h · cierre WP-U62 / Ola 6)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes D-22 cerrados en
 > código (U104/U60/U106/U105 ✅). Línea de producto en rama **`main`**.
-> **U61 ✅**. Residual **publish real** ⏳ ops (`NPM_TOKEN`) → U55 —
-> **no 🔶**. **U62** 🔶 (lote-ola6-c / orquestador / 2026-07-18).
+> **Ola 6 cerrada** (U60–U62 ✅). Residual **publish real** ⏳ ops
+> (`NPM_TOKEN`) → U55 — **no 🔶**. Ola 9 desbloqueada — **no asignar aquí**.
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
-~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → **U62** 🔶 →
+~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
 publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 
 | Frente | WP | Estado |
@@ -29,13 +29,13 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 | (3) Ola 6 — crear `Z_SDK-games-library` | **U60** | ✅ |
 | (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | ✅ |
 | Ola 6 — migración juegos | **U61** | ✅ |
-| Ola 6 — pipeline releases de datos | **U62** | 🔶 lote-ola6-c / orquestador / 2026-07-18 |
+| Ola 6 — pipeline releases de datos | **U62** | ✅ |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
-- **Ola 9** — U70 / U86 / U87 (dep Ola 6 completa = U62 ✅)
+- **Ola 9** — U70 / U86 / U87 (dep Ola 6 ✅; **padre decide** asignación)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
 **Next steps:**
@@ -50,7 +50,9 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 6. Residual **viewer peer-card** (cola U93) antes de mesh abierto
 7. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
 8. ~~WP-U61~~ ✅ — migración delta/pozo → games-library
-9. Ola 6: **U62** 🔶 (lote-ola6-c) → cierra ola 6
+9. ~~Ola 6 / WP-U62~~ ✅ — pipeline startpack; ola 6 cerrada
+10. Siguiente sugerido: **Ola 9** (U70/U86) | ops NPM_TOKEN/DNS
+    (padre decide; no asignar en este cierre)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -577,10 +579,9 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
-> **Nota orquestador (2026-07-18g / lote-ola6-c):** U105 ✅. U55 sigue
+> **Nota orquestador (2026-07-18h / cierre U62):** U105 ✅. U55 sigue
 > **pausado** hasta publish real (registry + `NPM_TOKEN`) — **no 🔶**.
-> Ola 6: **U60 ✅**; **U61 ✅**; **U62** 🔶 (lote-ola6-c / orquestador /
-> 2026-07-18).
+> Ola 6: **U60–U62 ✅** (cerrada).
 
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
   **publish real** de `engine/*` (no basta U105 prep). Sustituye los
@@ -618,11 +619,12 @@ Hallazgos diferidos U56 (no bloquean):
   `e2e:player-ui-dj` (G-U31.4/6 intermitente). Estabilizar e2e / timing.
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
+— **cerrada** (orquestador / 2026-07-18h; U60–U62 ✅)
 
-> **En curso** (orquestador / 2026-07-18g · lote-ola6-c): **U60 ✅** ·
-> **U61 ✅** (merge zeus `6d38287`; library `9baf67a`). **U62** 🔶
-> (lote-ola6-c / orquestador / 2026-07-18). Con ola 6 completa (U62 ✅)
-> se abre ola 9 (U70/U86/U87).
+> **Cerrada** (orquestador / 2026-07-18h): **U60 ✅** · **U61 ✅**
+> (merge zeus `6d38287`; library `9baf67a`) · **U62 ✅** (merge zeus
+> `2ad8c36`; library `688be30`). Ola 9 (U70/U86/U87) desbloqueada —
+> asignación la decide el padre.
 
 - ✅ **WP-U60 · Repo Z_SDK-games-library** (D-11; D-22) — aceptado
   (orquestador / 2026-07-18; merge `wp/u60-games-library`; revisión
@@ -643,19 +645,17 @@ Hallazgos diferidos U56 (no bloquean):
   **Demolición:** `packages/games/` en el monorepo — ✅.
   Reporte: `plan/REPORTES/WP-U61-migrate-games.md`.
   Brief: `plan/REPORTES/briefs/WP-U61-migrate-games.md`.
-- 🔶 **WP-U62 · Pipeline de releases de datos** *(dep U61 ✅)* —
-  en curso (lote-ola6-c / orquestador / 2026-07-18) — el Notario (ARG
-  WP-20/23) escribe start packs contra la library: cada release = paquete
-  `@zeus/startpack-<game>` en el registry propio + GitHub Release espejo
-  (tarball + acta). `VOLUMES/` sale del monorepo; quedan solo datos sintéticos
-  de test.
-  **CA:** una ronda real produce un release instalable
-  (`npm install @zeus/startpack-delta`) y su Release en GitHub; el mesh
-  arranca una ronda nueva desde ese start pack.
-  **Demolición:** `VOLUMES/` del monorepo.
+- ✅ **WP-U62 · Pipeline de releases de datos** *(dep U61 ✅)* —
+  aceptado (orquestador / 2026-07-18h; merge zeus `2ad8c36`; library
+  `688be30`) — Notario + `@zeus/startpack-delta`/`pozo`; GitHub Release
+  espejo (tarball + acta); VOLUMES monorepo = fixtures sintéticos;
+  publish npm registry ⏳ ops (`NPM_TOKEN`).
+  **CA:** ronda produce release instalable (tarball/`npm install` file
+  equiv. sin token) + Release GitHub; mesh arranca desde start pack — ✅
+  (publish registry ⏳ ops).
+  **Demolición:** `VOLUMES/` vivos del monorepo — ✅ (fixtures only).
+  Reporte: `plan/REPORTES/WP-U62-release-pipeline.md`.
   Brief: `plan/REPORTES/briefs/WP-U62-release-pipeline.md`.
-  Worktree: `.worktrees/wp-u62-release-pipeline`
-  (`wp/u62-release-pipeline`). Toca zeus + library.
 
 ## Ola 7 — El plano de datos (diseño en [DATOS.md](DATOS.md); paralelizable
 con olas 2–5 salvo deps indicadas) — **cerrada** (orquestador / 2026-07-18;
@@ -871,8 +871,8 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
 
 ## Ola 9 — El mundo del dramaturgo (dep olas 6–8)
 
-> **Bloqueada** (orquestador / 2026-07-18): dep Ola 6 pausada (sin
-> credenciales). NO asignar U70/U86/U87.
+> **Desbloqueada** (orquestador / 2026-07-18h): Ola 6 cerrada (U60–U62 ✅).
+> NO asignar U70/U86/U87 en este cierre — padre decide.
 
 - ⬜ **WP-U70 · Editor de gamemaps y releases** — editor-ui evoluciona de CRUD
   de presets a editor del mundo A: gamemaps, labelsets, cloaks, casos, y las
