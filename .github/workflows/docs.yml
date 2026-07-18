@@ -1,0 +1,52 @@
+# Docs portal → GitHub Pages (WP-U103 / A-12).
+# Fuente de deploy: Settings → Pages → GitHub Actions (ops custodio; no CA código).
+# Build en main + wp/**; deploy solo en main tras build verde.
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+      - 'wp/**'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: docs:build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Build VitePress portal
+        # base `/Z_SDK/` vía GITHUB_ACTIONS en docs/.vitepress/config.mjs
+        run: npm run docs:build
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    name: deploy Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
