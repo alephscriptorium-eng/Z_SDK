@@ -23,5 +23,20 @@ npm run instantiate:carpeta-dramaturgo -- --slug mi-juego --title "…"
 npm run test:carpeta-dramaturgo
 ```
 
-No es un tercer juego de producto (eso es WP-U87). Los originales en
-`scriptorium-network-games/` no se modifican.
+## SOLVE ET COAGULA (tercer juego · WP-U87)
+
+Prueba de fuego del mundo A: dramaturgia + startpack + mesh. **No** endurece
+la regla de los dos juegos (delta+pozo siguen siendo el mínimo del engine).
+
+→ [`packages/solve-coagula/`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/packages/solve-coagula)
+· startpack [`@zeus/startpack-solve-coagula`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/packages/startpack-solve-coagula)
+
+```bash
+cd ../Z_SDK-games-library
+npm run demo:solve-coagula
+npm run e2e:solve-coagula-mcp
+```
+
+Corpus natural: fixture **linea-aleph** (historial Wikipedia SolveCoagula) en
+el start pack; fuente viva `network-engine/linea-aleph`. Originales en
+`scriptorium-network-games/SOLVE_ET_COAGULA` no se modifican.

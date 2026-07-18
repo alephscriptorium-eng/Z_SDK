@@ -18,7 +18,7 @@ en [`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-l
 | **Engine** | `packages/engine/*` | `protocol`, `authority-kit`, `player-mcp-kit`, `playbook-kit`, `view-kit`, `http-contract`, `rooms`, `presets-sdk`, `game-engine`, `ui-*-kit`… |
 | **Editor** | `packages/editor/editor-ui` | crear presets / camino a gamemap |
 | **Mesh** | `packages/mesh/*` | socket-server, player-ui (DJ), operator-ui, browsers, monitores 3D, MCPs |
-| **Games** | [`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-library) | delta · pozo · `@zeus/startpack-*` · [CARPETA DRAMATURGO](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/kits/carpeta-dramaturgo) |
+| **Games** | [`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-library) | delta · pozo · **solve-coagula** · `@zeus/startpack-*` · [CARPETA DRAMATURGO](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/kits/carpeta-dramaturgo) |
 | **Examples** | `examples/*` | game-demos, ping-pong-bots |
 | **VOLUMES** | `VOLUMES/` | solo fixtures sintéticos (WP-U62); vivos → startpack / `ZEUS_VOLUMES_ROOT` externo |
 
@@ -36,6 +36,7 @@ cd ../Z_SDK-games-library
 npm install                   # file: temporal → este monorepo (.deps/zeus-sdk)
 npm run demo:arg              # delta contra mesh de Z_SDK
 npm run demo:pozo
+npm run demo:solve-coagula    # tercer juego (WP-U87)
 ```
 
 Documentación (guías, contratos OpenAPI/AsyncAPI, resources MCP, playbook):
@@ -58,13 +59,17 @@ npm run docs:build
 Juegos (library):
 
 ```bash
-cd ../Z_SDK-games-library && npm test && npm run e2e:arg && npm run e2e:pozo-mcp && npm run e2e:startpack
+cd ../Z_SDK-games-library && npm test && npm run e2e:arg && npm run e2e:pozo-mcp && npm run e2e:solve-coagula-mcp && npm run e2e:startpack
 # incluye npm run test:carpeta-dramaturgo (schema story-board + fixtures)
 ```
 
 CARPETA DRAMATURGO (kit de experiencia, WP-U86):
 [`kits/carpeta-dramaturgo/`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/kits/carpeta-dramaturgo)
 en la library — no vive en este monorepo.
+
+SOLVE ET COAGULA (tercer juego, WP-U87):
+[`packages/solve-coagula/`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/packages/solve-coagula)
+· reporte `plan/REPORTES/WP-U87-solve-coagula.md`.
 
 Start packs (library): `npm run release:startpack -- --game delta` → tarball +
 acta; Release espejo con `--publish-github`. Ver
