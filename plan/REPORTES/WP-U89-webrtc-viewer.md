@@ -122,4 +122,58 @@ orquestador puede pedir demo humana con `ZEUS_OPEN_BROWSER=1` + fake devices.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (2026-07-18 / orquestador) — autorizado a merge a
+master cuando el usuario lo pida. **No** se marcó ✅ en BACKLOG ni merge/push
+en esta revisión.
+
+### Qué se verificó
+
+- **Merge master→rama:** `494dd1d` absorbe U90 (`191550f`). Conflictos
+  resueltos sin inventar features:
+  - puertos distintos: `oasisWebrtc` **3022** (U90) · `webrtcViewer` **3023**
+    (U89); `.env.example` + `serve.mjs` fallback alineados
+  - presets: ambos slots + env keys
+  - `package.json` scripts: viewer + oasis-webrtc + e2e SSB
+  - eslint: bloques browser (viewer) + script (oasis-webrtc/public)
+  - `webrtc-signaling` exports: `./peer-session` (U89) + `./messages` (U90)
+- **Alcance** (`master...HEAD`, 35 files): `@zeus/webrtc-viewer`, botones
+  HORSE en arg-console, export `peer-session`, preset `webrtcViewer`, e2e,
+  changeset — sin U90 producto nuevo en el delta neto; sin BACKLOG tocado
+  por el worker.
+- **Re-CA (orquestador, worktree post-merge):**
+  - `npm test -w @zeus/webrtc-viewer` → 6/6 pass
+  - `npm run e2e:webrtc-viewer` → OK chat + bulk U80 + state after hangup
+  - `npm run gates` → OK (0 offenders)
+- **Video A/V dos browsers ⏳:** **no bloquea.** Brief lote-10b impone
+  headless / `ZEUS_OPEN_BROWSER` opt-in y admite ⏳ honesto; e2e cubre chat
+  DataChannel + bulk U80 + state post-hangup; ruta `getUserMedia` /
+  `connectToPeer({ useVideo, useAudio })` existe; botones HORSE generan URL
+  `action=webrtc-call|share|hangup`. Demo visual humana → cola hallazgos.
+- **Demolición:** sin `stun.l.google` en el paquete; wire names completos
+  (sin quirk A); procedencia `@ 4b9271b` anotada.
+- **PRACTICAS §1–3 / §6:** puertos vía presets; commits convencionales;
+  auto-revisión honesta (incl. ⏳ A/V).
+
+### Hallazgos → cola (no corregidos aquí)
+
+1. `ZEUS_STOP_SERVICES` incluye `'webrtc-viewer'` pero
+   `resolveStopServicePorts` **no** tiene `case` →
+   `Unknown Zeus stop service: webrtc-viewer` (reproducido post-merge).
+2. Demo A/V dos browsers con `ZEUS_OPEN_BROWSER=1` (ops / verificación
+   humana) — deferred del CA visual.
+3. Angular `ng build` no ejecutado (toolchain); runtime = shell ESM
+   (igual que nota del worker).
+4. Coturn VPS sigue ⏳ (ya cola U88/U90).
+
+### Merge
+
+Orden: U90 ya en master → mergear `wp/u89-webrtc-viewer` cuando usuario
+autorice. Antes: en master, commitear higiene pendiente
+`chore(plan): acepta WP-U90` (BACKLOG ✅ U90 + cola hallazgos) si aún está
+solo en working tree; no mezclar con ✅ U89 hasta merge de esta rama.
+
+### Acción siguiente
+
+Usuario: merge a master + orquestador marca ✅ U89 en BACKLOG (master) +
+`git worktree remove` del worktree U89. Worker: nada (aceptado).
+Push: **no intentado**.
