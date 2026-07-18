@@ -14,6 +14,7 @@
  *   stick-puppet   → monigote procedural
  *   actors-layer   → puppets por actor (híbrido stick/GLB) + anillo de cloak
  *   panel          → ventanitas HTML colapsables/arrastrables
+ *   widgets        → registro story-board (id → render) + cast-table
  *   horse-client   → HORSE browser + rebroadcast de ofertas
  *   cloak-panel    → inventario Q de presets
  *   contact-render → menú de contacto HORSE (render puro)
@@ -56,3 +57,9 @@ export {
   savePanelState,
   clampToBounds
 } from './panel.mjs';
+export {
+  createWidgetRegistry,
+  createDefaultWidgetRegistry,
+  renderCastTableWidget,
+  mountStoryWidgets
+} from './widgets.mjs';
