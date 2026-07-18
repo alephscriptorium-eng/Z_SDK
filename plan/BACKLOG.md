@@ -11,23 +11,24 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 🔶)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 ✅ · U116 ⬜)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
-> **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 ✅**; **U114 ✅**.
-> Balance propio: [RE-PLAN.md](RE-PLAN.md)
-> (addenda triaje registro vigilante 2026-07-18). Línea de producto en
-> **`main`**. **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus
-> `bd5f46c`). Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107
-> ⏳ ops.
+> **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 ✅**; **U114 ✅**;
+> **U115 ✅**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> (addenda triaje registro vigilante 2026-07-18 + post-U114 view-kit
+> alias). Línea de producto en **`main`**. **Ola 6** ✅ · **Ola 9** ✅
+> (U70 · U86 · U87 merge zeus `bd5f46c`). Publish real ⏳ ops → U55 —
+> **no 🔶**. DNS custom U106/U107 ⏳ ops.
 >
 > **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ ·
 > ~~U110~~ ✅ (lote 7+9 cerrado) · (2) frente editor **U111–U114** —
 > **GO** 2026-07-18 · ~~**U111**~~ ✅ · ~~**U112**~~ ✅ · ~~**U113**~~ ✅
 > · ~~**U114**~~ ✅ · **lote 1–4+8 cerrado** · (3)
 > diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable) ·
-> (4) triaje vigilante → **U115** 🔶 (schema story-board real / AJV en
-> kit carpeta; sin solapar editor-ui U114).
+> (4) triaje vigilante → ~~**U115**~~ ✅ (schema story-board real / AJV
+> en kit carpeta) · (5) vigilante post-U114 → **U116** ⬜ (alias neutro
+> view-kit / id-por-dialecto; **sin 🔶** hasta GO diseño alias vs map).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -55,7 +56,8 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — carpeta: importar obra | **U112** | ✅ |
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ✅ |
 | Post-U87 — dialectos story-board en editor | **U114** | ✅ |
-| Vigilante — schema story-board real (kit) | **U115** | 🔶 |
+| Vigilante — schema story-board real (kit) | **U115** | ✅ |
+| Vigilante post-U114 — alias neutro view-kit | **U116** | ⬜ |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
@@ -63,11 +65,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
-**En curso:**
-- **U115** 🔶 — schema story-board real (AJV en kit carpeta);
-  agente swarm 2026-07-18; brief
-  `plan/REPORTES/briefs/WP-U115-schema-story-board-ajv.md`;
-  worktrees zeus + library. **No solapar** editor-ui (U114).
+**En curso:** — (ninguno; **U116** ⬜ sin 🔶 hasta GO diseño)
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -103,10 +101,13 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
     zeus `a8a28dc` · library `5ba0b33`; revisión `be86bad`
 19. ~~**WP-U114**~~ ✅ — dialectos story-board en editor; merge zeus
     `79c042c` (sin library); revisión `188e4a2` · **lote 1–4+8 cerrado**
-20. **WP-U115** 🔶 — schema story-board real (AJV kit); en curso
-21. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP;
+20. ~~**WP-U115**~~ ✅ — schema story-board real (AJV kit); merge zeus
+    `aedd4f3` · library `ff30419`; revisión `d2b6604`
+21. **WP-U116** ⬜ — view-kit: alias neutro `cast-table` (o map
+    id-por-dialecto); **sin 🔶** hasta GO diseño (ver WP abajo)
+22. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP;
     **sin GO** → no inventar micros / STOP_SERVICES)
-22. Residual STOP_SERVICES pozo/solve en cola (sin WP; **sin GO**)
+23. Residual STOP_SERVICES pozo/solve en cola (sin WP; **sin GO**)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -1377,8 +1378,9 @@ cerrado):
 > ~~**U112**~~ ✅ (merge zeus `2fc9021` · library `a76c93f`; revisión
 > `3807aac`); ~~**U113**~~ ✅ (merge zeus `a8a28dc` · library `5ba0b33`;
 > revisión `be86bad`); ~~**U114**~~ ✅ (merge zeus `79c042c`; sin
-> library; revisión `188e4a2`) · **lote 1–4+8 cerrado**; **U115** 🔶
-> (schema kit AJV; brief + worktrees 2026-07-18).
+> library; revisión `188e4a2`) · **lote 1–4+8 cerrado**; ~~**U115**~~ ✅
+> (merge zeus `aedd4f3` · library `ff30419`; revisión `d2b6604`);
+> **U116** ⬜ (alias view-kit; sin 🔶 hasta GO diseño).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
 
@@ -1405,7 +1407,8 @@ cerrado):
 
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
 > Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; ~~**U113**~~ ✅;
-> ~~**U114**~~ ✅ — **cerrado**. Siguiente: **U115** 🔶 (en curso).
+> ~~**U114**~~ ✅ — **cerrado**. ~~**U115**~~ ✅ (schema kit).
+> Candidato post-U114: **U116** ⬜ (sin 🔶).
 
 - ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
   *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
@@ -1447,25 +1450,46 @@ cerrado):
   **Deps:** U70 ✅ · U86 ✅. **Residual (cola):** env sibling library
   sin link `@zeus/startpack-kit` (routes release e2e editor) — sin WP.
 
-- 🔶 **WP-U115 · Schema story-board real (no solo existsSync)**
+- ✅ **WP-U115 · Schema story-board real (no solo existsSync)**
   *(vigilante registro 2026-07-18 · H1 U70/U86; dep U86 ✅)* —
-  **en curso** (swarm 2026-07-18). En
-  `kits/carpeta-dramaturgo/scripts/validate-story-board.mjs` el JSON
-  Schema se **cita** (`existsSync(SCHEMA_PATH)`) pero la validación
-  real es a mano (`validateStoryBoard`); riesgo de drift schema↔código.
-  Cablear validador al schema (AJV u equivalente ya en monorepo/library)
-  como fuente de verdad; dialectos/fixtures SOLVE+ALEPH+juguete siguen
-  pasando; test que un board inválido contra schema falle con error
-  explicable. Coord. sin tocar editor-ui.
-  Brief: `plan/REPORTES/briefs/WP-U115-schema-story-board-ajv.md`.
-  **CA:** `validate-story-board` carga y aplica el schema (no solo
-  exists); fixtures/dialectos verdes; board sintético inválido → rechazo
-  claro; README kit veraz (schema = contrato, no decoración).
-  **Demolición:** comentario/camino «touch schema so CA can cite it
-  exists» como único uso del schema; reglas a mano que el schema ya
-  cubra (sin duplicar — PRACTICAS §1.4).
-  **Deps:** U86 ✅. Coordina con U114 (dialectos editor) — **no
-  solapar**: U115 no reescribe registro del editor.
+  aceptado (orquestador / 2026-07-18) · merge zeus `aedd4f3` · library
+  `ff30419` · revisión `d2b6604` · reporte
+  `plan/REPORTES/WP-U115-schema-story-board-ajv.md`.
+  `validate-story-board` aplica schema AJV (no solo existsSync);
+  fixtures/dialectos verdes; board sintético inválido → rechazo claro;
+  README kit: schema = contrato.
+  **Deps:** U86 ✅.
+
+- ⬜ **WP-U116 · view-kit: id neutro del cast-table (post-U113)**
+  *(vigilante post-U114; dep U113 ✅)* — **sin 🔶** hasta GO de
+  diseño (abajo). Hallazgo: `createDefaultWidgetRegistry` solo registra
+  el id `panel-elenco` (convención uichain / dialecto solve-inline);
+  el renderer ya es genérico (`renderCastTableWidget`, CSS
+  `vk-cast-table`). Un segundo juego narrativo no debería adoptar el
+  nombre SOLVE para reusar la fábrica. **No solapa U115** (AJV
+  carpeta; distinto paquete/capa).
+  **Diseño pendiente (elige uno antes de 🔶):**
+  - **(A) Alias en factory** — registrar canónico `cast-table` **y**
+    sinónimo `panel-elenco` → mismo render (tabla de ids; no camino
+    legacy). SOLVE puede seguir declarando `panel-elenco`; otros juegos
+    usan `cast-table`.
+  - **(B) Map id-por-dialecto** — factory **solo** `cast-table`; el
+    dialecto `solve-inline` (vista solve y/o registro dialectos) traduce
+    `panel-elenco` → `cast-table` al montar. Un solo id en engine.
+  **Recomendación orquestador:** **(A)** si se quiere micro barato sin
+  tocar story-boards SOLVE; **(B)** si se quiere cero vocabulario
+  solve-inline en keys de fábrica (más alineado PRACTICAS §1.11).
+  **CA:** factory expone id neutro usable sin conocer SOLVE; test que
+  monta por ese id; SOLVE (fixture/board o map) sigue verde; gate
+  two-games limpio; README view-kit veraz (qué id es canónico).
+  **Demolición:** default de fábrica que *solo* conoce `panel-elenco`
+  como id de producto (el sinónimo, si (A), queda documentado como
+  alias de dialecto, no como único entry); fallback
+  `ctx.id || 'panel-elenco'` en el render → id neutro.
+  **Deps:** U113 ✅. Coord. U114 (dialectos) solo si se elige (B).
+  **Residual opcional (mismo WP o cola):** labels ES hardwired
+  («elenco vacío», columnas participante/rol/eje) — parametrizar vía
+  `data` si el WP ya toca el render.
 
 ### Cola triaje vigilante registro 2026-07-18 (sin WP propio)
 
@@ -1474,7 +1498,7 @@ Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
 
 - ~~U109/U110 cumplidos~~ — ya ✅; residual STOP_SERVICES pozo/solve →
   nota bajo U110 arriba (**sin GO** → sin WP).
-- U86 H1 schema decorativo → **WP-U115** 🔶 (arriba).
+- U86 H1 schema decorativo → ~~**WP-U115**~~ ✅ (arriba).
 - U86 H2 one-liner paths en editor-ui — **ignorado** (mitigado en review).
 - U93 grieta viewer auto-fabrica peer-card — ya cola U93; **no WP** hasta
   GO usuario (firma SSB vs «visor pide card»); no abrir mesh a
@@ -1482,6 +1506,8 @@ Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
 - Histórico olas 0–10 / A-02…A-15 / U87 §1–8 — **ya cubierto** (WPs o
   colas existentes). Meta-lecciones → addenda [RE-PLAN.md](RE-PLAN.md)
   §3.1/3.3/3.7/3.8.
+- Vigilante **post-U114** · factory view-kit solo `panel-elenco` →
+  **WP-U116** ⬜ (arriba; GO diseño alias vs map antes de 🔶).
 
 ### Diferidos U87 §5–6 — sin WP ejecutable
 
