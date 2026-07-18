@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { checkSnapshotBudget, SNAPSHOT_BUDGET_BYTES } from '@zeus/protocol';
 import { createArgDomainState, resolveFeeds, makeIntent, deltaV0, createFlowEngine } from '../src/index.mjs';
-
 /** Escena de estrés: ríos largos + grifos rápidos → muchas gotas en vuelo y mar lleno. */
 function stressScene() {
   const longWp = [
@@ -151,12 +151,12 @@ test('snapshot compacto: cabe en presupuesto con carga (G-ARG.5)', () => {
   state.applyIntent(makeIntent('op', 'tap:set', { tapId: 'grifo-a', aperture: 1 }));
   for (let i = 0; i < 600; i++) state.tick(0.1); // ~60 s de gotas
   const snap = state.snapshot('change', { fullMaze: true });
-  const bytes = Buffer.byteLength(JSON.stringify(snap));
-  assert.ok(bytes < 32 * 1024, `snapshot ${bytes} bytes ≥ 32 KB`);
+  const { ok, bytes, budget } = checkSnapshotBudget(snap);
+  assert.ok(ok, `snapshot ${bytes} bytes ≥ ${budget}`);
+  assert.equal(budget, SNAPSHOT_BUDGET_BYTES);
   assert.equal(snap.sceneId, 'delta-v0');
   assert.ok(Object.keys(snap.rivers['rio-a'].droplets.length ? snap.rivers : snap.rivers).length);
 });
-
 test('budget G-ARG.5: pool mar lleno + 200 gotas de río < 32 KB', () => {
   const scene = stressScene();
   const feeds = resolveFeeds({ mode: 'synthetic', seed: 42 });
@@ -197,10 +197,10 @@ test('budget G-ARG.5: pool mar lleno + 200 gotas de río < 32 KB', () => {
   const baseSnap = state.snapshot('change');
   const snap = { ...baseSnap, taps: flowSnap.taps, rivers: flowSnap.rivers, sea: flowSnap.sea };
 
-  const bytes = Buffer.byteLength(JSON.stringify(snap));
-  assert.ok(bytes < 32 * 1024, `snapshot ${bytes} bytes ≥ 32 KB`);
+  const { ok, bytes, budget } = checkSnapshotBudget(snap);
+  assert.ok(ok, `snapshot ${bytes} bytes ≥ ${budget}`);
+  assert.equal(budget, SNAPSHOT_BUDGET_BYTES);
 });
-
 test('contacto: cerca del grifo en la cima abre contacto', () => {
   const state = makeState();
   state.applyIntent(makeIntent('uno', 'join'));

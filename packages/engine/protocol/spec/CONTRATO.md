@@ -25,6 +25,10 @@ uno de `state|intent|track|ledger` y `data` lleva el envelope con campo
 { v: 1, game: '<game-id>', from?, ts, ... }
 ```
 
+La forma wire de cada kind vive en **una sola tabla** `EVENT_META`
+(`src/event-meta.mjs`): AsyncAPI y el validador runtime `isShaped(kind, data)`
+se derivan de ella. No hay un segundo esquema paralelo.
+
 ### Inbound: `intent`
 
 ```js
@@ -34,11 +38,19 @@ uno de `state|intent|track|ledger` y `data` lleva el envelope con campo
 Cada juego declara un **catálogo** `intent → { roles }`. Un intent cuyo `role`
 (default `player`) no está autorizado se rechaza con `rol_no_autorizado`.
 
+`isShaped('intent', data)` exige los campos required de `EVENT_META` (incl.
+`game`). `isIntentShaped` / `validateIntent` siguen siendo el chequeo mínimo
+de transporte (`actorId` + `intent` + catálogo opcional) que usan los dominios
+antes del envelope completo en wire.
+
 ### Outbound: `state` | `track` | `ledger`
 
 - `state` — snapshot compacto @Hz + heartbeat
 - `track` — pista de navegación (no muta dominio)
 - `ledger` — hechos append-only
+
+`isShaped(kind, data)` rechaza payloads que incumplan `required` / tipos de
+`EVENT_META` para ese kind.
 
 ## 3. API
 
@@ -49,6 +61,7 @@ Cada juego declara un **catálogo** `intent → { roles }`. Un intent cuyo `role
   obligatorio** (mismo criterio que `makeEnvelope`); sin él lanza
   `TypeError`. Los wrappers de juego (`delta` / `pozo`) inyectan su
   `GAME_ID` cuando el caller pasa solo `from` string.
+- `isShaped(kind, data)` — forma wire desde `EVENT_META`
 - `isIntentShaped(payload, catalog?)` / `validateIntent(payload, catalog)`
 - `createIntentCatalog(defs)` / `assertIntentRole(payload, catalog)`
 - `makePeerCard({ roomId, endpoint, token, scopes, expiresAt, ... })`
@@ -63,7 +76,7 @@ es ticket de room + rol + caducidad.
 
 ## 5. AsyncAPI
 
-Generado desde este contrato:
+Generado desde `EVENT_META` (misma fuente que `isShaped`):
 
 ```bash
 npm run spec:generate -w @zeus/protocol

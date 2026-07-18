@@ -14,6 +14,7 @@ import {
   makeIntent,
   createIntentCatalog,
   validateIntent,
+  isShaped,
   makePeerCard,
   roleScope,
   EVENTS,
@@ -27,6 +28,7 @@ const catalog = createIntentCatalog({
 
 const intent = makeIntent('uno', 'join', { kind: 'player' }, { game: 'my-game' });
 validateIntent(intent, catalog); // { ok: true, role: 'player' }
+isShaped('intent', intent); // true — forma wire desde EVENT_META
 
 validateIntent(
   makeIntent('uno', 'curate', {}, { game: 'my-game', role: 'player' }),

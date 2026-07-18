@@ -3,10 +3,9 @@
  * (same source of truth as AsyncAPI in build.mjs — WP-U54).
  */
 
-import { PROTOCOL_VERSION, EVENT_KINDS, EVENTS } from '../src/contract.mjs';
+import { PROTOCOL_VERSION, EVENT_KINDS, EVENTS } from '../src/kinds.mjs';
 import { ROLES } from '../src/roles.mjs';
 import { GATES, SNAPSHOT_BUDGET_BYTES } from '../src/gates.mjs';
-
 /**
  * @returns {string} contents of types/index.d.ts
  */
@@ -35,6 +34,23 @@ export declare const EVENT_KINDS: readonly EventKind[];
 export declare const EVENTS: {
 ${eventConsts}
 };
+
+/** Wire/AsyncAPI shape table — source for isShaped + AsyncAPI generator (WP-U98). */
+export declare const EVENT_META: Readonly<
+  Record<
+    EventKind,
+    {
+      readonly direction: 'inbound' | 'outbound';
+      readonly summary: string;
+      readonly payload: {
+        readonly type: 'object';
+        readonly required: readonly string[];
+        readonly properties: Record<string, unknown>;
+        readonly additionalProperties?: boolean;
+      };
+    }
+  >
+>;
 
 /** Base envelope fields shared by state|intent|track|ledger (AsyncAPI components). */
 export interface EnvelopeBase {
@@ -136,6 +152,12 @@ export declare function makeIntent(
   args?: Record<string, unknown>,
   fromOrOpts?: string | MakeIntentOpts
 ): IntentPayload;
+
+/**
+ * Full wire/AsyncAPI shape per kind (derived from EVENT_META).
+ * Distinct from isIntentShaped (transport minimum + optional catalog).
+ */
+export declare function isShaped(kind: EventKind | string, data: unknown): boolean;
 
 export declare function isIntentShaped(
   payload: unknown,
