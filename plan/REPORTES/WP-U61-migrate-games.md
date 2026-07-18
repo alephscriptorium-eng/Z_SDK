@@ -177,4 +177,83 @@ Ninguno bloqueante. CA demos+e2e matriz juegos cumplido con `file:`.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Devuelto** — orquestador / 2026-07-18. Sin merge, sin push,
+sin ✅ BACKLOG (pedido explícito). Worker **no** tocó `plan/BACKLOG.md`.
+
+### Qué se verificó
+
+- Diff zeus `main...wp/u61-migrate-games`: migración + demolición
+  `packages/games/` + reporte + adaptaciones mesh/CI/docs/gates/e2e
+  (`games-root.mjs`). Alcance U61 OK; commits convencionales.
+- Library remoto `wp/u61-migrate-games` @ `85e41f6`: delta+pozo,
+  scaffold U60 demolicionado, `file:` documentado en README.
+- Demolición monorepo: `packages/games/` ausente; greps `@zeus/arg-`
+  en packages/e2e = cero; gates OK. Residual: entradas
+  `extraneous` `packages/games/*` en `package-lock.json` (higiene).
+- Re-CA **con** `ZEUS_SDK_ROOT=$(cd .deps/zeus-sdk && pwd -P)`:
+  - demos health arg-console + socket + pozo-view + pozo mcp → OK
+  - `e2e:arg` → todos los gates verdes
+  - `e2e:pozo-mcp` → C-01/C-02/C-03 + gates verdes
+  - `npm test` library → fail 0
+
+### Bloqueo CA (Windows / path documentado)
+
+El camino **documentado por defecto** (`setup:zeus-sdk` → `.deps/zeus-sdk`
+junction, sin `ZEUS_SDK_ROOT`) **falla** el Re-CA en este host:
+
+| Arranque mesh | Resultado |
+| ------------- | --------- |
+| path vía `.deps/zeus-sdk/.../socket-server` | proceso sale en silencio (exit 0, sin listen) — `isMain` de entrypoints mesh no cuadra symlink vs realpath |
+| `ZEUS_SDK_ROOT` = realpath del worktree | socket `/health` 200; e2e verdes |
+
+Sin `ZEUS_SDK_ROOT`, `resolveZeusSdkRoot()` devuelve
+`…/Z_SDK-games-library/.deps/zeus-sdk` → `e2e:arg` timeout en
+`http://localhost:13027/health`. Evidencia del worker asume un setup
+donde el mesh sí arranca; el default documentado no es reproducible en
+Windows.
+
+### CA
+
+- [x] Demolición `packages/games/` en monorepo
+- [x] `file:` temporal documentado (README library + reporte)
+- [~] Demos ambos juegos verdes vs mesh monorepo — OK solo con
+  `ZEUS_SDK_ROOT` realpath; **KO** con path default `.deps`
+- [~] e2e matriz adaptados — OK con realpath; **KO** default `.deps`
+
+### PRACTICAS
+
+Alcance limpio; auto-revisión §3 honesta; §1.11 (dos juegos) OK;
+demolición árbol casi completa (lockfile residual); commits §6 OK.
+Hallazgos del worker (race pozo sleep, arg-track opcional, docs
+VitePress residual) → cola, no bloquean este return.
+
+### Correcciones obligatorias (mismo chat worker + CORRECCION.md)
+
+1. **`resolveZeusSdkRoot` (library `scripts/zeus-sdk-root.cjs` / `.mjs`)**
+   — devolver `fs.realpathSync` (o equivalente) del root elegido, para
+   que spawns de mesh/demos/e2e usen path real y `isMain` funcione en
+   Windows con junction `.deps/zeus-sdk`.
+2. **Re-evidencia** en reporte: `unset ZEUS_SDK_ROOT` (solo `.deps`) +
+   `npm run e2e:arg` y `e2e:pozo-mcp` verdes; o documentar fallo si
+   queda otro matiz.
+3. **Opcional higiene zeus:** limpiar entradas `extraneous`
+   `packages/games/*` del `package-lock.json` (regen lock / prune).
+
+### Merge
+
+**No autorizado** hasta corrección. Cuando se acepte:
+
+1. Library: PR/merge `wp/u61-migrate-games` → `main` de
+   `Z_SDK-games-library` (primero: zeus aún puede vivir sin juegos).
+2. Zeus: merge `wp/u61-migrate-games` → `main` (demuele
+   `packages/games/`; e2e mesh que usan `ZEUS_GAMES_LIBRARY` necesitan
+   library ya en sitio o hermano clonado).
+3. Luego orquestador: ✅ BACKLOG en `main` + `git worktree remove`
+   `.worktrees/wp-u61-migrate-games`. U62 no asignar hasta U61 ✅.
+
+### Acción siguiente
+
+Mismo chat worker + `plan/REPORTES/CORRECCION.md` (o sección en este
+reporte) con los 3 puntos. **Push zeus: no intentado.** Library ya en
+remoto (`85e41f6`); tras fix, nuevo commit/push library + commit zeus
+reporte.
