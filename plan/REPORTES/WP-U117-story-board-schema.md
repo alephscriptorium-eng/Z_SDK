@@ -115,4 +115,33 @@ solo `acts` / `widgets` / `blocks` / `uichain`, sin nombres de juego.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18
+
+### Verificado
+- Sync rama zeus sobre `main` fresco (`caebb13` U116 ✅) → merge
+  `e49e88d` antes de valorar diffs.
+- Diff acotado: zeus `9003ba1`+reporte (+sync) · library `233c564`.
+  Sin BACKLOG tocado por worker. Sin solape U116 (view-kit).
+- **CA-1:** un solo `story-board.schema.json` en
+  `packages/engine/story-board-schema/schemas/`; library
+  `local_schema_gone=1` + README puntero.
+- **CA-2:** `rg ACT_ID packages/editor/editor-ui` → 0; también
+  `WIDGET_ID` / `validateSolveShape` / `validateAlephBlocks` → 0.
+- **CA-3:** re-smoke orquestador: `@zeus/story-board-schema` 6/6;
+  `world-draft.test.mjs` 11/11; `test:carpeta-dramaturgo` 🟢
+  (deps → zeus WT).
+- **CA-4:** README paquete + kit + editor apuntan a
+  `@zeus/story-board-schema` como contrato único.
+- PRACTICAS: §1.4 cumplido (una fuente); deps library→zeus;
+  §1.11 respuesta honesta (acts/widgets genéricos); `fs` en
+  validate alineado con `linea-kit` y consumidor `world/` ya
+  node-only. Hallazgo `not.required: blocks` en dialectSolve
+  documentado — OK (alineación editor).
+- Changeset minor presente.
+
+### Merge sugerido (usuario / orquestador post-GO)
+1. zeus `wp/u117-story-board-schema` → `main`
+2. library `wp/u117-story-board-schema` → `main`
+3. Orquestador en **main**: BACKLOG U117 🔶 → ✅ + worktree remove
+
+**Push:** no intentado en esta revisión.
