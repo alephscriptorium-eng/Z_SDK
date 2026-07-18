@@ -137,4 +137,57 @@ Ninguno. Listo para revisión orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Devuelto** — 2026-07-18 · orquestador
+
+### Verificado
+
+- Diff zeus `main...6931a51` acotado a `editor-ui` + reporte (sin BACKLOG).
+- Diff library `main...51d7420`: `startpack-plaza` + fila `STARTPACK_GAMES` + docs.
+- Demolición hard-gate sketch: grep cero; catálogo `GAME_CATALOG` +
+  `MATERIALIZERS` por `kind` (PRACTICAS §1.2).
+- CA producto (plaza + actos + tarball `gameId !== sketch`) cubierto en
+  código y en el test plaza (unidad + release).
+- README editor veraz; dialecto mínimo `solve-inline` documentado → U114.
+- Unit library plaza + kit verdes en re-smoke orquestador.
+
+### Fallos en re-smoke (bloquean ✅)
+
+Re-ejecución orquestador `npm test -w @zeus/editor-ui` con
+`ZEUS_GAMES_LIBRARY_ROOT` = worktree library U111 → **11/13** (no 13/13):
+
+1. `editor world release produces installable tarball (sketch preset)` —
+   esperaba `zeus-startpack-sketch-*.tgz`, obtuvo
+   `zeus-startpack-plaza-0.1.0.tgz`. Causa: `POST /api/world/release` sin
+   `body.draft` lee `data/world-draft.json` compartido; el test plaza (o
+   run previo) deja `gameId: plaza` y el release sketch no pasa draft
+   explícito ni aísla `dataDir`.
+2. `editor world + cloak routes` — `server not ready on port 14022`
+   (flake / puerto fijo; secundario).
+
+Efecto colateral: Notario ensucia `packages/startpack-plaza/**` en el
+worktree library (el reporte menciona restaurar sketch; plaza no).
+
+Nota menor: reporte dice «openapi regenerado» pero
+`spec/openapi.yaml` **sin diff** vs main (schemas `draft: {}` — no
+bloquea solo; corregir honestidad del reporte).
+
+### Correcciones obligatorias (mismo chat worker + CORRECCION.md)
+
+1. **`test/routes.mjs` — release sketch**: pasar draft sketch explícito
+   (`createDefaultDraft()`), igual que plaza; asertar
+   `body.draft.gameId === 'sketch'` y tarball sketch.
+2. **Aislar estado entre tests**: `dataDir` temporal por test en
+   `createEditorServer` / spawn, o `POST /api/world/draft/reset` antes
+   del release sketch; no depender de `data/world-draft.json` del
+   worktree.
+3. **Higiene library tras Notario**: restaurar `startpack-plaza` (y
+   sketch) tras tests de release, o materializar a copia temp — working
+   tree limpio al acabar.
+4. Re-smoke local **13/13** en frío (borrar/reset draft; dos runs
+   seguidos) y pegar evidencia literal en el reporte.
+5. Corregir línea «openapi regenerado» o regenerar de verdad si el
+   contrato documenta algo nuevo.
+
+### Merge
+
+No autorizado. Sin ✅ BACKLOG. Sin push orquestador.
