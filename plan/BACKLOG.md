@@ -87,7 +87,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - Catálogo público games-library (Pages + zine + `games.z-sdk…`) →
   **WP-U107** ⬜ (A-14; D-23)
 - ~~Candado VOLUMES gitignore (whitelist ancha post-U62)~~ →
-  **WP-U108** 🔶 (A-15; urgente)
+  ~~**WP-U108**~~ ✅ (A-15; merge `a8608ab`)
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
 - Harness U100 cid hex → formato SSB `&…sha256` (cola U101; live diferido)
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
@@ -644,15 +644,15 @@ Hallazgos diferidos U56 (no bloquean):
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
 — **cerrada** (orquestador / 2026-07-18h; U60–U62 ✅); residual A-14 →
-  **WP-U107** ⬜; residual A-15 → **WP-U108** 🔶
+  **WP-U107** ⬜; residual A-15 → ~~**WP-U108**~~ ✅
 
 > **Cerrada** (orquestador / 2026-07-18h): **U60 ✅** · **U61 ✅**
 > (merge zeus `6d38287`; library `9baf67a`) · **U62 ✅** (merge zeus
 > `2ad8c36`; library `688be30`). Ola 9 → **lote-ola9-a**: U86 ✅ ·
 > U70 🔶. Residual **A-14** (2026-07-18): catálogo público →
 > **WP-U107** ⬜ (no asignar mientras U70 vuele). Residual
-> **A-15** (2026-07-18): candado VOLUMES → **WP-U108** 🔶 urgente
-> (paralelizable; no solapa U70).
+> **A-15** (2026-07-18): candado VOLUMES → ~~**WP-U108**~~ ✅
+> (merge `a8608ab`).
 
 - ✅ **WP-U60 · Repo Z_SDK-games-library** (D-11; D-22) — aceptado
   (orquestador / 2026-07-18; merge `wp/u60-games-library`; revisión
@@ -685,21 +685,17 @@ Hallazgos diferidos U56 (no bloquean):
   Reporte: `plan/REPORTES/WP-U62-release-pipeline.md`.
   Brief: `plan/REPORTES/briefs/WP-U62-release-pipeline.md`.
 
-- 🔶 **WP-U108 · Candado VOLUMES / gitignore fixtures** *(A-15; dep U62 ✅)*
-  — en curso (orquestador / 2026-07-18; **urgente**) — el `.gitignore`
-  des-ignora `!VOLUMES/DISK_02/**` y `!VOLUMES/DISK_03/**` enteros; datos
-  de caso reales del checkout (~20 MB; p.ej. `DISK_02/LINEAS/espana/…`,
-  `DISK_03/FORCES/forces/force-a..g`) quedan trackeables. Acotar whitelist
-  a subpaths exactos de fixture (`git ls-files VOLUMES/`); corregir docs/
-  reporte U62 que los dan por «gitignorados».
-  **CA:** `git check-ignore` sobre rutas vivas → IGNORADO; `git add
-  VOLUMES/ --dry-run` no añade fuera de fixtures trackeados; `git
-  ls-files VOLUMES/` sin cambios; tests de fixtures verdes; docs honestas.
-  **Demolición:** wildcards anchas `!VOLUMES/DISK_0{2,3}/**`.
-  Rama: `wp/u108-volumes-gitignore` · worktree:
-  `.worktrees/wp-u108-volumes-gitignore` · brief:
-  `plan/REPORTES/briefs/WP-U108-volumes-gitignore.md`.
-  _(no solapa U70; padre lanza worker)_
+- ✅ **WP-U108 · Candado VOLUMES / gitignore fixtures** *(A-15; dep U62 ✅)*
+  — aceptado (orquestador / 2026-07-18; merge `a8608ab`; revisión
+  `08ce936`) — whitelist VOLUMES acotada a fixtures exactos; demolidas
+  wildcards `!VOLUMES/DISK_0{2,3}/**`; datos vivos (espana, force-a..g,
+  cima, sima/escenas) ignorados; docs/reporte U62 honestos.
+  **CA:** `git check-ignore` vivos → IGNORADO; `git add VOLUMES/
+  --dry-run` vacío; `git ls-files VOLUMES/` = 15; fixtures no
+  ignorados — ✅ (re-verificado post-merge).
+  **Demolición:** wildcards anchas `!VOLUMES/DISK_0{2,3}/**` — ✅.
+  Reporte: `plan/REPORTES/WP-U108-volumes-gitignore.md`.
+  Brief: `plan/REPORTES/briefs/WP-U108-volumes-gitignore.md`.
 
 - ⬜ **WP-U107 · Catálogo público de la games-library** *(A-14; D-23;
   dep U60 ✅, U61 ✅, U62 ✅)* — Pages en `Z_SDK-games-library` con la
