@@ -4,19 +4,11 @@
  * Sin imports de Node. Sin nombres de juego concretos.
  */
 
+import { PROTOCOL_VERSION, EVENT_KINDS, EVENTS } from './kinds.mjs';
+import { EVENT_META, isShaped } from './event-meta.mjs';
 import { assertIntentRole } from './roles.mjs';
 
-export const PROTOCOL_VERSION = 1;
-
-/** Kinds canónicos del contrato (campo `event` / channel message). */
-export const EVENT_KINDS = Object.freeze(['state', 'intent', 'track', 'ledger']);
-
-export const EVENTS = Object.freeze({
-  STATE: 'state',
-  INTENT: 'intent',
-  TRACK: 'track',
-  LEDGER: 'ledger'
-});
+export { PROTOCOL_VERSION, EVENT_KINDS, EVENTS, EVENT_META, isShaped };
 
 /**
  * @param {object} opts
@@ -83,6 +75,7 @@ export function makeIntent(actorId, intent, args = {}, fromOrOpts = actorId) {
 /**
  * Forma mínima de un intent (transporte). Si se pasa `catalog`, el `intent`
  * debe existir en el catálogo; si no, solo se exige string no vacío.
+ * Para la forma wire AsyncAPI completa por kind, usar `isShaped`.
  *
  * @param {unknown} payload
  * @param {Map<string, object>|Record<string, object>|string[]|null} [catalog]
