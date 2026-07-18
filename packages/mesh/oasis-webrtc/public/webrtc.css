@@ -1,0 +1,95 @@
+/* Adapted from simple-ssb-webrtc webrtc.css — no offer/answer code boxes. */
+.webrtc-hidden {
+  display: none;
+}
+.webrtc-page {
+  max-width: 42rem;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #1a1a1a;
+  background: linear-gradient(160deg, #f7f3ea 0%, #e8efe8 100%);
+  min-height: 100vh;
+}
+.tags-header h2 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+.card {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid #c5c0b0;
+  padding: 1rem 1.1rem;
+  margin: 0.85rem 0;
+}
+.webrtc-input,
+.webrtc-select,
+.webrtc-chat-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0.35rem 0 0.75rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #9a9588;
+  background: #fffdf8;
+  font: inherit;
+}
+.mode-buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.filter-btn,
+.webrtc-disconnect-btn {
+  cursor: pointer;
+  border: 1px solid #5a5648;
+  background: #2f3d2f;
+  color: #f4efe3;
+  padding: 0.4rem 0.75rem;
+  font: inherit;
+}
+.filter-btn:hover,
+.webrtc-disconnect-btn:hover {
+  background: #3f523f;
+}
+.hint {
+  font-size: 0.9rem;
+  color: #4a463c;
+}
+.webrtc-chat-messages {
+  min-height: 6rem;
+  max-height: 14rem;
+  overflow: auto;
+  border: 1px solid #c5c0b0;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: #fffdf8;
+}
+.webrtc-chat-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.webrtc-chat-you {
+  font-weight: bold;
+  color: #2f3d2f;
+}
+.webrtc-chat-peer {
+  font-weight: bold;
+  color: #5a3d2f;
+}
+.webrtc-video-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.webrtc-video {
+  width: 100%;
+  background: #111;
+  min-height: 8rem;
+}
+.card-field {
+  margin: 0.25rem 0;
+}
+.card-label {
+  font-weight: bold;
+}

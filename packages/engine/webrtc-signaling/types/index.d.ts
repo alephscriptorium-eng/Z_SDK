@@ -72,7 +72,48 @@ export declare class SocketRoomSignalingService extends SignalingService {
   getClient(): unknown;
 }
 
+/** SSB content.type for private WebRTC signaling DMs (WP-U90). */
+export const SSB_WEBRTC_SIGNAL_TYPE: 'webrtc-signal';
+
+export interface SsbPrivateMessage {
+  key: string;
+  value: { author: string; content: Record<string, unknown>; timestamp: number };
+}
+
+export interface SsbPrivateTransport {
+  whoami(): string;
+  publishPrivate(content: object, recps: string[]): Promise<SsbPrivateMessage>;
+  subscribePrivate(handler: (msg: SsbPrivateMessage) => void): () => void;
+}
+
+export function createSbotPrivateTransport(
+  sbot: object,
+  opts?: { feedId?: string }
+): SsbPrivateTransport;
+
+export function createInMemorySsbPrivateBus(): {
+  createTransport(feedId: string): SsbPrivateTransport;
+  feedIds(): string[];
+};
+
+export const ABSTRACT_TO_SSB_SIGNAL: Readonly<Record<string, string>>;
+export const SSB_SIGNAL_TO_ABSTRACT: Readonly<Record<string, string>>;
+
+export interface SsbPrivateSignalingOptions {
+  transport?: SsbPrivateTransport;
+  allowTrickle?: boolean;
+}
+
+export declare class SsbPrivateSignalingService extends SignalingService {
+  constructor(options?: SsbPrivateSignalingOptions);
+  getTransport(): SsbPrivateTransport | null;
+}
+
 export function loadRtcPeerConnection(): Promise<typeof RTCPeerConnection>;
+export function waitForIceComplete(
+  pc: RTCPeerConnection,
+  timeoutMs?: number
+): Promise<RTCSessionDescriptionInit>;
 export function negotiateDataChannel(opts: {
   signaling: SignalingService;
   remotePeerId: string;
@@ -81,7 +122,11 @@ export function negotiateDataChannel(opts: {
   label?: string;
   RTCPeerConnection?: typeof RTCPeerConnection;
   timeoutMs?: number;
+  trickle?: boolean;
 }): Promise<{ pc: RTCPeerConnection; channel: RTCDataChannel }>;
+export function negotiateDataChannelComplete(
+  opts: Parameters<typeof negotiateDataChannel>[0]
+): ReturnType<typeof negotiateDataChannel>;
 
 export {
   resolveIceServers,
