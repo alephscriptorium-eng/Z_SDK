@@ -1,14 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * @zeus/editor-ui server.
- * Ported from zeus/server/ZeusServer.js (CJS -> ESM). Differences from the
- * original:
- *   - No AI/stats pages, no WebSocket handler.
- *   - mcpHandler/presetHandler replaced by in-process @zeus/presets-sdk
- *     (PresetStore + ServerRegistry + discoverServers).
- *   - The SDK HTTP routes (createPresetRoutes) are mounted as well, so
- *     external clients get the /api/mcp/list|set|presets contract.
+ * @zeus/editor-ui server — mundo A: gamemap / release (WP-U70).
+ * Cloaks = presets MCP (API conservada; vista CRUD /presets demolida).
  */
 
 import path from 'node:path';
@@ -25,10 +19,12 @@ import { assetsDir as uiKitAssetsDir, createThemeRoutes } from '@zeus/ui-kit';
 
 import { getConfig, resolveDataDir, getSectionDefaults, packageDir } from './config.mjs';
 import { ThemeHandler } from './theme-handler.mjs';
-import { createApiRoutes, enrichPreset, CATEGORIES } from './api-routes.mjs';
+import { createApiRoutes } from './api-routes.mjs';
+import { createDraftStore } from './world/draft-store.mjs';
+import { createWorldRoutes } from './world/routes.mjs';
+import { listMaterials } from './world/materials.mjs';
 import { buildEditorSpec } from '../spec/build.mjs';
-import { homeView } from './views/home_view.mjs';
-import { presetView } from './views/preset_view.mjs';
+import { worldView } from './views/world_view.mjs';
 import { editorView } from './views/editor_view.mjs';
 import { settingsView } from './views/settings_view.mjs';
 
@@ -61,6 +57,7 @@ export async function createEditorServer(options = {}) {
   const host = options.host ?? config.server?.host ?? 'localhost';
   const dataDir = options.dataDir ?? resolveDataDir(config);
   const themeHandler = new ThemeHandler();
+  const draftStore = createDraftStore(dataDir);
 
   const runtime = createPresetRuntime({
     dataDir,
@@ -105,46 +102,28 @@ export async function createEditorServer(options = {}) {
 
   app.get('/', async (req, res) => {
     try {
-      const htmlResponse = homeView();
+      const draft = draftStore.read();
+      const materials = listMaterials();
+      const cloaks = store.getAll().map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description
+      }));
+      const htmlResponse = worldView({ draft, materials, cloaks });
       res.setHeader('Content-Type', 'text/html');
       res.send(htmlResponse.outerHTML);
     } catch (error) {
-      console.error('Error rendering home page:', error);
-      res.status(500).send(errorPage('Home', error));
+      console.error('Error rendering world editor:', error);
+      res.status(500).send(errorPage('World', error));
     }
   });
 
-  app.get('/presets', async (req, res) => {
-    try {
-      const servers = await catalog.getAllServers();
-      const enrichedPresets = store.getAll().map(preset => enrichPreset(preset, servers));
-
-      const viewData = {
-        presets: enrichedPresets,
-        categories: CATEGORIES,
-        pagination: {
-          total: enrichedPresets.length,
-          page: 1,
-          limit: 20,
-          totalPages: 1
-        },
-        filters: {},
-        selectedPreset: null,
-        isLoading: false,
-        error: null,
-        mcpServers: servers
-      };
-
-      const htmlResponse = presetView(viewData);
-      res.setHeader('Content-Type', 'text/html');
-      res.send(htmlResponse.outerHTML);
-    } catch (error) {
-      console.error('Error rendering presets page:', error);
-      res.status(500).send(errorPage('Presets', error));
-    }
+  // Demolished preset library view → world editor
+  app.get('/presets', (_req, res) => {
+    res.redirect(301, '/');
   });
 
-  app.get('/editor', async (req, res) => {
+  app.get('/cloaks', async (req, res) => {
     try {
       const requestedServerId = req.query.server;
 
@@ -182,9 +161,15 @@ export async function createEditorServer(options = {}) {
       res.setHeader('Content-Type', 'text/html');
       res.send(htmlResponse.outerHTML);
     } catch (error) {
-      console.error('Error rendering editor page:', error);
-      res.status(500).send(errorPage('MCP Editor', error));
+      console.error('Error rendering cloaks page:', error);
+      res.status(500).send(errorPage('Cloaks', error));
     }
+  });
+
+  // Alias histórico del explorador MCP
+  app.get('/editor', (req, res) => {
+    const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, `/cloaks${q}`);
   });
 
   app.get('/settings', async (req, res) => {
@@ -210,6 +195,7 @@ export async function createEditorServer(options = {}) {
 
   app.use(createPresetRoutes({ registry, store }));
   app.use('/api', createThemeRoutes(themeHandler, getConfig));
+  app.use('/api', createWorldRoutes({ draftStore, store }));
   app.use('/api', createApiRoutes({ store, catalog, themeHandler, refreshDiscovery }));
 
   app.use((err, req, res, _next) => {
@@ -225,16 +211,20 @@ export async function createEditorServer(options = {}) {
     server.on('error', reject);
   });
 
+  const bound = httpServer.address();
+  const listenPort = typeof bound === 'object' && bound ? bound.port : port;
+
   return {
     app,
     httpServer,
     registry,
     catalog,
     store,
+    draftStore,
     config,
-    port,
+    port: listenPort,
     host,
-    url: `http://${host}:${port}`,
+    url: `http://${host}:${listenPort}`,
     refreshDiscovery,
     close: async () => {
       await registry.close();
@@ -260,7 +250,7 @@ const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv
 if (isMain) {
   const handle = await createEditorServer();
   console.log(`Editor UI running on ${handle.url}`);
-  console.log(`Preset store: ${resolveDataDir()} (${handle.store.count()} preset(s) loaded)`);
+  console.log(`World draft: ${resolveDataDir()} · cloaks(presets)=${handle.store.count()}`);
   console.log(`Environment: ${handle.config.debug ? 'development' : 'production'}`);
 
   if (handle.config.debug) {

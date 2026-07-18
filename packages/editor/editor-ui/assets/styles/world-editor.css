@@ -1,0 +1,43 @@
+.world-draft-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 52rem;
+}
+
+.world-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.world-field input[type="text"],
+.world-field select,
+.world-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.65rem;
+}
+
+.world-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.world-status.error {
+  color: #b00020;
+}
+
+.cloak-pick-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cloak-pick-list li {
+  margin: 0.25rem 0;
+}
+
+.world-release-result code {
+  word-break: break-all;
+}

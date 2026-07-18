@@ -135,9 +135,61 @@ export const EDITOR_ROUTES = defineRoutes('editor-ui', [
     id: 'api.presets.delete',
     method: 'DELETE',
     path: '/api/presets/:id',
-    summary: 'Delete preset',
+    summary: 'Delete cloak/preset',
     tags: ['presets'],
     responses: { 200: EditorSuccess },
+    envelope: 'success-editor',
+    xStatus: 'canonical'
+  },
+  {
+    id: 'api.world.materials',
+    method: 'GET',
+    path: '/api/world/materials',
+    summary: 'List selectable world materials (scenes, lines, games, cloaks)',
+    tags: ['world'],
+    responses: { 200: z.looseObject({ success: z.literal(true) }) },
+    envelope: 'success-editor',
+    xStatus: 'canonical'
+  },
+  {
+    id: 'api.world.draft.get',
+    method: 'GET',
+    path: '/api/world/draft',
+    summary: 'Read world draft',
+    tags: ['world'],
+    responses: { 200: z.looseObject({ success: z.literal(true), draft: z.unknown() }) },
+    envelope: 'success-editor',
+    xStatus: 'canonical'
+  },
+  {
+    id: 'api.world.draft.put',
+    method: 'PUT',
+    path: '/api/world/draft',
+    summary: 'Update world draft',
+    tags: ['world'],
+    request: { body: z.looseObject({}) },
+    responses: { 200: z.looseObject({ success: z.literal(true), draft: z.unknown() }) },
+    envelope: 'success-editor',
+    xStatus: 'canonical'
+  },
+  {
+    id: 'api.world.draft.reset',
+    method: 'POST',
+    path: '/api/world/draft/reset',
+    summary: 'Reset world draft to defaults',
+    tags: ['world'],
+    responses: { 200: z.looseObject({ success: z.literal(true), draft: z.unknown() }) },
+    envelope: 'success-editor',
+    xStatus: 'canonical'
+  },
+  {
+    id: 'api.world.release',
+    method: 'POST',
+    path: '/api/world/release',
+    summary: 'Materialize startpack + run Notario (U62)',
+    tags: ['world'],
+    request: { body: z.looseObject({}).optional() },
+    responses: { 200: z.looseObject({ success: z.literal(true) }) },
     envelope: 'success-editor',
     xStatus: 'canonical'
   },

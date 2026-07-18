@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Zeus Editor UI API
   version: 0.1.0
-  description: REST API for @zeus/editor-ui preset library and MCP catalog.
+  description: REST API for @zeus/editor-ui world editor (gamemap/release) and cloak/MCP catalog.
 servers:
   - url: http://localhost:3012
     description: editor-ui default
@@ -345,12 +345,12 @@ paths:
               $ref: "#/components/schemas/api.presets.update_body"
     delete:
       operationId: api.presets.delete
-      summary: Delete preset
+      summary: Delete cloak/preset
       tags:
         - presets
       responses:
         "200":
-          description: Delete preset
+          description: Delete cloak/preset
           content:
             application/json:
               schema:
@@ -394,6 +394,149 @@ paths:
               schema:
                 $ref: "#/components/schemas/api.health_error"
       x-status: canonical
+  /api/world/materials:
+    get:
+      operationId: api.world.materials
+      summary: List selectable world materials (scenes, lines, games, cloaks)
+      tags:
+        - world
+      responses:
+        "200":
+          description: List selectable world materials (scenes, lines, games, cloaks)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.world.materials_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+  /api/world/draft:
+    get:
+      operationId: api.world.draft.get
+      summary: Read world draft
+      tags:
+        - world
+      responses:
+        "200":
+          description: Read world draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.world.draft.get_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+    put:
+      operationId: api.world.draft.put
+      summary: Update world draft
+      tags:
+        - world
+      responses:
+        "200":
+          description: Update world draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.world.draft.put_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.world.draft.put_body"
+  /api/world/draft/reset:
+    post:
+      operationId: api.world.draft.reset
+      summary: Reset world draft to defaults
+      tags:
+        - world
+      responses:
+        "200":
+          description: Reset world draft to defaults
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.world.draft.reset_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+  /api/world/release:
+    post:
+      operationId: api.world.release
+      summary: Materialize startpack + run Notario (U62)
+      tags:
+        - world
+      responses:
+        "200":
+          description: Materialize startpack + run Notario (U62)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.world.release_200"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/api.health_error"
+      x-status: canonical
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/api.world.release_body"
   /api/mcp/refresh:
     post:
       operationId: api.mcp.refresh
@@ -881,6 +1024,72 @@ components:
       $schema: https://json-schema.org/draft/2020-12/schema
       type: object
       properties: {}
+      additionalProperties: {}
+    api.world.materials_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+      required:
+        - success
+      additionalProperties: {}
+    api.world.draft.get_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        draft: {}
+      required:
+        - success
+        - draft
+      additionalProperties: {}
+    api.world.draft.put_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    api.world.draft.put_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        draft: {}
+      required:
+        - success
+        - draft
+      additionalProperties: {}
+    api.world.draft.reset_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+        draft: {}
+      required:
+        - success
+        - draft
+      additionalProperties: {}
+    api.world.release_body:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties: {}
+      additionalProperties: {}
+    api.world.release_200:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+      required:
+        - success
       additionalProperties: {}
     api.mcp.servers_200:
       $schema: https://json-schema.org/draft/2020-12/schema

@@ -11,6 +11,6 @@ export const { template, navLink, pageContainer, contentSection } = createShellV
   defaultCurrentPage: 'home',
   getBrand: (config) => {
     const branding = config.branding || {};
-    return defaultShellBrand(branding.title || 'Zeus Presets Editor');
+    return defaultShellBrand(branding.title || 'Zeus World Editor');
   }
 });

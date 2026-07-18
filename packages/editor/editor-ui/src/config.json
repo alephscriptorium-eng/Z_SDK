@@ -1,8 +1,10 @@
 {
   "features": {
-    "presetLibrary": true,
-    "mcpExplorer": true,
-    "themeSystem": true
+    "worldEditor": true,
+    "cloakExplorer": true,
+    "themeSystem": true,
+    "presetLibrary": false,
+    "mcpExplorer": true
   },
   "theme": {
     "current": "Black-White-MCP"
@@ -17,5 +19,15 @@
     "animations": true,
     "darkMode": false
   },
+  "branding": {
+    "title": "Zeus World Editor",
+    "tag": "Scriptorium · Mundo A"
+  },
+  "localNav": [
+    { "href": "/", "emoji": "🗺️", "text": "World", "pageKey": "home" },
+    { "href": "/cloaks", "emoji": "🧥", "text": "Cloaks", "pageKey": "mcp" },
+    { "href": "/docs", "emoji": "📖", "text": "API", "pageKey": "api" },
+    { "href": "/settings", "emoji": "⚙️", "text": "Settings", "pageKey": "settings" }
+  ],
   "debug": false
 }

@@ -1,7 +1,7 @@
 {
   "name": "@zeus/editor-ui",
   "version": "0.1.0",
-  "description": "Web UI for MCP catalog browsing and preset management (ported from Zeus, no inference)",
+  "description": "World-A editor: gamemaps, labelsets, lines, cases, cloaks, and Notario release (WP-U70)",
   "type": "module",
   "main": "src/server.mjs",
   "scripts": {
@@ -20,7 +20,10 @@
   },
   "dependencies": {
     "@zeus/app-shell": "*",
+    "@zeus/game-engine": "*",
     "@zeus/http-contract": "*",
+    "@zeus/linea-kit": "*",
+    "@zeus/playbook-kit": "*",
     "@zeus/presets-sdk": "*",
     "@zeus/test-utils": "*",
     "@zeus/ui-kit": "*",
