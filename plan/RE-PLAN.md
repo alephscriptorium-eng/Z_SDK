@@ -5,32 +5,32 @@
 > de Ola 9 (U70 · U86 · **U87 ✅**).
 >
 > **Qué no es:** no inventa WPs (viven en [BACKLOG.md](BACKLOG.md) vía
-> capa B del orquestador). No importa ni traduce protocolo de vigilancia
-> externo. No toca ops de registry/DNS/U55.
+> capa B del orquestador). No importa marco externo ni vocabulario ajeno.
+> No toca ops de registry/DNS/U55.
 
 Fecha: 2026-07-18 · rama de referencia: `main` post-merge U87 (`bd5f46c`).
-Addenda vigilante: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
-(triaje orquestador → BACKLOG/RE-PLAN; sin importar protocolo externo).
-Addendas propias: post-U114 (U116) · post-U115 (U117).
+Addendas propias: triaje schema/alias → U115–U117 · post-U114 (U116) ·
+post-U115 (U117) · estabilización mesa plan (U118).
 
 ---
 
 ## 1. Veredicto
 
-La **refundación del SDK** (olas 0–10 + higiene vigilante + remate D-22 /
+La **refundación del SDK** (olas 0–10 + higiene + remate D-22 /
 A-14–A-15) está **drenada en diseño y en código de producto**: 0 DA
 abiertas post D-21/D-23; frentes D-22 en código ✅; Ola 6 y Ola 9 cerradas.
 
-**Estado holón 2 (post-triaje registro):** micro ~~U109~~/~~U110~~ ✅;
+**Estado frente post-refundación / capa B:** micro ~~U109~~/~~U110~~ ✅;
 frente editor ~~U111–U114~~ ✅; residual kit schema → ~~**U115**~~ ✅
 (AJV / schema-as-truth en carpeta; ver BACKLOG); residual view-kit
 post-U114 → ~~**U116**~~ ✅ (**GO A** · alias `cast-table` +
 `panel-elenco`); residual post-U115 → ~~**U117**~~ ✅
-(`@zeus/story-board-schema` único en zeus; library+editor). Swarm
-**0 🔶**. Lo que queda no es «terminar la refundación», sino ops
-(publish/DNS) y residuales **sin GO**. IDs/CAs solo en
-[BACKLOG.md](BACKLOG.md); cierre narrativo:
-[ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md).
+(`@zeus/story-board-schema` único en zeus; library+editor). Mesa plan
+~~**U118**~~ ✅ (BACKLOG vivo + histórico). Swarm **0 🔶**. Lo que queda
+no es «terminar la refundación», sino ops (publish/DNS) y residuales
+**sin GO**. IDs/CAs solo en [BACKLOG.md](BACKLOG.md); cierre narrativo:
+[ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md). Historia de olas:
+[BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md).
 
 Ops residuales (publish real → U55; DNS custom U106/U107; sidecar blob)
 siguen fuera del swarm — no son deuda de diseño.
@@ -50,6 +50,8 @@ siguen fuera del swarm — no son deuda de diseño.
 | Mundo A (scaffold) | U70 editor sketch · U86 carpeta · **U87 tercer juego** |
 | WebRTC + peer-card + blobs prep | U88–U93, U100–U101 (live ⏳ por diseño D-22) |
 | Higiene PRACTICAS | U94–U99, U102 |
+| Capa B (editor produce juegos) | U109–U117 |
+| Mesa plan legible | U118 |
 
 El swarm implementó; el orquestador planificó/revisó; el usuario cerró
 DECISIONES. El protocolo en `plan/roles/` aguantó la cadencia.
@@ -67,8 +69,7 @@ verificar`) y la revisión orquestador existen para eso: el patrón bueno
 es aceptar con CA de código verde y anotar ops remoto como ⏳ explícito,
 no como verde implícito. **Modelo U61:** «Devuelto» por bug real
 (Windows symlink/realpath) → worker corrige → orquestador **re-verifica**
-con smoke propio — ciclo de aceptación en su mejor forma (registro
-vigilante 2026-07-18).
+con smoke propio — ciclo de aceptación en su mejor forma.
 
 ### 3.2 CA-sin-curl / evidencia
 
@@ -87,9 +88,7 @@ workflow, piel, cards). El **CA remoto** (Custom domain + HTTPS en
 usuario. Eso es correcto *si* el remate del BACKLOG lo dice en voz alta.
 Anti-patrón a no repetir: leer un ✅ de plan como «la URL pública ya
 vive». El orquestador debe seguir separando **aceptado de código** vs
-**tick remoto** en el remate. Registro vigilante: el patrón
-temp-✅-sin-curl apareció **una** vez en ~50 WPs (tasa excelente) y se
-corrigió con verificación de facto (curl / Settings); no bajar el listón.
+**tick remoto** en el remate.
 
 ### 3.4 El tercer juego es un sensor, no un trofeo
 
@@ -99,7 +98,8 @@ la carpeta instancia plantilla vacía; los widgets son prompts sin
 runtime; slots de puertos `solve*` ausentes; etc. Eso es el **sensor del
 mundo A**: el juego existe *a pesar de* el editor, no *gracias a* él.
 VISION §mundo A («que SOLVE lo cree un dramaturgo con el editor, no
-nosotros a mano») sigue abierto — candidatura natural del holón 2.
+nosotros a mano») sigue abierto — candidatura natural del frente
+post-refundación (capa B).
 
 ### 3.5 Swarm drenado ≠ producto terminado
 
@@ -107,12 +107,13 @@ Olas de refundación cerradas significan: **no hay más WPs del plan
 original pendientes**. No significan que el editor produzca juegos
 narrativos, ni que linea-aleph vivo esté montado, ni que las skills de
 network-engine vivan en zeus. Esas piezas se priorizan como
-post-refundación (capa B / holón 2), no como «ola 11 fantasma» sin dueño.
-(Holón 2 cerrado en código; swarm idle — sin reabrir refundación.)
+post-refundación (capa B / frente editor), no como «ola 11 fantasma» sin
+dueño. (Capa B cerrada en código U109–U117; mesa plan estabilizada U118;
+swarm idle — sin reabrir refundación.)
 
-### 3.6 Holón 2 candidato = editor produce juegos
+### 3.6 Capa B = editor produce juegos
 
-Tras U87, el siguiente arco de producto coherente es:
+Tras U87, el arco de producto coherente fue:
 
 1. Higiene inmediata que PRACTICAS ya exige (puertos en presets-sdk;
    no copiar `loadStartPack`) — ~~U109~~/~~U110~~ ✅.
@@ -122,9 +123,9 @@ Tras U87, el siguiente arco de producto coherente es:
    fábrica → U116 ✅ GO A; residual schema único zeus → U117 ✅).
 3. Diferidos conscientes (linea-aleph vivo; skills stub) sin convertirlos
    en WPs ejecutables hasta que el usuario los active.
+4. Estabilización de la mesa plan (colas/archivo) — ~~U118~~ ✅.
 
-Los IDs y CAs concretos están **solo** en BACKLOG (lote higiene
-post-U87 + lote editor produce juegos + notas de horizonte/DECISIONES).
+Los IDs y CAs concretos están **solo** en BACKLOG (vivo + histórico).
 
 ### 3.7 CI limpio = «segundo consumidor» barato
 
@@ -135,10 +136,10 @@ verde y honesta es sensor continuo — no solo gate de merge.
 
 ### 3.8 Anti-patrones se propagan si no se cortan
 
-Registro vigilante: A-08 (doble validación) se replicó en U83; `loadStartPack`
-llegó a ×4 antes del kit (U110). Cortar en el primer hallazgo (WP o cola
-con dueño) sale más barato que rematar tras N copias. PRACTICAS §1.4 +
-§hallazgos → WP nuevo, no «ya lo arreglamos luego».
+A-08 (doble validación) se replicó en U83; `loadStartPack` llegó a ×4
+antes del kit (U110). Cortar en el primer hallazgo (WP o cola con dueño)
+sale más barato que rematar tras N copias. PRACTICAS §1.4 + §hallazgos →
+WP nuevo, no «ya lo arreglamos luego».
 
 ---
 
@@ -153,38 +154,40 @@ con dueño) sale más barato que rematar tras N copias. PRACTICAS §1.4 +
 | Canonizar el ejemplo en engine | Regla de los dos juegos + gate U00.d |
 | Abrir frentes sin priorización | Usuario autoriza lotes; orquestador no 🔶 solo |
 | Dejar duplicación «por ahora» | Cortar en el 1.er hallazgo (§3.8); kit antes de ×N |
+| Importar vocabulario / marco externo | Idioma zeus: ola, frente, estación, capa B, mediación |
 
 ---
 
 ## 5. Relación con BACKLOG / DECISIONES
 
 - **Este archivo no enumera WPs nuevos** (salvo citar IDs ya en BACKLOG).
-  Tras GO capa B + triaje registro vigilante 2026-07-18: micro U109–U110
-  ✅; frente editor ~~U111–U114~~ ✅; residual schema kit ~~**U115**~~ ✅;
-  residual view-kit alias ~~**U116**~~ ✅ (GO A); residual schema único
-  ~~**U117**~~ ✅; diferidos §5–6 en
-  [DECISIONES.md](DECISIONES.md) (**sin GO** → sin WP). Detalle solo en
-  [BACKLOG.md](BACKLOG.md); entrega:
+  Tras GO capa B + triaje schema/alias: micro U109–U110 ✅; frente editor
+  ~~U111–U114~~ ✅; residual schema kit ~~**U115**~~ ✅; residual view-kit
+  alias ~~**U116**~~ ✅ (GO A); residual schema único ~~**U117**~~ ✅;
+  mesa plan ~~**U118**~~ ✅; diferidos §5–6 en
+  [DECISIONES.md](DECISIONES.md) (**sin GO** → sin WP). Detalle vivo en
+  [BACKLOG.md](BACKLOG.md); historia en
+  [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md); entrega:
   [ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md).
 - Horizontes previos (U71–U74) siguen en BACKLOG §Horizonte; no se
   reabren aquí.
-- U55 permanece gated a publish real (ops); no forma parte del holón 2.
+- U55 permanece gated a publish real (ops); no forma parte de la capa B.
 
 ---
 
-## 5bis. Addenda vigilante post-U114 (view-kit alias)
+## 5bis. Addenda post-U114 (view-kit alias)
 
 Observación (2026-07-18): la fábrica `createDefaultWidgetRegistry`
-solo trae `panel-elenco` (convención solve-inline / uichain) aunque el
-renderer ya es neutro (`cast-table`). Riesgo: canonizar el ejemplo en
-keys de engine (PRACTICAS §1.11 / §3.8). Triaje → **WP-U116** → ✅
+solo traía `panel-elenco` (convención solve-inline) aunque el renderer
+ya era neutro (`cast-table`). Riesgo: canonizar el ejemplo en keys de
+engine (PRACTICAS §1.11 / §3.8). Triaje → **WP-U116** → ✅
 (**GO A** alias factory; merge `d4f9ad3`). No solapó U115 (AJV carpeta).
 Micros previos sin GO (peer-card viewer, STOP_SERVICES) siguen en cola
 sin activar.
 
 ---
 
-## 5ter. Addenda vigilante post-U115 (schema único)
+## 5ter. Addenda post-U115 (schema único)
 
 Observación (2026-07-18): U115 dejó AJV+schema como verdad en
 library (`kits/carpeta-dramaturgo`); el editor U114 seguía con regex a
@@ -195,10 +198,21 @@ valida contra él). No solapó U116.
 
 ---
 
+## 5quater. Addenda estabilización mesa plan (U118)
+
+GO usuario (2026-07-18): compactar BACKLOG (~1552 líneas / ~33 colas) sin
+borrar historia útil. Resultado: tablero vivo +
+[BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md); scrub de vocabulario
+externo ajeno → frente / capa B / ola (idioma zeus). Sin activar U55 ni
+residuales sin GO.
+
+---
+
 ## 6. Cierre
 
-Refundación: **cerrada como programa**. Holón 2 (editor produce juegos +
-higiene schema/alias): **cerrado en código** (U109–U117 ✅; 0 🔶).
-Producto mundo A sigue abierto como *horizonte* (diferidos §5–6, residuales
-sin GO, ops publish/DNS). Siguiente llenado del swarm = solo tras GO
-explícito del usuario — brief + worktree bajo PRACTICAS / roles.
+Refundación: **cerrada como programa**. Capa B (editor produce juegos +
+higiene schema/alias): **cerrada en código** (U109–U117 ✅; 0 🔶). Mesa
+plan: **estabilizada** (U118 ✅). Producto mundo A sigue abierto como
+*horizonte* (diferidos §5–6, residuales sin GO, ops publish/DNS).
+Siguiente llenado del swarm = solo tras GO explícito del usuario — brief
++ worktree bajo PRACTICAS / roles.
