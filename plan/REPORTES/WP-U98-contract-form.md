@@ -132,4 +132,53 @@ Ninguno. CA vía (a) verde; anexo `checkSnapshotBudget` hecho.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador). BACKLOG 🔶→✅ **pendiente** (no
+marcado en esta pasada; usuario pidió no ✅). Push no intentado. Merge no
+hecho.
+
+### Qué se verificó
+
+- Diff `master...wp/u98-contract-form`: 13 archivos; alcance vía (a) + anexo
+  budget; sin BACKLOG; sin firma `makeIntent` (U99).
+- **CA (a):** `EVENT_META` en `src/event-meta.mjs`; `isShaped` deriva
+  required/tipos; `build.mjs` importa (cero `const EVENT_META` local);
+  test `isShaped accepts…` rechaza inválidos por kind. Re-run:
+  contract tests del CA verdes; `arg-domain` 72/72; `pozo` 9/9.
+- **Anexo:** domain-state usa `checkSnapshotBudget` / `SNAPSHOT_BUDGET_BYTES`
+  (cero `32 * 1024` a mano).
+- PRACTICAS / demolición: OK. Commits convencionales. Auto-revisión honesta.
+- **Nota re-run:** `spec-sync` falló aquí por comparación byte-a-byte
+  LF/CRLF (hallazgo U95 / reporte §hallazgos); contenido YAML sin drift
+  semántico tras `spec:generate`. No bloquea aceptación del CA de forma.
+
+### Hallazgos (no arreglados en revisión)
+
+1. **U99 / asimetría `makeIntent`:** `isShaped('intent')` exige `game`;
+   `makeIntent` en esta rama sigue con `game` opcional — correcto para
+   partición U98/U99; serializar merge (ver abajo).
+2. **`release:changeset-dry`:** no es dry inocuo (consume changesets /
+   bumpea) — no usar como verificación; changeset del WP queda en
+   `.changeset/`.
+
+### Merge vs U99
+
+**Serializar.** Ambos tocan protocol. Solape de archivos:
+
+- `packages/engine/protocol/spec/CONTRATO.md`
+- `packages/engine/protocol/spec/types-build.mjs`
+- `packages/engine/protocol/src/contract.mjs`
+- `packages/engine/protocol/test/contract.test.mjs`
+- `packages/engine/protocol/types/index.d.ts`
+
+Orden sugerido: **U98 primero** (fuente de forma / `EVENT_META` +
+`isShaped`), luego **U99** (exige `game` en `makeIntent`) rebase/merge
+sobre U98 para resolver CONTRATO + tests sin pelear dos veces la misma
+tabla.
+
+### Acción siguiente
+
+1. Usuario/orquestador: marcar ✅ en `plan/BACKLOG.md` (master) cuando
+   autorice merge.
+2. Merge U98 → master; después U99 (rebase sobre master post-U98).
+3. `git worktree remove` del árbol U98 tras merge.
+4. No push desde esta revisión.
