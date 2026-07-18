@@ -5,7 +5,7 @@
 | agente | worker (frente editor / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u111-editor-materialize-narrativo` (zeus) · `wp/u111-editor-materialize-narrativo` (library) |
-| commit(s) | _(hashes al push)_ |
+| commit(s) | zeus: `cadcddd` · library: `51d7420` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
