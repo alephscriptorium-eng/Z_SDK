@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U95) |
 | fecha | 2026-07-18 |
 | rama | `wp/u95-paths-node` |
-| commit(s) | `c683bda 5031cec ` |
+| commit(s) | `4af5d11` (reporte), `5031cec` (impl) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
