@@ -1,5 +1,12 @@
 # @zeus/view-kit
 
+## 0.1.2
+
+### Patch Changes
+
+- 920841a: WP-U113: registro genérico de widgets de story-board (`createDefaultWidgetRegistry`, `mountStoryWidgets`) con runtime de `panel-elenco` (tabla de elenco).
+- 1b528f4: WP-U116: id canónico `cast-table` en la fábrica por defecto; `panel-elenco` queda como alias del mismo render (SOLVE no migra boards).
+
 ## 0.1.1
 
 ### Patch Changes

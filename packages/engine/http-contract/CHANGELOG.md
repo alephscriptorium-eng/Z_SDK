@@ -1,5 +1,13 @@
 # @zeus/http-contract
 
+## 0.1.2
+
+### Patch Changes
+
+- 11f1f2f: Normalize EOL in assertSpecMatches so Windows CRLF checkouts match LF generators (WP-U119).
+- Updated dependencies [6974189]
+  - @zeus/presets-sdk@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@zeus/view-kit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Kit de vistas 3D+HTML browser-safe (escena, HUD, panel, stick-puppet, room wiring) servido por import-map",
   "type": "module",
   "main": "src/index.mjs",

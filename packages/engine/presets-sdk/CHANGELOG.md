@@ -1,5 +1,14 @@
 # @zeus/presets-sdk
 
+## 0.1.2
+
+### Patch Changes
+
+- 6974189: Slots canónicos `pozoPlayer`/`pozoView` y `solvePlayer`/`solveView` en env (WP-U109).
+- Updated dependencies [11f1f2f]
+  - @zeus/http-contract@0.1.2
+  - @zeus/ui-kit@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

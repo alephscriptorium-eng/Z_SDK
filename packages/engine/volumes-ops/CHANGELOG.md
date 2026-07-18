@@ -1,5 +1,14 @@
 # @zeus/volumes-ops
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [6974189]
+- Updated dependencies [11f1f2f]
+  - @zeus/presets-sdk@0.1.2
+  - @zeus/http-contract@0.1.2
+
 ## 0.2.0
 
 ### Minor Changes

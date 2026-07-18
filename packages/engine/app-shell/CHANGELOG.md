@@ -1,5 +1,14 @@
 # @zeus/app-shell
 
+## 0.2.1
+
+### Patch Changes
+
+- 0386b37: Editor defaults: world nav (/ + /cloaks) replaces preset-library landing (WP-U70).
+- Updated dependencies [6974189]
+  - @zeus/presets-sdk@0.1.2
+  - @zeus/ui-kit@0.1.2
+
 ## 0.2.0
 
 ### Minor Changes
