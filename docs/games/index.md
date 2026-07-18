@@ -10,6 +10,11 @@ Dos juegos de referencia consumen el mismo engine ([D-8](/guide/two-games)):
 Tras la ola 6 viven en `Z_SDK-games-library`; el monorepo queda con engine +
 editor + mesh + examples.
 
+**Catálogo público** (WP-U107): Pages + piel zine en la library —
+dominio objetivo [`games.z-sdk.escrivivir.co`](https://games.z-sdk.escrivivir.co/)
+(DNS = tick usuario). Repo:
+[`Z_SDK-games-library/docs`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/docs).
+
 ## Kit de experiencia (CARPETA DRAMATURGO · WP-U86)
 
 Plantilla para juegos narrativos del **mundo A** (dramaturgo), destilada de
