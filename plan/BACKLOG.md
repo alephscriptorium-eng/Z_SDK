@@ -743,7 +743,8 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
   dos juegos.
 
 ## Ola 10 — Peers WebRTC (dep U10; paralelizable con olas 7–9; recursos
-clonados en [recursos/](recursos/README.md), decisión D-17)
+clonados en [recursos/](recursos/README.md), decisión D-17) — **cerrada**
+(orquestador / 2026-07-18; último WP: U89; U88–U90 ✅)
 
 - ✅ **WP-U88 · Señalización WebRTC vía nuestro mesh + ICE propio** —
   aceptado (orquestador / 2026-07-18; merge `1a275e5`) — la señalización
@@ -770,8 +771,8 @@ Diferidos del reporte/revisión WP-U88 (no bloquean; U89/U90 → lote-10b):
   documentado; nuestra impl emite nombre completo. Nota para U89 / upstream
   si se porta más de A.
 
-- 🔶 **WP-U89 · Visor WebRTC del mesh (salas y privados)** *(dep U88)* —
-  (lote-10b / orquestador / 2026-07-18) — el visor nuevo, hermano Angular de
+- ✅ **WP-U89 · Visor WebRTC del mesh (salas y privados)** *(dep U88)* —
+  (aceptado 2026-07-18 / merge `ec0cccb`) — el visor nuevo, hermano Angular de
   operator-ui, construido sobre la lib del repo A (`WebRTCEngine` +
   peer-list/media-controls/chat): **datos, audio y vídeo por salas o en
   privado (2 peers)**. En las vistas de juego, usuarios y admins tienen los
@@ -807,18 +808,29 @@ Diferidos del reporte/revisión WP-U88 (no bloquean; U89/U90 → lote-10b):
 
 ### Cola hallazgos ola 10 (WP-U90)
 
-Diferidos del reporte/revisión WP-U90 (no bloquean; U89 sigue 🔶 y rebaseará):
-- Colisión puerto default **3022**: `oasisWebrtc` / `ZEUS_PORT_OASIS_WEBRTC`
-  (U90) vs `webrtcViewer` / `ZEUS_PORT_WEBRTC_VIEWER` (U89 WIP). Resolver al
-  rebase/merge de U89 (slots distintos + defaults distintos).
-- Solape de archivos U89↔U90: `presets-sdk/src/env`, `webrtc-signaling`
-  (package.json / peer-session / exports), `.env.example`, root
-  `package.json`. Serializar: U90 ya en master; U89 rebasea y reconcilia
-  subpaths (`./peer-session`, `./messages`) si aplica.
+Diferidos del reporte/revisión WP-U90 (resueltos en merge U89 salvo ops):
+- ~~Colisión puerto 3022~~ → resuelto: `oasisWebrtc` **3022** /
+  `webrtcViewer` **3023** (slots + defaults distintos).
+- ~~Solape U89↔U90~~ → resuelto en rebase U89 (`peer-session` /
+  `messages` / presets / root package.json).
 - Bridge sbot real: `createSbotPrivateTransport(sbot)` + HTTP oasis-webrtc
-  están listos; integración contra sbot OASIS en vivo queda ops/PR upstream
+  listos; integración contra sbot OASIS en vivo queda ops/PR upstream
   (`@zeus/ssb-system` es files-first, no demonio).
 - Coturn VPS: prueba real sigue ⏳ (ops); ya en cola U88.
+
+### Cola hallazgos ola 10 (WP-U89)
+
+Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
+- Demo A/V dos browsers ⏳ (`ZEUS_OPEN_BROWSER=1` + fake devices; e2e
+  headless cubre chat/bulk/state).
+- Angular `ng build` no ejecutado (toolchain); runtime = shell ESM +
+  fuentes Angular anotadas.
+- `ZEUS_STOP_SERVICES` incluye `'webrtc-viewer'` pero
+  `resolveStopServicePorts` no tiene `case` →
+  `Unknown Zeus stop service: webrtc-viewer`.
+- Coturn VPS sigue ⏳ (ops); ya cola U88/U90.
+- Puerto default visor: **3023** (`webrtcViewer` /
+  `ZEUS_PORT_WEBRTC_VIEWER`) — documentado; no colisiona con 3022.
 
 ## Horizonte (post-refundación, no tomar aún)
 
