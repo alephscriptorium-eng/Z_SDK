@@ -852,8 +852,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 1. **Nota conjunta identidad/transporte** — D-20 + U93 (peer-card torno
    WebRTC + fila 1 conector: DataChannel = carril VOLUMES LAN). Un solo
    hilo de decisión; no mezclar con higiene en el mismo commit de plan.
-2. **Lote higiene U95+U97** (y U94/U96/U98/U99) — frente **separado**;
-   no saturar la misma nota de decisiones.
+2. **Lote higiene U95+U97** (lote-higiene-11a) — **cerrado** (U95 ✅ +
+   U97 ✅). Quedan U94/U96/U98/U99 en el frente higiene (sin asignar).
 
 **Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
 `A-09` → **WP-U97** (feed-kit/volumes-ops) y `A-10` → **WP-U93**
@@ -893,8 +893,8 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   mutadores invocados sin comprobar resultado; tests arg-domain verdes.
   **Demolición:** copias de arrays de orden / error codes.
 
-- 🔶 **WP-U95 · Un solo helper para `./node`** —
-  (lote-higiene-11a / orquestador / 2026-07-18) — el one-liner
+- ✅ **WP-U95 · Un solo helper para `./node`** —
+  aceptado (orquestador / 2026-07-18; merge `719cf6b`) — el one-liner
   `path.dirname(fileURLToPath(import.meta.url))` está en 5 paquetes con dos
   nombres de fichero (`node.mjs` / `paths.node.mjs`). Extraer
   `nodeSrcDir(import.meta.url)` a util compartido; unificar nombre.
@@ -962,6 +962,15 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   volumes-ops/presets.
 - (U97) Tras refresh, `source.syncedAt` ya no se reestampa (queda el del
   `ensure*`) — WP aparte si hace falta stamp post-count.
+- (U95) `protocol` `spec-sync` / `types-sync` fallan en Windows por CRLF
+  (`\r\n` vs `\n`); misma familia que presets-sdk OpenAPI — normalizar EOL
+  en `assertSpecMatches` / generators, no regenerar en WPs de producto.
+- (U95) Otros `fileURLToPath(import.meta.url)` fuera de `exports["./node"]`
+  (http-contract, app-shell, ui-kit, test-utils, playbook-kit, …) — higiene
+  aparte si se quiere unificar más allá del contrato `./node`.
+- (U95) Worktree sin `node_modules` propio: exports nuevos de `@zeus/*`
+  (p.ej. `./node-src-dir`) no resuelven hasta `npm install` en el worktree
+  (o merge a master con install en el checkout principal).
 
 ## Horizonte (post-refundación, no tomar aún)
 
