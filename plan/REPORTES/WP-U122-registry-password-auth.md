@@ -5,7 +5,7 @@
 | agente | worker (swarm chat WP-U122) |
 | fecha | 2026-07-18 |
 | rama | `wp/u122-registry-password-auth` |
-| commit(s) | 27427d9 |
+| commit(s) | `27427d9` `ccf1f4b` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
