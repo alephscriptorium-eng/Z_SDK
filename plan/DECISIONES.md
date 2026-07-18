@@ -249,6 +249,22 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   = ops usuario). Destino: **WP-U107** ⬜. No abre DA; no interrumpe
   lote-ola9-a (U70/U86).
 
+- **D-24 · 2026-07-18 · Sprint 1 bug-fixing (ENTREGA-18d)** (GO
+  usuario). Tres bloques en orden **A → B1∥B2 → C**:
+  | # | Bloque | Destino |
+  |---|--------|---------|
+  | A | CI main verde (4 workspaces rojos) | **WP-U119** (primero; gate) |
+  | B1 | Prosa portal zeus/docs | **WP-U120** (tras U119; ∥ U121) |
+  | B2 | Prosa portal library/docs | **WP-U121** (tras U119; ∥ U120) |
+  | C | Auth durable registry | **WP-U122** (final; desbloquea ops→U55) |
+  **Exención prosa (usuario):** heros y lemas de marca («Crear juegos,
+  no dialectos», etc.) **NO se tocan**; P1-sin-negación solo en páginas
+  doctrinales (no en heros). **Credencial registry (tick ops/usuario):**
+  modelo **(a)** basic-auth no caducable (`_password` base64) — no JWT
+  `_authToken` de 7d. Frontera: swarm ajusta `release.yml` (U122); ops
+  carga el secret cuando U119 deje CI verde. Fuente:
+  [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md).
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son

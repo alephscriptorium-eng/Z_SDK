@@ -208,11 +208,21 @@ residuales sin GO.
 
 ---
 
+## 5quinquies. Addenda Sprint 1 bug-fixing (ENTREGA-18d)
+
+GO usuario (2026-07-18): [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md)
+· **D-24**. No es «ola 11»: es bug-fixing post-idle. Orden **U119 →
+U120∥U121 → U122** → GO U55 natural. IDs/CAs solo en
+[BACKLOG.md](BACKLOG.md). Heros/lemas exentos; auth registry = basic
+`_password` (no JWT 7d).
+
+---
+
 ## 6. Cierre
 
 Refundación: **cerrada como programa**. Capa B (editor produce juegos +
-higiene schema/alias): **cerrada en código** (U109–U117 ✅; 0 🔶). Mesa
-plan: **estabilizada** (U118 ✅). Producto mundo A sigue abierto como
-*horizonte* (diferidos §5–6, residuales sin GO, ops publish/DNS).
-Siguiente llenado del swarm = solo tras GO explícito del usuario — brief
-+ worktree bajo PRACTICAS / roles.
+higiene schema/alias): **cerrada en código** (U109–U117 ✅). Mesa plan:
+**estabilizada** (U118 ✅). Sprint 1 (D-24): en curso desde U119.
+Producto mundo A sigue abierto como *horizonte* (diferidos §5–6,
+residuales sin GO, ops publish/DNS). Siguiente llenado del swarm = GO
+explícito + brief + worktree bajo PRACTICAS / roles.
