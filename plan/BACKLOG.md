@@ -860,6 +860,7 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 (peer-card). El plan del conector Oasis que reservaba A-09 debe
 renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
 (placeholder; falta nota-tabla formal A-11 con IDs vivos).
+**Orquestador espera A-11 del marco; rellena veredicto, no redacta.**
 
 - ⬜ **WP-U93 · Peer-card como torno del carril WebRTC** *(dep U88–U90 ✅;
   D-20)* — Cadena puente: la autoridad de sala **emite** peer-card al
@@ -870,9 +871,11 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   implementar el puente ni blobs). El DataChannel es carril de datos /
   VOLUMES LAN (D-17; fila 1 nota conector: complementario a `ssb-blobs`
   WAN). Sustituye identidad plana (`userId`/`peerId`/`displayName`).
-  **CA:** `makePeerCard` con ≥1 consumidor de producción fuera de
-  protocol (autoridad al join y/o signaling); test que rechaza card
-  caducada o sin rol; e2e WebRTC verde; README del paquete de señalización
+  **CA:** `makePeerCard` con consumidores de producción fuera de
+  protocol: autoridad **emite** al join **y** signaling **exige**
+  (ambos extremos obligatorios — anti A-02 / media cadena); test que
+  rechaza card caducada o sin rol; **e2e de la cadena completa**
+  emite-y-exige; e2e WebRTC verde; README del paquete de señalización
   nombra el hook SSB como extensión explícita (cero código SSB nuevo en
   este WP).
   **Demolición:** campos de identidad ad-hoc del handshake que el card
@@ -890,7 +893,8 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   mutadores invocados sin comprobar resultado; tests arg-domain verdes.
   **Demolición:** copias de arrays de orden / error codes.
 
-- ⬜ **WP-U95 · Un solo helper para `./node`** — el one-liner
+- 🔶 **WP-U95 · Un solo helper para `./node`** —
+  (lote-higiene-11a / orquestador / 2026-07-18) — el one-liner
   `path.dirname(fileURLToPath(import.meta.url))` está en 5 paquetes con dos
   nombres de fichero (`node.mjs` / `paths.node.mjs`). Extraer
   `nodeSrcDir(import.meta.url)` a util compartido; unificar nombre.
@@ -909,7 +913,8 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   con la misma API; SSR de ambos consumidores verde.
   **Demolición:** la segunda copia.
 
-- ⬜ **WP-U97 · feed-kit cuenta volúmenes por volumes-ops** *(dep U85 ✅)* —
+- 🔶 **WP-U97 · feed-kit cuenta volúmenes por volumes-ops** *(dep U85 ✅)* —
+  (lote-higiene-11a / orquestador / 2026-07-18) —
   `feed-kit/jetstream-sync.mjs` duplica recuento de corpus y parcheo de
   `volumes.json` que `volumes-ops` ya provee (`syncVolumeCounters` +
   `resetVolumesCache`). Divergencia: feed-kit solo cuenta `.json` y nunca

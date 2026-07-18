@@ -209,6 +209,7 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   **No se inventan WPs** hasta que llegue la nota-tabla A-11 (IDs vivos:
   U84✅, U88–U90✅, U71 horizonte). Colisión numeración: A-09/A-10 ya
   tomados por el lote higiene (→ U97 / U93); el conector usa **A-11+**.
+  **Orquestador espera A-11 del marco; rellena veredicto, no redacta.**
   **Bloquea:** WPs nuevos de transporte saliente Oasis/blobs. No bloquea
   U93 ni el lote higiene U94–U99.
 
