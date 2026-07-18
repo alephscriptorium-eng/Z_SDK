@@ -172,4 +172,60 @@ Ninguno. Push: no intentado (política).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** — 2026-07-18 (orquestador). **No** merge /
+**no** push / **no** ✅ BACKLOG en este paso (pedido explícito). Autoriza
+merge a master cuando el usuario lo pida; BACKLOG 🔶→✅ solo en master al
+mergear.
+
+### Verificado
+
+- Diff `master...wp/u95-paths-node` (tras merge `9d3ccf6` sync U97): 17
+  archivos — `node-src-dir.mjs` + test, 5× `src/node.mjs` (rename desde
+  `paths.node.mjs` en 3 paquetes), `exports["./node"]` homogéneos,
+  deps `@zeus/protocol` en game-engine/view-kit/ui-3d-kit, READMEs,
+  changeset patch, reporte. Worker **no** tocó `plan/BACKLOG.md`.
+  Sin U93 / peer-card / U97 feed-kit (solo heredado vía merge master).
+- Una sola impl `fileURLToPath` para el contrato `./node`:
+  `packages/engine/protocol/src/node-src-dir.mjs` → `nodeSrcDir(metaUrl)`.
+  Las 5 facades importan el helper (protocol relativo; resto
+  `@zeus/protocol/node-src-dir`).
+- Demolición: `paths.node.mjs` borrados; `rg paths\.node packages` → ZERO.
+- Commits convencionales (`refactor(protocol)`, `docs(reportes)`).
+  Auto-revisión §3 honesta. Regla dos juegos: helper genérico, pozo OK.
+
+### CA (re-ejecutados en worktree, 2026-07-18)
+
+- [x] Una sola implementación en `packages/` (fuera de node_modules):
+  `rg fileURLToPath` en los 5 `node.mjs` + `node-src-dir.mjs` → solo
+  `node-src-dir.mjs` contiene `fileURLToPath` / `export function nodeSrcDir`.
+- [x] Los 5 `exports["./node"]` homogéneos → todos `"./src/node.mjs"`
+  (protocol, game-engine, view-kit, ui-3d-kit, arg-domain).
+- [x] Servidores Express consumidores: smoke mounts
+  `/ui-3d-kit|/view-kit|/game-engine|/arg-domain|/protocol|/models` +
+  `getThreeDir` → `EXPRESS_CONSUMER_SMOKE_OK`. Tests
+  `node-src-dir.test.mjs` → 2/2 pass.
+- [x] Demolición: `rg paths\.node packages` → ZERO.
+
+### Merge master→rama
+
+- Hecho en worktree: `9d3ccf6 merge(master): sync U97 before WP-U95 review`
+  (ort, sin conflictos). Tip master al merge: `109d099` (U97 ✅).
+
+### Hallazgos → cola (no arreglados aquí)
+
+1. **CRLF spec-sync / types-sync** (`@zeus/protocol`): fallos preexistentes
+   Windows `\r\n` vs `\n` — misma clase que el ⬜ «presets-sdk openapi CRLF»;
+   ampliar ese ítem o WP higiene EOL de gates, no regenerar specs en U95.
+2. **Otros `fileURLToPath(import.meta.url)`** fuera del contrato `./node`
+   (serve/launch/tests/spec generate, ~50 usos). Higiene opcional aparte;
+   no son demoliciones de este WP.
+3. **npm install en worktree**: sin `node_modules` propio, resolvía
+   `@zeus/*` al checkout padre y el export nuevo `./node-src-dir` fallaba.
+   Nota de proceso swarm (install o link tras crear worktree).
+
+### Acción siguiente
+
+- Usuario: merge `wp/u95-paths-node` → master cuando quiera; entonces
+  orquestador marca ✅ en BACKLOG (master) y `git worktree remove` del
+  árbol `.worktrees/wp-u95-paths-node`.
+- Push: no intentado.
