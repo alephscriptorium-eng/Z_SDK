@@ -11,28 +11,28 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18c · lote D-22)
+## Remate — estado swarm (2026-07-18d · lote D-22)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes post-U103 en
 > **D-22** (`plan/DECISIONES.md`; addendum dominio custom = frente 5).
-> Línea de producto en rama **`main`**. U104 ✅ · U60 ✅ · U106 ✅ —
-> residual **U105** 🔶 (lote-d22-post-u104).
+> Línea de producto en rama **`main`**. U104 ✅ · U60 ✅ · U106 ✅ ·
+> **U105** ✅ — residual **publish real** ⏳ ops (`NPM_TOKEN`) → U55.
 
-**Orden frentes (D-22):** ~~(1) U104~~ → ~~(3) U60~~ → ~~(5) U106~~ → (2)
-U105 → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**
-(no preguntar).
+**Orden frentes (D-22):** ~~(1) U104~~ → ~~(3) U60~~ → ~~(5) U106~~ →
+~~(2) U105~~ → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` =
+**DIFERIDO** (no preguntar).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
 | (1) Economía builds (`paths` / `paths-ignore`) | **U104** | ✅ |
-| (2) Publish prep `engine/*` (`release:dry` + changeset versión) | **U105** | 🔶 |
+| (2) Publish prep `engine/*` (`release:dry` + changeset versión) | **U105** | ✅ |
 | (3) Ola 6 — crear `Z_SDK-games-library` | **U60** | ✅ |
 | (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | ✅ |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
-- **U55** — demoler `file:` (dep **publish real**; no prep)
+- **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - **U61–U62** — ⬜ (U60 ✅ · U51 ✅; U61 aún no asignado)
 - **Ola 9** — U70 / U86 / U87 (dep Ola 6 completa)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
@@ -40,9 +40,9 @@ U105 → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**
 **Next steps (orden D-22):**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
 2. ~~WP-U104~~ ✅ — economía CI (paths-ignore / paths)
-3. ~~WP-U60~~ ✅ — repo `Z_SDK-games-library`; residual **U105** 🔶
-4. Usuario/ops: registry `npm.scriptorium.escrivivir.co` + secret
-   `NPM_TOKEN` → publish real → desbloquea **U55**
+3. ~~WP-U60~~ ✅ — repo `Z_SDK-games-library`
+4. ~~WP-U105~~ ✅ — publish prep + árbol versión; **publish real ⏳**
+   ops (`NPM_TOKEN` + registry) → desbloquea **U55** (no asignar aún)
 5. Usuario/ops (U106 ✅ código; CA remoto ⏳): DNS
    `CNAME · z-sdk → alephscriptorium-eng.github.io` + Custom domain /
    Enforce HTTPS en Pages Settings
@@ -65,7 +65,7 @@ U105 → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
 - dual-emit `arg:*` ×3 sitios; domain-helpers `session:state`; flake e2e DJ
 - salvage dual / cache milestone (cola U94); gamemap SCRIPTORIUM (cola U96)
-- `release:changeset-dry` / linea-kit `exports ./schemas/*` (→ U105)
+- ~~`release:changeset-dry` / linea-kit `exports ./schemas/*`~~ → **WP-U105** ✅
 - (U102) `resolveStopServicePorts` switch → tabla (PRACTICAS §1.2)
 - (U102) fixture firehose duplicada (`firehose-core` × `linea-firehose`) —
   extraer helper compartido
@@ -575,9 +575,9 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
-> **Nota orquestador (2026-07-18c / D-22):** U55 sigue **pausado** hasta
-> publish real (registry + token). Prep publish = **U105** 🔶
-> (lote-d22-post-u104). Ola 6: **U60 ✅**; U61/U62 ⬜ (no asignar aún).
+> **Nota orquestador (2026-07-18d / D-22):** U105 ✅. U55 sigue
+> **pausado** hasta publish real (registry + `NPM_TOKEN`) — **no 🔶**.
+> Ola 6: **U60 ✅**; U61/U62 ⬜ (no asignar aún).
 
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
   **publish real** de `engine/*` (no basta U105 prep). Sustituye los
@@ -587,18 +587,16 @@ Hallazgos grandes diferidos (no bloquean cierre de ola 5):
   **Demolición:** dependencias `file:` residuales en esos paquetes.
   _(pausado — dep publish real ops; no asignar hasta registry+token)_
 
-- 🔶 **WP-U105 · Publish prep `engine/*`** *(D-22 frente (2))* — en curso
-  (lote-d22-post-u104 / orquestador / 2026-07-18) — dejar el release
-  listo sin publish real: `npm run release:dry` verde sobre `main`
-  actual; changeset(s) + rama/PR de versión lockstep 0.x preparada.
-  Juegos **NO** se publican (ola 6). Publish real al registry D-7 queda
-  **gated en ops** (`npm.scriptorium.escrivivir.co` vivo + secret
-  `NPM_TOKEN`) — no es CA del swarm; cuando pase → desbloquea **U55**.
-  **CA:** `release:dry` verde; árbol/PR de versión changesets listo para
-  merge; reporte documenta ⏳ publish real (ops).
+- ✅ **WP-U105 · Publish prep `engine/*`** *(D-22 frente (2))* — aceptado
+  (orquestador / 2026-07-18; merge `8b12e73`; revisión `9983478`) —
+  `release:dry` acepta `exports` subpath wildcards (`ece9074`); árbol
+  versión changesets lockstep (`fe1ee3e`); games NO publicados.
+  **CA:** `release:dry` verde; árbol versión mergeado — ✅.
+  **Publish real ⏳ ops:** registry `npm.scriptorium.escrivivir.co` +
+  secret `NPM_TOKEN` → desbloquea **U55** (no asignar aún).
   **Demolición:** n/a (prep; no dos caminos de release).
+  Reporte: `plan/REPORTES/WP-U105-publish-prep.md`.
   Brief: `plan/REPORTES/briefs/WP-U105-publish-prep.md`.
-  Worktree: `.worktrees/wp-u105-publish-prep`.
 
 - ✅ **WP-U56 · Retirar wire vivo `session:*` del stack DJ** — aceptado
   (orquestador / 2026-07-17) — player-ui /
