@@ -1,52 +1,11 @@
 /**
  * Feeds sintéticos deterministas (contrato §4): misma seed ⇒ mismas gotas y
- * mismo laberinto. Misma interfaz que los feeds reales (WP-14), para que la
- * demo corra en cualquier máquina sin volúmenes montados.
+ * mismo laberinto. Stream sintético vive en @zeus/feed-kit; maze es delta.
  */
 
-/** PRNG determinista (mulberry32). */
-export function createRng(seed = 1) {
-  let a = seed >>> 0;
-  return function rng() {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { createSyntheticStreamFeed, createRng } from '@zeus/feed-kit/synthetic';
 
-const TEMAS = ['asamblea', 'archivo', 'rumor', 'acta', 'brindis', 'protesta', 'inventario'];
-
-/**
- * Firehose sintético: secuencia infinita de refs de micropost.
- * @returns {{ kind:string, nextDroplets(count:number):object[], commitLabel(ref,label):Promise }}
- */
-export function createSyntheticFirehoseFeed({ seed = 1 } = {}) {
-  const rng = createRng(seed);
-  let index = 0;
-  return {
-    kind: 'synthetic',
-    nextDroplets(count = 1) {
-      const out = [];
-      for (let i = 0; i < count; i++) {
-        const tema = TEMAS[Math.floor(rng() * TEMAS.length)];
-        out.push({
-          kind: 'micropost',
-          corpus: 'raw',
-          index,
-          uri: `firehose://synthetic/${seed}/${index}#${tema}`
-        });
-        index += 1;
-      }
-      return out;
-    },
-    // En sintético etiquetar no muta ningún volumen: cristaliza solo en juego.
-    commitLabel(_ref, _label) {
-      return Promise.resolve({ ok: true, committed: false, mode: 'synthetic' });
-    }
-  };
-}
+export { createRng, createSyntheticStreamFeed as createSyntheticFirehoseFeed };
 
 /**
  * Cantera sintética: refs tipo linea (años) y un "start pack" fijo — la fila
@@ -70,7 +29,6 @@ export function createSyntheticMazeSource({ seed = 1, baseYear = 1874 } = {}) {
       for (const corridor of Object.values(topology.corridors)) {
         corridorStates[corridor.id] = 'ghost';
       }
-      // Start pack: la fila de entrada (row máximo) está excavada.
       const rows = Math.max(...Object.values(topology.chambers).map((c) => c.row));
       for (const corridor of Object.values(topology.corridors)) {
         const a = topology.chambers[corridor.a];
@@ -89,21 +47,21 @@ export function createSyntheticMazeSource({ seed = 1, baseYear = 1874 } = {}) {
 }
 
 /**
- * Resolución de feeds (contrato §4). `real` llega con WP-14; `auto` degrada
- * a sintético con aviso para que la demo nunca se quede sin mundo.
+ * Resolución de feeds (contrato §4). `real` → autoridad + @zeus/arg-feeds /
+ * @zeus/feed-kit. `auto` degrada a sintético con aviso.
  */
 export function resolveFeeds({ mode = 'auto', seed = 1, logger = console } = {}) {
   if (mode === 'real') {
     throw new Error(
-      'feeds real: usar resolveRuntimeFeeds de arg-feeds en la autoridad (WP-14). Usa mode "auto" o "synthetic" en arg-domain.'
+      'feeds real: usar resolveRuntimeFeeds de arg-feeds en la autoridad. Usa mode "auto" o "synthetic" en arg-domain.'
     );
   }
   if (mode === 'auto') {
-    logger.warn?.('[arg-domain] feeds auto → sintético (feeds reales llegan con WP-14)');
+    logger.warn?.('[arg-domain] feeds auto → sintético (feeds reales llegan con arg-feeds / feed-kit)');
   }
   return {
     mode: 'synthetic',
-    firehose: createSyntheticFirehoseFeed({ seed }),
+    firehose: createSyntheticStreamFeed({ seed }),
     mazeSource: createSyntheticMazeSource({ seed })
   };
 }

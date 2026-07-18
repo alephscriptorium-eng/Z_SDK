@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@zeus/authority-kit": "*",
+    "@zeus/feed-kit": "*",
     "@zeus/linea-kit": "*",
     "@zeus/playbook-kit": "*",
     "@zeus/player-mcp-kit": "*",

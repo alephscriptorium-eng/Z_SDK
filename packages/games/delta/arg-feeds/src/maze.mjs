@@ -1,22 +1,10 @@
 /**
- * Feeds reales read-only vía MCP (linea-firehose :3008, linea-system :4111/:4112).
- * commitLabel = ledger-only; excavateCorridor = cache_wikitext runtime fetch.
+ * Maze/cantera source (delta-specific) backed by linea MCP when real.
  */
 
-import { resolveMcpApprovalToken } from '@zeus/presets-sdk';
+import { createFeedMcpClients, callToolJson } from '@zeus/feed-kit';
 import { createSyntheticMazeSource } from '@zeus/arg-domain';
-import { curationStatusFromCorpus } from '@zeus/linea-kit/curation';
-import { callToolJson, createArgMcpClients } from './mcp-client.mjs';
-
-const PREFETCH_LOW = 8;
-const PREFETCH_BATCH = 24;
-
-function postUri(corpus, filePath) {
-  const parts = String(filePath).split('/').filter(Boolean);
-  const batch = parts[0] ?? 'batch';
-  const file = parts.length > 1 ? parts.slice(1).join('/') : parts[0] ?? 'post.json';
-  return `firehose://post/${corpus}/${batch}/${file}`;
-}
+import { resolveMcpApprovalToken } from '@zeus/presets-sdk';
 
 function chamberYear(chamber, baseYear = 1874) {
   if (chamber?.ref?.index != null) return Number(chamber.ref.index);
@@ -31,10 +19,10 @@ function chamberYear(chamber, baseYear = 1874) {
  *   gamemap?: object,
  *   approvalToken?: string,
  *   host?: string,
- *   clients?: Awaited<ReturnType<typeof createArgMcpClients>>
+ *   clients?: object
  * }} opts
  */
-export function createRealFeeds({
+export function createRealMazeSource({
   mcpPorts,
   seed = 1,
   logger = console,
@@ -45,71 +33,18 @@ export function createRealFeeds({
 }) {
   let clients = injectedClients;
   let ownsClients = false;
+  const syntheticFallback = createSyntheticMazeSource({ seed });
 
   async function ensureClients() {
     if (clients) return clients;
-    clients = await createArgMcpClients(mcpPorts, { host });
+    clients = await createFeedMcpClients(mcpPorts, { host });
     ownsClients = true;
     return clients;
   }
 
-  const firehoseCursor = gamemap?.seeds?.firehoseCursor ?? 0;
-  let listOffset = firehoseCursor;
-  let dropletIndex = firehoseCursor;
-  const buffer = [];
-  let fetching = false;
-  const firehoseCorpus = 'raw';
-  const firehoseCurationStatus = curationStatusFromCorpus(firehoseCorpus);
-
-  async function refillBuffer() {
-    if (fetching || !clients?.firehose) return;
-    fetching = true;
-    try {
-      const data = await callToolJson(clients.firehose, 'firehose_list_posts', {
-        corpus: firehoseCorpus,
-        limit: PREFETCH_BATCH,
-        offset: listOffset
-      });
-      const posts = data.posts ?? [];
-      if (posts.length === 0) return;
-      for (const post of posts) {
-        buffer.push({
-          kind: 'micropost',
-          corpus: firehoseCorpus,
-          curation_status: firehoseCurationStatus,
-          index: dropletIndex,
-          uri: postUri(firehoseCorpus, post.filePath)
-        });
-        dropletIndex += 1;
-        listOffset += 1;
-      }
-    } catch (err) {
-      logger.warn?.('[arg-feeds] firehose prefetch failed:', err.message);
-    } finally {
-      fetching = false;
-    }
-  }
-
-  const syntheticFallback = createSyntheticMazeSource({ seed });
-
-  const firehose = {
-    kind: 'real',
-    nextDroplets(count = 1) {
-      if (buffer.length < PREFETCH_LOW) {
-        ensureClients().then(() => refillBuffer()).catch(() => {});
-      }
-      if (buffer.length === 0) return [];
-      return buffer.splice(0, count);
-    },
-    commitLabel(_ref, _label) {
-      return Promise.resolve({ ok: true, committed: false, ledgerOnly: true });
-    }
-  };
-
-  const mazeSource = {
+  return {
     kind: 'real',
     /**
-     * Carga start pack de gamemap.seeds.mazePack o deriva refs vía get_nodo.
      * @param {{ chambers: Record<string,object>, corridors: Record<string,object> }} topology
      */
     async loadMaze(topology) {
@@ -159,7 +94,6 @@ export function createRealFeeds({
     },
 
     /**
-     * Runtime fetch vía cache_wikitext (gate APROBAR); no muta manifest.
      * @param {{ id, a, b, chamberA?: object, chamberB?: object }} corridor
      * @param {string} approval
      */
@@ -174,30 +108,15 @@ export function createRealFeeds({
       const year = chamberYear(chamber);
       const registros = await callToolJson(clients.wp, 'get_registros_for_year', { year });
       const oldid =
-        registros?.anchor?.oldid ??
-        registros?.registros?.[0]?.oldid ??
-        null;
+        registros?.anchor?.oldid ?? registros?.registros?.[0]?.oldid ?? null;
       if (!oldid) throw new Error('sin_oldid');
 
       const cache = await callToolJson(clients.wp, 'cache_wikitext', { oldid: Number(oldid) });
       return { ok: true, committed: false, cached: true, oldid: Number(oldid), status: cache.status };
     },
 
-    /** Sintético embebido si MCP no alcanza en tests. */
-    _synthetic: syntheticFallback
-  };
+    _synthetic: syntheticFallback,
 
-  return {
-    mode: 'real',
-    requiresApproval: true,
-    externalDig: true,
-    approvalToken,
-    firehose,
-    mazeSource,
-    async connect() {
-      await ensureClients();
-      await refillBuffer();
-    },
     async close() {
       if (ownsClients && clients?.close) await clients.close();
     }

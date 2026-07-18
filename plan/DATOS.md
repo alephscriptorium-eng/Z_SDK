@@ -68,7 +68,7 @@ materializa en disco» ya existe y es el que los juegos jugarán).
 | familia | naturaleza | ejemplo | estado |
 | ------- | ---------- | ------- | ------ |
 | **estática con autoridad** | snapshots citables por revisión (`oldid`), cacheables verbatim | Wikipedias (linea-aleph, wp/historia) | operativa (DISK_02) |
-| **stream** | firehose continuo, triage `raw→candidate→labeled→discarded` | ATProtocol (Firehose ONFALO) | volumen operativo (DISK_01, sync desde pipeline local); conexión ATProto directa pendiente |
+| **stream** | firehose continuo, triage `raw→candidate→labeled→discarded` | ATProtocol (Firehose ONFALO) | volumen operativo (DISK_01); sync jetstream→DISK_01 vía `@zeus/feed-kit` (fixture + live); consumo por juegos vía interfaz común |
 | **gossip & peers** | log append-only replicado por gossip; ni estático ni firehose | SSB: pub OASIS (`BlockchainComPort`), mensajes tipados de **Tribes** (`tribe`, membership, invites) y **Parliament** (`parliamentProposal/Law/Candidature`, votos) | pub desplegado y sano en el VPS; **falta el exportador SSB→JSON** para montarlo en VOLUMES con el mismo procedimiento (WP-U84) |
 
 El mismo procedimiento para las tres: exportar/sincronizar **JSON a disco**

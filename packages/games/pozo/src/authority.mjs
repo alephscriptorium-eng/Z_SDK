@@ -1,12 +1,13 @@
 /**
- * pozo — autoridad: instancia @zeus/authority-kit con dominio pozo.
+ * pozo — autoridad: instancia @zeus/authority-kit con dominio pozo + feed-kit.
  */
 
 import { startAuthority, PROTOCOL_EVENTS } from '@zeus/authority-kit';
 import { createPozoDomainState } from './domain.mjs';
 import { AUTHORITY_USER, GAME_ID } from './contract.mjs';
 import { resolvePozoEndpoints } from './endpoints.mjs';
-import { loadZeusEnv } from '@zeus/presets-sdk/env';
+import { loadZeusEnv, resolveZeusMcpPorts } from '@zeus/presets-sdk';
+import { resolveRuntimeFeeds } from '@zeus/feed-kit';
 import { emptyVolume } from '@zeus/volumes-ops';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -18,10 +19,27 @@ const USER = process.env.ZEUS_SCRIPTORIUM_USER || AUTHORITY_USER;
 const ROOM = endpoints.room;
 const TICK_MS = Number(process.env.POZO_TICK_MS || 200);
 const HEARTBEAT_MS = Number(process.env.POZO_STATE_HEARTBEAT_MS || 5000);
+const FEED_MODE = process.env.ZEUS_POZO_FEEDS || 'auto';
+const FEED_SEED = Number(process.env.ZEUS_POZO_FEED_SEED || 1);
 const OPS_LEDGER =
   process.env.ZEUS_OPS_LEDGER_PATH || join(tmpdir(), 'zeus-ops-ledger-pozo.jsonl');
 
-const state = createPozoDomainState();
+const mcpPorts = resolveZeusMcpPorts();
+const feeds = await resolveRuntimeFeeds({
+  mode: FEED_MODE,
+  seed: FEED_SEED,
+  logger: console,
+  mcpPorts,
+  families: ['stream', 'gossip', 'static'],
+  // pozo can run with stream alone; gossip soft-optional via probe of stream+static
+  requireForAuto: ['stream']
+});
+
+console.log(
+  `\n🫧 pozo authority · game=${GAME_ID} · user=${USER} · room=${ROOM} · tick=${TICK_MS}ms · feeds=${feeds.mode}\n`
+);
+
+const state = createPozoDomainState({ feeds });
 
 const domain = {
   applyIntent: (payload) => {
@@ -46,10 +64,6 @@ const domain = {
   snapshot: (reason, opts) => state.snapshot(reason, opts)
 };
 
-console.log(
-  `\n🫧 pozo authority · game=${GAME_ID} · user=${USER} · room=${ROOM} · tick=${TICK_MS}ms\n`
-);
-
 await startAuthority({
   user: USER,
   room: ROOM,
@@ -60,7 +74,7 @@ await startAuthority({
   events: PROTOCOL_EVENTS,
   join: {
     type: 'PozoAuthority',
-    features: ['pozo-0.1', 'state', 'track', 'ledger']
+    features: ['pozo-0.1', 'state', 'track', 'ledger', 'feeds']
   },
   snapshotBudget: true,
   onLedger: (entry) => {

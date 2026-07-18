@@ -13,7 +13,18 @@ import {
 import { INTENTS, POZO_SCENE, validateIntent } from './contract.mjs';
 
 /**
- * @param {{ now?: () => number, forcesRegistry?: object|null }} [opts]
+ * @param {{
+ *   now?: () => number,
+ *   forcesRegistry?: object|null,
+ *   feeds?: {
+ *     mode?: string,
+ *     families?: {
+ *       stream?: { nextItems?: Function, nextDroplets?: Function },
+ *       gossip?: { nextItems?: Function, nextDroplets?: Function },
+ *       static?: { nextItems?: Function }
+ *     }
+ *   }|null
+ * }} [opts]
  */
 export function createPozoDomainState(opts = {}) {
   const clock = typeof opts.now === 'function' ? opts.now : () => Date.now();
@@ -22,6 +33,10 @@ export function createPozoDomainState(opts = {}) {
     opts.forcesRegistry == null ? null : normalizeForceRegistry(opts.forcesRegistry);
   /** @type {Set<string>} */
   const activeForces = new Set(forcesReg ? initialActiveForces(forcesReg) : []);
+
+  /** Feed bag from @zeus/feed-kit (stream/gossip/static); null → líneas de escena. */
+  const feedBag = opts.feeds ?? null;
+  const feedMode = feedBag?.mode ?? 'scene';
 
   /** @type {Record<string, { id: string, kind: string, nodeId: string, joinedAt: number, score?: object }>} */
   const actors = {};
@@ -32,10 +47,22 @@ export function createPozoDomainState(opts = {}) {
   let contentRev = 0;
   /** @type {{ id: string, label: string, actorId: string, ts: number }|null} */
   let lastDrop = null;
+  /** @type {string[]} */
+  let feedLines = [...POZO_SCENE.feed.lines];
+  /** @type {object[]} */
+  let feedItems = [];
   /** @type {object[]} */
   const ledgerOut = [];
   /** @type {object[]} */
   const trackOut = [];
+
+  function pullFeedItems(familyId, count = 1) {
+    const feed = feedBag?.families?.[familyId];
+    if (!feed) return [];
+    const next = typeof feed.nextItems === 'function' ? feed.nextItems : feed.nextDroplets;
+    if (typeof next !== 'function') return [];
+    return next.call(feed, count) ?? [];
+  }
 
   const handlers = {
     join(payload) {
@@ -186,11 +213,41 @@ export function createPozoDomainState(opts = {}) {
 
     /**
      * Feed: el eco gotea y rellena el pozo hasta capacity.
+     * Si hay familias feed-kit, también tira ítems stream/gossip → lines + tracks.
      * @param {number} deltaSec
      * @param {number} [_now]
      */
     tick(deltaSec, _now) {
       if (deltaSec <= 0) return;
+
+      if (feedBag?.families) {
+        const pulled = [
+          ...pullFeedItems('stream', 1),
+          ...pullFeedItems('gossip', 1)
+        ];
+        if (pulled.length > 0) {
+          const ts = clock();
+          for (const item of pulled) {
+            feedItems.push(item);
+            if (feedItems.length > 24) feedItems.shift();
+            const line = item.text || item.uri || item.kind;
+            feedLines = [line, ...feedLines.filter((l) => l !== line)].slice(0, 8);
+            trackOut.push({
+              actorId: 'feed',
+              hint: item.family === 'gossip' ? 'ssb-browser' : 'firehose-browser',
+              ref: {
+                kind: item.kind,
+                uri: item.uri,
+                family: item.family,
+                curation_status: item.curation_status ?? null
+              },
+              ts
+            });
+          }
+          contentRev += 1;
+        }
+      }
+
       if (wellLevel >= POZO_SCENE.well.capacity) {
         dripAcc = 0;
         return;
@@ -227,7 +284,15 @@ export function createPozoDomainState(opts = {}) {
         },
         feed: {
           id: POZO_SCENE.feed.id,
-          lines: [...POZO_SCENE.feed.lines],
+          mode: feedMode,
+          lines: [...feedLines],
+          items: feedItems.map((it) => ({
+            family: it.family,
+            kind: it.kind,
+            uri: it.uri,
+            text: it.text ?? null,
+            curation_status: it.curation_status ?? null
+          })),
           dripAcc
         },
         nodes: POZO_SCENE.nodes,

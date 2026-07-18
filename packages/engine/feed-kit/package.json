@@ -1,0 +1,39 @@
+{
+  "name": "@zeus/feed-kit",
+  "version": "0.2.0",
+  "description": "Unified feed families (static / stream / gossip) for games: synthetic + MCP real + jetstream→DISK_01 sync",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./families": "./src/families.mjs",
+    "./synthetic": "./src/synthetic.mjs",
+    "./resolve": "./src/resolve.mjs",
+    "./mcp": "./src/mcp-client.mjs",
+    "./jetstream": "./src/jetstream-sync.mjs"
+  },
+  "bin": {
+    "zeus-feed-jetstream-sync": "./bin/jetstream-sync.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "sync:jetstream": "node bin/jetstream-sync.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/firehose-core": "*",
+    "@zeus/linea-kit": "*",
+    "@zeus/presets-sdk": "*"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "bin",
+    "README.md"
+  ]
+}

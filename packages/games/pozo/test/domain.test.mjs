@@ -149,4 +149,47 @@ describe('pozo domain', () => {
       'pair_excluded'
     );
   });
+
+  it('feed-kit bag: tick pulls stream+gossip into lines, items y tracks', () => {
+    const d = createPozoDomainState({
+      now: () => 9000,
+      feeds: {
+        mode: 'synthetic',
+        families: {
+          stream: {
+            nextItems: () => [
+              {
+                family: 'stream',
+                kind: 'micropost',
+                uri: 'firehose://post/raw/batch/a.json',
+                text: 'atproto',
+                curation_status: 'raw'
+              }
+            ]
+          },
+          gossip: {
+            nextItems: () => [
+              {
+                family: 'gossip',
+                kind: 'message',
+                uri: 'ssb://message/tribes/%abc=.sha256',
+                text: 'tribe',
+                curation_status: 'raw'
+              }
+            ]
+          }
+        }
+      }
+    });
+    d.tick(1, 9000);
+    const snap = d.snapshot('t');
+    assert.equal(snap.feed.mode, 'synthetic');
+    assert.ok(snap.feed.lines.includes('atproto'));
+    assert.ok(snap.feed.lines.includes('tribe'));
+    assert.equal(snap.feed.items.length, 2);
+    const out = d.drainOutbox();
+    assert.equal(out.tracks.length, 2);
+    assert.ok(out.tracks.some((t) => t.ref.uri.startsWith('firehose://')));
+    assert.ok(out.tracks.some((t) => t.ref.uri.startsWith('ssb://')));
+  });
 });
