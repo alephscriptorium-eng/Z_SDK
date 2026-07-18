@@ -68,6 +68,7 @@ export const DEFAULT_ZEUS_UI_MESH = {
   debug3d: { host: 'localhost', port: 3019, path: '/', label: '3D Monitor', emoji: '🛰️' },
   operator: { host: 'localhost', port: 3020, path: '/', label: 'Operador', emoji: '🎛️' },
   argConsole: { host: 'localhost', port: 3021, path: '/', label: 'ARG Console', emoji: '🌊' },
+  webrtcViewer: { host: 'localhost', port: 3022, path: '/', label: 'WebRTC', emoji: '📹' },
   scriptorium: { host: 'localhost', port: 3017, path: '/runtime', label: 'Scriptorium', emoji: '📜' }
 };
 
@@ -81,6 +82,7 @@ const UI_PORT_ENV = {
   debug3d: 'ZEUS_PORT_DEBUG_3D',
   operator: 'ZEUS_PORT_OPERATOR_UI',
   argConsole: 'ZEUS_PORT_ARG_CONSOLE',
+  webrtcViewer: 'ZEUS_PORT_WEBRTC_VIEWER',
   scriptorium: 'ZEUS_PORT_SCRIPTORIUM'
 };
 
@@ -435,6 +437,7 @@ export const ZEUS_STOP_SERVICES = [
   'arg-console',
   'arg-player-mcp',
   'operator-ui',
+  'webrtc-viewer',
   'asyncapi-studio',
   'mcp-inspector',
   'zeus-docs',
