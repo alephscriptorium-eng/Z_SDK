@@ -73,13 +73,21 @@ test('gamemap room resolution: fallback PUBLIC_ROOM < env < ?room=', async (t) =
   t.after(() => handle.close());
   const { port } = handle;
 
-  const priorEnv = process.env.ZEUS_SCRIPTORIUM_ROOM;
+  const priorEnv = {
+    room: process.env.ZEUS_SCRIPTORIUM_ROOM,
+    argRoom: process.env.ZEUS_ARG_ROOM
+  };
   t.after(() => {
-    if (priorEnv === undefined) delete process.env.ZEUS_SCRIPTORIUM_ROOM;
-    else process.env.ZEUS_SCRIPTORIUM_ROOM = priorEnv;
+    if (priorEnv.room === undefined) delete process.env.ZEUS_SCRIPTORIUM_ROOM;
+    else process.env.ZEUS_SCRIPTORIUM_ROOM = priorEnv.room;
+    if (priorEnv.argRoom === undefined) delete process.env.ZEUS_ARG_ROOM;
+    else process.env.ZEUS_ARG_ROOM = priorEnv.argRoom;
   });
 
+  // Explicit clean env — no host leakage into room precedence.
   delete process.env.ZEUS_SCRIPTORIUM_ROOM;
+  delete process.env.ZEUS_ARG_ROOM;
+
   const byDefault = await (await fetch(`http://localhost:${port}/views/gamemap`)).text();
   assert.ok(byDefault.includes('PUBLIC_ROOM'), 'without env, gamemap follows the demo default (PUBLIC_ROOM)');
 
