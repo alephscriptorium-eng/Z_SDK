@@ -122,4 +122,48 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (orquestador / 2026-07-18) — ✅ BACKLOG pendiente
+de merge (no marcado aún; política sesión: sin merge/push/✅).
+
+### Qué se verificó
+
+- Diff `master...wp/u94-domain-source`: 3 commits convencionales
+  (`refactor` / `test` / `docs`); 8 archivos; solo `arg-domain` + reporte.
+  Sin BACKLOG en la rama. Sin solape con U96 (SSR).
+- **CA (re-ejecutados en worktree, 2026-07-18):**
+  - [x] `validateCurate` / `validateEmptySea` exportados; gate (`reducer`) y
+    mutador (`line-board.curate` / `flow.emptySoft`) delegan en ellos
+  - [x] `domain-state.applyOps` comprueba `{ok,error}` (y boolean
+    `setAperture`) en todas las ops de mutador tocadas
+  - [x] `npm test -w @zeus/arg-domain` → **72/72** pass (4 nuevos en
+    `domain-source.test.mjs`: mismo error gate ≡ mutador ≡ validador)
+  - [x] Codes unificados: `emptySoft` ya no devuelve `colapsado` →
+    `mar_colapsado` vía `validateEmptySea`
+- **Demolición:** `CODE_STATUS` y `order = ['pending',…]` borrados; única
+  literal de orden = `DELTA_STATUSES`. Residual `colapsado` en
+  `salvage` (fuera de CA U94) → cola abajo.
+- **PRACTICAS:** alcance acotado; sin monkey-code; auto-revisión honesta
+  (arranque demo ⏳ OK — CA unit); regla dos juegos respetada (solo delta
+  arg-domain).
+
+### Merge vs U96
+
+- **Sin solape esperado.** U94 = `games/delta/arg-domain`. U96 = registro
+  SSR (`view-kit` duplicado). Merge U94 independiente de U96.
+
+### Hallazgos → cola (no arreglar aquí; no bloquean)
+
+1. **salvage dual** — gate `mar_colapsado` vs mutador `colapsado` (mismo
+   patrón pre-U94 que vaciar). Candidato `validateSalvage` / extender
+   patrón U94.
+2. **cache / milestone** — reglas/codes aún duplicados gate↔mutador
+   (`ya_cacheado`, `no_curado`, …) sin validador compartido.
+3. `applyOps` ante `!res.ok` hace `break` silencioso (patrón excavate) —
+   no propaga inconsistencia gate/mutador al caller; WP aparte si se
+   desea ledger.
+
+### Acción siguiente
+
+Merge a master cuando el usuario lo pida → orquestador marca ✅ BACKLOG en
+master + notas cola (U94) → `git worktree remove` del árbol U94.
+**Push: no intentado.**
