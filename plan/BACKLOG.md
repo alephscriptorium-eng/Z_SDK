@@ -856,8 +856,9 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
    U97 ✅).
 3. **Lote higiene U94+U96** (lote-higiene-11b) — **cerrado** (U94 ✅ +
    U96 ✅).
-4. **Lote higiene U98+U99** (lote-higiene-11c) — **en curso** (🔶
-   2026-07-18). U93 espera A-11 / brief aparte (no en este lote).
+4. **Lote higiene U98+U99** (lote-higiene-11c) — **en curso** (U98 ✅
+   merge `f94282d`; U99 🔶 2026-07-18). U93 espera A-11 / brief aparte
+   (no en este lote).
 
 **Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
 `A-09` → **WP-U97** (feed-kit/volumes-ops) y `A-10` → **WP-U93**
@@ -927,13 +928,13 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   tipo e invalida caché.
   **Demolición:** `countJsonFiles` y el parcheo manual.
 
-- 🔶 **WP-U98 · Una sola fuente de forma en el contrato** *(dep U10 ✅)* —
-  en curso (lote-higiene-11c / orquestador / 2026-07-18) — AsyncAPI
-  (`EVENT_META`) declara forma de 4 kinds; runtime solo valida `intent`
-  (`isIntentShaped`) con reglas más laxas; `spec-sync.test` solo verifica
-  YAML consigo mismo. Vía (a): derivar validadores desde `EVENT_META`;
-  vía (b): documentar en CONTRATO.md que solo `intent` se valida por
-  diseño.
+- ✅ **WP-U98 · Una sola fuente de forma en el contrato** *(dep U10 ✅)* —
+  aceptado (orquestador / 2026-07-18; revisión `058cc67`; merge `f94282d`) —
+  AsyncAPI (`EVENT_META`) declara forma de 4 kinds; runtime solo valida
+  `intent` (`isIntentShaped`) con reglas más laxas; `spec-sync.test` solo
+  verifica YAML consigo mismo. Vía (a): derivar validadores desde
+  `EVENT_META`; vía (b): documentar en CONTRATO.md que solo `intent` se
+  valida por diseño.
   **CA (a):** `isShaped(kind, data)` derivado de EVENT_META + test con evento
   inválido por kind rechazado. **CA (b):** CONTRATO.md fija el alcance;
   test-doc lo referencia.
@@ -948,6 +949,14 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   **CA (a):** `makeIntent` sin `game` lanza; wrappers delta/pozo verdes.
   **CA (b):** test 4-kinds + CONTRATO.md.
   **Demolición (a):** el condicional.
+
+### Cola hallazgos lote higiene 11c (WP-U98)
+
+- (U98) asimetría `makeIntent` / `game` vs `isShaped('intent')` → **U99** 🔶
+  (rebase sobre master post-U98).
+- (U98) `release:changeset-dry` consume changesets / bumpea — ya en cola
+  U96; no usar como verificación inocua.
+- CRLF `spec-sync`/`types-sync` Windows — ya en cola vigilante (U95).
 
 ### Cola hallazgos vigilante 2026-07-18 (sin WP propio)
 

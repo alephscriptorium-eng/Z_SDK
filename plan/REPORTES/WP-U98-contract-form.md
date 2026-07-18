@@ -132,9 +132,9 @@ Ninguno. CA vía (a) verde; anexo `checkSnapshotBudget` hecho.
 
 ## Revisión del orquestador
 
-**Aceptado ✅** — 2026-07-18 (orquestador). BACKLOG 🔶→✅ **pendiente** (no
-marcado en esta pasada; usuario pidió no ✅). Push no intentado. Merge no
-hecho.
+**Aceptado ✅** — 2026-07-18 (orquestador). Merge `f94282d` en master.
+BACKLOG 🔶→✅. Push no intentado. Worktree U98 eliminado. U99 rebasea
+después.
 
 ### Qué se verificó
 
