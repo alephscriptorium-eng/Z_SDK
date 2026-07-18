@@ -5,7 +5,7 @@
 | agente | worker (lote-ola9-b+catalog / Cursor Grok) |
 | fecha | 2026-07-18 |
 | rama | `wp/u87-solve-coagula` (zeus) · `wp/u87-solve-coagula` (library) |
-| commit(s) | library: `e2f3eb1`; zeus: (este reporte + punteros) |
+| commit(s) | library: `e2f3eb1`; zeus: `831cf21` |
 | estado propuesto | listo para revisión |
 | push monorepo | **no intentado** (política worker) |
 | push library | OK `origin/wp/u87-solve-coagula` |
