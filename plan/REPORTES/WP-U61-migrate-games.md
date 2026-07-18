@@ -5,8 +5,8 @@
 | agente | worker (lote-ola6-b / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u61-migrate-games` (zeus) · `wp/u61-migrate-games` (library) |
-| commit(s) | library: `85e41f6`; zeus: `26c0b55`, `7457668` |
-| estado propuesto | listo para revisión |
+| commit(s) | library: `85e41f6`, `daddf72` (realpath); zeus: `26c0b55`… + este reporte |
+| estado propuesto | listo para re-revisión (corrección Devuelto) |
 
 ## Qué se hizo
 
@@ -257,3 +257,52 @@ Mismo chat worker + `plan/REPORTES/CORRECCION.md` (o sección en este
 reporte) con los 3 puntos. **Push zeus: no intentado.** Library ya en
 remoto (`85e41f6`); tras fix, nuevo commit/push library + commit zeus
 reporte.
+
+---
+
+## Corrección (worker / 2026-07-18 · post-Devuelto)
+
+### Cambio
+
+`scripts/zeus-sdk-root.cjs` en la library: `resolveZeusSdkRoot()` ahora
+devuelve `fs.realpathSync.native` (fallback `realpathSync`) del
+candidato elegido. Así spawns de mesh/e2e/demos usan el path real aunque
+el default documentado sea el junction `.deps/zeus-sdk` (Windows
+`isMain`). `ensure-zeus-sdk.mjs` deja de exigir igualdad linkPath≡root
+(incompatible con realpath) y trata un `.deps` ya válido como OK.
+
+README library: documenta que el default `.deps` basta sin
+`ZEUS_SDK_ROOT`.
+
+### Re-evidencia — `ZEUS_SDK_ROOT` unset (solo `.deps`)
+
+```
+ZEUS_SDK_ROOT=(unset)
+resolveZeusSdkRoot → C:\Users\…\zeus-sdk\.worktrees\wp-u61-migrate-games
+(path .deps NO aparece; realpath del junction)
+SOCKET_OK_DEFAULT_DEPS  # smoke socket vía e2e/roots.mjs
+```
+
+`npm run e2e:arg` (sin env):
+
+```
+✅ G-ARG-E2E.1 … ✅ G-ARG-E2E.10 track:cast · firehose://synthetic/5/0#brindis
+🟢 e2e CAUDAL: todos los gates en verde
+```
+
+`npm run e2e:pozo-mcp` (sin env):
+
+```
+✅ G-POZO.0 … ✅ G-POZO.4
+🟢 e2e pozo-mcp: C-01/C-02/C-03 + gates en verde
+```
+
+### Higiene zeus (opcional)
+
+Eliminadas 6 entradas `packages/games/*` residuales del
+`package-lock.json` (extraneous post-demolición).
+
+### Push
+
+- Library: push de la corrección (este ciclo).
+- Zeus: **no intentado**.
