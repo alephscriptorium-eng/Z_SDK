@@ -78,18 +78,36 @@ test('verifyTarball accepts exports subpath wildcards when files exist (linea-ki
   }
 });
 
-test('release.yml: release job needs quality+test; publish gated on NPM_TOKEN', () => {
+test('release.yml: release job needs quality+test; publish gated on _password basic-auth', () => {
   const yml = fs.readFileSync(
     path.join(root, '.github/workflows/release.yml'),
     'utf8'
   );
   assert.match(yml, /needs:\s*\[quality,\s*test\]/);
   assert.match(yml, /has_npm/);
-  assert.match(yml, /secrets\.NPM_TOKEN/);
+  assert.match(yml, /secrets\.NPM_USERNAME/);
+  assert.match(yml, /secrets\.NPM_PASSWORD/);
+  // Canónico ScriptoriumVps/.npmrc.example (D-24 a): orden username →
+  // _password → email → always-auth
+  assert.match(yml, /:username=\$\{NPM_USERNAME\}/);
+  assert.match(yml, /:_password=\$\{NPM_PASSWORD\}/);
+  assert.match(yml, /:email=ci@scriptorium\.escrivivir\.co/);
+  assert.match(yml, /:always-auth=true/);
+  const userIdx = yml.indexOf(':username=${NPM_USERNAME}');
+  const passIdx = yml.indexOf(':_password=${NPM_PASSWORD}');
+  const emailIdx = yml.indexOf(':email=ci@scriptorium.escrivivir.co');
+  const alwaysIdx = yml.indexOf(':always-auth=true');
+  assert.ok(userIdx > 0 && userIdx < passIdx && passIdx < emailIdx && emailIdx < alwaysIdx);
   assert.match(yml, /changesets\/action@v1/);
   assert.match(yml, /createGithubReleases:\s*true/);
   assert.match(yml, /if:\s*steps\.creds\.outputs\.has_npm == 'true'/);
   assert.match(yml, /Skip publish without credentials/);
+  // WP-U122 demolition: no JWT-as-NPM_TOKEN / NODE_AUTH_TOKEN / _auth wiring
+  assert.equal(yml.includes('NODE_AUTH_TOKEN'), false);
+  assert.equal(yml.includes('secrets.NPM_TOKEN'), false);
+  assert.equal(/registry-url:/.test(yml), false);
+  assert.equal(yml.includes(':_authToken='), false);
+  assert.equal(yml.includes(':_auth='), false);
 });
 
 test('release-dry.mjs has no LOCKSTEP constant (demolition)', () => {

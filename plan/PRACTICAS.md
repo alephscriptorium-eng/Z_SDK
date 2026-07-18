@@ -133,6 +133,7 @@ que changesets + el workflow de release consumen:
   (`patch`/`minor`/`major`) + nota de changelog. El pipeline
   (`.github/workflows/release.yml`) acumula changesets → bump por paquete →
   changelog → `npm publish` al registry propio + tag + GitHub Release, solo
-  con pipeline verde y secret `NPM_TOKEN`. Verificación local sin publish:
+  con pipeline verde y secrets `NPM_USERNAME` + `NPM_PASSWORD` (basic-auth
+  `_password`, D-24). Verificación local sin publish:
   `npm run release:changeset-dry`. Los juegos y el mesh/editor siguen
   privados y no se publican desde aquí.
