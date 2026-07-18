@@ -15,10 +15,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes post-U103 en
 > **D-22** (`plan/DECISIONES.md`; addendum dominio custom = frente 5).
-> Línea de producto en rama **`main`**. U104 ✅ · U60 ✅ — lote residual
-> **U105 ∥ U106** 🔶 (lote-d22-post-u104).
+> Línea de producto en rama **`main`**. U104 ✅ · U60 ✅ · U106 ✅ —
+> residual **U105** 🔶 (lote-d22-post-u104).
 
-**Orden frentes (D-22):** ~~(1) U104~~ → ~~(3) U60~~ → (5) U106 **∥** (2)
+**Orden frentes (D-22):** ~~(1) U104~~ → ~~(3) U60~~ → ~~(5) U106~~ → (2)
 U105 → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**
 (no preguntar).
 
@@ -27,7 +27,7 @@ U105 → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**
 | (1) Economía builds (`paths` / `paths-ignore`) | **U104** | ✅ |
 | (2) Publish prep `engine/*` (`release:dry` + changeset versión) | **U105** | 🔶 |
 | (3) Ola 6 — crear `Z_SDK-games-library` | **U60** | ✅ |
-| (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | 🔶 |
+| (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | ✅ |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
@@ -40,11 +40,12 @@ U105 → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**
 **Next steps (orden D-22):**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
 2. ~~WP-U104~~ ✅ — economía CI (paths-ignore / paths)
-3. ~~WP-U60~~ ✅ — repo `Z_SDK-games-library`; residual lote **U105 ∥ U106** 🔶
+3. ~~WP-U60~~ ✅ — repo `Z_SDK-games-library`; residual **U105** 🔶
 4. Usuario/ops: registry `npm.scriptorium.escrivivir.co` + secret
    `NPM_TOKEN` → publish real → desbloquea **U55**
-5. Usuario/ops (U106): DNS `CNAME · z-sdk → alephscriptorium-eng.github.io`
-   + Custom domain / Enforce HTTPS en Pages Settings
+5. Usuario/ops (U106 ✅ código; CA remoto ⏳): DNS
+   `CNAME · z-sdk → alephscriptorium-eng.github.io` + Custom domain /
+   Enforce HTTPS en Pages Settings
 6. Residual **viewer peer-card** (cola U93) antes de mesh abierto
 7. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
 8. Ola 6 restante: **U61** ⬜ → **U62** ⬜ (no asignar aún)
@@ -57,7 +58,8 @@ U105 → publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**
 - ~~Docs públicas Pages + piel zine (cierre U41)~~ → **WP-U103** ✅
   (merge `76034ec`)
 - ~~Economía builds (paths)~~ → **WP-U104** ✅
-- ~~Dominio custom Pages `z-sdk.escrivivir.co`~~ → **WP-U106** 🔶
+- ~~Dominio custom Pages `z-sdk.escrivivir.co`~~ → **WP-U106** ✅
+  (merge `49bf72f`; CA remoto z-sdk.escrivivir.co ⏳ tick DNS/HTTPS usuario)
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
 - Harness U100 cid hex → formato SSB `&…sha256` (cola U101; live diferido)
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
@@ -481,27 +483,19 @@ Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
   Merge: `e6d2410` (revisión `3acf359`). Brief:
   `plan/REPORTES/briefs/WP-U104-ci-path-filters.md`.
 
-- 🔶 **WP-U106 · Dominio custom Pages (`z-sdk.escrivivir.co`)** *(D-22
-  frente (5); dep U103 ✅ U104 ✅)* — en curso
-  (lote-d22-post-u104 / orquestador / 2026-07-18) — las docs pasan de
-  `https://alephscriptorium-eng.github.io/Z_SDK/` a dominio propio.
-  Hostname con guion medio (guion bajo inválido en DNS/certs). Lado
-  repo (swarm):
-  (1) VitePress: `base` de `/Z_SDK/` → `/` en
-  `docs/.vitepress/config.mjs` (`resolveDocsBase()` / Actions); verificar
-  links absolutos API HTML;
-  (2) documentar en reporte el registro DNS para el usuario:
-  `CNAME` · host `z-sdk` · valor `alephscriptorium-eng.github.io`.
-  **Ops usuario (tick; NO CA código solo):** Settings → Pages → Custom
-  domain = `z-sdk.escrivivir.co`; tras propagar DNS, Enforce HTTPS.
-  GitHub mantiene CNAME del artefacto de deploy.
-  **CA:** `https://z-sdk.escrivivir.co/` responde 200 con la portada;
-  HTTPS forzado; URL vieja `…github.io/Z_SDK/` redirige (GitHub);
-  navegación y API HTML intactos con base `/`.
-  **Demolición:** `base: /Z_SDK/` hardwired para Pages (el path de
-  proyecto deja de aplicar con custom domain).
+- ✅ **WP-U106 · Dominio custom Pages (`z-sdk.escrivivir.co`)** *(D-22
+  frente (5); dep U103 ✅ U104 ✅)* — aceptado
+  (orquestador / 2026-07-18; merge `49bf72f`; revisión `0401212`) —
+  VitePress `base` `/Z_SDK/` → `/` (`resolveDocsBase()` / Actions);
+  reporte documenta DNS CNAME `z-sdk` → `alephscriptorium-eng.github.io`.
+  **CA (código):** navegación y API HTML intactos con base `/` — ✅.
+  **CA remoto ⏳ (tick usuario):** `https://z-sdk.escrivivir.co/` 200 +
+  HTTPS; Settings → Pages → Custom domain; Enforce HTTPS tras DNS.
+  **Nota:** con base `/`, el site en `…github.io/Z_SDK/` puede dejar de
+  servir rutas bajo `/Z_SDK/` hasta que el custom domain esté activo.
+  **Demolición:** `base: /Z_SDK/` hardwired para Pages.
+  Reporte: `plan/REPORTES/WP-U106-docs-custom-domain.md`.
   Brief: `plan/REPORTES/briefs/WP-U106-docs-custom-domain.md`.
-  Worktree: `.worktrees/wp-u106-docs-custom-domain`.
 
 ## Ola 5 — Monorepo publicable y layout final
 
