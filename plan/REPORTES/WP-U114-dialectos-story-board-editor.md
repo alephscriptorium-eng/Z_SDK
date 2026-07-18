@@ -5,7 +5,7 @@
 | agente | worker (frente editor / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u114-dialectos-story-board-editor` |
-| commit(s) | _(tras push)_ |
+| commit(s) | `6ba6b94` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
