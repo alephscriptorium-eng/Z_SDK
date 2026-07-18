@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u90-ssb-webrtc-signaling` |
-| commit(s) | `d143022`, `86fdf69`, `f9f847b` |
+| commit(s) | `d143022`, `86fdf69`, `f8ea0fd` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
