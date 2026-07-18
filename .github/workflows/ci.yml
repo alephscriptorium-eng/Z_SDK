@@ -1,6 +1,6 @@
 # CI monorepo Z_SDK (WP-U03 / D-12 / ARQUITECTURA §5 paso 1).
 # Publish/tag/GitHub Release: .github/workflows/release.yml (WP-U53), solo en main
-# y solo tras quality+test verdes + secret NPM_TOKEN.
+# y solo tras quality+test verdes + secrets NPM_USERNAME/NPM_PASSWORD (_password).
 name: CI
 
 on:

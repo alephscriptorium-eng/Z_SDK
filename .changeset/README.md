@@ -13,7 +13,8 @@ changeset es la declaración de release.
 
 En `main`, el workflow `.github/workflows/release.yml` consume los
 changesets pendientes: bump por paquete → changelog → `npm publish` al
-registry propio (si hay `NPM_TOKEN`) → tag + GitHub Release.
+registry propio (si hay `NPM_USERNAME` + `NPM_PASSWORD` / `_password`) →
+tag + GitHub Release.
 
 Verificación local sin publish:
 

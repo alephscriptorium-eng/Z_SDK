@@ -78,18 +78,24 @@ test('verifyTarball accepts exports subpath wildcards when files exist (linea-ki
   }
 });
 
-test('release.yml: release job needs quality+test; publish gated on NPM_TOKEN', () => {
+test('release.yml: release job needs quality+test; publish gated on _password basic-auth', () => {
   const yml = fs.readFileSync(
     path.join(root, '.github/workflows/release.yml'),
     'utf8'
   );
   assert.match(yml, /needs:\s*\[quality,\s*test\]/);
   assert.match(yml, /has_npm/);
-  assert.match(yml, /secrets\.NPM_TOKEN/);
+  assert.match(yml, /secrets\.NPM_USERNAME/);
+  assert.match(yml, /secrets\.NPM_PASSWORD/);
+  assert.match(yml, /:_password=/);
   assert.match(yml, /changesets\/action@v1/);
   assert.match(yml, /createGithubReleases:\s*true/);
   assert.match(yml, /if:\s*steps\.creds\.outputs\.has_npm == 'true'/);
   assert.match(yml, /Skip publish without credentials/);
+  // WP-U122 demolition: no JWT-as-NPM_TOKEN / NODE_AUTH_TOKEN wiring
+  assert.equal(yml.includes('NODE_AUTH_TOKEN'), false);
+  assert.equal(yml.includes('secrets.NPM_TOKEN'), false);
+  assert.equal(/registry-url:/.test(yml), false);
 });
 
 test('release-dry.mjs has no LOCKSTEP constant (demolition)', () => {

@@ -182,7 +182,7 @@ function main() {
     'release:changeset-dry — green (bump + changelog + pack; publish skipped)'
   );
   console.log(
-    '⏳ npm publish / git tag / GitHub Release: only from CI with NPM_TOKEN'
+    '⏳ npm publish / git tag / GitHub Release: only from CI with NPM_USERNAME + NPM_PASSWORD (_password)'
   );
 }
 
