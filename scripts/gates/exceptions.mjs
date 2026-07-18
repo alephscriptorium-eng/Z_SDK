@@ -6,12 +6,12 @@
  *
  * Formato:
  * - `path` relativo al root del monorepo (con `/`, sin leading `./`)
- * - `rule`: 'ports' | 'transition' | 'arg-import' | 'two-games'
+ * - `rule`: 'ports' | 'transition' | 'arg-import' | 'two-games' | 'google-stun'
  * - `reason`: por qué está permitido (obligatorio)
  * - `line` (opcional): si se omite, aplica a todo el archivo para esa regla
  */
 
-/** @typedef {'ports'|'transition'|'arg-import'|'two-games'} GateRule */
+/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'} GateRule */
 
 /**
  * @type {Array<{ path: string, rule: GateRule, reason: string, line?: number }>}
