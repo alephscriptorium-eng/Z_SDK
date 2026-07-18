@@ -42,7 +42,13 @@ Cada juego declara un **catálogo** `intent → { roles }`. Un intent cuyo `role
 
 ## 3. API
 
-- `makeIntent(actorId, intent, args?, fromOrOpts?)`
+- `makeEnvelope({ game, kind, from?, ts?, ... })` — `game` (string no vacío)
+  obligatorio
+- `makeIntent(actorId, intent, args?, fromOrOpts?)` — el 4º arg es `from`
+  (string) u options `{ from?, game, role?, ts?, v? }`. **`game` es
+  obligatorio** (mismo criterio que `makeEnvelope`); sin él lanza
+  `TypeError`. Los wrappers de juego (`delta` / `pozo`) inyectan su
+  `GAME_ID` cuando el caller pasa solo `from` string.
 - `isIntentShaped(payload, catalog?)` / `validateIntent(payload, catalog)`
 - `createIntentCatalog(defs)` / `assertIntentRole(payload, catalog)`
 - `makePeerCard({ roomId, endpoint, token, scopes, expiresAt, ... })`

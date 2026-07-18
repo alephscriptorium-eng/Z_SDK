@@ -90,10 +90,11 @@ export function projectOperatorSlice(state = {}, _sceneId = SCENE_IDS.operator) 
 
 /**
  * Build an intent with role `operator` (caller injects game id — PRACTICAS §1.11).
+ * `game` (string no vacío) es obligatorio vía `makeIntent`.
  * @param {string} actorId
  * @param {string} intent
  * @param {object} [args]
- * @param {{ game?: string, from?: string, ts?: number }} [opts]
+ * @param {{ game: string, from?: string, ts?: number }} [opts]
  */
 export function makeOperatorIntent(actorId, intent, args = {}, opts = {}) {
   return makeIntent(actorId, intent, args, {

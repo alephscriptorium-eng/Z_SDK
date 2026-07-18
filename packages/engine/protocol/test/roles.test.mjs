@@ -21,12 +21,15 @@ test('ROLES are player|dj|operator', () => {
 });
 
 test('player intent ok; dj on player-only intent rejected', () => {
-  const ok = validateIntent(makeIntent('uno', 'move', { nodeId: 'a' }), catalog);
+  const ok = validateIntent(
+    makeIntent('uno', 'move', { nodeId: 'a' }, { game: 'demo' }),
+    catalog
+  );
   assert.equal(ok.ok, true);
   assert.equal(ok.role, 'player');
 
   const bad = validateIntent(
-    makeIntent('uno', 'move', { nodeId: 'a' }, { role: 'dj' }),
+    makeIntent('uno', 'move', { nodeId: 'a' }, { game: 'demo', role: 'dj' }),
     catalog
   );
   assert.equal(bad.ok, false);
@@ -34,12 +37,15 @@ test('player intent ok; dj on player-only intent rejected', () => {
 });
 
 test('dj-only intent rejects player role', () => {
-  const asPlayer = validateIntent(makeIntent('dj1', 'curate', { lineId: 'L1' }), catalog);
+  const asPlayer = validateIntent(
+    makeIntent('dj1', 'curate', { lineId: 'L1' }, { game: 'demo' }),
+    catalog
+  );
   assert.equal(asPlayer.ok, false);
   assert.equal(asPlayer.error, 'rol_no_autorizado');
 
   const asDj = validateIntent(
-    makeIntent('dj1', 'curate', { lineId: 'L1' }, { role: 'dj' }),
+    makeIntent('dj1', 'curate', { lineId: 'L1' }, { game: 'demo', role: 'dj' }),
     catalog
   );
   assert.equal(asDj.ok, true);
@@ -49,7 +55,7 @@ test('operator role accepted when listed', () => {
   assert.equal(intentAllowsRole('inspect', 'operator', catalog), true);
   assert.equal(intentAllowsRole('inspect', 'player', catalog), false);
   const res = assertIntentRole(
-    makeIntent('op', 'inspect', {}, { role: 'operator' }),
+    makeIntent('op', 'inspect', {}, { game: 'demo', role: 'operator' }),
     catalog
   );
   assert.equal(res.ok, true);
@@ -57,7 +63,7 @@ test('operator role accepted when listed', () => {
 
 test('unknown role rejected', () => {
   const res = assertIntentRole(
-    makeIntent('x', 'join', {}, { role: 'admin' }),
+    makeIntent('x', 'join', {}, { game: 'demo', role: 'admin' }),
     catalog
   );
   assert.equal(res.ok, false);

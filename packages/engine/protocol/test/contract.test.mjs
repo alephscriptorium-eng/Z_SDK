@@ -27,11 +27,16 @@ test('makeEnvelope requires game + valid kind', () => {
   assert.throws(() => makeEnvelope({ game: 'demo', kind: 'nope' }), /kind/);
 });
 
-test('makeIntent preserves string-from signature and options object', () => {
-  const a = makeIntent('uno', 'join', { kind: 'player' }, 'uno');
+test('makeIntent requires game; options object stamps game + role', () => {
+  assert.throws(() => makeIntent('uno', 'join', { kind: 'player' }, 'uno'), /game/);
+  assert.throws(() => makeIntent('uno', 'join', {}, { from: 'bot' }), /game/);
+  assert.throws(() => makeIntent('uno', 'join', {}, { game: '' }), /game/);
+
+  const a = makeIntent('uno', 'join', { kind: 'player' }, { from: 'uno', game: 'demo' });
   assert.equal(a.actorId, 'uno');
   assert.equal(a.intent, 'join');
   assert.equal(a.from, 'uno');
+  assert.equal(a.game, 'demo');
   assert.equal(a.kind, 'player');
   assert.equal(a.v, PROTOCOL_VERSION);
 
@@ -50,6 +55,9 @@ test('isIntentShaped + validateIntent with catalog', () => {
   assert.equal(isIntentShaped({ actorId: 'x', intent: 'join' }, catalog), true);
   assert.equal(isIntentShaped({ actorId: 'x', intent: 'nope' }, catalog), false);
 
-  assert.equal(validateIntent(makeIntent('x', 'join'), catalog).ok, true);
+  assert.equal(
+    validateIntent(makeIntent('x', 'join', {}, { game: 'demo' }), catalog).ok,
+    true
+  );
   assert.equal(validateIntent({ actorId: 'x' }, catalog).error, 'intent_malformada');
 });
