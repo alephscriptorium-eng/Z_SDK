@@ -1,159 +1,35 @@
 /**
- * Story-board dialect registry for the world editor (WP-U114).
- * Shape aligned with kits/carpeta-dramaturgo validate-story-board
- * (solve-inline · aleph-blocks · plantilla = misma forma que plantilla kit).
- * Schema-as-truth (AJV) → WP-U115 — not here.
+ * Story-board dialect registry for the world editor (WP-U114 / U117).
+ * Ids/labels/resolve/detect live here; shape contract is
+ * `@zeus/story-board-schema` (AJV) — no hand-rolled id/widget regexes.
  */
 
-const ACT_ID = /^act-[0-9]+$/;
-const WIDGET_ID = /^[a-z][a-z0-9-]*$/;
-
-/**
- * @param {unknown} v
- * @returns {v is Record<string, unknown>}
- */
-function isObj(v) {
-  return v !== null && typeof v === 'object' && !Array.isArray(v);
-}
+import { validateStoryBoard as validateShape } from '@zeus/story-board-schema';
 
 /**
  * @typedef {{
  *   id: string,
  *   label: string,
- *   validate: (board: Record<string, unknown>) =>
- *     { ok: true, dialect: string } | { ok: false, errors: string[] }
+ *   family: 'solve-inline' | 'aleph-blocks'
  * }} StoryBoardDialect
  */
-
-/**
- * @param {Record<string, unknown>} board
- * @param {string} dialectId
- * @returns {{ ok: true, dialect: string } | { ok: false, errors: string[] }}
- */
-function validateSolveShape(board, dialectId) {
-  const errors = [];
-  if (Array.isArray(board.blocks)) {
-    return {
-      ok: false,
-      errors: [
-        `dialect ${dialectId}: unexpected root.blocks (use aleph-blocks)`
-      ]
-    };
-  }
-  if (!Array.isArray(board.acts) || board.acts.length < 1) {
-    return { ok: false, errors: ['acts: required non-empty array'] };
-  }
-  for (let i = 0; i < board.acts.length; i++) {
-    const act = board.acts[i];
-    const prefix = `acts[${i}]`;
-    if (!isObj(act)) {
-      errors.push(`${prefix}: must be object`);
-      continue;
-    }
-    if (typeof act.id !== 'string' || !ACT_ID.test(act.id)) {
-      errors.push(`${prefix}.id: must match act-N`);
-    }
-    if (!Array.isArray(act.widgets) || act.widgets.length < 1) {
-      errors.push(`${prefix}.widgets: required non-empty array`);
-    } else {
-      for (let j = 0; j < act.widgets.length; j++) {
-        const w = act.widgets[j];
-        if (typeof w !== 'string' || !WIDGET_ID.test(w)) {
-          errors.push(`${prefix}.widgets[${j}]: invalid widget id`);
-        }
-      }
-    }
-  }
-  if (errors.length) return { ok: false, errors };
-  return { ok: true, dialect: dialectId };
-}
-
-/**
- * @param {Record<string, unknown>} board
- * @returns {{ ok: true, dialect: string } | { ok: false, errors: string[] }}
- */
-function validateAlephBlocks(board) {
-  const errors = [];
-  /** @type {Set<string>} */
-  const actIds = new Set();
-
-  if (!Array.isArray(board.acts) || board.acts.length < 1) {
-    return { ok: false, errors: ['acts: required non-empty array'] };
-  }
-
-  for (let i = 0; i < board.acts.length; i++) {
-    const act = board.acts[i];
-    const prefix = `acts[${i}]`;
-    if (!isObj(act)) {
-      errors.push(`${prefix}: must be object`);
-      continue;
-    }
-    if (typeof act.id !== 'string' || !ACT_ID.test(act.id)) {
-      errors.push(`${prefix}.id: must match act-N`);
-    } else {
-      actIds.add(act.id);
-    }
-    if (!Array.isArray(act.blocks) || act.blocks.length < 1) {
-      errors.push(`${prefix}.blocks: required non-empty array of numbers`);
-    }
-  }
-
-  if (!Array.isArray(board.blocks) || board.blocks.length < 1) {
-    errors.push('blocks: required non-empty array');
-  } else {
-    for (let i = 0; i < board.blocks.length; i++) {
-      const block = board.blocks[i];
-      const prefix = `blocks[${i}]`;
-      if (!isObj(block)) {
-        errors.push(`${prefix}: must be object`);
-        continue;
-      }
-      if (typeof block.n !== 'number' && typeof block.n !== 'string') {
-        errors.push(`${prefix}.n: required`);
-      }
-      if (typeof block.act !== 'string' || !ACT_ID.test(block.act)) {
-        errors.push(`${prefix}.act: must match act-N`);
-      } else if (!actIds.has(block.act)) {
-        errors.push(`${prefix}.act: unknown act id ${block.act}`);
-      }
-      if (!isObj(block.uichain)) {
-        errors.push(`${prefix}.uichain: required object`);
-      } else {
-        const widgets = block.uichain.widgets;
-        if (!Array.isArray(widgets) || widgets.length < 1) {
-          errors.push(`${prefix}.uichain.widgets: required non-empty array`);
-        } else {
-          for (let j = 0; j < widgets.length; j++) {
-            const w = widgets[j];
-            if (typeof w !== 'string' || !WIDGET_ID.test(w)) {
-              errors.push(`${prefix}.uichain.widgets[${j}]: invalid widget id`);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  if (errors.length) return { ok: false, errors };
-  return { ok: true, dialect: 'aleph-blocks' };
-}
 
 /** @type {Record<string, StoryBoardDialect>} */
 export const STORY_BOARD_DIALECTS = {
   'solve-inline': {
     id: 'solve-inline',
     label: 'acts[].widgets (carpeta / SOLVE-shaped)',
-    validate: (board) => validateSolveShape(board, 'solve-inline')
+    family: 'solve-inline'
   },
   plantilla: {
     id: 'plantilla',
     label: 'plantilla carpeta (acts[].widgets; sketch narrativo)',
-    validate: (board) => validateSolveShape(board, 'plantilla')
+    family: 'solve-inline'
   },
   'aleph-blocks': {
     id: 'aleph-blocks',
     label: 'acts + blocks[].uichain.widgets',
-    validate: validateAlephBlocks
+    family: 'aleph-blocks'
   }
 };
 
@@ -205,17 +81,21 @@ export function resolveStoryBoardDialect(board, hint) {
 }
 
 /**
- * Validate a story-board against the dialect registry.
+ * Validate a story-board: registry dialect + shared schema.
  * @param {unknown} board
  * @param {{ dialect?: string | null }} [opts]
  * @returns {{ ok: true, dialect: string } | { ok: false, errors: string[] }}
  */
 export function validateStoryBoard(board, opts = {}) {
-  if (!isObj(board)) {
+  if (board === null || typeof board !== 'object' || Array.isArray(board)) {
     return { ok: false, errors: ['root must be an object'] };
   }
-  const resolved = resolveStoryBoardDialect(board, opts.dialect);
+  const resolved = resolveStoryBoardDialect(
+    /** @type {Record<string, unknown>} */ (board),
+    opts.dialect
+  );
   if (!resolved.ok) return resolved;
-  const entry = STORY_BOARD_DIALECTS[resolved.dialect];
-  return entry.validate(board);
+  const shape = validateShape(board, { dialect: resolved.dialect });
+  if (!shape.ok) return shape;
+  return { ok: true, dialect: resolved.dialect };
 }
