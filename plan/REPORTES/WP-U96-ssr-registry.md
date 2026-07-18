@@ -184,4 +184,49 @@ Ninguno que bloquee aceptación del CA de U96. El fail gamemap es ajeno;
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (orquestador / 2026-07-18)
+
+Merge `master`→rama antes de re-CA: `e5a2fec` (U94 ✅ integrado; sin conflictos).
+
+### CA re-verificados (post-merge)
+
+- [x] **Una sola implementación** — `defineView` / `createViewRegistry` /
+  `renderViewLayout` solo en
+  `packages/engine/app-shell/src/ssr-view-registry.mjs` (+ test/README/re-export).
+  Consumidores solo importan `@zeus/app-shell/ssr-view-registry`.
+- [x] **`*view-kit*` deja de dar 3 rutas con la misma API** — solo queda
+  `packages/engine/view-kit` (browser `@zeus/view-kit`, API distinta). Cero
+  `*/src/view-kit/` SSR. Diff: `R065` 3d-monitor→app-shell + `D` arg-console.
+- [x] **SSR ambos consumidores verde** — re-CA post-merge:
+  - `@zeus/app-shell`: 9/9 pass
+  - `test:arg-console`: 32/32 pass
+  - `@zeus/3d-monitor`: 14/15 — fail #8 gamemap
+    (`ZEUS_SCRIPTORIUM_ROOM must beat the view fallback`) **preexistente en
+    master** (mismo assert; no bloquea U96)
+
+### PRACTICAS / demolición
+
+- Demolición completa (ambas copias `src/view-kit/index.mjs`).
+- Hogar natural en app-shell (sin paquete inventado); rename `ssr-view-registry`
+  deshace colisión léxica con `@zeus/view-kit`.
+- D-8 / dos juegos: módulo genérico (descriptor + hyperaxe + template); sin
+  conceptos delta/pozo.
+- Commits convencionales; alcance acotado; worker no tocó BACKLOG.
+- Arranque browser ⏳ (brief headless OK).
+
+### Hallazgos → cola (al ✅ en master; no aplicados aquí)
+
+1. **3d-monitor gamemap / `ZEUS_SCRIPTORIUM_ROOM`** —
+   `resolveViewerConfig` vs `resolveRoomClientConfig` no alinean env
+   SCRIPTORIUM; test rojo en master y en rama. Candidato higiene.
+2. **`release:changeset-dry` / `@zeus/linea-kit`** —
+   `exports ./schemas/*` missing from tarball; dry restaura tree (riesgo mid-WP).
+3. Ruta estática `/view-kit` (browser) — residual intencional; no acción.
+
+### Merge / BACKLOG
+
+- **Autorizado a merge** tras este veredicto.
+- **BACKLOG 🔶→✅ y cola hallazgos:** pendientes de sesión orquestador en
+  master (esta revisión: NO ✅ BACKLOG / NO merge / NO push por mandato).
+- Orden sugerido: merge U96 → master; luego `git worktree remove` del
+  worktree `wp-u96-ssr-registry`.
