@@ -61,5 +61,15 @@ export default [
         ...globals.browser
       }
     }
+  },
+  {
+    files: ['packages/mesh/webrtc-viewer/src/browser/**'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser
+      }
+    }
   }
 ];

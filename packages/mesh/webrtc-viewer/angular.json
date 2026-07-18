@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "webrtc-ui-lib": {
+      "projectType": "library",
+      "root": "projects/webrtc-ui-lib",
+      "sourceRoot": "projects/webrtc-ui-lib/src",
+      "prefix": "wrtc"
+    },
+    "dev-app": {
+      "projectType": "application",
+      "root": "projects/dev-app",
+      "sourceRoot": "projects/dev-app/src",
+      "prefix": "app"
+    }
+  }
+}
