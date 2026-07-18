@@ -11,7 +11,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U113 ✅)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 🔶)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
 > **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 ✅**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
@@ -23,10 +23,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 > **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ ·
 > ~~U110~~ ✅ (lote 7+9 cerrado) · (2) frente editor **U111–U114** —
 > **GO** 2026-07-18 · ~~**U111**~~ ✅ · ~~**U112**~~ ✅ · ~~**U113**~~ ✅
-> (widgets view-kit; U114 aún ⬜; listo para encadenar U114) · (3)
+> · **U114 🔶** (dialectos story-board editor) · (3)
 > diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable) ·
 > (4) triaje vigilante → **U115** ⬜ (schema story-board real; tras
-> U111 ✅ o c/U114).
+> U114 o en paralelo sin solapar AJV — ver nota U114/U115).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -53,19 +53,23 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — editor materializa juegos reales | **U111** | ✅ |
 | Post-U87 — carpeta: importar obra | **U112** | ✅ |
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ✅ |
-| Post-U87 — dialectos story-board en editor | **U114** | ⬜ (lote; listo) |
-| Vigilante — schema story-board real (kit) | **U115** | ⬜ (tras U111 ✅ o c/U114) |
+| Post-U87 — dialectos story-board en editor | **U114** | 🔶 worker · 2026-07-18 |
+| Vigilante — schema story-board real (kit) | **U115** | ⬜ (tras U114 o coord.; no 🔶) |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
-- **U114** — definido; **U113 ✅** → listo para encadenar (padre/lote);
-  **no 🔶** aún en esta sesión
-- **U115** — schema story-board real; tras U111 ✅ o c/U114; **no 🔶**
+- **U115** — schema story-board real (AJV en kit); **no depende** de
+  U114 para arrancar, pero **no solapar**: U114 = registro dialectos
+  en **editor**; U115 = schema como verdad en **carpeta kit**. Preferir
+  U114 primero (en curso) luego U115; **no 🔶** U115 aún.
 
-**En curso:** — (ninguno)
+**En curso:**
+- **U114** 🔶 — dialectos story-board en editor (worker · 2026-07-18;
+  rama `wp/u114-dialectos-story-board-editor`; brief
+  `plan/REPORTES/briefs/WP-U114-dialectos-story-board-editor.md`)
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -98,10 +102,11 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 17. ~~**WP-U112**~~ ✅ — carpeta: instantiate `--from` obra; merge
     zeus `2fc9021` · library `a76c93f`; revisión `3807aac`
 18. ~~**WP-U113**~~ ✅ — widgets SOLVE runtime en view-kit; merge
-    zeus `a8a28dc` · library `5ba0b33`; revisión `be86bad` · **listo
-    para U114** (padre encadena)
-19. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
-20. ~~Triaje registro vigilante 2026-07-18~~ → **U115** ⬜ + addenda
+    zeus `a8a28dc` · library `5ba0b33`; revisión `be86bad`
+19. **WP-U114** 🔶 — dialectos story-board en editor (asignado
+    2026-07-18; deps U70 ✅ · U86 ✅; **no** espera U115)
+20. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
+21. ~~Triaje registro vigilante 2026-07-18~~ → **U115** ⬜ + addenda
     RE-PLAN; residual STOP_SERVICES pozo/solve en cola (sin WP)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
@@ -1369,8 +1374,8 @@ cerrado):
 > (merge zeus `16ee4a0` · library `e778bdf`; revisión `084a006`);
 > ~~**U112**~~ ✅ (merge zeus `2fc9021` · library `a76c93f`; revisión
 > `3807aac`); ~~**U113**~~ ✅ (merge zeus `a8a28dc` · library `5ba0b33`;
-> revisión `be86bad`); U114 aún ⬜ (**listo para U114**); **U115** ⬜
-> (schema kit).
+> revisión `be86bad`); **U114** 🔶 (dialectos editor); **U115** ⬜
+> (schema kit; tras U114 / sin solapar).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
 
@@ -1396,7 +1401,8 @@ cerrado):
 ### Lote «editor produce juegos» — frente ABIERTO (GO 2026-07-18)
 
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
-> Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; ~~**U113**~~ ✅; padre encadena U114.
+> Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; ~~**U113**~~ ✅;
+> **U114** 🔶 (asignado 2026-07-18).
 
 - ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
   *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
@@ -1427,17 +1433,22 @@ cerrado):
   `panel-elenco` en vista; tests view-kit + library.
   **Deps:** U20 ✅ · U87 ✅.
 
-- ⬜ **WP-U114 · Dialectos story-board en el editor**
-  *(U87 §8; dep U70 ✅, U86 ✅)* — SOLVE usa dialecto `solve-inline`
-  (widgets en `acts[]`); el editor sketch no conoce el schema U86. El
-  editor valida/edita story-boards según dialectos registrados (tabla,
-  no if-creciente) y rechaza dialecto desconocido con error explicable.
+- 🔶 **WP-U114 · Dialectos story-board en el editor**
+  *(U87 §8; dep U70 ✅, U86 ✅)* — asignado worker · 2026-07-18 ·
+  rama `wp/u114-dialectos-story-board-editor` · brief
+  `plan/REPORTES/briefs/WP-U114-dialectos-story-board-editor.md`.
+  SOLVE usa dialecto `solve-inline` (widgets en `acts[]`); el editor
+  U111 solo valida ese mínimo. El editor valida/edita story-boards
+  según dialectos registrados (tabla, no if-creciente) y rechaza
+  dialecto desconocido con error explicable.
   **CA:** editor acepta al menos `solve-inline` (+ dialecto sketch/
   plantilla); test de validación con fixture SOLVE; dialecto
   desconocido → rechazo claro; OpenAPI/README al día.
-  **Demolición:** asunción «solo sketch JSON» en validateDraft si
-  aplica.
-  **Deps:** U70 ✅ · U86 ✅. **Siguiente** (padre encadena).
+  **Demolición:** asunción «solo sketch JSON» / hardcode
+  `validateSolveInlineBoard` único en validateDraft/`story-board-min`
+  si aplica.
+  **Deps:** U70 ✅ · U86 ✅. **No espera U115** (U115 = AJV en kit
+  carpeta; frentes distintos — no cablear schema aquí).
 
 - ⬜ **WP-U115 · Schema story-board real (no solo existsSync)**
   *(vigilante registro 2026-07-18 · H1 U70/U86; dep U86 ✅)* — en
@@ -1447,15 +1458,16 @@ cerrado):
   Cablear validador al schema (AJV u equivalente ya en monorepo/library)
   como fuente de verdad; dialectos/fixtures SOLVE+ALEPH+juguete siguen
   pasando; test que un board inválido contra schema falle con error
-  explicable. Preferible tras U111 ✅ (hecho) o en lote con U114;
-  **no 🔶** aún.
+  explicable. Preferible **tras U114** (registro editor ya cerrado) o
+  coord. sin tocar editor-ui; **no 🔶** aún.
   **CA:** `validate-story-board` carga y aplica el schema (no solo
   exists); fixtures/dialectos verdes; board sintético inválido → rechazo
   claro; README kit veraz (schema = contrato, no decoración).
   **Demolición:** comentario/camino «touch schema so CA can cite it
   exists» como único uso del schema; reglas a mano que el schema ya
   cubra (sin duplicar — PRACTICAS §1.4).
-  **Deps:** U86 ✅. Coordina con U114 (dialectos editor).
+  **Deps:** U86 ✅. Coordina con U114 (dialectos editor) — **no
+  solapar**: U115 no reescribe registro del editor.
 
 ### Cola triaje vigilante registro 2026-07-18 (sin WP propio)
 
