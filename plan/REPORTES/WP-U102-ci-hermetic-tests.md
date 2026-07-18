@@ -134,4 +134,42 @@ Ninguno. CA local de los 4 WS en entorno limpio cumplido; CA remoto CI main qued
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (orquestador / 2026-07-18)
+
+### Qué se verificó
+
+- Diff `main...wp/u102-ci-hermetic-tests`: 10 archivos, solo los 4 WS +
+  changeset patch presets-sdk + reporte. Sin tocar `plan/BACKLOG.md`.
+- Re-CA local (worktree, env CI-like: `ZEUS_VOLUMES_ROOT` unset →
+  `volumes.json` del monorepo sin corpus `DISK_02/LINEAS`):
+  - `@zeus/linea-system` — 2 skipped ⏳ honesto (registry ausente); 0 fail
+  - `@zeus/linea-firehose` — smoke verde con fixture temp
+  - `presets-sdk` `env-stop-services.mjs` — 7/7 (incl. webrtc-viewer 3023)
+  - `@zeus/3d-monitor` — 15/15 (precedencia room)
+  - `npm run lint` — 0 errors / 12 warnings preexistentes
+  - `npm run gates` — OK; `npm run test:gates` — 9/9
+- Demolición: case `webrtc-viewer`; rama
+  `fallbackRoom && !ZEUS_SCRIPTORIUM_ROOM` eliminada; skip documentado.
+- Producto mínimo justificado (brief): mapping stop + aplicar env room
+  (contrato que el test ya asumía).
+- PRACTICAS §1–3 / §6: OK. Auto-revisión honesta. Skip linea-system OK.
+
+### CA
+
+- [x] Local hermético 4 WS + lint/gates (reproducido)
+- [ ] CI verde en `main` (matriz + lint + gates) — ⏳ tras merge + push
+  (cierra CA remoto U03)
+
+### Merge
+
+Solo tras push de `main` y verificar run CI. Paralelo seguro con U103
+(sin solape). Orden: merge U102 → push main → mirar Actions.
+
+### Hallazgos a cola (incorporados en BACKLOG main, sin ✅ U102)
+
+Ver cola residuales + nota U96/U89. No bloquean aceptación.
+
+### Acción siguiente
+
+Merge a `main` + push + verificar CI verde. **Push no intentado** en
+esta revisión. **BACKLOG ✅ no marcado** (queda al ritual de merge).
