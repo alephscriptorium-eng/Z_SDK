@@ -39,10 +39,22 @@ Si no hay env, se busca un sibling `Z_SDK-games-library` / `Z_SDK-games-library-
 | gameId | kind | paquete | notas |
 | ------ | ---- | ------- | ----- |
 | `sketch` | toy | `@zeus/startpack-sketch` | Preset juguete (escena + casos); **no** es techo |
-| `plaza` | narrative | `@zeus/startpack-plaza` | Actos / story-board `solve-inline` (carpeta) |
+| `plaza` | narrative | `@zeus/startpack-plaza` | Actos / story-board dialecto `plantilla` (forma solve-inline) |
 
-Dialecto story-board en U111: **mínimo `solve-inline`** (`acts[].widgets`).
-Registro multi-dialecto → WP-U114.
+## Dialectos story-board (WP-U114)
+
+Registro tabla `STORY_BOARD_DIALECTS` en `src/world/story-board-dialects.mjs`
+(no if-creciente). `GET /api/world/materials` expone `materials.dialects`.
+
+| id | forma |
+| -- | ----- |
+| `solve-inline` | `acts[].widgets` (fixture SOLVE) |
+| `plantilla` | misma forma; default plaza / plantilla carpeta |
+| `aleph-blocks` | `acts` + `blocks[].uichain.widgets` |
+
+Dialecto desconocido (`board.dialect` o hint de juego) → rechazo con lista
+de ids conocidos. Schema AJV como fuente de verdad del kit → WP-U115
+(no este paquete).
 
 Materialize usa tabla por `kind` (`toy` \| `narrative`); el hard-gate
-`gameId === 'sketch'` quedó demolido.
+`gameId === 'sketch'` quedó demolido (U111).

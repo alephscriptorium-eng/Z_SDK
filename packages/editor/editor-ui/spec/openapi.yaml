@@ -397,12 +397,12 @@ paths:
   /api/world/materials:
     get:
       operationId: api.world.materials
-      summary: List selectable world materials (scenes, lines, games, cloaks)
+      summary: List selectable world materials (scenes, lines, games, cloaks, dialects)
       tags:
         - world
       responses:
         "200":
-          description: List selectable world materials (scenes, lines, games, cloaks)
+          description: List selectable world materials (scenes, lines, games, cloaks, dialects)
           content:
             application/json:
               schema:

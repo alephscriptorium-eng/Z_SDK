@@ -7,17 +7,26 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { setupSmokeVolumesEnv } from '@zeus/test-utils';
 
 setupSmokeVolumesEnv(import.meta.url);
+
+const FIXTURES = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
 const {
   createDefaultDraft,
   createPlazaDraft,
   validateDraft,
+  normalizeStoryBoard,
   listMaterials,
   GAME_CATALOG
 } = await import('../src/world/materials.mjs');
+const {
+  validateStoryBoard,
+  STORY_BOARD_DIALECTS,
+  listStoryBoardDialectIds
+} = await import('../src/world/story-board-dialects.mjs');
 const { createDraftStore } = await import('../src/world/draft-store.mjs');
 const { materializeStartPack } = await import('../src/world/materialize-pack.mjs');
 
@@ -31,14 +40,74 @@ test('default draft validates and lists materials', () => {
   assert.ok(mats.games.some((g) => g.id === 'sketch'));
   assert.ok(mats.games.some((g) => g.id === 'plaza' && g.kind === 'narrative'));
   assert.equal(GAME_CATALOG.sketch.kind, 'toy');
+  assert.ok(mats.dialects.some((d) => d.id === 'solve-inline'));
+  assert.ok(mats.dialects.some((d) => d.id === 'plantilla'));
+  assert.ok(mats.dialects.some((d) => d.id === 'aleph-blocks'));
+  assert.deepEqual(mats.dialectIds, listStoryBoardDialectIds());
 });
 
-test('plaza draft validates with story-board actos', () => {
+test('plaza draft validates with story-board plantilla dialect', () => {
   const draft = createPlazaDraft();
   const checked = validateDraft(draft);
   assert.equal(checked.ok, true, checked.error);
   assert.equal(checked.draft.gameId, 'plaza');
   assert.ok(checked.draft.storyBoard.acts.length >= 1);
+  assert.equal(checked.draft.storyBoard.dialect, 'plantilla');
+});
+
+test('SOLVE fixture validates as solve-inline dialect', () => {
+  const board = JSON.parse(
+    readFileSync(path.join(FIXTURES, 'solve-coagula-story-board.json'), 'utf8')
+  );
+  const checked = validateStoryBoard(board);
+  assert.equal(checked.ok, true, checked.errors?.join('; '));
+  assert.equal(checked.dialect, 'solve-inline');
+  const normalized = normalizeStoryBoard(board);
+  assert.equal(normalized.ok, true, normalized.error);
+  assert.equal(normalized.dialect, 'solve-inline');
+});
+
+test('aleph fixture validates as aleph-blocks dialect', () => {
+  const board = JSON.parse(
+    readFileSync(path.join(FIXTURES, 'aleph-et-omega-story-board.json'), 'utf8')
+  );
+  const checked = validateStoryBoard(board);
+  assert.equal(checked.ok, true, checked.errors?.join('; '));
+  assert.equal(checked.dialect, 'aleph-blocks');
+});
+
+test('unknown story-board dialect is rejected with known list', () => {
+  const board = {
+    dialect: 'no-such-dialect',
+    acts: [{ id: 'act-0', widgets: ['panel-seed'] }]
+  };
+  const checked = validateStoryBoard(board);
+  assert.equal(checked.ok, false);
+  assert.match(checked.errors.join(' '), /unknown dialect/);
+  assert.match(checked.errors.join(' '), /solve-inline/);
+  assert.match(checked.errors.join(' '), /plantilla/);
+  assert.match(checked.errors.join(' '), /aleph-blocks/);
+
+  const raw = normalizeStoryBoard(board);
+  assert.equal(raw.ok, false);
+  assert.match(raw.error, /unknown dialect/);
+
+  const viaDraft = validateDraft({
+    ...createPlazaDraft(),
+    storyBoard: board
+  });
+  assert.equal(viaDraft.ok, false);
+  assert.match(viaDraft.error, /unknown dialect/);
+});
+
+test('unknown dialect hint is rejected', () => {
+  const board = {
+    acts: [{ id: 'act-0', widgets: ['panel-seed'] }]
+  };
+  const checked = validateStoryBoard(board, { dialect: 'ghost-dialect' });
+  assert.equal(checked.ok, false);
+  assert.match(checked.errors.join(' '), /unknown dialect "ghost-dialect"/);
+  assert.ok(STORY_BOARD_DIALECTS['solve-inline']);
 });
 
 test('unknown gameId is rejected (no sketch-only hard-gate)', () => {

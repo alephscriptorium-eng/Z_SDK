@@ -100,9 +100,9 @@ export const worldView = (data = {}) => {
             id: 'world-story-field',
             style: isNarrative ? null : 'display:none'
           },
-            label({ for: 'storyBoard' }, 'Story-board (solve-inline · actos JSON)'),
+            label({ for: 'storyBoard' }, 'Story-board (dialectos · JSON)'),
             p({ class: 'text-muted world-field-hint' },
-              'Dialecto mínimo U111 (acts[].widgets). Registro completo de dialectos → U114.'
+              'Dialectos registrados: plantilla / solve-inline (acts[].widgets); aleph-blocks (blocks[].uichain). Desconocido → rechazo.'
             ),
             textarea({
               id: 'storyBoard',
