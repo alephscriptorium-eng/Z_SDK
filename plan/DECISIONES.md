@@ -179,5 +179,19 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
 
 ## Abiertas (bloquean lo indicado)
 
-*(ninguna — todo el backlog hasta la ola 10 está desbloqueado; los horizontes
-WP-U71/72/73 esperan evidencia o diseño externo)*
+- **DA-PeerCard · 2026-07-18 · ¿Peer Card en handshake WebRTC o identidad
+  plana?** — La cola U11 difirió peer-card «hasta ola WebRTC»; U88–U90
+  cerraron sin cablear `makePeerCard` / `peerCardGrantsRole` /
+  `isPeerCardFresh` (cero consumidores fuera de `engine/protocol`). La
+  reserva eterna sin uso es insostenible. Elegir una:
+  - **(A) Cablear** — WP-U93: la señalización presenta peer-card y valida
+    rol/frescura antes de retransmitir offer/answer/ICE.
+  - **(B) Demoler** — la identidad plana (`userId`/`peerId`/`displayName`)
+    basta; retirar las APIs peer-card de protocol sin consumidores (o WP
+    de demolición equivalente).
+  **Bloquea:** WP-U93 (y cualquier demolición peer-card si B). No bloquea
+  el resto del lote higiene U94–U99.
+
+*(Los horizontes WP-U71/72/73 siguen esperando evidencia o diseño externo;
+Ola 6/U55/U60+ siguen pausados por credenciales — no son decisiones de
+diseño abiertas.)*

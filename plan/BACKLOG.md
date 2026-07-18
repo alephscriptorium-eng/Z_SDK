@@ -102,7 +102,9 @@ Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
 - comentario residual «generate.mjs» en `session-protocol/spec/build.mjs` (higiene hasta U31)
 - portal VitePress ausente → WP-U41; HTML AsyncAPI bajo `docs/public/api/` (gitignored) cumple CA de render
 - nota: U10 apoya APIs de http-contract/presets-sdk (2/9 workspaces rojos de cola U03) pero CA no exige esas suites verdes
-- duda worker (brief U11 / DECISIONES si el usuario cierra): ¿Peer Card en handshake U11 o basta `role` en intent hasta ola WebRTC?
+- ~~duda worker: ¿Peer Card en handshake U11 o basta `role` hasta ola WebRTC?~~
+  → **vencida** (ola WebRTC cerró sin cablear) — ver **DA-PeerCard** en
+  DECISIONES §abiertas + WP-U93
 - e2e banners «CAUDAL» residuales (cola U02) — fuera de alcance
 
 - ✅ **WP-U11 · `@zeus/authority-kit`** *(dep U10)* — aceptado (orquestador / 2026-07-17) — autoridad genérica
@@ -118,9 +120,13 @@ Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
 ### Cola hallazgos lote 1b (WP-U11)
 
 Diferidos del reporte/revisión WP-U11 (no bloquean cierre):
-- dual-wire hasta migrar vistas (canónico + alias `arg:*`; ~2× tráfico state/track/ledger)
+- dual-wire hasta migrar vistas (canónico + alias `arg:*`; ~2× tráfico state/track/ledger).
+  Nota vigilante 2026-07-18: tabla dual-emit repetida en 3 sitios
+  (player-ui / operator-bridge / room-client-browser) — consolidar antes de
+  retirar alias.
 - `stop:services` no limpia puertos e2e aislados (≠ env canónico; p.ej. 13027 huérfano)
-- Peer Card handshake diferido (no exigida en U11; `role` en intent basta hasta ola WebRTC / DECISIONES)
+- ~~Peer Card handshake diferido (`role` en intent basta hasta ola WebRTC)~~
+  → **vencida** — ver **DA-PeerCard** + WP-U93
 
 - ✅ **WP-U12 · `@zeus/player-mcp-kit`** *(dep U10)* — aceptado (orquestador / 2026-07-17) — generalizar
   `arg-player-mcp`: patrón «un MCP por actor» con semántica verificable
@@ -168,15 +174,18 @@ Diferidos del reporte/revisión WP-U13 (no bloquean cierre; cierra ola 1):
 
 Diferidos / laterales (A-05 no bloquea U23):
 - A-05: simetría dual-wire / transporte desnudo|envuelto+dedup en
-  arg-console, 3d-monitor, player-mcp-kit (lateral; no bloquear U23)
+  arg-console, 3d-monitor, player-mcp-kit (lateral; no bloquear U23).
+  Nota vigilante 2026-07-18: browser ya consolidó en
+  `view-kit/channel-events`; queda el lado Node
+  (`player-mcp-kit/room-bridge.mjs` unwrap+dedup bespoke).
 
 ### Cola hallazgos ola 2 (WP-U20)
 
 Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
 - e2e:arg G-ARG-E2E.10 flaky (timeout track:cast; 1ª rojo / 2ª verde)
 - ~~`packages/platform/3d-monitor` aún tiene `assets/js/kit/` propio — WP-U22~~ → **cumplida en WP-U22**
-- colisión de nombre: arg-console `src/view-kit/` (SSR defineView) ≠
-  `@zeus/view-kit` (browser) — sigue diferida (U21 no la tocó)
+- ~~colisión de nombre: arg-console `src/view-kit/` (SSR defineView) ≠
+  `@zeus/view-kit` (browser)~~ → formalizada en **WP-U96**
 - clave localStorage de paneles `vk:…` (antes `delta:…`): posiciones
   guardadas del usuario se resetean (aceptable en extracción)
 
@@ -195,8 +204,7 @@ Diferidos del reporte/revisión WP-U21 (no bloquean cierre):
 - `plan/ARQUITECTURA.md` §1: «arg-console evita app-shell a propósito» —
   mentira post-U21; actualizar con U20/U22 (kit / solape 3d-monitor) —
   higiene orquestador
-- colisión SSR `src/view-kit/` vs `@zeus/view-kit` — sigue diferida (U20/U22;
-  U21 no la tocó)
+- ~~colisión SSR `src/view-kit/` vs `@zeus/view-kit`~~ → **WP-U96**
 - OpenAPI drift preexistente (player-ui / editor-ui / cache-browser /
   firehose-browser) — no causado por U21
 
@@ -215,8 +223,8 @@ Diferidos del reporte/revisión WP-U22 (no bloquean cierre):
 - `plan/ARQUITECTURA.md` §1 desactualizado post-U20/U21/U22 (kit
   arg-console / solape 3d-monitor; «arg-console evita app-shell» mentira
   post-U21) — higiene orquestador
-- colisión SSR `src/view-kit/` vs `@zeus/view-kit` en 3d-monitor — misma
-  deuda U20; U21 no la tocó (sigue diferida)
+- ~~colisión SSR `src/view-kit/` vs `@zeus/view-kit` en 3d-monitor~~ →
+  **WP-U96**
 - vista humana demos 3d ⏳ (headless OK por brief)
 - escenas didácticas mínimas en `examples/` (apps quedan mesh / D-9)
 
@@ -831,6 +839,99 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 - Coturn VPS sigue ⏳ (ops); ya cola U88/U90.
 - Puerto default visor: **3023** (`webrtcViewer` /
   `ZEUS_PORT_WEBRTC_VIEWER`) — documentado; no colisiona con 3022.
+
+## Lote higiene / hallazgos vigilante (2026-07-18)
+
+> Revisión externa (ADDENDA `ENTREGA-2026-07-18-revision-externa.md`).
+> No bloqueado por Ola 6. **U93** espera **DA-PeerCard**. U94–U99
+> paralelizables entre sí (deps solo olas ya ✅). NO asignar workers aún
+> (swarm en pausa / lote a proponer tras decisión Peer Card o sin U93).
+
+- ⬜ **WP-U93 · La señalización WebRTC presenta peer-card** *(dep U88–U90 ✅;
+  **bloqueado por DA-PeerCard**)* — `webrtc-signaling` gestiona identidad con
+  strings planos (`userId`/`peerId`/`displayName`); `protocol#peer-card`
+  (reservado desde U10) sin consumidores fuera de protocol. Si DA-PeerCard
+  = (A): el handshake presenta `makePeerCard` y el servicio valida rol/
+  frescura (`peerCardGrantsRole`, `isPeerCardFresh`) antes de retransmitir
+  offer/answer/ICE. Si (B): este WP se cancela y se demuele peer-card.
+  **CA (A):** `makePeerCard` con ≥1 consumidor de producción fuera de
+  protocol; test que rechaza card caducada o sin rol; e2e WebRTC verde.
+  **Demolición (A):** campos de identidad ad-hoc que el card sustituya.
+
+- ⬜ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
+  en `games/delta/arg-domain`: curate (gate `reducer` ↔ mutador `line-board`)
+  y vaciar (gate ↔ `flow-engine`) duplican codes; `domain-state.mjs` invoca
+  mutadores sin comprobar `{ok,error}` en 4 sitios. Exportar por mecánica
+  una función pura de validación que consuman gate y mutador; domain-state
+  comprueba el resultado o documenta por qué el gate previo lo hace
+  redundante.
+  **CA:** cada regla y sus codes en un solo sitio; test por mecánica: caso
+  inválido → gate y mutador el mismo error desde la misma función; cero
+  mutadores invocados sin comprobar resultado; tests arg-domain verdes.
+  **Demolición:** copias de arrays de orden / error codes.
+
+- ⬜ **WP-U95 · Un solo helper para `./node`** — el one-liner
+  `path.dirname(fileURLToPath(import.meta.url))` está en 5 paquetes con dos
+  nombres de fichero (`node.mjs` / `paths.node.mjs`). Extraer
+  `nodeSrcDir(import.meta.url)` a util compartido; unificar nombre.
+  **CA:** una sola implementación en `packages/` (fuera de node_modules);
+  los 5 `exports["./node"]` homogéneos; servidores Express que lo consumen
+  verdes.
+  **Demolición:** las 4 copias.
+
+- ⬜ **WP-U96 · Un solo registro SSR** — formaliza el diferido «colisión SSR
+  `src/view-kit/` vs `@zeus/view-kit`» (colas U20/U21/U22).
+  `defineView/createViewRegistry/renderHud/renderViewLayout` duplicados en
+  `games/delta/arg-console/src/view-kit/` y `mesh/3d-monitor/src/view-kit/`
+  (ya divergiendo ES/EN). Extraer a módulo compartido y renombrar para
+  deshacer la colisión léxica con `@zeus/view-kit`.
+  **CA:** una sola implementación; `*view-kit*` deja de dar 3 rutas de código
+  con la misma API; SSR de ambos consumidores verde.
+  **Demolición:** la segunda copia.
+
+- ⬜ **WP-U97 · feed-kit cuenta volúmenes por volumes-ops** *(dep U85 ✅)* —
+  `feed-kit/jetstream-sync.mjs` duplica recuento de corpus y parcheo de
+  `volumes.json` que `volumes-ops` ya provee (`syncVolumeCounters` +
+  `resetVolumesCache`). Divergencia: feed-kit solo cuenta `.json` y nunca
+  invalida caché. Sustituir por `syncVolumeCounters('firehose')` +
+  `loadVolumesConfig()` / `resolveVolumesRoot()`.
+  **CA:** `rg "countJsonFiles|readFileSync\(volumesPath" engine/feed-kit/src`
+  sin matches; `npm test -w @zeus/feed-kit` verde; recuento cubre cualquier
+  tipo e invalida caché.
+  **Demolición:** `countJsonFiles` y el parcheo manual.
+
+- ⬜ **WP-U98 · Una sola fuente de forma en el contrato** *(dep U10 ✅)* —
+  AsyncAPI (`EVENT_META`) declara forma de 4 kinds; runtime solo valida
+  `intent` (`isIntentShaped`) con reglas más laxas; `spec-sync.test` solo
+  verifica YAML consigo mismo. Vía (a): derivar validadores desde
+  `EVENT_META`; vía (b): documentar en CONTRATO.md que solo `intent` se
+  valida por diseño.
+  **CA (a):** `isShaped(kind, data)` derivado de EVENT_META + test con evento
+  inválido por kind rechazado. **CA (b):** CONTRATO.md fija el alcance;
+  test-doc lo referencia.
+  · Anexo trivial: tests domain-state usan `32 * 1024` a mano →
+  `checkSnapshotBudget`.
+
+- ⬜ **WP-U99 · `game` obligatorio también en `makeIntent`** *(dep U10, U24 ✅;
+  sin urgencia)* — `makeIntent` deja `game` opcional (`if (game != null)`),
+  asimétrico con `makeEnvelope`. Emisores actuales ya pasan `game` (U30/U92).
+  Vía (a): exigirlo y lanzar; vía (b): test engine 4-kinds + doc del alcance.
+  **CA (a):** `makeIntent` sin `game` lanza; wrappers delta/pozo verdes.
+  **CA (b):** test 4-kinds + CONTRATO.md.
+  **Demolición (a):** el condicional.
+
+### Cola hallazgos vigilante 2026-07-18 (sin WP propio)
+
+- A-05 Node residual: `player-mcp-kit/room-bridge.mjs` unwrap+dedup bespoke
+  (browser ya en `view-kit/channel-events`) — ampliar nota A-05 cola ola 2.
+- Tabla dual-emit `{[canónico,'arg:state']…}` definida 3 veces
+  (`mesh/player-ui/dj-transport`, `mesh/operator-bridge`,
+  `engine/room-client-browser`) — al migrar wire `arg:*` → vistas,
+  consolidar primero en un punto único.
+- `feed-kit/item.mjs` `withDropletAlias`: vocabulario de un consumidor
+  (delta) en API compartida; generalizar solo si nace un 3.er consumidor.
+- Prefijo CSS `arg-` en `engine/view-kit` + comentario «gota/cauce» en
+  stick-poses — cosmética D-8; agrupar cuando se toque CSS/docs.
 
 ## Horizonte (post-refundación, no tomar aún)
 
