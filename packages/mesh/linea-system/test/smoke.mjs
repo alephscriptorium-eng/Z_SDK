@@ -13,6 +13,7 @@ import { connectMcp, toolResultJson } from '@zeus/test-utils';
 import { resolveMcpApprovalToken } from '@zeus/presets-sdk';
 import { resolveNodo, resolveOldid, resolveRegistrosForYear, validateNodoSectionMappings, loadLineaData } from '@zeus/linea-system/loader';
 import { startAll } from '../src/start.mjs';
+import { hasLiveLineasRegistry, SKIP_NO_LIVE_LINEAS } from './helpers/live-volumes.mjs';
 
 const TEST_PORTS = { espana: 14111, wpHistoria: 14112 };
 const PREV_ENV = {
@@ -30,7 +31,7 @@ async function connect(port) {
 let handles = [];
 const clients = [];
 
-test('linea-system smoke', async (t) => {
+test('linea-system smoke', { skip: hasLiveLineasRegistry() ? false : SKIP_NO_LIVE_LINEAS }, async (t) => {
   t.after(async () => {
     if (PREV_ENV.espana == null) delete process.env.ZEUS_MCP_LINEA_ESPAN;
     else process.env.ZEUS_MCP_LINEA_ESPAN = PREV_ENV.espana;
