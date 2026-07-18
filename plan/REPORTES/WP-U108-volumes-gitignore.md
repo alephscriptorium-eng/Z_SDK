@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok) |
 | fecha | 2026-07-18 |
 | rama | `wp/u108-volumes-gitignore` |
-| commit(s) | `ed1952a` (fix); este reporte |
+| commit(s) | `ed1952a` (fix), `695201d` (reporte) |
 | estado propuesto | listo para revisión |
 | push | **no intentado** (política swarm) |
 
