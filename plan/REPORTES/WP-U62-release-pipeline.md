@@ -132,8 +132,12 @@ test ! -d VOLUMES/DISK_01 && echo DISK_01_ABSENT_OK
 ```
 
 Nota: copies locales de DISK vivos en el checkout principal (fuera del
-worktree) no se borraron del disco del operador — están gitignoradas; ops
-debe moverlas a `ZEUS_VOLUMES_ROOT` externo si aún las usa.
+worktree) no se borraron del disco del operador. **Corrección WP-U108 /
+A-15:** el `.gitignore` post-U62 des-ignoraba `!VOLUMES/DISK_02/**` y
+`!VOLUMES/DISK_03/**` enteros, así que esas copies **no** estaban
+protegidas (aparecían como untracked trackeables). U108 acotó la
+whitelist a subpaths de fixture; ops debe mover datos de caso a
+`ZEUS_VOLUMES_ROOT` externo si aún los usa.
 
 ## Auto-revisión (PRACTICAS.md §3 — con honestidad, no mecánica)
 
@@ -183,7 +187,7 @@ la §revisión en la rama WP).
 | -- | --------------------- |
 | GitHub Release (library) tarball + acta | `gh release view startpack-delta-v0.1.0` y `startpack-pozo-v0.1.0`: assets `zeus-startpack-*-0.1.0.tgz` + `ACTA-*-v0.1.0.md` |
 | Mesh / ronda desde start pack | Re-ejecutado `npm run e2e:startpack` en library → 🟢 OK (install tarball + `loadStartPack` + authority) |
-| `VOLUMES/` monorepo solo fixtures | `git ls-files VOLUMES/` = README + volumes.json + DISK_02/03 sintéticos; DISK_01/04 ausentes; gitignore policy OK |
+| `VOLUMES/` monorepo solo fixtures | `git ls-files VOLUMES/` = README + volumes.json + DISK_02/03 sintéticos; DISK_01/04 ausentes. **Nota U108:** la policy gitignore ancha `!DISK_0{2,3}/**` no protegía copies locales vivas → corregido en WP-U108 |
 | `npm install @zeus/startpack-delta` registry | ⏳ OK (brief: gated `NPM_TOKEN`; equivalente file:/Release documentado) |
 
 ### PRACTICAS
