@@ -6,16 +6,38 @@ data/*
 !data/.gitkeep
 !data/seeds/
 !data/seeds/**
-# VOLUMES: solo fixtures sintéticos en git (WP-U62).
-# DISK_01/04 vivos y cualquier sync de operador → fuera del monorepo
-# (ZEUS_VOLUMES_ROOT externo o @zeus/startpack-* en games-library).
+# VOLUMES: solo fixtures exactos en git (WP-U62 + candado WP-U108 / A-15).
+# Whitelist por subpath (git ls-files VOLUMES/) — NO des-ignorar DISK_02/03
+# enteros: copies locales de caso (LINEAS/espana, forces/force-a..g, …)
+# deben quedar ignoradas / no trackeables.
+# Datos vivos → ZEUS_VOLUMES_ROOT externo o @zeus/startpack-* (games-library).
 VOLUMES/*
 !VOLUMES/README.md
 !VOLUMES/volumes.json
+# --- DISK_02: solo LINEAS/demo + registry.yaml ---
 !VOLUMES/DISK_02/
-!VOLUMES/DISK_02/**
+VOLUMES/DISK_02/**
+!VOLUMES/DISK_02/LINEAS/
+VOLUMES/DISK_02/LINEAS/**
+!VOLUMES/DISK_02/LINEAS/registry.yaml
+!VOLUMES/DISK_02/LINEAS/demo/
+!VOLUMES/DISK_02/LINEAS/demo/**
+# --- DISK_03: solo force-sample + cotas/sima (archivos fixture) + registry ---
 !VOLUMES/DISK_03/
-!VOLUMES/DISK_03/**
+VOLUMES/DISK_03/**
+!VOLUMES/DISK_03/FORCES/
+VOLUMES/DISK_03/FORCES/**
+!VOLUMES/DISK_03/FORCES/registry.json
+!VOLUMES/DISK_03/FORCES/forces/
+VOLUMES/DISK_03/FORCES/forces/**
+!VOLUMES/DISK_03/FORCES/forces/force-sample/
+!VOLUMES/DISK_03/FORCES/forces/force-sample/**
+!VOLUMES/DISK_03/FORCES/cotas/
+VOLUMES/DISK_03/FORCES/cotas/**
+!VOLUMES/DISK_03/FORCES/cotas/sima/
+VOLUMES/DISK_03/FORCES/cotas/sima/**
+!VOLUMES/DISK_03/FORCES/cotas/sima/cota.json
+!VOLUMES/DISK_03/FORCES/cotas/sima/manifest.json
 # Nunca trackear DISK vivos pesados aunque alguien los copie aquí
 VOLUMES/DISK_01/
 VOLUMES/DISK_04/

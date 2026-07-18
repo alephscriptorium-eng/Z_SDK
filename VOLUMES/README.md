@@ -42,8 +42,15 @@ volver a meter DISK_01/02 pesados en este repo.
 
 ## Git policy
 
-- Fixtures `DISK_02` / `DISK_03` viajan en git (pequeños).
-- `DISK_01` / `DISK_04` y cualquier árbol vivo siguen gitignorados.
+- Solo subpaths de fixture exactos viajan en git (WP-U108 / A-15):
+  `DISK_02/LINEAS/demo/**`, `DISK_02/LINEAS/registry.yaml`,
+  `DISK_03/FORCES/forces/force-sample/**`,
+  `DISK_03/FORCES/cotas/sima/{cota,manifest}.json`,
+  `DISK_03/FORCES/registry.json`, más `README.md` / `volumes.json`.
+- **No** se des-ignora `DISK_02/**` ni `DISK_03/**` enteros: una copy
+  local de caso (`LINEAS/espana/…`, `forces/force-a..g`, …) queda
+  ignorada y no es trackeable con `git add VOLUMES/`.
+- `DISK_01` / `DISK_04` siguen gitignorados por completo.
 - Start packs y volúmenes de ronda: **nunca en git** del monorepo
   (ARQUITECTURA §6).
 
