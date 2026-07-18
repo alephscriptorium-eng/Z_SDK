@@ -6,7 +6,7 @@
 | fecha | 2026-07-18 |
 | rama | `wp/u99-makeintent-game` |
 | worktree | `.worktrees/wp-u99-makeintent-game` |
-| commit(s) | `5c382a4` feat(protocol)! · `6c78a43` refactor(volumes-ops) · `c5f3449` chore(changeset) · `f401d2f` docs(plan) |
+| commit(s) | `5c382a4` feat(protocol)! · `6c78a43` refactor(volumes-ops) · `c5f3449` chore(changeset) · `f401d2f`/`9c5d810` docs(plan) · `e68eca8` merge master (U98) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 | browsers | no launch (`ZEUS_OPEN_BROWSER` unset / no opt-in) |
@@ -129,4 +129,43 @@ Ninguno. CA vía (a) verde.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador). Vía (a). BACKLOG queda 🔶
+(sin ✅ en esta revisión; sin merge a master; sin push). Worktree
+`.worktrees/wp-u99-makeintent-game` vivo hasta merge.
+
+### Qué se verificó
+
+- Diff `master...wp/u99-makeintent-game` (post-merge U98): 10 archivos;
+  alcance vía (a) + colateral `volumes-ops/emptyVolume`; sin BACKLOG en
+  commits de producto; worker no tocó BACKLOG.
+- **Merge master→rama:** `e68eca8`. Conflicto solo en `CONTRATO.md` §API —
+  resuelto: bullets U99 (`makeEnvelope`/`makeIntent` + `game`) + U98
+  (`isShaped`).
+- **CA (a):**
+  - `makeIntent` sin `game` / `game:''` → `TypeError` (re-run literal).
+  - Demolición: `rg "if \(game != null\)" packages/engine/protocol` → ZERO.
+  - Wrappers delta/pozo ya inyectan `GAME_ID` — tests verdes:
+    `arg-domain` 72/72, `pozo` 9/9.
+  - `volumes-ops`: gate con `assertIntentRole({ actorId, intent, role })`
+    (sin `makeIntent`/game inventado); tests 6/6.
+  - `operator-bridge` 9/9; `gates: OK`.
+- **Nota re-run:** suite completa `@zeus/protocol` 18/19 — único fallo
+  `types-sync` por CRLF Windows (contenido idéntico; hallazgo U95).
+  Contract+roles del CA: 11/11.
+- PRACTICAS / demolición: OK. Commits convencionales. Auto-revisión
+  honesta. Colateral volumes-ops justificado (no inventar game en engine).
+
+### Hallazgos (no arreglados en revisión)
+
+1. `release:changeset-dry` / `linea-kit` `./schemas/*` — ya cola U96.
+2. CRLF `types-sync`/`spec-sync` Windows — ya cola U95; confirmado en
+   re-run post-merge U98.
+3. BREAKING 0.x documentado: callers directos de `makeIntent` sin `game`
+   rompen (wrappers de juego OK).
+
+### Acción siguiente
+
+1. Usuario: autorizar `chore(plan): acepta WP-U99` en master (🔶→✅) +
+   `git merge wp/u99-makeintent-game` (lote higiene 11c cierra).
+2. Tras merge: `git worktree remove` del árbol U99.
+3. Push: no intentado.
