@@ -12,7 +12,10 @@ import {
 import { createStandardMcpServer } from '@zeus/presets-sdk';
 import { FIREHOSE_ROUTES } from '../src/contract.mjs';
 
-setupSmokeVolumesEnv(import.meta.url);
+// Committed VOLUMES marks firehose deferred with corpora: [] (WP-U62).
+// forceMinimal materializes candidate corpus like routes.mjs (WP-U119).
+setupSmokeVolumesEnv(import.meta.url, { forceMinimal: true });
+
 
 const { createFirehoseServer } = await import('../src/server.mjs');
 

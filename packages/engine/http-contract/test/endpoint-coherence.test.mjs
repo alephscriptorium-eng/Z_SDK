@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { resetZeusEnvLoader } from '@zeus/presets-sdk/env';
 import { zeusOpenApiServers, readPackageVersion } from '../src/endpoint.mjs';
 
@@ -48,5 +49,9 @@ test('zeusOpenApiServers respects ZEUS_PORT_PLAYER override', () => {
 });
 
 test('readPackageVersion reads http-contract package.json', () => {
-  assert.equal(readPackageVersion(import.meta.url), '0.1.0');
+  const pkg = JSON.parse(
+    readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+  );
+  assert.equal(readPackageVersion(import.meta.url), pkg.version);
+  assert.match(pkg.version, /^\d+\.\d+\.\d+/);
 });
