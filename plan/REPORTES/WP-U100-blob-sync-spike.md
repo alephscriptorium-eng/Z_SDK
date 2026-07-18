@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u100-blob-sync-spike` |
-| commit(s) | `bd69e17`, `1b10293` |
+| commit(s) | `bd69e17`, `1b10293`, `292faa5` (+ commit revisión) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -126,4 +126,38 @@ en su caso, verdicto `despeja`.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18 (revisión; **sin** merge ni ✅
+BACKLOG en este paso — pedido explícito del usuario). Sin push.
+
+### Verificado
+
+- **Base:** merge-base = master `2a1aa8d` (`chore(plan): pausa U101 hasta
+  refinement`). No hizo falta merge master→rama.
+- **Alcance** `master...HEAD` (16 archivos / +838): solo
+  `@zeus/blob-sync-harness` (private) + scripts/workspace + `.env.example`
+  `ZEUS_BLOB_*` + nota portería en webrtc-signaling README + línea
+  ARQUITECTURA + reporte. Worker **no** tocó `plan/BACKLOG.md`.
+- **Commits** convencionales: `test(blob-sync-harness)`, `docs(plan)` ×2.
+- **Demolición:** n/a (spike). PRACTICAS: private harness; reusa
+  `assertSignalingPeerCard` (U93); WAN explícitamente `pending` sidecar;
+  live probe sin dial; ⏳ honesto; auto-revisión §3 honesta.
+
+### CA (re-ejecutados en worktree, 2026-07-18)
+
+| CA | Resultado |
+| -- | --------- |
+| Fixture sync 2-nodos | OK — `e2e:blob-sync-spike` + unit 11/11; cid+chunks node-a→node-b |
+| Live Oasis ops | ⏳ OK — env unset; `status:pending` / `evidence:⏳`; sin red |
+| Veredicto U101 | **no despeja** (literal; alineado a pausa U101 en master) |
+| Cero producto sidecar | OK — solo harness mínimo `private`; `assertWanBlobTransferPendingSidecar` |
+| Peer-card U93 portero | OK — `assertLanBlobTransferAllowed` → `assertSignalingPeerCard` |
+| Gates | `gates: OK (0 offenders)` |
+
+### Acción siguiente
+
+1. **Merge** de `wp/u100-blob-sync-spike` → master (usuario / orquestador en
+   master). Tras merge: ✅ BACKLOG U100 + `git worktree remove`.
+2. **NO prep / NO asignar U101** — permanece ⬜ pausado hasta refinement
+   (`2a1aa8d`); el spike **no despeja** compromiso. Cadena U100→U101 no
+   continúa.
+3. Push: no intentado.
