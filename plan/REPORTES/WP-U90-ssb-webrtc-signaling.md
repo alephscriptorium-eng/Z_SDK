@@ -128,4 +128,43 @@ NO gh).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (autoriza merge; BACKLOG ✅ lo marca el orquestador
+en master al mergear — no en esta revisión).
+
+### Verificado (2026-07-18)
+
+- Diff `master...wp/u90-ssb-webrtc-signaling`: alcance WP (28 files); **no**
+  toca `plan/BACKLOG.md`; **no** toca `plan/recursos/` (fork B intacto /
+  gitignored).
+- `SsbPrivateSignalingService` + `createSbotPrivateTransport` /
+  `createInMemorySsbPrivateBus`; tipo `webrtc-signal` + `recps`.
+- Offer+answer completos: `negotiateDataChannelComplete` / `trickle: false`;
+  `sendIceCandidate` no-op salvo `allowTrickle`.
+- Adaptación `@zeus/oasis-webrtc`: sin textareas/copy-paste/`btoa`; ICE vía
+  presets; `docs/UPSTREAM_PR.md` presente (candidato upstream).
+- Re-CA orquestador: `@zeus/webrtc-signaling` 11/11; `@zeus/oasis-webrtc`
+  3/3; `e2e:ssb-webrtc-signaling` OK; `gates` OK (0 offenders).
+- PRACTICAS §1–3 / §6: puertos vía slot `oasisWebrtc`; tablas de señales;
+  commits convencionales; demolición grep OK en adaptación.
+- Auto-revisión honesta (sbot vivo / UI browser ⏳).
+
+### Hallazgos → cola (no bloquean aceptación)
+
+1. **Puerto default 3022 en colisión con U89** (WIP): U90
+   `oasisWebrtc` / `ZEUS_PORT_OASIS_WEBRTC=3022`; U89 (worktree)
+   `webrtcViewer` / `ZEUS_PORT_WEBRTC_VIEWER=3022`. Resolver al merge
+   (slots distintos + puertos default distintos).
+2. **Solape de archivos con U89** (WIP, no en commits aún): ambos tocan
+   `presets-sdk/src/env/index.mjs`, `webrtc-signaling/package.json`,
+   `.env.example`, root `package.json`. U90 además redefine fuentes de
+   `@zeus/webrtc-signaling` (`peer-session`, SSB). **Serializar merge**
+   U90 → U89 (o rebase U89 tras U90) y reconciliar exports subpath que
+   U89 añade (`./peer-session`, `./messages`).
+3. Coturn VPS / sbot OASIS en vivo: siguen ⏳ (ops); no bloquean CA de
+   señalización (bus in-memory = mediador de prueba).
+
+### Merge
+
+Orden sugerido vs U89: **U90 primero** (cambios profundos en
+`@zeus/webrtc-signaling`), luego U89 rebasado — especialmente por (1)(2).
+Push: no intentado. BACKLOG: permanece 🔶 hasta merge + ✅ en master.
