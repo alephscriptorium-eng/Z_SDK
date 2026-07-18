@@ -9,7 +9,6 @@ import { existsSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   assertIntentRole,
-  makeIntent,
   resolveIntentRole
 } from '@zeus/protocol';
 import {
@@ -87,8 +86,8 @@ export function emptyVolume(opts) {
   } = opts;
 
   const role = resolveIntentRole({ role: opts.role });
-  const intentPayload = makeIntent(actorId, intent, { volumeId, corpusId }, { role });
-  const auth = assertIntentRole(intentPayload, VOLUMES_OPS_CATALOG);
+  // Role gate only (local ops, not room wire) — no makeIntent/game envelope.
+  const auth = assertIntentRole({ actorId, intent, role }, VOLUMES_OPS_CATALOG);
   if (!auth.ok) {
     return {
       ok: false,

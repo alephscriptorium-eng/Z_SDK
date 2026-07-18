@@ -39,7 +39,8 @@ export function makeEnvelope({ game, kind, from, ts = Date.now(), v = PROTOCOL_V
 /**
  * Construye un intent bien formado.
  * Firma flexible: el 4º arg puede ser `from` (string) u options object
- * `{ from, game, role, ts, v }` — los juegos que aún pasan `from` string siguen OK.
+ * `{ from, game, role, ts, v }`. `game` (string no vacío) es obligatorio —
+ * simétrico con `makeEnvelope`. Los wrappers de juego inyectan su `GAME_ID`.
  *
  * @param {string} actorId
  * @param {string} intent
@@ -59,15 +60,19 @@ export function makeIntent(actorId, intent, args = {}, fromOrOpts = actorId) {
     v = PROTOCOL_VERSION
   } = opts;
 
+  if (typeof game !== 'string' || !game) {
+    throw new TypeError('makeIntent: game (string no vacío) es obligatorio');
+  }
+
   const payload = {
     v,
+    game,
     from,
     ts,
     actorId,
     intent,
     ...args
   };
-  if (game != null) payload.game = game;
   if (role != null) payload.role = role;
   return payload;
 }

@@ -123,7 +123,8 @@ export interface MakeEnvelopeOpts {
 
 export interface MakeIntentOpts {
   from?: string;
-  game?: string;
+  /** Game id — required (same rule as makeEnvelope). */
+  game: string;
   role?: Role;
   ts?: number;
   v?: number;
