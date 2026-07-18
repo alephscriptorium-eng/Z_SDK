@@ -120,18 +120,26 @@ export function createArgDomainState({
             actors[op.id].score[op.key] = (actors[op.id].score[op.key] ?? 0) + 1;
           }
           break;
-        case 'tap:aperture':
-          flow.setAperture(op.tapId, op.value);
+        case 'tap:aperture': {
+          // setAperture returns boolean (tap missing → false); gate ya exige tap válido.
+          if (!flow.setAperture(op.tapId, op.value)) break;
           break;
-        case 'droplet:label':
-          flow.labelDroplet(op.riverId, op.dropletId, op.label, op.actorId);
+        }
+        case 'droplet:label': {
+          const res = flow.labelDroplet(op.riverId, op.dropletId, op.label, op.actorId);
+          if (!res.ok) break;
           break;
-        case 'sea:salvage':
-          flow.salvage(op.dropletId, op.label, op.actorId);
+        }
+        case 'sea:salvage': {
+          const res = flow.salvage(op.dropletId, op.label, op.actorId);
+          if (!res.ok) break;
           break;
-        case 'sea:empty':
-          flow.emptySoft(op.actorId);
+        }
+        case 'sea:empty': {
+          const res = flow.emptySoft(op.actorId);
+          if (!res.ok) break;
           break;
+        }
         case 'corridor:excavate': {
           const external = feeds.externalDig === true;
           const res = maze.excavate(op.corridorId, op.actorId, { external });
@@ -154,15 +162,18 @@ export function createArgDomainState({
           break;
         }
         case 'line:cache': {
-          lineBoard.cache(op.lineId, op.registroId, op.actorId);
+          const res = lineBoard.cache(op.lineId, op.registroId, op.actorId);
+          if (!res.ok) break;
           break;
         }
         case 'line:curate': {
-          lineBoard.curate(op.lineId, op.registroId, op.to, op.actorId);
+          const res = lineBoard.curate(op.lineId, op.registroId, op.to, op.actorId);
+          if (!res.ok) break;
           break;
         }
         case 'line:milestone': {
-          lineBoard.milestone(op.lineId, op.registroId, op.reasons, op.actorId);
+          const res = lineBoard.milestone(op.lineId, op.registroId, op.reasons, op.actorId);
+          if (!res.ok) break;
           break;
         }
         case 'ledger:push':

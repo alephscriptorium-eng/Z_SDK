@@ -9,8 +9,31 @@
  */
 
 export const DELTA_STATUSES = Object.freeze(['pending', 'draft', 'curated']);
-const STATUS_CODE = Object.freeze({ pending: 0, draft: 1, curated: 2 });
-const CODE_STATUS = Object.freeze(['pending', 'draft', 'curated']);
+const STATUS_CODE = Object.freeze(
+  Object.fromEntries(DELTA_STATUSES.map((s, i) => [s, i]))
+);
+
+/**
+ * Validación pura de transición curate (pending→draft→curated, un paso).
+ * Fuente única de reglas/codes para gate (reducer) y mutador (line-board).
+ *
+ * @param {{ cached: boolean, deltaStatus: string }} reg
+ * @param {string|null|undefined} toStatus
+ * @returns {{ ok: true, to: string } | { ok: false, error: string }}
+ */
+export function validateCurate(reg, toStatus) {
+  if (!reg.cached) return { ok: false, error: 'no_cacheado' };
+  const currentIdx = DELTA_STATUSES.indexOf(reg.deltaStatus);
+  const to =
+    toStatus ?? DELTA_STATUSES[Math.min(currentIdx + 1, DELTA_STATUSES.length - 1)];
+  if (to !== 'draft' && to !== 'curated') return { ok: false, error: 'status_invalido' };
+  const targetIdx = DELTA_STATUSES.indexOf(to);
+  if (targetIdx <= currentIdx) {
+    return { ok: false, error: currentIdx === targetIdx ? 'ya_curado' : 'status_retroceso' };
+  }
+  if (targetIdx > currentIdx + 1) return { ok: false, error: 'status_salto' };
+  return { ok: true, to };
+}
 
 /** Semilla mínima de demo (homóloga a registros de línea-aleph). */
 export const DEFAULT_LINE_SEED = Object.freeze({
@@ -107,25 +130,18 @@ export function createLineBoard(seed = DEFAULT_LINE_SEED) {
       const found = getRegistro(lineId, registroId);
       if (found.error) return { ok: false, error: found.error };
       const { reg } = found;
-      if (!reg.cached) return { ok: false, error: 'no_cacheado' };
-      const currentIdx = DELTA_STATUSES.indexOf(reg.deltaStatus);
-      const target = toStatus ?? DELTA_STATUSES[Math.min(currentIdx + 1, DELTA_STATUSES.length - 1)];
-      if (!DELTA_STATUSES.includes(target)) return { ok: false, error: 'status_invalido' };
-      const targetIdx = DELTA_STATUSES.indexOf(target);
-      if (targetIdx <= currentIdx) {
-        return { ok: false, error: currentIdx === targetIdx ? 'ya_curado' : 'status_retroceso' };
-      }
-      if (targetIdx > currentIdx + 1) return { ok: false, error: 'status_salto' };
-      reg.deltaStatus = target;
+      const check = validateCurate(reg, toStatus);
+      if (!check.ok) return check;
+      reg.deltaStatus = check.to;
       rev += 1;
       pushEvent('curate', {
         actorId,
         lineId,
         registroId,
-        status: target,
+        status: check.to,
         ref: { kind: 'registro', uri: `linea://registro/${lineId}/${registroId}/${reg.oldid ?? 0}` }
       });
-      return { ok: true, status: target };
+      return { ok: true, status: check.to };
     },
 
     milestone(lineId, registroId, reasons = [], actorId = null) {
@@ -175,5 +191,5 @@ export function createLineBoard(seed = DEFAULT_LINE_SEED) {
 }
 
 export function decodeLineStatus(code) {
-  return CODE_STATUS[code] ?? 'pending';
+  return DELTA_STATUSES[code] ?? 'pending';
 }
