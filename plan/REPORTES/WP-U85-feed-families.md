@@ -145,4 +145,55 @@ Ninguno bloqueante. Push: **no intentado** (política brief).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (2026-07-18) — autorización de merge; **BACKLOG
+aún 🔶** (usuario/orquestador en master tras merge; este chat no marca ✅).
+Sin push.
+
+### Verificado
+
+- Diff `master...wp/u85-feed-families` (6 commits producto+docs; merge-base
+  `f0b7c33`; master 1 ahead = solo `chore(plan): asigna lote 8b` + brief —
+  merge limpio, sin conflicto de producto). 38 archivos / +2202/−277.
+  Alcance acotado: `@zeus/feed-kit` (familias/resolve/MCP/jetstream),
+  adaptador delta `arg-feeds` (maze + demolición `real.mjs`/`mcp-client.mjs`),
+  consumo pozo (`authority`/`domain`), e2e `feed-families`, changeset,
+  docs plan/VOLUMES/`.env.example`, reporte. Worker **no** tocó
+  `plan/BACKLOG.md`.
+- Regla dos juegos: `FEED_FAMILIES` / `resolveRuntimeFeeds` en engine sin
+  conceptos delta/pozo; delta ensambla maze; pozo tira stream+gossip →
+  lines/items/tracks. Alias `nextDroplets` = compat flujo, API primaria
+  `nextItems`.
+- PRACTICAS: demolición real (archivos ausentes; `rg` cero
+  `createRealFeeds|arg-feeds/src/real|mcp-client`); sin legacy/v2; commits
+  convencionales (`feat(feed-kit)`, `refactor(arg-feeds)!`, `feat(pozo)`,
+  `docs(reportes)`); auto-revisión §3 honesta. Jetstream live ⏳ OK.
+
+### CA (re-ejecutados en worktree, 2026-07-18)
+
+- [x] Interfaz común static/stream/gossip — `FEED_FAMILIES` +
+  `resolveRuntimeFeeds`; `npm test -w @zeus/feed-kit` → **8/8 pass**
+- [x] jetstream→DISK_01 + degradación sintético — fixture en test feed-kit;
+  G-U85.0 + G-U85.9–12
+- [x] e2e auto→sintético — `npm run e2e:feed-families` → G-U85.0–12 verde
+  (pozo tracks ATProto+SSB; items navegables mode=real)
+- [x] delta y pozo por la interfaz — arg-feeds → feed-kit; pozo authority
+  `resolveRuntimeFeeds`; `npm test -w @zeus/arg-feeds` **4/4**,
+  `@zeus/arg-domain` **68/68**, `@zeus/pozo` **9/9** (incluye bag→tracks)
+- [x] `npm run gates` → `gates: OK (0 offenders)`
+
+### Hallazgos → cola (no arreglar aquí)
+
+1. `release:changeset-dry` ensucia tree si paquete nuevo untracked —
+   reconfirmado U85; ya en cola U82.
+2. Tras `bag.close()` en e2e: warn `stream prefetch failed: Not connected`
+   (prefetch async tardío; no falla gates).
+3. Visores firehose/cache aún no resuelven `ssb://` en browser (track hint
+   `ssb-browser` es contrato; UI dedicada pendiente).
+4. Nota: `KNOWN_ZEUS_PORTS` aún no lista `4114` (SSB) — preexistente U84.
+
+### Merge
+
+Orden sugerido: merge `wp/u85-feed-families` → master (tras `git merge master`
+  si se quiere absorber el chore de asignación; solo BACKLOG/brief). Luego
+  orquestador en master: BACKLOG 🔶→✅ + cola hallazgos U85. Cierra ola 8.
+  Push: no intentado.
