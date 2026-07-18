@@ -1,0 +1,49 @@
+# One-shot: publish @zeus/operator-bridge (WP-U55).
+# Mesh package needed by operator-ui; not in engine release:dry set.
+# Auth: NPM_USERNAME + NPM_PASSWORD (_password base64) — same as release.yml.
+name: Publish operator-bridge
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require publish credentials
+        env:
+          NPM_USERNAME: ${{ secrets.NPM_USERNAME }}
+          NPM_PASSWORD: ${{ secrets.NPM_PASSWORD }}
+        run: |
+          if [ -z "${NPM_USERNAME}" ] || [ -z "${NPM_PASSWORD}" ]; then
+            echo "::error::NPM_USERNAME/NPM_PASSWORD required"
+            exit 1
+          fi
+      - name: Configure registry basic-auth (_password)
+        env:
+          NPM_USERNAME: ${{ secrets.NPM_USERNAME }}
+          NPM_PASSWORD: ${{ secrets.NPM_PASSWORD }}
+        run: |
+          HOST='npm.scriptorium.escrivivir.co'
+          {
+            echo "@zeus:registry=https://${HOST}"
+            echo "//${HOST}/:username=${NPM_USERNAME}"
+            echo "//${HOST}/:_password=${NPM_PASSWORD}"
+            echo "//${HOST}/:email=ci@scriptorium.escrivivir.co"
+            echo "//${HOST}/:always-auth=true"
+          } >> ~/.npmrc
+      - name: Publish @zeus/operator-bridge
+        working-directory: packages/mesh/operator-bridge
+        run: |
+          if npm view @zeus/operator-bridge version --registry https://npm.scriptorium.escrivivir.co >/dev/null 2>&1; then
+            echo "Already on registry — skip"
+            npm view @zeus/operator-bridge version --registry https://npm.scriptorium.escrivivir.co
+          else
+            npm publish --registry https://npm.scriptorium.escrivivir.co
+          fi
+      - name: Verify
+        run: npm view @zeus/operator-bridge version --registry https://npm.scriptorium.escrivivir.co

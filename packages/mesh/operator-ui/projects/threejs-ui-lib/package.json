@@ -22,7 +22,7 @@
     "rxjs": "^7.8.0"
   },
   "dependencies": {
-    "@zeus/ui-3d-kit": "file:../../../../engine/ui-3d-kit",
+    "@zeus/ui-3d-kit": "0.1.1",
     "tslib": "^2.3.0"
   },
   "sideEffects": false,

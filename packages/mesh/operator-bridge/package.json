@@ -1,9 +1,8 @@
 {
   "name": "@zeus/operator-bridge",
   "version": "0.1.0",
-  "private": true,
-  "type": "module",
   "description": "Pure protocol bridge: contrato único state/ledger slice → gamify-ui AlephMessage bot-hub. No Angular, no three, no network — testable in node.",
+  "type": "module",
   "main": "src/index.mjs",
   "exports": {
     ".": "./src/index.mjs"
@@ -12,10 +11,18 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@zeus/protocol": "*"
+    "@zeus/protocol": "0.2.0"
   },
   "license": "AIPLv1",
   "zeus": {
     "role": "lib"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "INTEGRATION.md",
+    "README.md"
+  ]
 }
