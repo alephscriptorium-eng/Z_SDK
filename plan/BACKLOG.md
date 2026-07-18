@@ -11,31 +11,36 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18)
+## Remate — estado swarm (2026-07-18b · post-docs)
 
-> Diseño drenado: **0 DA abiertas** post D-21 (`plan/DECISIONES.md` §abiertas
-> vacío). Línea de producto en rama **`main`** (no `master`; tip local
-> refundación → push a `origin/main`).
+> Diseño drenado: **0 DA abiertas** post D-21; frentes post-U103 en
+> **D-22** (`plan/DECISIONES.md`). Línea de producto en rama **`main`**.
 
-**⬜ restantes (bloqueados sin credenciales / publish / ops):**
-- **U55** — demoler `file:` (dep registry tras publish)
-- **Ola 6** — U60–U62 (U60 = nuevo repo GitHub; no crear desde swarm)
+**Orden frentes (D-22):** (1) U104 → (3) U60 **∥** (2) U105 → publish
+real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO** (no preguntar).
+
+| Frente | WP | Estado |
+| ------ | --- | ------ |
+| (1) Economía builds (`paths` / `paths-ignore`) | **U104** | 🔶 |
+| (2) Publish prep `engine/*` (`release:dry` + changeset versión) | **U105** | ⬜ tras U104 |
+| (3) Ola 6 — crear `Z_SDK-games-library` | **U60** | ⬜ GO tras U104 |
+| Publish real → demoler `file:` | ops + **U55** | gated registry+token |
+| Sidecar blob live U100/U101 | — | diferido sin plazo |
+
+**⬜ / bloqueados (post-lote):**
+- **U55** — demoler `file:` (dep **publish real**; no prep)
+- **U61–U62** — tras U60 ✅ (U51 ya ✅)
 - **Ola 9** — U70 / U86 / U87 (dep Ola 6)
+- Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
-**Next steps (orden vigilante + usuario):**
-1. Housekeeping `.worktrees/` residuos + `git worktree prune`
-2. Push **solo** `main` (~343 commits refundación) → dispara CI U03 real — **hecho**
-3. Triaje CI rojo parcial — **hecho** (run
-   [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
-   27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos) → **WP-U102** ✅
-4. **WP-U103** ✅ — docs públicas Pages + piel fanzine (A-12; merge
-   `76034ec`)
-5. ~~Usuario: activar GitHub Pages~~ — **hecho** (usuario / 2026-07-18;
-   Settings → fuente GitHub Actions)
-6. Usuario: **publish** → desbloquea U55
-7. Usuario: repo **U60** games-library → Ola 6 / 9
-8. Usuario: sidecar / `ZEUS_BLOB_*` ops (live U100/U101)
-9. Residual **viewer peer-card** (cola U93) antes de mesh abierto
+**Next steps (orden D-22):**
+1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
+2. **WP-U104** 🔶 — economía CI (paths-ignore / paths) — **ahora**
+3. Tras U104: lote **U60 ∥ U105** (briefs en sesión siguiente)
+4. Usuario/ops: registry `npm.scriptorium.escrivivir.co` + secret
+   `NPM_TOKEN` → publish real → desbloquea **U55**
+5. Residual **viewer peer-card** (cola U93) antes de mesh abierto
+6. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -44,12 +49,13 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
   `ddefdcf`; cierra CA remoto U03 pendiente cuando CI `main` verde)
 - ~~Docs públicas Pages + piel zine (cierre U41)~~ → **WP-U103** ✅
   (merge `76034ec`)
+- ~~Economía builds (paths)~~ → **WP-U104** 🔶
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
-- Harness U100 cid hex → formato SSB `&…sha256` (cola U101)
+- Harness U100 cid hex → formato SSB `&…sha256` (cola U101; live diferido)
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
 - dual-emit `arg:*` ×3 sitios; domain-helpers `session:state`; flake e2e DJ
 - salvage dual / cache milestone (cola U94); gamemap SCRIPTORIUM (cola U96)
-- `release:changeset-dry` / linea-kit `exports ./schemas/*` (publish)
+- `release:changeset-dry` / linea-kit `exports ./schemas/*` (→ U105)
 - (U102) `resolveStopServicePorts` switch → tabla (PRACTICAS §1.2)
 - (U102) fixture firehose duplicada (`firehose-core` × `linea-firehose`) —
   extraer helper compartido
@@ -457,6 +463,22 @@ Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
   **Demolición:** n/a (U41 se conserva; piel aditiva).
   **Nota cierre:** merge `76034ec`; revisión `0a36656`.
 
+- 🔶 **WP-U104 · Economía de builds (paths CI)** — en curso
+  (orquestador / 2026-07-18) — D-22 frente (1); `concurrency` +
+  `cancel-in-progress` ya ✅ en los tres workflows. Completar filtros:
+  | Workflow | Cambio |
+  | --- | --- |
+  | `ci.yml` | `paths-ignore: ['plan/**', '**.md']` — bookkeeping plan no dispara matriz ~31 jobs |
+  | `release.yml` | `paths: ['.changeset/**', 'packages/**']` (o solo al mergear PR de versión changesets) — no en cada push a main |
+  | `docs.yml` | `paths: ['docs/**']` + conservar `workflow_dispatch` |
+  **CA:** un commit que solo toque `plan/*.md` dispara **cero** jobs de
+  esos workflows; cambio en `packages/**` sigue disparando CI completo;
+  docs solo construye cuando cambia `docs/**` (o `workflow_dispatch`).
+  **Demolición:** triggers anchos que hacen correr CI/release/docs en
+  pushes de solo plan/markdown.
+  Brief: `plan/REPORTES/briefs/WP-U104-ci-path-filters.md`.
+  Worktree: `.worktrees/wp-u104-ci-path-filters`.
+
 ## Ola 5 — Monorepo publicable y layout final
 
 - ✅ **WP-U50 · Scope y publicación** — aceptado
@@ -535,17 +557,29 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
-> **Nota orquestador (lote-post5 / 2026-07-17):** Ola 6 / **U55** pausados —
-> swarm sin credenciales/registry. **U56** y **U80** aceptados.
-> NO asignar: U55, U60+ (U60 = nuevo repo GitHub).
+> **Nota orquestador (2026-07-18b / D-22):** U55 sigue **pausado** hasta
+> publish real (registry + token). Prep publish = **U105** (⬜ tras U104).
+> Ola 6 **GO** — U60 asignable tras U104 (creds GitHub disponibles).
 
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
-  registry o unificar install Angular con workspaces raíz. Sustituye los
-  `file:` vivos justificados hasta publish real del engine.
+  **publish real** de `engine/*` (no basta U105 prep). Sustituye los
+  `file:` vivos justificados hasta registry vivo.
   **CA:** operator-ui / threejs-ui-lib resuelven `@zeus/*` sin `file:`;
   install aislado Angular verde.
   **Demolición:** dependencias `file:` residuales en esos paquetes.
-  _(pausado — dep registry/credenciales; no asignar en swarm)_
+  _(pausado — dep publish real ops; no asignar hasta registry+token)_
+
+- ⬜ **WP-U105 · Publish prep `engine/*`** *(D-22 frente (2); tras U104)* —
+  dejar el release listo sin publish real: `npm run release:dry` verde
+  sobre `main` actual; changeset(s) + rama/PR de versión lockstep 0.x
+  preparada. Juegos **NO** se publican (ola 6). Publish real al registry
+  D-7 queda **gated en ops** (`npm.scriptorium.escrivivir.co` vivo +
+  secret `NPM_TOKEN`) — no es CA del swarm; cuando pase → desbloquea
+  **U55**.
+  **CA:** `release:dry` verde; árbol/PR de versión changesets listo para
+  merge; reporte documenta ⏳ publish real (ops).
+  **Demolición:** n/a (prep; no dos caminos de release).
+  _(⬜ — asignar en lote U60 ∥ U105 tras U104 ✅)_
 
 - ✅ **WP-U56 · Retirar wire vivo `session:*` del stack DJ** — aceptado
   (orquestador / 2026-07-17) — player-ui /
@@ -565,16 +599,20 @@ Hallazgos diferidos U56 (no bloquean):
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
 
-> **Pausada** (orquestador / 2026-07-17): swarm sin credenciales GitHub /
-> registry. U60+ no se asignan hasta que el usuario desbloquee.
+> **GO** (D-22 frente (3); orquestador / 2026-07-18b): credenciales GitHub
+> disponibles (`alephscriptorium-eng`). **U60** asignable tras **U104** ✅
+> (paralelo con U105). U61 (dep U60 + U51 ✅) y U62 (dep U61) después.
+> Con ola 6 se abre ola 9 (U70/U86/U87).
 
-- ⬜ **WP-U60 · Repo Z_SDK-games-library** (D-11) — crear el repo en
-  `github.com/alephscriptorium-eng`, con su propio `plan/`-lite (PRACTICAS y
-  plantilla de reporte enlazadas desde aquí, no copiadas), `.npmrc` con los
-  scopes, y CI mínima (install + tests de los juegos).
-  **CA:** clone limpio + `npm install` + tests verdes en el repo nuevo.
+- ⬜ **WP-U60 · Repo Z_SDK-games-library** (D-11; D-22) — crear el repo en
+  `github.com/alephscriptorium-eng/Z_SDK-games-library`, con su propio
+  `plan/`-lite (PRACTICAS y plantilla de reporte enlazadas desde aquí, no
+  copiadas), `.npmrc` con los scopes, y CI mínima (install + tests de los
+  juegos). Scaffold vacío o mínimo — migración de juegos = U61.
+  **CA:** repo existe; clone limpio + `npm install` + tests verdes (o
+  scaffold con test smoke).
   **Demolición:** n/a.
-  _(pausado — sin credenciales GitHub en swarm)_
+  _(⬜ GO — asignar en lote U60 ∥ U105 tras U104 ✅)_
 - ⬜ **WP-U61 · Migración de los juegos** *(dep U60, U51)* — `games/delta` y
   `games/pozo` se mueven a la library; consumen `@zeus/*` del registry (no
   `file:`); el monorepo se queda con engine/mesh/editor/examples.

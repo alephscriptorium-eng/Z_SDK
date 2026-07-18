@@ -222,8 +222,20 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   sbot). (3) Residual peer-card del visor = informativo → cola U93;
   no abre alcance en U101. U101 asignable (🔶).
 
+- **D-22 · 2026-07-18 · Frentes post-docs (U103 ✅)** (por el usuario /
+  custodio; entrega `ENTREGA-2026-07-18b-frentes-post-docs`). Cuatro
+  frentes, orden de ejecución:
+  | # | Frente | Veredicto | Destino |
+  |---|--------|-----------|---------|
+  | 1 | Economía de builds (paths/`paths-ignore` en ci/release/docs) | **GO ahora** | **WP-U104** — completar lo que falta tras concurrency ✅ |
+  | 2 | Publish `engine/*` | **prep GO; publish real gated ops** | **WP-U105** (`release:dry` + PR versión changesets); publish real cuando registry D-7 + `NPM_TOKEN`; juegos NO (ola 6). Tras publish real → **U55** |
+  | 3 | Ola 6 — `Z_SDK-games-library` | **GO** (creds GitHub) | **WP-U60** crea repo (D-11); luego U61/U62; abre ola 9 |
+  | 4 | Sidecar / `ZEUS_BLOB_*` | **DIFERIDO sin plazo** | Live U100/U101 queda ⏳ **por diseño**; no preguntar ni reabrir hasta ops |
+  Orden: **(1) → (3) ∥ (2)-prep → publish real (ops) → U55**.
+
 ## Abiertas (bloquean lo indicado)
 
-*(Ninguna decisión de diseño abierta tras D-21. Los horizontes
-WP-U71/72/73 siguen esperando evidencia o diseño externo; Ola 6/U55/U60+
-siguen pausados por credenciales — no son decisiones de diseño abiertas.)*
+*(Ninguna decisión de diseño abierta tras D-22. Ops residuales — no son
+DA: (a) endpoint registry + secret `NPM_TOKEN` para publish real → U55;
+(b) sidecar blob cuando ops lo entregue. Horizontes WP-U71/72/73 siguen
+esperando evidencia o diseño externo.)*
