@@ -142,4 +142,37 @@ Ninguno bloqueante. Coturn en VPS queda ⏳ hasta acceso ops.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador). **No merge / no push / no ✅
+BACKLOG en este paso** (ritual pedido por usuario).
+
+### Verificado
+
+- Diff `master...wp/u88-webrtc-signaling` acotado: `@zeus/webrtc-signaling`,
+  `resolveIceServers` en presets-sdk/env, gate `google-stun`, e2e, runbook
+  coturn, reporte, changeset. BACKLOG no tocado por el worker.
+- CA e2e: `npm run e2e:webrtc-signaling` → DataChannel open + ping, trickle
+  ICE (`webrtc-ice-candidate` en room), iceServers vacíos (sin Google).
+- CA gate: sintético rojo `CA rojo (e)` + `npm run gates` → `OK (0 offenders)`.
+- CA ICE: `resolveIceServers` solo desde `ZEUS_WEBRTC_*`; Google solo con
+  `ZEUS_WEBRTC_ALLOW_GOOGLE_STUN=1` + WARNING; literales solo en
+  `presets-sdk/src/env/` (exento del gate).
+- CA coturn: runbook `docs/mesh/coturn-runbook.md` documentado; **⏳ sin VPS**
+  (honesto, aceptable).
+- Demolición: sin `iceServers` Google hardcodeados en el paquete adaptado;
+  sin `waitForIceComplete`; contrato rooms `webrtc-offer|answer|ice-candidate|
+  join-room`.
+- PRACTICAS §1–3 / §6: commits convencionales; auto-revisión honesta;
+  evidencia literal; alcance limpio.
+
+### Hallazgos → cola (no arreglar aquí)
+
+1. Coturn en VPS: prueba real pendiente de acceso ops (⏳ del CA).
+2. Quirk repo A (`emit(type.replace('webrtc-', ''))` vs listen `webrtc-*`) —
+   documentado; nuestra impl emite nombre completo. Posible nota para U89 /
+   upstream si se porta más de A.
+3. U89 / U90 siguen ⬜ (dep U88); listos para brief tras merge autorizado.
+
+### Orden de merge sugerido
+
+Tras autorización formal (✅ BACKLOG en master): merge `wp/u88-webrtc-signaling`
+→ master; luego worktree remove; entonces brief U89 y/o U90.
