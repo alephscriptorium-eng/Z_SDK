@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U105) |
 | fecha | 2026-07-18 |
 | rama | `wp/u105-publish-prep` |
-| commit(s) | `ece9074` fix(release): exports wildcards · `fe1ee3e` chore(release): version packages · _(este reporte)_ |
+| commit(s) | `ece9074` fix(release) · `fe1ee3e` chore(release): version packages · `f650ad6` docs(plan): reporte |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
