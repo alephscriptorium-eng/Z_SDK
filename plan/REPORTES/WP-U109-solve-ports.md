@@ -131,4 +131,30 @@ Ninguno bloqueante. Merge: primero zeus (presets-sdk) luego library
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-18)
+
+### Verificado
+- Diff zeus `main...wp/u109-solve-ports` acotado (presets-sdk env + test +
+  README + KNOWN + excepción two-games + changeset + reporte). Sin BACKLOG.
+- Diff library `ced9af1`: demole `DEFAULT_*_PORT`; endpoints leen
+  `resolveZeus*Ports`; READMEs veraces.
+- CA: greps sin literales/defaults fuera de env; slots expuestos; re-smoke
+  orquestador: presets-sdk **43/43**, gates **OK**, pozo **9/9**, solve
+  **6/6**; smoke endpoints defaults + override env OK.
+- Demolición completa; PRACTICAS §1.1 / §5 (excepción two-games comentada)
+  / §6 (commits + changeset patch).
+- e2e demo completo ⏳ (aceptable: CA cubre smoke de resolución).
+
+### Notas (no bloquean)
+- Lista «Archivos tocados» menciona `spec/*.openapi.yaml` regenerados — no
+  están en el diff (in-memory sync OK).
+- Ruido menor CRLF en `exceptions.mjs` al tocar la excepción.
+- Hallazgos U109 §1–3 → cola residual (KNOWN gaps, stop ids, symlinks).
+
+### Merge (cuando usuario autorice)
+1. zeus `wp/u109-solve-ports` → `main`
+2. library `wp/u109-solve-ports` → `main`
+3. Orquestador: ✅ BACKLOG en `main` + `git worktree remove`
+4. Luego U110 ⬜
+
+**Push:** no intentado en esta revisión.
