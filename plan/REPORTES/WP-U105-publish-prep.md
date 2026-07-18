@@ -145,4 +145,55 @@ Ninguno de diseño. Ops residual (no bloquea aceptación del prep):
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** — orquestador / 2026-07-18. **No** merge a
+`main` / **no** push / **no** ✅ BACKLOG en este paso (pedido explícito).
+Autoriza merge completo a `main` cuando el usuario lo pida; BACKLOG
+🔶→✅ solo en `main` al cerrar.
+
+### Decisión árbol `fe1ee3e` (duda worker)
+
+**Merge completo** (`ece9074` fix + `fe1ee3e` version tree + docs).
+
+Criterio: el brief/CA pide «árbol/PR de versión changesets listo para
+merge», no solo dry-run sin bumpear. Versión local en `main` sin publish
+está OK (publish sigue gated ops/`NPM_TOKEN`). **No** split: no dejar
+solo el fix para que CI cree Version PR — el árbol ya consumió los 19
+changesets; split rompería la CA «árbol listo».
+
+### Verificado
+
+- **Base:** rama detrás de `main` (U60/U106) → merge limpio
+  `988c51b merge(main): sync before WP-U105 review` (docs/Pages +
+  reportes; sin conflicto de producto release).
+- **Alcance** `main...HEAD` (post-sync): `scripts/release-dry.mjs` +
+  test wildcard; 19 changesets consumidos; bumps + CHANGELOG en 18
+  engine; reporte. Worker **no** tocó `plan/BACKLOG.md` ni backlog
+  delta. Sin U55 / sin publish / sin push.
+- **Commits** convencionales: `fix(release)`, `chore(release)`,
+  `docs(plan)` ×2 (+ merge sync).
+- **Demolición:** n/a. PRACTICAS: fix puntual en verificador; auto-
+  revisión §3 honesta; ⏳ publish ops documentado.
+
+### CA (re-ejecutados en worktree, 2026-07-18 post-merge main)
+
+| CA | Resultado |
+| -- | --------- |
+| `release:dry` verde | OK — 19/19 green (incl. `@zeus/linea-kit@0.2.0` / `./schemas/*`) |
+| Árbol/PR versión listo | OK — bumps+CHANGELOGs en tip; PR remoto ⏳ (sin push worker) |
+| Reporte ⏳ publish ops | OK — registry D-7 + `NPM_TOKEN` / desbloquea U55 |
+| `test:release` | OK — 6/6 pass (wildcard + árbol versión) |
+| `release:changeset-dry` | Esperado exit 1 post-consume («No pending changesets»); verde en evidencia worker **antes** de `fe1ee3e` |
+
+### Merge sugerido
+
+1. Merge **completo** `wp/u105-publish-prep` → `main` (ambos commits
+   producto + docs; no cherry-pick solo `ece9074`).
+2. Tras merge: ✅ BACKLOG U105 en `main`; `git worktree remove` del
+   árbol U105.
+3. Ops: `NPM_TOKEN` + registry → publish real → desbloquea **U55**.
+4. Sin push en esta revisión.
+
+### Acción siguiente
+
+Usuario: autorizar merge completo a `main` + ✅ BACKLOG (paso aparte).
+Push: no intentado.
