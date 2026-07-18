@@ -4,9 +4,9 @@
  * @zeus/arg-console server — portal de vistas 3D de delta (:3021).
  *
  * Express server-rendered sin bundler (patrón server.mjs del 3d-monitor,
- * evolucionado). Las vistas viven en src/views/registry.mjs sobre el view
- * kit (src/view-kit); la lógica de cada vista es un entry de navegador bajo
- * /assets/js/views/. Sirve:
+ * evolucionado). Las vistas viven en src/views/registry.mjs sobre
+ * `@zeus/app-shell/ssr-view-registry`; la lógica de cada vista es un entry
+ * de navegador bajo /assets/js/views/. Sirve:
  *   /assets            → assets del ui-kit shell + propios
  *   /assets/room-client→ cliente de room de navegador
  *   /vendor/three      → node_modules/three

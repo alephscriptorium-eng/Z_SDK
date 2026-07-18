@@ -1,14 +1,35 @@
 /**
- * @zeus/3d-monitor view kit — server side.
+ * SSR view registry — shared server-side layout for 3D view portals.
  *
+ * Distinct from `@zeus/view-kit` (browser-safe scene/HUD/room helpers).
  * A "view" is a layout that combines reusable elements (3D stage, HUD, log
- * panel, room wiring) with its own business logic (a browser entry module).
- * The kit normalizes view descriptors, keeps them in a registry (the portal
- * lists it) and renders the shared shell layout for every view, so adding a
- * new view is: define a descriptor + write its browser entry.
+ * panel, room wiring) with its own browser entry. This module normalizes
+ * descriptors, indexes them, and renders the shared shell layout.
+ *
+ * Game-agnostic (D-8): no game-specific concepts.
  */
 
 import { div, section, canvas, script, aside, h2, ul, li, span, p } from 'hyperaxe';
+
+/** @typedef {'stage' | 'split'} LogPanelPlacement */
+
+/**
+ * How the optional DOM log panel is placed relative to the 3D stage.
+ * - `stage`: log lives inside `#viewer-stage` (browser panel can adopt it)
+ * - `split`: log is a sibling column under `.viewer-split`
+ */
+const LOG_PANEL_BODY = {
+  /** @param {unknown[]} stageChildren */
+  stage(stageChildren) {
+    stageChildren.push(aside({ id: 'view-log', class: 'view-log' }));
+    return div({ id: 'viewer-stage', class: 'viewer-stage' }, ...stageChildren);
+  },
+  /** @param {unknown[]} stageChildren */
+  split(stageChildren) {
+    const stage = div({ id: 'viewer-stage', class: 'viewer-stage' }, ...stageChildren);
+    return div({ class: 'viewer-split' }, stage, aside({ id: 'view-log', class: 'view-log' }));
+  }
+};
 
 /**
  * Normalize a view descriptor.
@@ -21,21 +42,22 @@ import { div, section, canvas, script, aside, h2, ul, li, span, p } from 'hypera
  * @param {string} def.entry         browser module URL (business logic)
  * @param {string[]} [def.elements]  reusable elements the layout combines (portal card)
  * @param {{fields?: Array<{id:string,label:string,value?:string}>, note?: string, logId?: string}} [def.hud]
- * @param {boolean} [def.logPanel]   render a DOM log column next to the stage
+ * @param {boolean} [def.logPanel]   render a DOM log panel
+ * @param {LogPanelPlacement} [def.logPanelPlacement]  where the log panel goes when logPanel
  * @param {string[]} [def.styles]    extra stylesheet hrefs
- * @param {string} [def.defaultRoom] fallback room this view observes when
- *   neither `?room=` nor ZEUS_SCRIPTORIUM_ROOM pin one — mirrors the demos'
- *   own room resolution (e.g. PUBLIC_ROOM for demo:game)
+ * @param {string|null} [def.defaultRoom] fallback room when neither `?room=` nor
+ *   ZEUS_SCRIPTORIUM_ROOM pins one
  */
 export function defineView(def) {
   if (!def || typeof def.id !== 'string' || !def.id) throw new Error('defineView: id is required');
   if (typeof def.entry !== 'string' || !def.entry) throw new Error(`defineView(${def.id}): entry is required`);
   return {
-    emoji: '🛰️',
+    emoji: '',
     description: '',
     elements: [],
     hud: null,
     logPanel: false,
+    logPanelPlacement: 'stage',
     styles: [],
     defaultRoom: null,
     title: def.id,
@@ -69,7 +91,7 @@ function renderHud(view) {
     )
   );
   const children = [
-    h2({ class: 'hud-title' }, `${view.emoji} ${view.title}`),
+    h2({ class: 'hud-title' }, `${view.emoji} ${view.title}`.trim()),
     ul({ class: 'hud-list' }, ...items)
   ];
   if (hud.note) children.push(p({ class: 'hud-note' }, hud.note));
@@ -94,10 +116,13 @@ export function renderViewLayout(view, ctx) {
   const hud = renderHud(view);
   if (hud) stageChildren.push(hud);
 
-  const stage = div({ id: 'viewer-stage', class: 'viewer-stage' }, ...stageChildren);
-  const body = view.logPanel
-    ? div({ class: 'viewer-split' }, stage, aside({ id: 'view-log', class: 'view-log' }))
-    : stage;
+  let body;
+  if (view.logPanel) {
+    const placement = LOG_PANEL_BODY[view.logPanelPlacement] ? view.logPanelPlacement : 'stage';
+    body = LOG_PANEL_BODY[placement](stageChildren);
+  } else {
+    body = div({ id: 'viewer-stage', class: 'viewer-stage' }, ...stageChildren);
+  }
 
   const content = section({ class: 'viewer-page' },
     body,

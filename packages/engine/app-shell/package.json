@@ -8,7 +8,8 @@
     ".": "./src/index.mjs",
     "./create-app-config": "./src/create-app-config.mjs",
     "./create-theme-handler": "./src/create-theme-handler.mjs",
-    "./create-shell-views": "./src/create-shell-views.mjs"
+    "./create-shell-views": "./src/create-shell-views.mjs",
+    "./ssr-view-registry": "./src/ssr-view-registry.mjs"
   },
   "scripts": {
     "test": "node --test test/*.mjs"
@@ -24,7 +25,8 @@
   "dependencies": {
     "@zeus/presets-sdk": "0.1.0",
     "@zeus/rooms": "0.1.0",
-    "@zeus/ui-kit": "0.1.0"
+    "@zeus/ui-kit": "0.1.0",
+    "hyperaxe": "^3.0.2"
   },
   "license": "AIPLv1",
   "publishConfig": {
