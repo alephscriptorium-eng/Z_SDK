@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u101-volumes-outbound` |
-| commit(s) | `3eaef25`, `bc2dcec`, `6edfc30`, `74993b5` |
+| commit(s) | `3eaef25`, `bc2dcec`, `6edfc30` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
