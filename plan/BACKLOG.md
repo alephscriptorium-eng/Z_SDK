@@ -950,13 +950,17 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   **CA (b):** test 4-kinds + CONTRATO.md.
   **Demolición (a):** el condicional.
 
-### Cola hallazgos lote higiene 11c (WP-U98)
+### Cola hallazgos lote higiene 11c (WP-U98 / WP-U99)
 
-- (U98) asimetría `makeIntent` / `game` vs `isShaped('intent')` → **U99** 🔶
-  (rebase sobre master post-U98).
-- (U98) `release:changeset-dry` consume changesets / bumpea — ya en cola
-  U96; no usar como verificación inocua.
-- CRLF `spec-sync`/`types-sync` Windows — ya en cola vigilante (U95).
+- (U98) asimetría `makeIntent` / `game` vs `isShaped('intent')` → **U99**
+  revisado en rama `wp/u99-makeintent-game` (merge master `e68eca8`);
+  BACKLOG 🔶 hasta `chore(plan): acepta WP-U99` + merge a master.
+- (U98/U99) `release:changeset-dry` / `@zeus/linea-kit` `exports ./schemas/*`
+  missing from tarball — ya en cola U96; no usar dry como verificación
+  inocua mid-WP.
+- (U98/U99) CRLF `spec-sync`/`types-sync` Windows — ya en cola vigilante
+  (U95); re-run U99: `types-sync` falla solo por `\r\n` vs `\n` (contenido
+  idéntico).
 
 ### Cola hallazgos vigilante 2026-07-18 (sin WP propio)
 
