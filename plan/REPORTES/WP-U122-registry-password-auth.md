@@ -167,4 +167,29 @@ $ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:|:_authToken=|:_auth=" 
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18 · tip `409c3bb` (re-revisión
+tras `5a4db5a` alineación canónica; anula el veredicto sobre tip
+`9374ae5`).
+
+Verificado:
+- Diff vs `main` acotado: `release.yml` + contrato U53 + docs del gate
+  (`.changeset/README.md`, `ci.yml` comentario, `PRACTICAS` §6,
+  `release-changeset-dry`). **0** diff en `plan/BACKLOG.md`. Sin
+  credenciales / sin U55.
+- Wiring = canónico `ScriptoriumVps/.npmrc.example`: orden
+  `username` → `_password` → `email` → `always-auth`; **NO** `_auth` /
+  `_authToken`. Anti-patrón PATTERN-DOCKER/verdaccio no copiado.
+- Re-smoke contrato: `node --test --test-name-pattern "publish gated on
+  _password" test/release/release-u53.test.mjs` → pass 1/1.
+- Demolición en `release.yml`: `NODE_AUTH_TOKEN` / `secrets.NPM_TOKEN` /
+  `registry-url:` / `:_authToken=` / `:_auth=` → 0 matches.
+- Skip ⏳ sin secrets: simulación local `has_npm=false` + notice.
+- CA `npm view @zeus/protocol` ⏳ ops (brief + D-24 frontera); no bloquea
+  aceptación de código.
+- Hallazgos no bloqueantes (cola orquestador): `ARQUITECTURA.md` §5 y
+  DECISIONES §ops residual aún citan `NPM_TOKEN`.
+
+**Merge:** `wp/u122-registry-password-auth` → `main` (autorizado; **no**
+ejecutado en esta sesión). Tras merge: Sprint 1 cerrado; U55 gated a ops
+(`NPM_USERNAME`/`NPM_PASSWORD` + publish real). BACKLOG 🔶→✅ solo en
+`main` post-merge.
