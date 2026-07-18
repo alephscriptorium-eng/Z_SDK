@@ -4,8 +4,10 @@ import {
   PROTOCOL_VERSION,
   EVENTS,
   EVENT_KINDS,
+  EVENT_META,
   makeEnvelope,
   makeIntent,
+  isShaped,
   isIntentShaped,
   validateIntent,
   createIntentCatalog
@@ -15,6 +17,13 @@ test('EVENT_KINDS are the four contract kinds', () => {
   assert.deepEqual([...EVENT_KINDS], ['state', 'intent', 'track', 'ledger']);
   assert.equal(EVENTS.STATE, 'state');
   assert.equal(EVENTS.INTENT, 'intent');
+});
+
+test('EVENT_META covers every EVENT_KIND', () => {
+  for (const kind of EVENT_KINDS) {
+    assert.ok(EVENT_META[kind], `missing EVENT_META[${kind}]`);
+    assert.ok(Array.isArray(EVENT_META[kind].payload.required));
+  }
 });
 
 test('makeEnvelope requires game + valid kind', () => {
@@ -52,4 +61,42 @@ test('isIntentShaped + validateIntent with catalog', () => {
 
   assert.equal(validateIntent(makeIntent('x', 'join'), catalog).ok, true);
   assert.equal(validateIntent({ actorId: 'x' }, catalog).error, 'intent_malformada');
+});
+
+test('isShaped accepts valid envelopes and rejects invalid per kind', () => {
+  const intentOk = {
+    v: PROTOCOL_VERSION,
+    game: 'demo',
+    actorId: 'uno',
+    intent: 'join',
+    ts: 1
+  };
+  assert.equal(isShaped('intent', intentOk), true);
+  assert.equal(isShaped('intent', { ...intentOk, game: '' }), false);
+  assert.equal(isShaped('intent', { actorId: 'uno', intent: 'join' }), false);
+
+  const stateOk = makeEnvelope({ game: 'demo', kind: 'state', tick: 2 });
+  assert.equal(isShaped('state', stateOk), true);
+  assert.equal(isShaped('state', { v: 1, game: 'demo' }), false); // falta ts
+
+  const trackOk = makeEnvelope({
+    game: 'demo',
+    kind: 'track',
+    actorId: 'uno',
+    hint: 'cache-browser'
+  });
+  assert.equal(isShaped('track', trackOk), true);
+  assert.equal(isShaped('track', { v: 1, game: 'demo', ts: 1 }), false); // falta actorId
+
+  const ledgerOk = makeEnvelope({
+    game: 'demo',
+    kind: 'ledger',
+    seq: 0,
+    entryKind: 'join'
+  });
+  assert.equal(isShaped('ledger', ledgerOk), true);
+  assert.equal(isShaped('ledger', { v: 1, game: 'demo', ts: 1, kind: 'ledger' }), false); // falta seq
+
+  assert.equal(isShaped('nope', intentOk), false);
+  assert.equal(isShaped('state', null), false);
 });

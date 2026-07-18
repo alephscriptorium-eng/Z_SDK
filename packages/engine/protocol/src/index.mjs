@@ -7,12 +7,13 @@ export {
   PROTOCOL_VERSION,
   EVENT_KINDS,
   EVENTS,
+  EVENT_META,
   makeEnvelope,
   makeIntent,
+  isShaped,
   isIntentShaped,
   validateIntent
 } from './contract.mjs';
-
 export {
   ROLES,
   isRole,
