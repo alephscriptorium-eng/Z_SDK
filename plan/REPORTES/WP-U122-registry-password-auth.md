@@ -2,41 +2,56 @@
 
 | dato | valor |
 | ---- | ----- |
-| agente | worker (swarm chat WP-U122) |
+| agente | worker (swarm chat WP-U122 · resume) |
 | fecha | 2026-07-18 |
 | rama | `wp/u122-registry-password-auth` |
-| commit(s) | `27427d9` `ccf1f4b` `9374ae5` |
+| commit(s) | `27427d9` + tip HEAD (alineación canónica) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
 
 Se cambió el bloque de auth de `.github/workflows/release.yml` al patrón
-basic-auth durable **D-24 (a)**: secrets `NPM_USERNAME` + `NPM_PASSWORD`
-(valor de `_password` ya en base64, como el `.npmrc.example` del registry /
-`npm login`) escritos en `.npmrc` del job (`//host/:_password=` +
-`username` + `always-auth`). Se eliminó la vía JWT: `registry-url`/
-`scope` de `setup-node` (inyectaba bearer), `NODE_AUTH_TOKEN` y
-`secrets.NPM_TOKEN`. Sin ambos secrets → `has_npm=false` y skip ⏳ limpio
-(quality+test siguen corriendo). Se actualizó el test de contrato U53 y
-menciones documentales del gate de publish (`ci.yml` comentario,
-`.changeset/README.md`, `release-changeset-dry.mjs`, `PRACTICAS` §6).
-**No** se inventaron ni commitearon credenciales; publish real = ops
-post-merge.
+basic-auth durable **D-24 (a)** alineado al canónico
+`aleph-scriptorium/ScriptoriumVps/.npmrc.example`:
+`username` + `_password` (solo-password base64) + `email` + `always-auth`.
+Secrets Actions: `NPM_USERNAME` + `NPM_PASSWORD` (valor de `_password` ya
+en base64). Email CI fijo `ci@scriptorium.escrivivir.co` (ops no carga
+`NPM_EMAIL`). **NO** `_auth` · **NO** `_authToken`. Anti-patrón
+`ScriptoriumVps/PATTERN-DOCKER/verdaccio/.npmrc.example` (`_authToken`
+JWT) no se copió. Sin ambos secrets → `has_npm=false` y skip ⏳ limpio
+(quality+test siguen). Demolición: vía JWT (`registry-url`/`scope` de
+`setup-node`, `NODE_AUTH_TOKEN`, `secrets.NPM_TOKEN`). Contrato U53 y
+docs del gate actualizados. **No** se inventaron credenciales; publish
+real = ops post-merge.
 
 ## Archivos tocados
 
-- `.github/workflows/release.yml` — modificado: auth `_password` + skip ⏳
+- `.github/workflows/release.yml` — modificado: auth canónico `_password`
 - `.github/workflows/ci.yml` — modificado: comentario del gate de publish
-- `test/release/release-u53.test.mjs` — modificado: contrato `_password` +
-  asserts de demolición
+- `test/release/release-u53.test.mjs` — modificado: contrato orden +
+  demolición `_auth`/`_authToken`
 - `scripts/release-changeset-dry.mjs` — modificado: mensaje ⏳ alineado
 - `.changeset/README.md` — modificado: gate publish
 - `plan/PRACTICAS.md` — modificado: §6 secrets
-- `plan/REPORTES/WP-U122-registry-password-auth.md` — creado (este reporte)
+- `plan/REPORTES/WP-U122-registry-password-auth.md` — creado/actualizado
 
 ## Evidencia
 
 > Regla CASOS.md: no inventes observaciones. Salida literal o `⏳ sin verificar`.
+
+### Canónico localizado
+
+```
+$ ls /c/Users/aleph/OASIS/aleph-scriptorium/ScriptoriumVps/.npmrc.example
+/c/Users/aleph/OASIS/aleph-scriptorium/ScriptoriumVps/.npmrc.example
+
+# campos (sin valores secretos):
+//npm.scriptorium.escrivivir.co/:username=…
+//npm.scriptorium.escrivivir.co/:_password=…
+//npm.scriptorium.escrivivir.co/:email=…
+//npm.scriptorium.escrivivir.co/:always-auth=true
+# cabecera: NO _auth ni _authToken
+```
 
 ### Contrato workflow (test U53 / U122)
 
@@ -51,11 +66,14 @@ ok 1 - release.yml: release job needs quality+test; publish gated on _password b
 ### Demolición en `release.yml`
 
 ```
-$ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:" .github/workflows/release.yml
+$ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:|:_authToken=|:_auth=" .github/workflows/release.yml
 (sin matches)
 
-$ rg -n ":_password=" .github/workflows/release.yml
-127:            echo "//${HOST}/:_password=${NPM_PASSWORD}"
+$ rg -n ":username=|:_password=|:email=|:always-auth=" .github/workflows/release.yml
+132:            echo "//${HOST}/:username=${NPM_USERNAME}"
+133:            echo "//${HOST}/:_password=${NPM_PASSWORD}"
+134:            echo "//${HOST}/:email=ci@scriptorium.escrivivir.co"
+135:            echo "//${HOST}/:always-auth=true"
 ```
 
 ### Path skip sin secret (simulación local del gate)
@@ -95,12 +113,12 @@ post-merge. El path skip está cableado en el job `release` tras
 Wiring `_authToken` / JWT-as-`NPM_TOKEN` como única vía en el workflow:
 
 - eliminado `registry-url` + `scope` del `setup-node` del job `release`
-  (evita inyección bearer)
 - eliminados `NODE_AUTH_TOKEN` / `NPM_TOKEN` del env de `changesets/action`
 - detect credentials ya no lee `secrets.NPM_TOKEN`
+- asserts de contrato: no `:_authToken=` ni `:_auth=`
 
 ```
-$ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:" .github/workflows/release.yml
+$ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:|:_authToken=|:_auth=" .github/workflows/release.yml
 (sin matches)
 ```
 
@@ -111,32 +129,30 @@ $ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:" .github/workflows/rel
   `.npmrc` / U50; no hay puerto nuevo).
 - [x] Cadenas if/switch que debieron ser tabla: N/A (gate binario
   has_creds).
-- [x] Duplicación con otros paquetes: N/A (workflow).
+- [x] Duplicación con otros paquetes: N/A (workflow); patrón tomado del
+  canónico externo ScriptoriumVps, no de PATTERN-DOCKER/verdaccio.
 - [x] console.log / código comentado / TODO sin backlog: no.
 - [x] Nombres fuera de glosario o de transición: no (`_password` es el
   campo npm/Verdaccio; D-24 (a)).
 - [x] Demolición completa (grep arriba): sí en `release.yml`.
-- [x] Tests prueban comportamiento: contrato YAML (secrets, `:\_password=`,
-  ausencia de JWT wiring) — no solo «no explota».
+- [x] Tests prueban comportamiento: contrato YAML (orden canónico,
+  secrets, ausencia de JWT/`_auth`) — no solo «no explota».
 - [ ] Arranque real verificado: ⏳ sin secret en Actions / sin publish.
 - [x] README/specs del paquete siguen siendo verdad: actualizados
-  comentarios/docs del gate; no hay `.npmrc.example` en este repo (vive
-  en el registry ops).
+  comentarios/docs del gate; canónico vive en ScriptoriumVps (citado).
 - [x] El diff contiene solo el alcance del WP: sí (workflow + contrato +
-  docs del gate). No U55, no credenciales.
+  docs del gate). No U55, no credenciales, no BACKLOG.
 
 ## Hallazgos fuera de alcance
 
-- `test/release/release-u53.test.mjs` «version tree prepared…» falla en
-  esta punta: hay **6** changesets pendientes en `.changeset/`
-  (`wp-u109`, `u113`, `u116`, `u117`, `u119`, `u70`) mientras el test
-  exige `pending.length === 0`. Preexistente; no tocado.
+- `test/release/release-u53.test.mjs` «version tree prepared…» falla si
+  hay changesets pendientes en `.changeset/` (`pending.length === 0`).
+  Preexistente; no tocado.
 - `plan/ARQUITECTURA.md` §5 aún cita `NPM_TOKEN` en el gate de publish —
-  no tocado aquí (queda desalineado tras U122; candidato higiene orquestador).
+  no tocado (candidato higiene orquestador).
+- `plan/DECISIONES.md` §abiertas aún nombra `NPM_TOKEN` en ops residual
+  (a) — desalineado tras D-24 (a); no tocado (solo usuario cierra DA).
 - Reportes históricos U53 siguen nombrando `NPM_TOKEN` — no reescritos.
-- No se localizó `.npmrc.example` dentro de zeus-sdk; el patrón se tomó
-  de D-24/ENTREGA-18d + formato Verdaccio/`npm login` (`:_password` +
-  `username`).
 
 ## Dudas / bloqueos
 
@@ -151,16 +167,4 @@ $ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:" .github/workflows/rel
 
 ## Revisión del orquestador
 
-**Aceptado ✅** — orquestador / 2026-07-18 · tip `ea1fead`.
-
-Verificado:
-- Diff = `release.yml` + contrato U53 + docs del gate (sin BACKLOG / sin
-  credenciales / sin U55).
-- Test contrato `_password` pass 1/1 (re-smoke orquestador).
-- Demolición: `NODE_AUTH_TOKEN` / `secrets.NPM_TOKEN` / `registry-url:` → 0
-  en `release.yml`; skip ⏳ sin secrets cableado.
-- CA `npm view` ⏳ honesto (ops + primer publish post-merge; frontera D-24).
-- Hallazgo no bloqueante: `ARQUITECTURA.md` §5 aún cita `NPM_TOKEN` → cola.
-
-**Merge:** `wp/u122-registry-password-auth` → `main`. Tras merge: Sprint 1
-cerrado; U55 sigue gated a ops (secrets + publish real).
+_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_

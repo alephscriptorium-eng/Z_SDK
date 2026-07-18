@@ -120,12 +120,17 @@ jobs:
           NPM_USERNAME: ${{ secrets.NPM_USERNAME }}
           NPM_PASSWORD: ${{ secrets.NPM_PASSWORD }}
         run: |
-          # Patrón Verdaccio / `.npmrc.example` del registry (D-24 a):
-          # //host/:_password=<base64> + username (no bearer JWT de 7d)
+          # Canónico D-24 (a): aleph-scriptorium/ScriptoriumVps/.npmrc.example
+          #   username + _password (solo-password base64) + email + always-auth
+          #   NO _auth · NO _authToken
+          # Anti-patrón (no copiar): ScriptoriumVps/PATTERN-DOCKER/verdaccio/
+          #   (.npmrc.example con _authToken JWT).
+          # NPM_PASSWORD = valor de _password ya en base64 (como npm login /
+          # el example); sin comillas. Email CI fijo (ops no carga NPM_EMAIL).
           HOST='npm.scriptorium.escrivivir.co'
           {
-            echo "//${HOST}/:_password=${NPM_PASSWORD}"
             echo "//${HOST}/:username=${NPM_USERNAME}"
+            echo "//${HOST}/:_password=${NPM_PASSWORD}"
             echo "//${HOST}/:email=ci@scriptorium.escrivivir.co"
             echo "//${HOST}/:always-auth=true"
           } >> .npmrc
