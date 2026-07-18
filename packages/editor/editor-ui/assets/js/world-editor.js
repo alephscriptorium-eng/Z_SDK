@@ -1,5 +1,5 @@
 /**
- * Client for world draft + Notario release (WP-U70).
+ * Client for world draft + Notario release (WP-U70 / U111).
  */
 (function () {
   function $(id) {
@@ -13,6 +13,24 @@
     el.classList.toggle('error', Boolean(isError));
   }
 
+  /** gameId → kind from option labels is unavailable; fetch materials once. */
+  let gameKinds = {};
+
+  function syncNarrativeFields() {
+    const gameId = $('gameId')?.value;
+    const field = $('world-story-field');
+    const kind = gameKinds[gameId] || (gameId === 'plaza' ? 'narrative' : 'toy');
+    if (field) {
+      field.style.display = kind === 'narrative' ? '' : 'none';
+    }
+    if (kind === 'narrative' && $('storyBoard') && !$('storyBoard').value.trim()) {
+      const defaults = window.__ZEUS_NARRATIVE_DEFAULTS__;
+      if (defaults && defaults[gameId]) {
+        $('storyBoard').value = JSON.stringify(defaults[gameId], null, 2);
+      }
+    }
+  }
+
   function readDraftFromForm() {
     const cloakBoxes = document.querySelectorAll('input[name="cloakIds"]:checked');
     const cloakIds = Array.from(cloakBoxes).map((el) => el.value);
@@ -20,8 +38,9 @@
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    return {
-      gameId: $('gameId').value,
+    const gameId = $('gameId').value;
+    const draft = {
+      gameId,
       version: $('version').value,
       sceneId: $('sceneId').value,
       labelset,
@@ -29,6 +48,34 @@
       casosMd: $('casosMd').value,
       cloakIds
     };
+    const kind = gameKinds[gameId] || (gameId === 'plaza' ? 'narrative' : 'toy');
+    if (kind === 'narrative') {
+      const raw = ($('storyBoard') && $('storyBoard').value) || '';
+      try {
+        draft.storyBoard = raw.trim() ? JSON.parse(raw) : null;
+      } catch {
+        draft.storyBoard = raw;
+      }
+    } else {
+      draft.storyBoard = null;
+    }
+    return draft;
+  }
+
+  async function loadMaterialsMeta() {
+    try {
+      const res = await fetch('/api/world/materials');
+      const body = await res.json();
+      if (body.success && body.materials?.games) {
+        gameKinds = Object.fromEntries(body.materials.games.map((g) => [g.id, g.kind]));
+        if (body.materials.narrativeDefaults) {
+          window.__ZEUS_NARRATIVE_DEFAULTS__ = body.materials.narrativeDefaults;
+        }
+      }
+    } catch {
+      // keep fallbacks
+    }
+    syncNarrativeFields();
   }
 
   async function saveDraft() {
@@ -91,6 +138,9 @@
     const saveBtn = $('btn-save-draft');
     const releaseBtn = $('btn-release');
     const resetBtn = $('btn-reset-draft');
+    const gameSelect = $('gameId');
+    if (gameSelect) gameSelect.addEventListener('change', syncNarrativeFields);
+    loadMaterialsMeta();
     if (saveBtn) saveBtn.addEventListener('click', () => saveDraft().catch((e) => status(e.message, true)));
     if (releaseBtn) releaseBtn.addEventListener('click', () => release().catch((e) => status(e.message, true)));
     if (resetBtn) resetBtn.addEventListener('click', () => resetDraft().catch((e) => status(e.message, true)));

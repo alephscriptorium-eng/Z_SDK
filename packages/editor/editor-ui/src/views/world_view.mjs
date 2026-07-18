@@ -19,6 +19,15 @@ export const worldView = (data = {}) => {
   const materials = data.materials || { scenes: [], lines: [], games: [] };
   const cloaks = data.cloaks || [];
   const labelsetText = Array.isArray(draft.labelset) ? draft.labelset.join(', ') : '';
+  const storyBoardText =
+    typeof draft.storyBoard === 'string'
+      ? draft.storyBoard
+      : draft.storyBoard
+        ? JSON.stringify(draft.storyBoard, null, 2)
+        : '';
+  const isNarrative = (materials.games || []).some(
+    (g) => g.id === draft.gameId && g.kind === 'narrative'
+  );
 
   return template(
     'World editor',
@@ -29,8 +38,8 @@ export const worldView = (data = {}) => {
           div({ class: 'hero-content' },
             h2({ class: 'hero-subtitle' }, 'Mundo A · gamemap y release'),
             p({ class: 'hero-description' },
-              'Define un juego mínimo (escena, labelset, línea, casos) y dispara el pipeline ',
-              'Notario (WP-U62): start pack + acta + tarball instalable.'
+              'Define un juego mínimo — sketch (juguete) o plaza (narrativo: actos / story-board) — ',
+              'y dispara el pipeline Notario (WP-U62): start pack + acta + tarball instalable.'
             ),
             div({ class: 'hero-actions' },
               a({ href: '/cloaks', class: 'btn btn-secondary' }, 'Cloaks (MCP)'),
@@ -85,6 +94,22 @@ export const worldView = (data = {}) => {
           div({ class: 'world-field' },
             label({ for: 'casosMd' }, 'Casos (CASOS.md)'),
             textarea({ id: 'casosMd', name: 'casosMd', rows: '14' }, draft.casosMd || '')
+          ),
+          div({
+            class: 'world-field world-field-story',
+            id: 'world-story-field',
+            style: isNarrative ? null : 'display:none'
+          },
+            label({ for: 'storyBoard' }, 'Story-board (solve-inline · actos JSON)'),
+            p({ class: 'text-muted world-field-hint' },
+              'Dialecto mínimo U111 (acts[].widgets). Registro completo de dialectos → U114.'
+            ),
+            textarea({
+              id: 'storyBoard',
+              name: 'storyBoard',
+              rows: '16',
+              spellcheck: 'false'
+            }, storyBoardText)
           ),
           cloaks.length > 0 && div({ class: 'world-field' },
             h3('Cloaks opcionales'),
