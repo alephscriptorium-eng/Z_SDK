@@ -83,7 +83,7 @@ export function renderCastTableWidget(ctx = {}) {
 
   const data = ctx.data && typeof ctx.data === 'object' ? ctx.data : {};
   const rows = Array.isArray(data.rows) ? data.rows : [];
-  const widgetId = ctx.id || 'panel-elenco';
+  const widgetId = ctx.id || 'cast-table';
   const title = data.title || widgetId;
 
   const el = doc.createElement('section');
@@ -162,12 +162,28 @@ export function renderCastTableWidget(ctx = {}) {
 }
 
 /**
- * Registro por defecto: al menos `panel-elenco` → tabla de elenco.
+ * Ids del cast-table en la fábrica por defecto.
+ * Canónico: `cast-table`. Alias de dialecto: `panel-elenco`
+ * → mismo render (tabla de ids; un solo renderer).
+ */
+export const CAST_TABLE_WIDGET_IDS = Object.freeze([
+  'cast-table',
+  'panel-elenco'
+]);
+
+/**
+ * Registro por defecto: canónico `cast-table` + alias `panel-elenco`
+ * → mismo `renderCastTableWidget`.
  * @param {Record<string, WidgetRenderer>} [extra]
  */
 export function createDefaultWidgetRegistry(extra = {}) {
+  /** @type {Record<string, WidgetRenderer>} */
+  const entries = {};
+  for (const id of CAST_TABLE_WIDGET_IDS) {
+    entries[id] = renderCastTableWidget;
+  }
   return createWidgetRegistry({
-    'panel-elenco': renderCastTableWidget,
+    ...entries,
     ...extra
   });
 }

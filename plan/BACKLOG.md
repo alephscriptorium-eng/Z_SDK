@@ -11,11 +11,11 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 ✅ · U116 🔶 · U117 🔶)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 ✅ · U116 ✅ · U117 🔶)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
 > **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 ✅**; **U114 ✅**;
-> **U115 ✅**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> **U115 ✅**; **U116 ✅**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
 > (addenda triaje registro vigilante 2026-07-18 + post-U114 view-kit
 > alias + post-U115 schema único). Línea de producto en **`main`**.
 > **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus `bd5f46c`).
@@ -27,10 +27,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 > · ~~**U114**~~ ✅ · **lote 1–4+8 cerrado** · (3)
 > diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable) ·
 > (4) triaje vigilante → ~~**U115**~~ ✅ (schema story-board real / AJV
-> en kit carpeta) · (5) vigilante post-U114 → **U116** 🔶 (GO diseño
-> **A** · alias `cast-table` + `panel-elenco`; swarm 2026-07-18) ·
-> (6) vigilante post-U115 → **U117** 🔶 (schema story-board único en
-> zeus; library+editor; swarm 2026-07-18).
+> en kit carpeta) · (5) vigilante post-U114 → ~~**U116**~~ ✅ (GO
+> diseño **A** · alias `cast-table` + `panel-elenco`) · (6) vigilante
+> post-U115 → **U117** 🔶 (schema story-board único en zeus;
+> library+editor; swarm 2026-07-18).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -59,7 +59,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ✅ |
 | Post-U87 — dialectos story-board en editor | **U114** | ✅ |
 | Vigilante — schema story-board real (kit) | **U115** | ✅ |
-| Vigilante post-U114 — alias neutro view-kit | **U116** | 🔶 |
+| Vigilante post-U114 — alias neutro view-kit | **U116** | ✅ |
 | Vigilante post-U115 — schema story-board único (zeus) | **U117** | 🔶 |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
@@ -68,10 +68,9 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
-**En curso:** **U116** 🔶 (swarm / 2026-07-18 · GO diseño **A** ·
-rama `wp/u116-cast-table-alias` · worktree `.worktrees/wp-u116-cast-table-alias`);
-**U117** 🔶 (swarm / 2026-07-18 · rama `wp/u117-story-board-schema` ·
-worktree `.worktrees/wp-u117-story-board-schema` · repos zeus+library)
+**En curso:** **U117** 🔶 (swarm / 2026-07-18 · rama
+`wp/u117-story-board-schema` · worktree
+`.worktrees/wp-u117-story-board-schema` · repos zeus+library)
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -109,8 +108,8 @@ worktree `.worktrees/wp-u117-story-board-schema` · repos zeus+library)
     `79c042c` (sin library); revisión `188e4a2` · **lote 1–4+8 cerrado**
 20. ~~**WP-U115**~~ ✅ — schema story-board real (AJV kit); merge zeus
     `aedd4f3` · library `ff30419`; revisión `d2b6604`
-21. **WP-U116** 🔶 — view-kit: alias neutro `cast-table` (**GO A** ·
-    factory; swarm 2026-07-18; ver WP abajo)
+21. ~~**WP-U116**~~ ✅ — view-kit: alias neutro `cast-table` (**GO A**);
+    merge zeus `d4f9ad3` (sin library); revisión `a3b7e8f`
 22. **WP-U117** 🔶 — schema story-board único en zeus (library+editor);
     swarm 2026-07-18 (ver WP abajo)
 23. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP;
@@ -1388,7 +1387,7 @@ cerrado):
 > revisión `be86bad`); ~~**U114**~~ ✅ (merge zeus `79c042c`; sin
 > library; revisión `188e4a2`) · **lote 1–4+8 cerrado**; ~~**U115**~~ ✅
 > (merge zeus `aedd4f3` · library `ff30419`; revisión `d2b6604`);
-> **U116** 🔶 (GO **A** · alias factory; swarm 2026-07-18);
+> ~~**U116**~~ ✅ (GO **A** · merge zeus `d4f9ad3`; revisión `a3b7e8f`);
 > **U117** 🔶 (schema único `@zeus/story-board-schema`; swarm 2026-07-18).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
@@ -1417,7 +1416,7 @@ cerrado):
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
 > Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; ~~**U113**~~ ✅;
 > ~~**U114**~~ ✅ — **cerrado**. ~~**U115**~~ ✅ (schema kit).
-> En curso: **U116** 🔶 (GO **A**) · **U117** 🔶 (schema único zeus).
+> ~~**U116**~~ ✅ (GO **A**). En curso: **U117** 🔶 (schema único zeus).
 
 - ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
   *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
@@ -1469,28 +1468,16 @@ cerrado):
   README kit: schema = contrato.
   **Deps:** U86 ✅.
 
-- 🔶 **WP-U116 · view-kit: id neutro del cast-table (post-U113)**
-  *(vigilante post-U114; dep U113 ✅)* — **en curso** (swarm /
-  2026-07-18) · rama `wp/u116-cast-table-alias` · worktree
-  `.worktrees/wp-u116-cast-table-alias` · brief
-  `plan/REPORTES/briefs/WP-U116-cast-table-alias.md`.
-  **GO diseño: (A) Alias en factory** — canónico `cast-table` **y**
-  sinónimo `panel-elenco` → mismo `renderCastTableWidget` (tabla de
-  ids; no camino legacy). SOLVE no migra boards. Hallazgo: factory
-  solo registraba `panel-elenco`; renderer ya genérico (`vk-cast-table`).
-  **No solapa U115 / U117** (schema; distinto paquete/capa).
-  **(B) descartada** en este GO (map id-por-dialecto).
-  **CA:** factory expone id neutro usable sin conocer SOLVE; test que
-  monta por ese id; SOLVE (`panel-elenco`) sigue verde; gate
-  two-games limpio; README view-kit veraz (canónico = `cast-table`).
-  **Demolición:** default de fábrica que *solo* conoce `panel-elenco`
-  como id de producto (el sinónimo queda documentado como alias de
-  dialecto, no como único entry); fallback
-  `ctx.id || 'panel-elenco'` en el render → id neutro `cast-table`.
-  **Deps:** U113 ✅. Sin coord. U114 (solo hacía falta para B).
-  **Residual opcional (cola, no bloquea CA):** labels ES hardwired
-  («elenco vacío», columnas participante/rol/eje) — parametrizar vía
-  `data` en WP futuro si hace falta.
+- ✅ **WP-U116 · view-kit: id neutro del cast-table (post-U113)**
+  *(vigilante post-U114; dep U113 ✅)* — aceptado (orquestador /
+  2026-07-18) · merge zeus `d4f9ad3` (sin library) · revisión
+  `a3b7e8f` · reporte `plan/REPORTES/WP-U116-cast-table-alias.md`.
+  **GO (A) Alias en factory** — canónico `cast-table` **y** sinónimo
+  `panel-elenco` → mismo `renderCastTableWidget`. SOLVE no migró
+  boards. **(B) descartada**. README view-kit: canónico = `cast-table`.
+  **Deps:** U113 ✅.
+  **Residual opcional (cola):** labels ES hardwired («elenco vacío»,
+  columnas participante/rol/eje) — parametrizar vía `data` si hace falta.
 
 
 - 🔶 **WP-U117 · Schema story-board único en zeus (post-U115)**
@@ -1560,7 +1547,7 @@ Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
   colas existentes). Meta-lecciones → addenda [RE-PLAN.md](RE-PLAN.md)
   §3.1/3.3/3.7/3.8.
 - Vigilante **post-U114** · factory view-kit solo `panel-elenco` →
-  **WP-U116** 🔶 (arriba; GO **A** · swarm 2026-07-18).
+  ~~**WP-U116**~~ ✅ (arriba; GO **A** · merge `d4f9ad3`).
 - Vigilante **post-U115** · editor regex vs schema AJV library →
   **WP-U117** 🔶 (arriba; schema único en zeus).
 
