@@ -11,17 +11,22 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · lote-ola9-a)
+## Remate — estado swarm (2026-07-18 · lote-ola9-a + A-15)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes D-22 cerrados en
 > código (U104/U60/U106/U105 ✅). Línea de producto en rama **`main`**.
-> **Ola 6 cerrada** (U60–U62 ✅). Residual **publish real** ⏳ ops
-> (`NPM_TOKEN`) → U55 — **no 🔶**. **Ola 9 lote-ola9-a** en curso:
-> U70 + U86 🔶 (2026-07-18). U87 ⬜ (dep U70+U86).
+> **Ola 6 cerrada** (U60–U62 ✅). Residual A-14 → **U107** ⬜ (catálogo
+> games-library; **no 🔶** — no solapa lote-ola9-a). Residual **A-15** →
+> **U108** 🔶 **urgente** (candado VOLUMES/gitignore; no solapa U70/U86).
+> Residual **publish real** ⏳ ops (`NPM_TOKEN`) → U55 — **no 🔶**.
+> **Ola 9 lote-ola9-a** en curso: U70 + U86 🔶 (2026-07-18). U87 ⬜
+> (dep U70+U86).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
 publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
+Post-ola 6 (A-14): **U107** ⬜ (Pages catálogo `games.z-sdk…`).
+Post-U62 (A-15): **U108** 🔶 (candado gitignore VOLUMES).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -31,6 +36,8 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 | (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | ✅ |
 | Ola 6 — migración juegos | **U61** | ✅ |
 | Ola 6 — pipeline releases de datos | **U62** | ✅ |
+| A-14 — catálogo público games-library | **U107** | ⬜ |
+| A-15 — candado VOLUMES / gitignore fixtures | **U108** | 🔶 urgente |
 | Ola 9 — editor gamemaps / releases | **U70** | 🔶 lote-ola9-a |
 | Ola 9 — CARPETA DRAMATURGO | **U86** | 🔶 lote-ola9-a |
 | Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ⬜ dep U70+U86 |
@@ -40,7 +47,13 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - **U87** — dep U70 ✅ + U86 ✅ (no asignar en lote-ola9-a)
+- **U107** — catálogo Pages games-library (A-14; dep U60–U62 ✅; **no 🔶**
+  mientras vuelan U70/U86)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
+
+**En curso (además de lote-ola9-a):**
+- **U108** 🔶 (A-15 / orquestador / 2026-07-18) — candado VOLUMES;
+  brief + worktree listos; **no interrumpe** U70/U86
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -57,6 +70,10 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 9. ~~Ola 6 / WP-U62~~ ✅ — pipeline startpack; ola 6 cerrada
 10. **Ola 9 / lote-ola9-a** — U70 + U86 🔶 (asignados 2026-07-18);
     U87 espera ambos ✅ | ops NPM_TOKEN/DNS (U55 sigue gated)
+11. **WP-U107** ⬜ (A-14) — catálogo público games-library; asignar
+    **después** de lote-ola9-a o en hueco sin solape con U70/U86
+12. **WP-U108** 🔶 (A-15) — candado VOLUMES/gitignore **urgente**; worker
+    listo (padre lanza); no solapa U70/U86
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -68,6 +85,10 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 - ~~Economía builds (paths)~~ → **WP-U104** ✅
 - ~~Dominio custom Pages `z-sdk.escrivivir.co`~~ → **WP-U106** ✅
   (merge `49bf72f`; CA remoto z-sdk.escrivivir.co ⏳ tick DNS/HTTPS usuario)
+- Catálogo público games-library (Pages + zine + `games.z-sdk…`) →
+  **WP-U107** ⬜ (A-14; D-23)
+- ~~Candado VOLUMES gitignore (whitelist ancha post-U62)~~ →
+  **WP-U108** 🔶 (A-15; urgente)
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
 - Harness U100 cid hex → formato SSB `&…sha256` (cola U101; live diferido)
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
@@ -623,12 +644,16 @@ Hallazgos diferidos U56 (no bloquean):
   `e2e:player-ui-dj` (G-U31.4/6 intermitente). Estabilizar e2e / timing.
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
-— **cerrada** (orquestador / 2026-07-18h; U60–U62 ✅)
+— **cerrada** (orquestador / 2026-07-18h; U60–U62 ✅); residual A-14 →
+  **WP-U107** ⬜; residual A-15 → **WP-U108** 🔶
 
 > **Cerrada** (orquestador / 2026-07-18h): **U60 ✅** · **U61 ✅**
 > (merge zeus `6d38287`; library `9baf67a`) · **U62 ✅** (merge zeus
 > `2ad8c36`; library `688be30`). Ola 9 desbloqueada → **lote-ola9-a**
-> (U70 + U86 🔶).
+> (U70 + U86 🔶). Residual **A-14** (2026-07-18): catálogo público →
+> **WP-U107** ⬜ (no asignar mientras lote-ola9-a vuele). Residual
+> **A-15** (2026-07-18): candado VOLUMES → **WP-U108** 🔶 urgente
+> (paralelizable; no solapa U70/U86).
 
 - ✅ **WP-U60 · Repo Z_SDK-games-library** (D-11; D-22) — aceptado
   (orquestador / 2026-07-18; merge `wp/u60-games-library`; revisión
@@ -660,6 +685,40 @@ Hallazgos diferidos U56 (no bloquean):
   **Demolición:** `VOLUMES/` vivos del monorepo — ✅ (fixtures only).
   Reporte: `plan/REPORTES/WP-U62-release-pipeline.md`.
   Brief: `plan/REPORTES/briefs/WP-U62-release-pipeline.md`.
+
+- 🔶 **WP-U108 · Candado VOLUMES / gitignore fixtures** *(A-15; dep U62 ✅)*
+  — en curso (orquestador / 2026-07-18; **urgente**) — el `.gitignore`
+  des-ignora `!VOLUMES/DISK_02/**` y `!VOLUMES/DISK_03/**` enteros; datos
+  de caso reales del checkout (~20 MB; p.ej. `DISK_02/LINEAS/espana/…`,
+  `DISK_03/FORCES/forces/force-a..g`) quedan trackeables. Acotar whitelist
+  a subpaths exactos de fixture (`git ls-files VOLUMES/`); corregir docs/
+  reporte U62 que los dan por «gitignorados».
+  **CA:** `git check-ignore` sobre rutas vivas → IGNORADO; `git add
+  VOLUMES/ --dry-run` no añade fuera de fixtures trackeados; `git
+  ls-files VOLUMES/` sin cambios; tests de fixtures verdes; docs honestas.
+  **Demolición:** wildcards anchas `!VOLUMES/DISK_0{2,3}/**`.
+  Rama: `wp/u108-volumes-gitignore` · worktree:
+  `.worktrees/wp-u108-volumes-gitignore` · brief:
+  `plan/REPORTES/briefs/WP-U108-volumes-gitignore.md`.
+  _(no solapa U70/U86; padre lanza worker)_
+
+- ⬜ **WP-U107 · Catálogo público de la games-library** *(A-14; D-23;
+  dep U60 ✅, U61 ✅, U62 ✅)* — Pages en `Z_SDK-games-library` con la
+  misma técnica que el portal del monorepo (VitePress + workflow
+  `concurrency` + `paths: ['docs/**']` + piel zine reutilizada /
+  copiada): (1) **portada-catálogo** — un card por juego (delta, pozo,
+  futuros) con descripción corta, cómo jugarlo/levantarlo y enlace a
+  su spec; (2) **sección releases** — por juego, start packs publicados
+  (versión, acta Notario, `npm install @zeus/startpack-<game>`, enlace
+  GitHub Release; si aún no hay, «⏳ sin releases» honesto); (3)
+  **dominio custom** `games.z-sdk.escrivivir.co` (D-23) — mismo patrón
+  U106: usuario DNS `CNAME · games.z-sdk → alephscriptorium-eng.github.io`;
+  WP configura Settings + Enforce HTTPS.
+  **CA:** URL viva con HTTPS; un card por juego migrado; sección
+  releases refleja estado real (⏳ o lista); workflow solo dispara con
+  cambios en `docs/**`; piel zine aplicada (mono/b-n/rayas/print).
+  **Demolición:** n/a.
+  _(pendiente — no 🔶 mientras U70/U86 vuelan; no solapa ola 9)_
 
 ## Ola 7 — El plano de datos (diseño en [DATOS.md](DATOS.md); paralelizable
 con olas 2–5 salvo deps indicadas) — **cerrada** (orquestador / 2026-07-18;

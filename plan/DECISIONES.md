@@ -239,10 +239,22 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   `https://alephscriptorium-eng.github.io/Z_SDK/` (`base: /Z_SDK/` en
   Actions vía `resolveDocsBase()`).
 
+- **D-23 · 2026-07-18 · Catálogo público games-library + dominio
+  `games.z-sdk.escrivivir.co`** (por el usuario / custodio; addenda
+  **A-14**). La library (`Z_SDK-games-library`, U60–U62 ✅) gana un
+  catálogo FOSS (portada por juego + sección releases/start packs), no
+  solo «docs». Técnica = réplica U103/U106 (VitePress + Pages + piel
+  zine). Subdominio **decidido**: `games.z-sdk.escrivivir.co` (mismo
+  patrón U106; DNS `CNAME · games.z-sdk → alephscriptorium-eng.github.io`
+  = ops usuario). Destino: **WP-U107** ⬜. No abre DA; no interrumpe
+  lote-ola9-a (U70/U86).
+
 ## Abiertas (bloquean lo indicado)
 
-*(Ninguna decisión de diseño abierta tras D-22. Ops residuales — no son
+*(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son
 DA: (a) endpoint registry + secret `NPM_TOKEN` para publish real → U55;
 (b) sidecar blob cuando ops lo entregue; (c) DNS CNAME `z-sdk` +
-Custom domain/HTTPS en Pages Settings → CA de U106. Horizontes
-WP-U71/72/73 siguen esperando evidencia o diseño externo.)*
+Custom domain/HTTPS en Pages Settings → CA de U106; (d) DNS CNAME
+`games.z-sdk` + Custom domain/HTTPS en Pages de la library → CA de
+U107. Horizontes WP-U71/72/73 siguen esperando evidencia o diseño
+externo.)*
