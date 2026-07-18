@@ -27,12 +27,14 @@ Canonical on-disk storage for Zeus preset datasets. Each volume occupies a **DIS
 | Variable / comando | Uso |
 |--------------------|-----|
 | `ZEUS_VOLUMES_ROOT` | Raíz del árbol VOLUMES |
-| `ZEUS_FIREHOSE_REMOTE_PATH` | Origen remoto para sync firehose |
+| `ZEUS_FIREHOSE_REMOTE_PATH` | Origen remoto legacy para sync firehose |
+| `ZEUS_JETSTREAM_URL` | Jetstream WebSocket (WP-U85: `npm run volumes:sync:firehose`) |
+| `ZEUS_JETSTREAM_FIXTURE=1` | Sync offline de posts de muestra → DISK_01 |
 | `ZEUS_SSB_LOG_PATH` | Dump JSON del log tipado del pub OASIS (`npm run volumes:sync:ssb`) |
 | `ZEUS_SSB_PUB_URL` | Provenance del pub (anotación; el sync no abre red por sí solo) |
 | `ZEUS_LINEAS_IMPORT_SOURCE` | Re-import opcional de líneas (`volumes:init:lineas -- --import`) |
 | `ZEUS_MEDIDOR_IMPORT_SOURCE` | Re-import opcional de medidor casos |
-| `npm run volumes:*` / `npm run sync -w @zeus/ssb-system` | Sync, init, verify de volúmenes |
+| `npm run volumes:sync:firehose` / `volumes:sync:ssb` | Sync stream (ATProto) y gossip (SSB) |
 
 **Decisión `links.arg`:** en `manifest.json` se mantiene como URL GitHub (`scriptorium-network-games/ALEPH_ET_OMEGA`). El runtime no lo lee; es provenance de operador para el ARG inaugural. No eliminar sin necesidad — `segment_poder.py` regenera el mismo URL.
 

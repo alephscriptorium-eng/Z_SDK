@@ -47,6 +47,7 @@ packages/
     player-mcp-kit/    # NUEVO — patrón MCP-por-actor con semántica verificable
     view-kit/          # NUEVO — kit de vistas 3D+HTML (nace del kit de arg-console)
     playbook-kit/      # NUEVO — formato CASOS, test de coherencia, plantilla acta, runner de evidencia
+    feed-kit/          # NUEVO — familias de feed (static/stream/gossip) + jetstream→DISK_01
     game-engine/  rooms/  presets-sdk/  http-contract/
     ui-kit/  ui-3d-kit/  app-shell/  firehose-core/  test-utils/
   editor/    # mundo A: crear juegos
@@ -105,7 +106,7 @@ Generalización directa de `packages/games/delta/arg-domain/src/contract.mjs` +
 1. `games/*` y `mesh/*` y `editor/*` importan de `engine/*`. Nunca al revés.
 2. Nada importa de `games/*` salvo sus propios subpaquetes y los launchers.
 3. Dominio de juego: browser-safe, sin red, sin fs (los feeds node-only van en
-   paquete propio, patrón `arg-feeds`).
+   paquete propio: `@zeus/feed-kit` en engine; adaptadores de juego finos).
 4. Puertos y URLs SOLO desde los resolvers de `presets-sdk/env`
    (`resolveZeusUiPorts`, `resolveZeusMcpPorts`, `ZEUS_SCRIPTORIUM_URL`).
 5. Procesos se lanzan por script npm del paquete objetivo, no por ruta de
