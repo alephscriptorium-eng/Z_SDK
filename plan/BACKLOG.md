@@ -20,9 +20,9 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 > Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107 ⏳ ops.
 >
 > **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ ·
-> ~~U110~~ ✅ (lote 7+9 cerrado) · (2) frente editor **U111–U114**
-> DESPUÉS (⬜; **no 🔶** hasta abrir frente) · (3) diferidos U87 §5–6 →
-> DECISIONES / horizonte (sin WP ejecutable).
+> ~~U110~~ ✅ (lote 7+9 cerrado) · (2) frente editor **U111–U114** —
+> **GO** 2026-07-18 · **U111 🔶** (lote 1–4+8; U112–U114 aún ⬜) ·
+> (3) diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -46,20 +46,22 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ✅ |
 | Post-U87 — slots puertos `solve*` (+ residual pozo) | **U109** | ✅ |
 | Post-U87 — `@zeus/startpack-kit` | **U110** | ✅ |
-| Post-U87 — editor materializa juegos reales | **U111** | ⬜ frente (no 🔶) |
-| Post-U87 — carpeta: importar obra | **U112** | ⬜ frente (no 🔶) |
-| Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ frente (no 🔶) |
-| Post-U87 — dialectos story-board en editor | **U114** | ⬜ frente (no 🔶) |
+| Post-U87 — editor materializa juegos reales | **U111** | 🔶 |
+| Post-U87 — carpeta: importar obra | **U112** | ⬜ (lote; tras U111) |
+| Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ (lote; tras U111) |
+| Post-U87 — dialectos story-board en editor | **U114** | ⬜ (lote; tras U111) |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
-- **U111–U114** — definidos; **no asignar** hasta que usuario/orquestador
-  abra el frente «editor produce juegos»
+- **U112–U114** — definidos; encadenar tras U111 (padre/lote); **no 🔶**
+  aún en esta sesión
 
-**En curso:** _(ninguno)_
+**En curso:** **WP-U111** 🔶 (orquestador / 2026-07-18) — frente editor
+lote 1–4+8 · brief `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo.md`
+· worktree `.worktrees/wp-u111-editor-materialize-narrativo`
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -86,7 +88,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
     library `aea9e04`; revisión `3e602e3`
 15. ~~**WP-U110**~~ ✅ — `@zeus/startpack-kit`; merge zeus `4bcd045` ·
     library `294c97c`; revisión `8b91a84` · **micro lote 7+9 cerrado**
-16. **Frente editor produce juegos** — U111–U114 ⬜ (no 🔶 hasta GO)
+16. **Frente editor** — **U111 🔶** (esta sesión) → luego U112–U114
 17. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
@@ -1348,8 +1350,8 @@ cerrado):
 > `loadStartPack` ×4. Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar**
 > con `packages/arg/spec/BACKLOG.md`. ~~**U109**~~ ✅ · ~~**U110**~~ ✅
 > (merge zeus `4bcd045` · library `294c97c`; revisión `8b91a84`) —
-> **micro lote 7+9 cerrado**; frente U111–U114 **no 🔶** hasta abrir
-> frente.
+> **micro lote 7+9 cerrado**; frente editor **GO** · **U111 🔶**
+> (2026-07-18); U112–U114 aún ⬜.
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
 
@@ -1368,19 +1370,24 @@ cerrado):
   Paquete `@zeus/startpack-kit` en library; los cuatro
   `@zeus/startpack-*` consumen una sola `loadStartPack`.
 
-### Lote «editor produce juegos» — frente DESPUÉS (definido; no 🔶)
+### Lote «editor produce juegos» — frente ABIERTO (GO 2026-07-18)
 
-> Holón 2 candidato ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110
-> ✅; abrir solo con GO usuario/orquestador.
+> Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
+> Lote 1–4+8: **U111 primero**; padre encadena U112–U114.
 
-- ⬜ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
-  *(U87 §1+§2; dep U70 ✅, U86 ✅)* — Hoy `validateDraft` /
-  materialize exigen `gameId === 'sketch'`; el catálogo del editor es
-  escena juguete + línea juguete + casos, sin REIC / actos / uichain /
-  agentchain. El editor gana modo mundo A: materiales narrativos de la
-  carpeta dramaturgo y materialize que produzca un start pack / juego
-  instalable **distinto de sketch** (al menos un `gameId` narrativo de
-  prueba o parametrizable), sin armar a mano en library.
+- 🔶 **WP-U111 · Editor materializa juegos reales (no solo sketch)**
+  *(U87 §1+§2; dep U70 ✅, U86 ✅)* — en curso (orquestador /
+  2026-07-18) · brief
+  `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo.md` ·
+  rama `wp/u111-editor-materialize-narrativo` · worktree
+  `.worktrees/wp-u111-editor-materialize-narrativo`. Hoy
+  `validateDraft` / materialize exigen `gameId === 'sketch'`; el
+  catálogo del editor es escena juguete + línea juguete + casos, sin
+  REIC / actos / uichain / agentchain. El editor gana modo mundo A:
+  materiales narrativos de la carpeta dramaturgo y materialize que
+  produzca un start pack / juego instalable **distinto de sketch** (al
+  menos un `gameId` narrativo de prueba o parametrizable), sin armar a
+  mano en library.
   **CA:** desde editor-ui se define un juego mínimo con materiales
   narrativos (actos o equivalente carpeta) y se produce release
   instalable cuyo `gameId !== 'sketch'`; tests editor + Notario/path
