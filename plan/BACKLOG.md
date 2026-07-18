@@ -843,8 +843,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 
 > Revisión externa (ADDENDA `ENTREGA-2026-07-18-revision-externa.md`).
 > No bloqueado por Ola 6. **U93** desbloqueado por **D-20** (cablear-puente);
-> espera A-11 / brief aparte — NO en lote-higiene-11b.
-> U94–U99 paralelizables entre sí (deps solo olas ya ✅). Ola 6 no.
+> espera A-11 / brief aparte — NO en lote-higiene-11c.
+> U98+U99 = lote-higiene-11c (deps U10 ✅). Ola 6 no.
 
 ### Coordinación re-plan identidad/transporte (2026-07-18)
 
@@ -855,8 +855,9 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 2. **Lote higiene U95+U97** (lote-higiene-11a) — **cerrado** (U95 ✅ +
    U97 ✅).
 3. **Lote higiene U94+U96** (lote-higiene-11b) — **cerrado** (U94 ✅ +
-   U96 ✅). Quedan U98/U99 para lote siguiente (11c).
-   U93 espera A-11 / brief aparte (no en este lote).
+   U96 ✅).
+4. **Lote higiene U98+U99** (lote-higiene-11c) — **en curso** (🔶
+   2026-07-18). U93 espera A-11 / brief aparte (no en este lote).
 
 **Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
 `A-09` → **WP-U97** (feed-kit/volumes-ops) y `A-10` → **WP-U93**
@@ -864,6 +865,7 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
 (placeholder; falta nota-tabla formal A-11 con IDs vivos).
 **Orquestador espera A-11 del marco; rellena veredicto, no redacta.**
+**(2026-07-18 lote-11c):** A-11 aún no llegó → U93 sigue ⬜.
 
 - ⬜ **WP-U93 · Peer-card como torno del carril WebRTC** *(dep U88–U90 ✅;
   D-20)* — Cadena puente: la autoridad de sala **emite** peer-card al
@@ -925,22 +927,24 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   tipo e invalida caché.
   **Demolición:** `countJsonFiles` y el parcheo manual.
 
-- ⬜ **WP-U98 · Una sola fuente de forma en el contrato** *(dep U10 ✅)* —
-  AsyncAPI (`EVENT_META`) declara forma de 4 kinds; runtime solo valida
-  `intent` (`isIntentShaped`) con reglas más laxas; `spec-sync.test` solo
-  verifica YAML consigo mismo. Vía (a): derivar validadores desde
-  `EVENT_META`; vía (b): documentar en CONTRATO.md que solo `intent` se
-  valida por diseño.
+- 🔶 **WP-U98 · Una sola fuente de forma en el contrato** *(dep U10 ✅)* —
+  en curso (lote-higiene-11c / orquestador / 2026-07-18) — AsyncAPI
+  (`EVENT_META`) declara forma de 4 kinds; runtime solo valida `intent`
+  (`isIntentShaped`) con reglas más laxas; `spec-sync.test` solo verifica
+  YAML consigo mismo. Vía (a): derivar validadores desde `EVENT_META`;
+  vía (b): documentar en CONTRATO.md que solo `intent` se valida por
+  diseño.
   **CA (a):** `isShaped(kind, data)` derivado de EVENT_META + test con evento
   inválido por kind rechazado. **CA (b):** CONTRATO.md fija el alcance;
   test-doc lo referencia.
   · Anexo trivial: tests domain-state usan `32 * 1024` a mano →
   `checkSnapshotBudget`.
 
-- ⬜ **WP-U99 · `game` obligatorio también en `makeIntent`** *(dep U10, U24 ✅;
-  sin urgencia)* — `makeIntent` deja `game` opcional (`if (game != null)`),
-  asimétrico con `makeEnvelope`. Emisores actuales ya pasan `game` (U30/U92).
-  Vía (a): exigirlo y lanzar; vía (b): test engine 4-kinds + doc del alcance.
+- 🔶 **WP-U99 · `game` obligatorio también en `makeIntent`** *(dep U10, U24 ✅;
+  sin urgencia)* — en curso (lote-higiene-11c / orquestador / 2026-07-18) —
+  `makeIntent` deja `game` opcional (`if (game != null)`), asimétrico con
+  `makeEnvelope`. Emisores actuales ya pasan `game` (U30/U92). Vía (a):
+  exigirlo y lanzar; vía (b): test engine 4-kinds + doc del alcance.
   **CA (a):** `makeIntent` sin `game` lanza; wrappers delta/pozo verdes.
   **CA (b):** test 4-kinds + CONTRATO.md.
   **Demolición (a):** el condicional.
