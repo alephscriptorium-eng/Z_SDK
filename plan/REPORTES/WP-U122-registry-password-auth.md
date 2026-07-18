@@ -5,7 +5,7 @@
 | agente | worker (swarm chat WP-U122) |
 | fecha | 2026-07-18 |
 | rama | `wp/u122-registry-password-auth` |
-| commit(s) | `27427d9` `ccf1f4b` |
+| commit(s) | `27427d9` `ccf1f4b` `9374ae5` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -151,4 +151,16 @@ $ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:" .github/workflows/rel
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18 · tip `9374ae5`.
+
+Verificado:
+- Diff = `release.yml` + contrato U53 + docs del gate (sin BACKLOG / sin
+  credenciales / sin U55).
+- Test contrato `_password` pass 1/1 (re-smoke orquestador).
+- Demolición: `NODE_AUTH_TOKEN` / `secrets.NPM_TOKEN` / `registry-url:` → 0
+  en `release.yml`; skip ⏳ sin secrets cableado.
+- CA `npm view` ⏳ honesto (ops + primer publish post-merge; frontera D-24).
+- Hallazgo no bloqueante: `ARQUITECTURA.md` §5 aún cita `NPM_TOKEN` → cola.
+
+**Merge:** `wp/u122-registry-password-auth` → `main`. Tras merge: Sprint 1
+cerrado; U55 sigue gated a ops (secrets + publish real).
