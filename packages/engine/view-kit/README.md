@@ -24,14 +24,40 @@ import {
   createPanel,
   createActorsLayer,
   connectRoom,
-  onChannelEvent
+  onChannelEvent,
+  createDefaultWidgetRegistry,
+  mountStoryWidgets
 } from '@zeus/view-kit';
+```
+
+### Widgets de story-board (WP-U113)
+
+Registro genérico `id → render` (tabla). El juego inyecta datos; el kit no
+nombra juegos. Por defecto incluye `panel-elenco` (tabla de elenco / cast).
+Ids desconocidos → placeholder «widget sin runtime».
+
+```js
+const registry = createDefaultWidgetRegistry();
+mountStoryWidgets({
+  registry,
+  widgets: ['panel-elenco'], // p. ej. act.widgets del story-board
+  dataById: {
+    'panel-elenco': {
+      title: 'Elenco',
+      rows: [{ participant: 'A', role: 'aliado', oldid: '1', cached: true }]
+    }
+  },
+  mount: document.getElementById('widgets'),
+  doc: document
+});
 ```
 
 Dependencias browser (`three`, `@zeus/ui-3d-kit`, room-client) las resuelve
 el import-map / static del host — no Node.
 
-Consumidores actuales: `arg-console`, `3d-monitor`, `player-3d-ui`.
+Consumidores actuales: `arg-console`, `3d-monitor`, `player-3d-ui`,
+y cualquier vista de juego que monte el import-map (widgets de
+story-board).
 
 ## Node
 

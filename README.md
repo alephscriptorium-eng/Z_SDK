@@ -71,6 +71,9 @@ no vive en este monorepo.
 SOLVE ET COAGULA (tercer juego, WP-U87):
 [`packages/solve-coagula/`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/packages/solve-coagula)
 · reporte `plan/REPORTES/WP-U87-solve-coagula.md`.
+Widgets story-board en vista (WP-U113): `@zeus/view-kit` registry +
+`panel-elenco` runtime · reporte
+`plan/REPORTES/WP-U113-widgets-solve-view-kit.md`.
 
 Start packs (library): `npm run release:startpack -- --game delta` → tarball +
 acta; Release espejo con `--publish-github`. Ver
