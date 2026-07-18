@@ -28,7 +28,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 3. Triaje CI rojo parcial — **hecho** (run
    [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
    27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos) → **WP-U102** ✅
-4. **WP-U103** 🔶 — docs públicas Pages + piel fanzine (A-12)
+4. **WP-U103** ✅ — docs públicas Pages + piel fanzine (A-12; merge
+   `76034ec`)
 5. ~~Usuario: activar GitHub Pages~~ — **hecho** (usuario / 2026-07-18;
    Settings → fuente GitHub Actions)
 6. Usuario: **publish** → desbloquea U55
@@ -41,7 +42,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 **Cola residuales (sin WP grande nuevo; higiene / candidatos):**
 - ~~Triaje CI U03 (4 WS no herméticos)~~ → **WP-U102** ✅ (merge
   `ddefdcf`; cierra CA remoto U03 pendiente cuando CI `main` verde)
-- ~~Docs públicas Pages + piel zine (cierre U41)~~ → **WP-U103** 🔶 (A-12)
+- ~~Docs públicas Pages + piel zine (cierre U41)~~ → **WP-U103** ✅
+  (merge `76034ec`)
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
 - Harness U100 cid hex → formato SSB `&…sha256` (cola U101)
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
@@ -428,7 +430,7 @@ Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup)
 Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
 - READMEs mesh residuales `session:*` (player-3d-ui, 3d-monitor,
   ping-pong-bots) — protocolo muerto vivo fuera del alcance U41
-- ~~Portal VitePress sin publish~~ → **WP-U103** 🔶 (A-12)
+- ~~Portal VitePress sin publish~~ → **WP-U103** ✅ (merge `76034ec`)
 
 - ✅ **WP-U41 · Portal de docs refundado** *(dep U10, U40)* — aceptado
   (orquestador / 2026-07-17) — VitePress
@@ -440,30 +442,20 @@ Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
   menciones al protocolo muerto.
   **Demolición:** páginas/specs de la sesión Scriptorium.
 
-- 🔶 **WP-U103 · Docs públicas: Pages + piel zine** *(dep U41 ✅; A-12)* —
-  en curso (lote-docs-pages / orquestador / 2026-07-18) — el portal
-  VitePress de U41 está construido pero no publicado. Tres piezas:
-  (1) **workflow `.github/workflows/docs.yml`**: build de VitePress y
-  deploy a GitHub Pages (fuente «GitHub Actions»);
-  (2) **piel zine** vía theme override (`docs/.vitepress/theme/custom.css`),
-  SIN sustituir VitePress ni tocar la estructura de U41 — tokens:
-  tipografía monoespaciada (Courier/mono del sistema), paleta
-  blanco/negro pura con grises mínimos, acentos con
-  `repeating-linear-gradient` diagonal, hover en negativo (fondo
-  negro/texto blanco), `@media print` cuidado (doc imprimible como
-  fanzine = identidad);
-  (3) **portada zine**: `docs/index.md` como cover — título grande,
-  manifiesto de 3-4 líneas (qué es el SDK, contrato único, dos juegos
-  como prueba), y tres puertas: Guía / Contratos / Juegos.
-  **CA (código):** `npm run docs:build` verde en CI; workflow `docs.yml`
-  presente y verde; API HTML (AsyncAPI + OpenAPI) accesibles desde el
-  nav publicado; contraste AA (b/n); la piel no rompe búsqueda ni
-  navegación VitePress.
-  **Ops usuario (no CA de código):** ~~activar Pages en Settings → fuente
-  GitHub Actions~~ — **hecho** (usuario / 2026-07-18); URL de Pages viva =
-  verificación final (post-merge U103 + workflow verde).
-  **Demolición:** n/a (U41 se conserva entero; la piel es aditiva).
-  **Paralelo:** sí con U102 (sin solape de paths; no interrumpir U102).
+- ✅ **WP-U103 · Docs públicas: Pages + piel zine** — aceptado
+  (orquestador / 2026-07-18) — portal VitePress de U41 publicado.
+  Tres piezas: (1) workflow `.github/workflows/docs.yml` (build +
+  deploy GitHub Pages); (2) piel zine vía theme override
+  (`docs/.vitepress/theme/custom.css`) — monoespaciada, b/n, acentos
+  diagonal, hover negativo, `@media print`; (3) portada zine en
+  `docs/index.md` (manifiesto + puertas Guía / Contratos / Juegos).
+  **CA (código):** `npm run docs:build` verde; workflow `docs.yml`
+  presente; API HTML (AsyncAPI + OpenAPI) en nav; contraste AA; piel
+  no rompe búsqueda ni nav VitePress.
+  **Ops usuario:** Pages Settings (GitHub Actions) — **hecho**; URL
+  Pages = verificación post-push (`https://alephscriptorium-eng.github.io/Z_SDK/`).
+  **Demolición:** n/a (U41 se conserva; piel aditiva).
+  **Nota cierre:** merge `76034ec`; revisión `0a36656`.
 
 ## Ola 5 — Monorepo publicable y layout final
 
