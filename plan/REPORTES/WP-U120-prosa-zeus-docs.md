@@ -128,4 +128,14 @@ Ninguno. Listo para revisión orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18 · tip `14982d4`.
+
+Verificado:
+- Diff = `docs/` + config VitePress + reporte (sin código producto / sin BACKLOG).
+- `docs:build` verde (re-smoke orquestador); grep doctrinales (excl. `estado`) → 0.
+- Heros D-24 intactos (`Crear juegos, no dialectos` / `dos juegos, un kit`).
+- `guide/estado.md` nueva; getting-started comandos limpios; regla ≥2 juegos.
+- Hallazgo no bloqueante: links blob en `estado.md` usan path `zeus-sdk` (repo
+  público = `Z_SDK`) — residual hygiene; README raíz ya en cola.
+
+**Merge:** `wp/u120-prosa-zeus-docs` → `main`. Tras merge: desbloquea asignación U122.
