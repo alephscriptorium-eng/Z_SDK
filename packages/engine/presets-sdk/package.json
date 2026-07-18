@@ -1,6 +1,6 @@
 {
   "name": "@zeus/presets-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP catalog & presets SDK: discovery, extraction, preset persistence, volumes and HTTP routes",
   "type": "module",
   "main": "src/index.mjs",
@@ -35,8 +35,8 @@
     }
   },
   "dependencies": {
-    "@zeus/http-contract": "0.1.0",
-    "@zeus/ui-kit": "0.1.0",
+    "@zeus/http-contract": "0.1.1",
+    "@zeus/ui-kit": "0.1.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "archiver": "^7.0.1",
     "cors": "^2.8.6",
