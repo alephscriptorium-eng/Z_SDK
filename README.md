@@ -63,9 +63,10 @@ cd ../Z_SDK-games-library && npm test && npm run e2e:arg && npm run e2e:pozo-mcp
 # incluye npm run test:carpeta-dramaturgo (schema story-board + fixtures)
 ```
 
-CARPETA DRAMATURGO (kit de experiencia, WP-U86):
+CARPETA DRAMATURGO (kit de experiencia, WP-U86 · import obra WP-U112):
 [`kits/carpeta-dramaturgo/`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/kits/carpeta-dramaturgo)
-en la library — no vive en este monorepo.
+en la library — `instantiate --from SOLVE_ET_COAGULA|ALEPH_ET_OMEGA|<path>`;
+no vive en este monorepo.
 
 SOLVE ET COAGULA (tercer juego, WP-U87):
 [`packages/solve-coagula/`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/packages/solve-coagula)
