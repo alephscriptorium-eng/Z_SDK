@@ -105,4 +105,57 @@ Ninguno. Push no intentado (política del brief).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** — 2026-07-18 (orquestador). **No** merge / **no**
+push / **no** ✅ BACKLOG en este paso (pedido explícito). Autoriza merge a
+master cuando el usuario lo pida; BACKLOG 🔶→✅ solo en master al mergear.
+
+### Verificado
+
+- Diff `master...wp/u97-feed-volumes-ops` (2 commits: `bbd599d` + `5db89d9`):
+  7 archivos — `jetstream-sync.mjs`, dep `@zeus/volumes-ops`, test tipado+caché,
+  README, lock, changeset patch, reporte. Worker **no** tocó `plan/BACKLOG.md`.
+  Sin U93 / peer-card / U95 `./node`.
+- `refreshFirehoseCorpusCounts` → `withVolumesRoot` + `syncVolumeCounters('firehose')`
+  (measure tipado + `resetVolumesCache` en volumes-ops). `countJsonFiles` y
+  parcheo manual de contadores demolidos.
+- `ensureFirehoseVolumeLayout` lee vía `loadVolumesConfig` /
+  `resolveVolumesRoot` (sin `readFileSync(volumesPath)`).
+- Commits convencionales (`refactor(feed-kit)`, `docs(plan)`). Auto-revisión
+  §3 honesta (live jetstream ⏳ OK; CA no lo exige).
+
+### CA (re-ejecutados en worktree, 2026-07-18)
+
+- [x] `rg "countJsonFiles|readFileSync\(volumesPath" packages/engine/feed-kit/src`
+  → sin matches (exit 1)
+- [x] `npm test -w @zeus/feed-kit` → 9/9 pass (incl. recuento `.json`/`.bin`/`.txt`
+  → `files === 3` + `loadVolumesConfig` post-caché)
+- [x] Recuento cualquier tipo + invalida caché (vía `syncVolumeCounters` /
+  `resetVolumesCache`)
+
+### Demolición / PRACTICAS
+
+- [x] `countJsonFiles` ausente en `packages/engine/feed-kit`
+- [x] Sin `readFileSync(volumesPath)` en feed-kit
+- [x] Sin duplicar measure; reutiliza volumes-ops
+- [x] Regla dos juegos: feed-kit/volumes-ops genéricos; cero delta/pozo
+
+### Merge vs U95
+
+- **Sin solape de archivos.** U97 = feed-kit (+ lock/changeset/reporte).
+  U95 (worktree, WIP sin commits aún) = `paths.node` → `./node` en
+  game-engine / protocol / ui-3d-kit / view-kit (+ delta arg-domain).
+  Partición del brief respetada. Merge U97 independiente de U95.
+
+### Hallazgos → cola (no arreglar aquí; no bloquean)
+
+1. `ensureFirehoseVolumeLayout` sigue haciendo upsert manual de la entrada
+   `firehose` en `volumes.json` (layout, no recount) — candidata a helper
+   volumes-ops/presets.
+2. Tras refresh, `source.syncedAt` ya no se reestampa (queda el del `ensure*`).
+   WP aparte si se necesita stamp post-count.
+3. Lint warnings históricos authority-kit / rooms / mesh (ajenos).
+
+### Acción siguiente
+
+Merge a master cuando el usuario lo pida → orquestador marca ✅ BACKLOG en
+master → `git worktree remove` del árbol U97. Push: no intentado.
