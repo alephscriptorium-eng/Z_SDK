@@ -5,7 +5,7 @@
 | agente | worker (swarm / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u115-schema-story-board-ajv` (zeus) · `wp/u115-schema-story-board-ajv` (library) |
-| commit(s) | library: `7050664` · zeus: `18627aa` |
+| commit(s) | library: `7050664` · zeus tip: `wp/u115-schema-story-board-ajv` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
