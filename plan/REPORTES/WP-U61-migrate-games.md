@@ -5,7 +5,7 @@
 | agente | worker (lote-ola6-b / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u61-migrate-games` (zeus) · `wp/u61-migrate-games` (library) |
-| commit(s) | library: `85e41f6`, `daddf72` (realpath); zeus: `26c0b55`… + este reporte |
+| commit(s) | library: `daddf72`; zeus: `812f249` (corrección) |
 | estado propuesto | listo para re-revisión (corrección Devuelto) |
 
 ## Qué se hizo
