@@ -141,4 +141,36 @@ Ninguno. Listo para revisión orquestador (no merge).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** — 2026-07-18 · orquestador
+
+### CA (todos OK)
+
+1. `instantiate … --from <obra>` — tabla `resolveSource` (`plantilla` |
+   `obra`); overlay blockchain/agentchain/uichain/readerapp; board →
+   `readerapp/story-board.json`. Re-smoke
+   `npm run test:carpeta-dramaturgo`: mini hermética + live
+   `SOLVE_ET_COAGULA` → dialect `solve-inline`, 8 actos, validate U86 OK.
+2. Originales intactos — tras live SOLVE: dramaturgia SOLVE/ALEPH limpia
+   en `git status`; solo dirty preexistente
+   `ALEPH_ET_OMEGA/PLAYER-UI-MCP.md` (ajeno al WP).
+3. Tests kit + docs — `test/run.mjs` CA U112; README kit/library/zeus
+   con tabla fuentes + ejemplos `--from`.
+
+### PRACTICAS / Demolición
+
+- §1.2 tabla fuentes (no if-creciente; un solo entrypoint).
+- §1.1 sin puertos hardcode; `ZEUS_NETWORK_GAMES` + walk-up.
+- §1.11 path arbitrario sin tocar kit (pregunta reporte OK).
+- Demolición: plantilla vacía sigue vía `plantilla`; no segundo script.
+- Alcance acotado: library `5c48c7d` (kit+docs) · zeus docs/reporte.
+- Worker no tocó `plan/BACKLOG.md`. Commits convencionales OK.
+
+### Merge (cuando usuario autorice)
+
+1. library `wp/u112-carpeta-instantiate-from-obra` → `main` (`5c48c7d`)
+2. zeus `wp/u112-carpeta-instantiate-from-obra` → `main` (incl. esta revisión)
+3. Orquestador: ✅ BACKLOG en `main` + `git worktree remove` (zeus + library)
+4. Luego encadenar U113–U114 (aún ⬜; no 🔶 hasta abrir)
+
+**Push:** no intentado. **✅ BACKLOG:** no aplicado (pendiente autorización
+merge del usuario).
