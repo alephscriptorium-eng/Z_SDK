@@ -25,6 +25,7 @@
     "@zeus/linea-kit": "*",
     "@zeus/playbook-kit": "*",
     "@zeus/presets-sdk": "*",
+    "@zeus/story-board-schema": "*",
     "@zeus/test-utils": "*",
     "@zeus/ui-kit": "*",
     "cors": "^2.8.6",

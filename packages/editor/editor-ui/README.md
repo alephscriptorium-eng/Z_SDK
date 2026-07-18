@@ -53,8 +53,9 @@ Registro tabla `STORY_BOARD_DIALECTS` en `src/world/story-board-dialects.mjs`
 | `aleph-blocks` | `acts` + `blocks[].uichain.widgets` |
 
 Dialecto desconocido (`board.dialect` o hint de juego) → rechazo con lista
-de ids conocidos. Schema AJV como fuente de verdad del kit → WP-U115
-(no este paquete).
+de ids conocidos. La **forma** del board se valida contra el contrato único
+`@zeus/story-board-schema` (AJV; WP-U117) — sin validación de forma a mano
+en este paquete.
 
 Materialize usa tabla por `kind` (`toy` \| `narrative`); el hard-gate
 `gameId === 'sketch'` quedó demolido (U111).
