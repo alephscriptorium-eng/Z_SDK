@@ -1,5 +1,6 @@
 /**
  * Route coverage for @zeus/editor-ui — world draft + cloak API + plaza release.
+ * Release tests isolate dataDir and restore Notario side-effects on startpacks.
  */
 
 import test from 'node:test';
@@ -8,13 +9,11 @@ import { setupSmokeVolumesEnv } from '@zeus/test-utils';
 setupSmokeVolumesEnv(import.meta.url);
 
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-const TEST_PORT = 14022;
-const serverPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../src/server.mjs');
 
 /** Resolve games-library (worktree U111 or sibling main). */
 function resolveLibraryRoot() {
@@ -37,66 +36,64 @@ function resolveLibraryRoot() {
 
 const LIBRARY_ROOT = resolveLibraryRoot();
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * Restore startpack trees dirtied by materialize + Notario.
+ * @param {string} libraryRoot
+ * @param {string[]} games
+ */
+function restoreStartpacks(libraryRoot, games = ['sketch', 'plaza']) {
+  for (const game of games) {
+    const packRel = path.join('packages', `startpack-${game}`);
+    spawnSync('git', ['checkout', '--', packRel], {
+      cwd: libraryRoot,
+      encoding: 'utf8',
+      shell: false
+    });
+    spawnSync('git', ['clean', '-fd', '--', packRel], {
+      cwd: libraryRoot,
+      encoding: 'utf8',
+      shell: false
+    });
+  }
 }
 
-async function waitForServer(port, attempts = 40) {
-  for (let i = 0; i < attempts; i += 1) {
-    try {
-      const res = await fetch(`http://localhost:${port}/health`);
-      if (res.status === 200) return;
-    } catch {
-      // server still starting
-    }
-    await sleep(250);
-  }
-  throw new Error(`editor-ui routes test: server not ready on port ${port}`);
+function makeTempDataDir() {
+  return mkdtempSync(path.join(tmpdir(), 'editor-ui-data-'));
 }
 
 test('editor world + cloak routes', async (t) => {
-  const child = spawn(process.execPath, [serverPath], {
-    env: {
-      ...process.env,
-      ZEUS_PORT_EDITOR: String(TEST_PORT),
-      ZEUS_GAMES_LIBRARY_ROOT: LIBRARY_ROOT
-    },
-    stdio: 'pipe'
-  });
+  const { createEditorServer } = await import('../src/server.mjs');
+  const dataDir = makeTempDataDir();
+  const prev = process.env.ZEUS_GAMES_LIBRARY_ROOT;
+  process.env.ZEUS_GAMES_LIBRARY_ROOT = LIBRARY_ROOT;
 
-  child.stderr.on('data', (chunk) => {
-    process.stderr.write(chunk);
-  });
-
+  const handle = await createEditorServer({ port: 0, host: '127.0.0.1', dataDir });
   t.after(async () => {
-    child.kill('SIGTERM');
-    await new Promise((resolve) => {
-      child.on('exit', resolve);
-      setTimeout(resolve, 3000);
-    });
+    await handle.close();
+    rmSync(dataDir, { recursive: true, force: true });
+    if (prev === undefined) delete process.env.ZEUS_GAMES_LIBRARY_ROOT;
+    else process.env.ZEUS_GAMES_LIBRARY_ROOT = prev;
   });
 
-  await waitForServer(TEST_PORT);
-
-  const home = await fetch(`http://localhost:${TEST_PORT}/`);
+  const home = await fetch(`${handle.url}/`);
   assert.equal(home.status, 200, 'GET / should return 200');
   assert.match(await home.text(), /World Editor|gamemap|Release/i);
 
-  const cloaksPage = await fetch(`http://localhost:${TEST_PORT}/cloaks`);
+  const cloaksPage = await fetch(`${handle.url}/cloaks`);
   assert.equal(cloaksPage.status, 200, 'GET /cloaks should return 200');
 
-  const matsRes = await fetch(`http://localhost:${TEST_PORT}/api/world/materials`);
+  const matsRes = await fetch(`${handle.url}/api/world/materials`);
   assert.equal(matsRes.status, 200);
   const matsBody = await matsRes.json();
   assert.ok(matsBody.materials.games.some((g) => g.id === 'plaza'));
 
-  const draftRes = await fetch(`http://localhost:${TEST_PORT}/api/world/draft`);
+  const draftRes = await fetch(`${handle.url}/api/world/draft`);
   assert.equal(draftRes.status, 200);
   const draftBody = await draftRes.json();
   assert.equal(draftBody.success, true);
   assert.equal(draftBody.draft.gameId, 'sketch');
 
-  const putRes = await fetch(`http://localhost:${TEST_PORT}/api/world/draft`, {
+  const putRes = await fetch(`${handle.url}/api/world/draft`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -109,7 +106,7 @@ test('editor world + cloak routes', async (t) => {
   assert.deepEqual(putBody.draft.labelset, ['norte', 'sur']);
 
   // Cloak API still available (presets under the hood)
-  const listRes = await fetch(`http://localhost:${TEST_PORT}/api/presets`);
+  const listRes = await fetch(`${handle.url}/api/presets`);
   assert.equal(listRes.status, 200);
   const listBody = await listRes.json();
   assert.equal(listBody.success, true);
@@ -118,24 +115,32 @@ test('editor world + cloak routes', async (t) => {
 
 test('editor world release produces installable tarball (sketch preset)', async (t) => {
   const { createEditorServer } = await import('../src/server.mjs');
+  const { createDefaultDraft } = await import('../src/world/materials.mjs');
+  const dataDir = makeTempDataDir();
   const prev = process.env.ZEUS_GAMES_LIBRARY_ROOT;
   process.env.ZEUS_GAMES_LIBRARY_ROOT = LIBRARY_ROOT;
 
-  const handle = await createEditorServer({ port: 0, host: '127.0.0.1' });
+  const handle = await createEditorServer({ port: 0, host: '127.0.0.1', dataDir });
   t.after(async () => {
     await handle.close();
+    restoreStartpacks(LIBRARY_ROOT, ['sketch', 'plaza']);
+    rmSync(dataDir, { recursive: true, force: true });
     if (prev === undefined) delete process.env.ZEUS_GAMES_LIBRARY_ROOT;
     else process.env.ZEUS_GAMES_LIBRARY_ROOT = prev;
   });
 
+  const draft = createDefaultDraft();
+  assert.equal(draft.gameId, 'sketch');
+
   const res = await fetch(`${handle.url}/api/world/release`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ skipTests: true })
+    body: JSON.stringify({ draft, skipTests: true })
   });
   const body = await res.json();
   assert.equal(res.status, 200, body.error || JSON.stringify(body));
   assert.equal(body.success, true);
+  assert.equal(body.draft.gameId, 'sketch');
   assert.ok(body.tarball, 'tarball path expected');
   assert.match(body.tarball.replace(/\\/g, '/'), /zeus-startpack-sketch-.*\.tgz$/);
 });
@@ -143,12 +148,15 @@ test('editor world release produces installable tarball (sketch preset)', async 
 test('editor world release plaza produces installable tarball (gameId !== sketch)', async (t) => {
   const { createEditorServer } = await import('../src/server.mjs');
   const { createPlazaDraft } = await import('../src/world/materials.mjs');
+  const dataDir = makeTempDataDir();
   const prev = process.env.ZEUS_GAMES_LIBRARY_ROOT;
   process.env.ZEUS_GAMES_LIBRARY_ROOT = LIBRARY_ROOT;
 
-  const handle = await createEditorServer({ port: 0, host: '127.0.0.1' });
+  const handle = await createEditorServer({ port: 0, host: '127.0.0.1', dataDir });
   t.after(async () => {
     await handle.close();
+    restoreStartpacks(LIBRARY_ROOT, ['sketch', 'plaza']);
+    rmSync(dataDir, { recursive: true, force: true });
     if (prev === undefined) delete process.env.ZEUS_GAMES_LIBRARY_ROOT;
     else process.env.ZEUS_GAMES_LIBRARY_ROOT = prev;
   });

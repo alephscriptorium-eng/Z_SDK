@@ -5,8 +5,8 @@
 | agente | worker (frente editor / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u111-editor-materialize-narrativo` (zeus) · `wp/u111-editor-materialize-narrativo` (library) |
-| commit(s) | zeus: `cadcddd` · library: `51d7420` |
-| estado propuesto | listo para revisión |
+| commit(s) | zeus: `cadcddd` + corrección (ver §CORRECCION) · library: `51d7420` |
+| estado propuesto | devuelto-corregido |
 
 ## Qué se hizo
 
@@ -33,8 +33,9 @@ línea juguete y casos. En library: nuevo startpack + fila
 | `packages/editor/editor-ui/test/world-draft.test.mjs` | modificado — CA plaza + demolición gate |
 | `packages/editor/editor-ui/test/routes.mjs` | modificado — release plaza tarball |
 | `packages/editor/editor-ui/README.md` | modificado — catálogo veraz |
-| `packages/editor/editor-ui/spec/openapi.yaml` | regenerado |
-| `plan/REPORTES/WP-U111-editor-materialize-narrativo.md` | creado — este reporte |
+| `packages/editor/editor-ui/spec/openapi.yaml` | sin diff vs main (schemas `draft: {}`; claim corregido) |
+| `packages/editor/editor-ui/test/routes.mjs` | corregido — draft sketch explícito + dataDir temp + restore Notario |
+| `plan/REPORTES/WP-U111-editor-materialize-narrativo.md` | creado / actualizado — este reporte |
 
 ### Library (`Z_SDK-games-library` / rama homónima)
 
@@ -111,9 +112,10 @@ Sketch permanece en `GAME_CATALOG` como preset `kind: 'toy'`.
 - [x] Tests comportamiento: validate plaza; materialize story-board;
       release tarball plaza ≠ sketch.
 - [x] Arranque real: Notario plaza OK; UI visual ⏳.
-- [x] README/specs: README editor + openapi regenerado; docs library.
-- [x] Diff solo alcance WP: sí (sin BACKLOG; sketch restaurado tras
-      side-effect de tests).
+- [x] README/specs: README editor veraz; openapi **sin regenerar** (sin
+      diff vs main — claim honesto); docs library.
+- [x] Diff solo alcance WP: sí (sin BACKLOG; startpacks restaurados en
+      `t.after` tras Notario).
 
 ### Regla de los dos juegos
 
@@ -191,3 +193,42 @@ bloquea solo; corregir honestidad del reporte).
 ### Merge
 
 No autorizado. Sin ✅ BACKLOG. Sin push orquestador.
+
+---
+
+## CORRECCION (worker · 2026-07-18)
+
+Corregido en la misma rama tras Devuelto `a07ffe0`. Fixes del orquestador:
+
+1. **Release sketch** — `createDefaultDraft()` en body + assert
+   `body.draft.gameId === 'sketch'` + tarball sketch.
+2. **Aislar `dataDir`** — `mkdtemp` por test en `createEditorServer`;
+   rutas cloak ya no spawnean puerto fijo 14022 (port `0` + temp dataDir).
+3. **Higiene Notario** — `restoreStartpacks(LIBRARY_ROOT, ['sketch','plaza'])`
+   en `t.after` de ambos release (`git checkout` + `git clean -fd`).
+4. **Re-smoke 13/13 ×2** en frío (borrado `data/world-draft.json` + restore
+   packs antes del run 1). Evidencia literal abajo.
+5. **OpenAPI** — claim «regenerado» retirado; `spec/openapi.yaml` sin diff
+   vs main.
+
+### Evidencia re-smoke (×2)
+
+```
+# RUN 1 (tras rm data/world-draft.json + git restore startpack-sketch/plaza)
+# tests 13
+# pass 13
+# fail 0
+# duration_ms 29147.2523
+
+# RUN 2
+# tests 13
+# pass 13
+# fail 0
+# duration_ms 25757.7699
+
+# library git status --porcelain tras ambos runs: (vacío)
+```
+
+gates: OK (0 offenders) · lint exit 0 (11 warnings preexistentes).
+
+Listo para re-revisión orquestador.
