@@ -13,8 +13,8 @@ export const REPO_ROOT = path.resolve(__dirname, '../..');
 
 /** Puertos canónicos declarados en presets-sdk/env (espejo; no leer el módulo para no acoplar el gate). */
 export const KNOWN_ZEUS_PORTS = Object.freeze([
-  3008, 3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3020, 3021, 3210, 3230, 4101,
-  4102, 4103, 4111, 4112, 4121, 4122, 6274, 6277
+  3008, 3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3020, 3021, 3025, 3026, 3210,
+  3230, 4101, 4102, 4103, 4111, 4112, 4121, 4122, 4131, 4132, 6274, 6277
 ]);
 
 const SOURCE_EXT = /\.(mjs|js|cjs|mts|cts|ts|tsx)$/;

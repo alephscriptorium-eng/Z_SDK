@@ -40,7 +40,9 @@ export const DEFAULT_ZEUS_MCP = {
   ssb: { disk: 4114 },
   firehose: { disk: 3008 },
   playerDebug: { monitor: 3014 },
-  argPlayer: { uno: 4121, dos: 4122 }
+  argPlayer: { uno: 4121, dos: 4122 },
+  pozoPlayer: { uno: 4131 },
+  solvePlayer: { uno: 4132 }
 };
 
 /** `group.key` → ZEUS_* override var. */
@@ -55,7 +57,9 @@ const MCP_PORT_ENV = {
   'firehose.disk': 'ZEUS_MCP_FIREHOSE',
   'playerDebug.monitor': 'ZEUS_PORT_PLAYER_DEBUG',
   'argPlayer.uno': 'ZEUS_MCP_ARG_UNO',
-  'argPlayer.dos': 'ZEUS_MCP_ARG_DOS'
+  'argPlayer.dos': 'ZEUS_MCP_ARG_DOS',
+  'pozoPlayer.uno': 'ZEUS_MCP_POZO',
+  'solvePlayer.uno': 'ZEUS_MCP_SOLVE'
 };
 
 /** UI mesh defaults. */
@@ -76,7 +80,9 @@ export const DEFAULT_ZEUS_UI_MESH = {
     label: 'Oasis WebRTC',
     emoji: '📡'
   },
-  scriptorium: { host: 'localhost', port: 3017, path: '/runtime', label: 'Scriptorium', emoji: '📜' }
+  scriptorium: { host: 'localhost', port: 3017, path: '/runtime', label: 'Scriptorium', emoji: '📜' },
+  pozoView: { host: 'localhost', port: 3025, path: '/', label: 'Pozo', emoji: '🕳️' },
+  solveView: { host: 'localhost', port: 3026, path: '/', label: 'SOLVE', emoji: '⚗️' }
 };
 
 /** UI id → ZEUS_* override var. */
@@ -91,7 +97,9 @@ const UI_PORT_ENV = {
   argConsole: 'ZEUS_PORT_ARG_CONSOLE',
   webrtcViewer: 'ZEUS_PORT_WEBRTC_VIEWER',
   oasisWebrtc: 'ZEUS_PORT_OASIS_WEBRTC',
-  scriptorium: 'ZEUS_PORT_SCRIPTORIUM'
+  scriptorium: 'ZEUS_PORT_SCRIPTORIUM',
+  pozoView: 'ZEUS_PORT_POZO_VIEW',
+  solveView: 'ZEUS_PORT_SOLVE_VIEW'
 };
 
 /** App id → override var (UI slots plus the debug MCP HTTP port). */
@@ -214,9 +222,11 @@ export function mcpToUrls(host, mcp, opts = {}) {
   return urls.sort((a, b) => Number(a.split(':').pop()) - Number(b.split(':').pop()));
 }
 
-/** MCP catalog probe URLs — excludes infra-only groups (e.g. player-ui-debug monitor, arg-player wrappers). */
+/** MCP catalog probe URLs — excludes infra-only groups (debug monitor, game player wrappers). */
 export function mcpToDiscoveryUrls(host, mcp) {
-  return mcpToUrls(host, mcp, { excludeGroups: ['playerDebug', 'argPlayer'] });
+  return mcpToUrls(host, mcp, {
+    excludeGroups: ['playerDebug', 'argPlayer', 'pozoPlayer', 'solvePlayer']
+  });
 }
 
 /**
