@@ -151,4 +151,13 @@ Ninguno. Tras merge, orquestador debe confirmar run CI verde en main
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18 · tip `8e81fa7`.
+
+Verificado:
+- Diff acotado a los 4 workspaces + changeset http-contract + reporte (sin BACKLOG).
+- Root cause por workspace documentada; fixes = patrón U102 (hermético / skip-⏳), no asserts aflojados.
+- Re-smoke orquestador: http-contract / linea-system / firehose-browser / editor-ui → fail 0 (skips ⏳ esperados).
+- PRACTICAS §3 honesta; demolición del throw module-level y pin `0.1.0` OK.
+- CA «CI verde en main»: código listo; confirmación del run remoto tras merge = seguimiento ops (⏳ al aceptar).
+
+**Merge:** `wp/u119-ci-main-verde` → `main` (único en vuelo). Tras merge: worktree remove; desbloquea U120∥U121.
