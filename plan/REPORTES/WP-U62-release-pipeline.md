@@ -5,7 +5,7 @@
 | agente | worker (lote-ola6-c / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u62-release-pipeline` (zeus) · `wp/u62-release-pipeline` (library) |
-| commit(s) | library: `688be30`; zeus: `df0c8f7` |
+| commit(s) | library: `688be30` (push OK); zeus: `df0c8f7` + `2172d38` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -104,7 +104,7 @@ npm test -w @zeus/presets-sdk → fail 2 preexistente (spec-sync openapi drift; 
 
 ### Push
 
-- Library: _(al cerrar)_ `git push -u origin wp/u62-release-pipeline`
+- Library: `git push -u origin wp/u62-release-pipeline` → OK (`688be30`)
 - Zeus rama: **no intentado** (política worker)
 
 ### ¿pozo puede consumir el pipeline tal cual?
