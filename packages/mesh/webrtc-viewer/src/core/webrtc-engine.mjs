@@ -137,8 +137,8 @@ export class WebRTCEngine extends Emitter {
    * @param {string} roomId
    * @param {string} [displayName]
    */
-  async joinRoom(roomId, displayName) {
-    await this.signaling.joinRoom(roomId, displayName);
+  async joinRoom(roomId, peerCard) {
+    await this.signaling.joinRoom(roomId, peerCard);
     this.roomId = roomId;
     this.emit('room-joined', { roomId });
   }

@@ -2,10 +2,17 @@
  * Abstract SignalingService (port of repo A abstract class → mjs).
  * Procedencia: plan/recursos/web-rtc-gamify-ui SignalingService @ 4b9271b.
  * Concrete transport: SocketRoomSignalingService (rooms / socket-server).
+ *
+ * WP-U93: offer/answer/ICE y room-join exigen peer-card válida (torno).
  */
 
 import { EventEmitter } from 'node:events';
 import { ABSTRACT_TO_WIRE, createWireMessage } from './messages.mjs';
+import {
+  assertSignalingPeerCard,
+  isPeerCardGatedType,
+  peerCardFromMessage
+} from './peer-card-gate.mjs';
 
 /**
  * @typedef {object} SignalingMessage
@@ -19,6 +26,7 @@ import { ABSTRACT_TO_WIRE, createWireMessage } from './messages.mjs';
  * @property {unknown} [answer]
  * @property {unknown} [candidate]
  * @property {unknown} [data]
+ * @property {object} [peerCard]
  */
 
 export class SignalingService extends EventEmitter {
@@ -30,6 +38,31 @@ export class SignalingService extends EventEmitter {
     this.roomId = '';
     /** @type {boolean} */
     this._connected = false;
+    /** @type {object|null} — peer-card emitida por la autoridad (WP-U93) */
+    this._peerCard = null;
+    /** @type {string|null} — rol exigido en el torno (opcional) */
+    this._requiredRole = null;
+  }
+
+  /**
+   * Fija el peer-card local (p. ej. tras emisión de autoridad).
+   * @param {object} peerCard
+   * @param {{ role?: string, now?: number }} [opts]
+   */
+  setPeerCard(peerCard, opts = {}) {
+    const check = assertSignalingPeerCard(peerCard, {
+      role: opts.role ?? this._requiredRole ?? undefined,
+      now: opts.now
+    });
+    if (!check.ok) {
+      throw new Error(`SignalingService.setPeerCard: ${check.error}`);
+    }
+    this._peerCard = peerCard;
+    if (opts.role) this._requiredRole = opts.role;
+  }
+
+  getPeerCard() {
+    return this._peerCard;
   }
 
   /** @param {string} userId @param {unknown} [config] */
@@ -42,9 +75,13 @@ export class SignalingService extends EventEmitter {
     throw new Error('SignalingService.disconnect must be implemented');
   }
 
-  /** @param {string} roomId @param {string} [displayName] */
+  /**
+   * Join signaling room presenting an authority-issued peer-card.
+   * @param {string} roomId
+   * @param {object} peerCard
+   */
   // eslint-disable-next-line no-unused-vars
-  async joinRoom(roomId, displayName) {
+  async joinRoom(roomId, peerCard) {
     throw new Error('SignalingService.joinRoom must be implemented');
   }
 
@@ -63,7 +100,7 @@ export class SignalingService extends EventEmitter {
    * @param {RTCSessionDescriptionInit} offer
    */
   async sendOffer(targetPeerId, offer) {
-    await this.sendMessage({
+    await this.sendMessage(this._gatedOutbound({
       type: 'offer',
       from: this.userId,
       to: targetPeerId,
@@ -71,7 +108,7 @@ export class SignalingService extends EventEmitter {
       timestamp: Date.now(),
       messageId: createWireMessage({ type: 'webrtc-offer', from: this.userId }).messageId,
       offer
-    });
+    }));
   }
 
   /**
@@ -79,7 +116,7 @@ export class SignalingService extends EventEmitter {
    * @param {RTCSessionDescriptionInit} answer
    */
   async sendAnswer(targetPeerId, answer) {
-    await this.sendMessage({
+    await this.sendMessage(this._gatedOutbound({
       type: 'answer',
       from: this.userId,
       to: targetPeerId,
@@ -87,7 +124,7 @@ export class SignalingService extends EventEmitter {
       timestamp: Date.now(),
       messageId: createWireMessage({ type: 'webrtc-answer', from: this.userId }).messageId,
       answer
-    });
+    }));
   }
 
   /**
@@ -96,7 +133,7 @@ export class SignalingService extends EventEmitter {
    * @param {RTCIceCandidateInit} candidate
    */
   async sendIceCandidate(targetPeerId, candidate) {
-    await this.sendMessage({
+    await this.sendMessage(this._gatedOutbound({
       type: 'ice-candidate',
       from: this.userId,
       to: targetPeerId,
@@ -107,7 +144,7 @@ export class SignalingService extends EventEmitter {
         from: this.userId
       }).messageId,
       candidate
-    });
+    }));
   }
 
   isConnected() {
@@ -127,6 +164,17 @@ export class SignalingService extends EventEmitter {
    * @protected
    */
   handleMessage(message) {
+    if (isPeerCardGatedType(message?.type)) {
+      const card = peerCardFromMessage(message) ?? message?.peerCard;
+      const check = assertSignalingPeerCard(card, {
+        role: this._requiredRole ?? undefined
+      });
+      if (!check.ok) {
+        this.handleError(new Error(`signaling peer-card rejected: ${check.error}`));
+        return;
+      }
+      message.peerCard = card;
+    }
     this.emit('message', message);
     if (message?.type) this.emit(message.type, message);
   }
@@ -147,6 +195,23 @@ export class SignalingService extends EventEmitter {
   handleError(error) {
     this.emit('error', error);
   }
+
+  /**
+   * Adjunta y valida el peer-card local en mensajes gated.
+   * @param {SignalingMessage} message
+   * @protected
+   */
+  _gatedOutbound(message) {
+    if (!isPeerCardGatedType(message.type)) return message;
+    const card = message.peerCard ?? this._peerCard;
+    const check = assertSignalingPeerCard(card, {
+      role: this._requiredRole ?? undefined
+    });
+    if (!check.ok) {
+      throw new Error(`signaling peer-card required: ${check.error}`);
+    }
+    return { ...message, peerCard: card };
+  }
 }
 
 /**
@@ -164,6 +229,9 @@ export function abstractMessageToWire(message) {
     message.candidate ??
     message.data ??
     null;
+  /** @type {Record<string, unknown>} */
+  const extra = {};
+  if (message.peerCard != null) extra.peerCard = message.peerCard;
   return {
     wireType,
     payload: createWireMessage({
@@ -172,7 +240,7 @@ export function abstractMessageToWire(message) {
       to: message.to,
       room: message.roomId,
       data,
-      extra: message.displayName != null ? { displayName: message.displayName } : {}
+      extra
     })
   };
 }

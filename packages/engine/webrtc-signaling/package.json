@@ -11,13 +11,15 @@
       "default": "./src/index.mjs"
     },
     "./peer-session": "./src/peer-session.mjs",
-    "./messages": "./src/messages.mjs"
+    "./messages": "./src/messages.mjs",
+    "./peer-card-gate": "./src/peer-card-gate.mjs"
   },
   "scripts": {
     "test": "node --test test/*.mjs"
   },
   "dependencies": {
     "@zeus/presets-sdk": "0.1.0",
+    "@zeus/protocol": "0.1.0",
     "@zeus/rooms": "0.1.0"
   },
   "optionalDependencies": {

@@ -26,6 +26,7 @@
   "dependencies": {
     "@zeus/linea-kit": "*",
     "@zeus/presets-sdk": "*",
+    "@zeus/protocol": "*",
     "@zeus/room-client-browser": "*",
     "@zeus/webrtc-signaling": "*",
     "express": "^5.1.0",

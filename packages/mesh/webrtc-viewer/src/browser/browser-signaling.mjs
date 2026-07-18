@@ -4,11 +4,18 @@
  * Same wire contract as SocketRoomSignalingService (U88): full names
  * `webrtc-offer|answer|ice-candidate|join-room|…` — not quirk A strip.
  *
+ * WP-U93: torno peer-card (misma regla que @zeus/webrtc-signaling).
+ *
  * Procedencia: adapts repo A SignalingService abstract API to Zeus rooms
  * without importing node-only `@zeus/rooms`.
  */
 
 import { createBrowserRoomClient } from '@zeus/room-client-browser';
+import {
+  assertSignalingPeerCard,
+  isPeerCardGatedType,
+  peerCardFromMessage
+} from '@zeus/webrtc-signaling/peer-card-gate';
 
 const WIRE_EVENTS = Object.freeze([
   'webrtc-offer',
@@ -73,6 +80,8 @@ export class BrowserSocketSignalingService extends Emitter {
     this.userId = '';
     this.roomId = config.room || '';
     this._connected = false;
+    /** @type {object|null} */
+    this._peerCard = null;
     /** @type {ReturnType<typeof createBrowserRoomClient>|null} */
     this._client = null;
     /** @type {Array<() => void>} */
@@ -89,6 +98,21 @@ export class BrowserSocketSignalingService extends Emitter {
 
   getRoomId() {
     return this.roomId;
+  }
+
+  getPeerCard() {
+    return this._peerCard;
+  }
+
+  /**
+   * @param {object} peerCard
+   */
+  setPeerCard(peerCard) {
+    const check = assertSignalingPeerCard(peerCard);
+    if (!check.ok) {
+      throw new Error(`BrowserSocketSignalingService.setPeerCard: ${check.error}`);
+    }
+    this._peerCard = peerCard;
   }
 
   /**
@@ -123,26 +147,27 @@ export class BrowserSocketSignalingService extends Emitter {
     this._unsubs = [];
     this._client?.disconnect();
     this._client = null;
+    this._peerCard = null;
     this._connected = false;
     this.emit('connection', false);
   }
 
-  /** @param {string} roomId @param {string} [displayName] */
-  async joinRoom(roomId, displayName = this.userId) {
+  /** @param {string} roomId @param {object} peerCard */
+  async joinRoom(roomId, peerCard) {
     if (!this._client || !this._connected) {
       throw new Error('Not connected to signaling transport');
     }
+    this.setPeerCard(peerCard);
     this.roomId = roomId;
     this._client.getSocket().emit('CLIENT_SUSCRIBE', { room: roomId });
     const payload = {
       type: 'join-room',
       from: this.userId,
       room: roomId,
-      data: { peerId: this.userId, displayName, roomId },
+      data: { peerCard, roomId },
       timestamp: Date.now(),
       messageId: messageId(),
-      displayName,
-      peerId: this.userId
+      peerCard
     };
     this._client.emit('join-room', payload);
   }
@@ -154,7 +179,7 @@ export class BrowserSocketSignalingService extends Emitter {
       type: 'leave-room',
       from: this.userId,
       room: roomId,
-      data: { peerId: this.userId, roomId },
+      data: { roomId, sessionId: this._peerCard?.sessionId ?? this.userId },
       timestamp: Date.now(),
       messageId: messageId()
     });
@@ -166,21 +191,31 @@ export class BrowserSocketSignalingService extends Emitter {
     if (!this._client || !this._connected) {
       throw new Error('Not connected to signaling transport');
     }
-    const wireType = ABSTRACT_TO_WIRE[message.type] || message.type;
-    const room = message.roomId || this.roomId;
+    const gated = { ...message };
+    if (isPeerCardGatedType(gated.type)) {
+      const card = gated.peerCard ?? this._peerCard;
+      const check = assertSignalingPeerCard(card);
+      if (!check.ok) {
+        throw new Error(`signaling peer-card required: ${check.error}`);
+      }
+      gated.peerCard = card;
+    }
+    const wireType = ABSTRACT_TO_WIRE[gated.type] || gated.type;
+    const room = gated.roomId || this.roomId;
     const data =
-      message.offer ?? message.answer ?? message.candidate ?? message.data ?? null;
+      gated.offer ?? gated.answer ?? gated.candidate ?? gated.data ?? null;
     const payload = {
       type: wireType,
-      from: message.from || this.userId,
-      to: message.to,
+      from: gated.from || this.userId,
+      to: gated.to,
       room,
       data,
-      timestamp: message.timestamp ?? Date.now(),
-      messageId: message.messageId || messageId(),
-      offer: message.offer,
-      answer: message.answer,
-      candidate: message.candidate
+      timestamp: gated.timestamp ?? Date.now(),
+      messageId: gated.messageId || messageId(),
+      offer: gated.offer,
+      answer: gated.answer,
+      candidate: gated.candidate,
+      ...(gated.peerCard != null ? { peerCard: gated.peerCard } : {})
     };
     this._client.emit(wireType, payload);
   }
@@ -233,6 +268,7 @@ export class BrowserSocketSignalingService extends Emitter {
     if (to && to !== this.userId) return;
 
     const abstractType = WIRE_TO_ABSTRACT[wireType] || wireType;
+    const peerCard = peerCardFromMessage(payload);
     const message = {
       type: abstractType,
       from: from || '',
@@ -240,13 +276,23 @@ export class BrowserSocketSignalingService extends Emitter {
       roomId: payload.room || payload.roomId || this.roomId,
       timestamp: payload.timestamp ?? Date.now(),
       messageId: payload.messageId || messageId(),
-      data: payload.data
+      data: payload.data,
+      ...(peerCard != null ? { peerCard } : {})
     };
     if (abstractType === 'offer') message.offer = payload.data ?? payload.offer;
     if (abstractType === 'answer') message.answer = payload.data ?? payload.answer;
     if (abstractType === 'ice-candidate') {
       message.candidate = payload.data ?? payload.candidate;
     }
+
+    if (isPeerCardGatedType(abstractType)) {
+      const check = assertSignalingPeerCard(peerCardFromMessage(message));
+      if (!check.ok) {
+        this.emit('error', new Error(`signaling peer-card rejected: ${check.error}`));
+        return;
+      }
+    }
+
     this.emit('message', message);
     this.emit(abstractType, message);
   }

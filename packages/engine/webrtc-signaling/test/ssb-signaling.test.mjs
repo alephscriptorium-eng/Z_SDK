@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { makePeerCard, roleScope } from '@zeus/protocol';
 import {
   SSB_WEBRTC_SIGNAL_TYPE,
   ABSTRACT_TO_SSB_SIGNAL,
@@ -7,6 +8,17 @@ import {
   createSbotPrivateTransport,
   SsbPrivateSignalingService
 } from '../src/index.mjs';
+
+function freshCard(sessionId) {
+  return makePeerCard({
+    roomId: 'private',
+    endpoint: 'ssb:oasis',
+    token: `tok-${sessionId}`,
+    scopes: [roleScope('player')],
+    expiresAt: Date.now() + 60_000,
+    sessionId
+  });
+}
 
 test('SSB signal table maps abstract offer/answer (no trickle by default)', () => {
   assert.equal(SSB_WEBRTC_SIGNAL_TYPE, 'webrtc-signal');
@@ -47,8 +59,8 @@ test('SsbPrivateSignalingService exchanges offer without copy-paste or ice trick
 
   await alice.connect('@alice.ed25519');
   await bob.connect('@bob.ed25519');
-  await alice.joinRoom('private');
-  await bob.joinRoom('private');
+  await alice.joinRoom('private', freshCard('@alice.ed25519'));
+  await bob.joinRoom('private', freshCard('@bob.ed25519'));
 
   const seen = [];
   bob.on('message', (m) => seen.push(m));
@@ -69,6 +81,7 @@ test('SsbPrivateSignalingService exchanges offer without copy-paste or ice trick
   assert.equal(seen[0].type, 'offer');
   assert.equal(seen[0].from, '@alice.ed25519');
   assert.equal(seen[0].offer.sdp.includes('v=0'), true);
+  assert.ok(seen[0].peerCard);
 
   await bob.sendAnswer('@alice.ed25519', { type: 'answer', sdp: 'v=0-answer' });
   const aliceSeen = [];
@@ -88,10 +101,12 @@ test('SsbPrivateSignalingService filters wrong target and self', async () => {
     transport: bus.createTransport('@alice.ed25519')
   });
   await alice.connect('@alice.ed25519');
+  await alice.joinRoom('private', freshCard('@alice.ed25519'));
 
   const seen = [];
   alice.on('message', (m) => seen.push(m));
 
+  const bobCard = freshCard('@bob.ed25519');
   // inject via transport as if from bob but addressed to carol
   const bobT = bus.createTransport('@bob.ed25519');
   await bobT.publishPrivate(
@@ -100,7 +115,8 @@ test('SsbPrivateSignalingService filters wrong target and self', async () => {
       signal: 'offer',
       from: '@bob.ed25519',
       to: '@carol.ed25519',
-      offer: { type: 'offer', sdp: 'x' }
+      offer: { type: 'offer', sdp: 'x' },
+      peerCard: bobCard
     },
     ['@alice.ed25519'] // wrongly delivered — service still filters by content.to
   );
@@ -112,7 +128,8 @@ test('SsbPrivateSignalingService filters wrong target and self', async () => {
       signal: 'offer',
       from: '@bob.ed25519',
       to: '@alice.ed25519',
-      offer: { type: 'offer', sdp: 'ok' }
+      offer: { type: 'offer', sdp: 'ok' },
+      peerCard: bobCard
     },
     ['@alice.ed25519']
   );

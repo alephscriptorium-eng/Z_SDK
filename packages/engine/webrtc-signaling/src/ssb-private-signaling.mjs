@@ -12,6 +12,7 @@
 import { createMessageId } from './messages.mjs';
 import { SignalingService } from './signaling-service.mjs';
 import { SSB_WEBRTC_SIGNAL_TYPE } from './ssb-private-transport.mjs';
+import { peerCardFromMessage } from './peer-card-gate.mjs';
 
 /**
  * Abstract signaling type → SSB content.signal field.
@@ -87,19 +88,17 @@ export class SsbPrivateSignalingService extends SignalingService {
   }
 
   /**
-   * Announce presence to a peer (DM). Room id is a logical label — the pub
-   * does not host a socket room for signaling.
+   * Bookmark logical room and present peer-card (WP-U93).
+   * Room id is a logical label — the pub does not host a socket room.
    * @param {string} roomId
-   * @param {string} [displayName]
+   * @param {object} peerCard
    */
-  async joinRoom(roomId, displayName = this.userId) {
+  async joinRoom(roomId, peerCard) {
     if (!this._connected || !this._transport) {
       throw new Error('Not connected to SSB private signaling transport');
     }
+    this.setPeerCard(peerCard);
     this.roomId = roomId;
-    // join without a target is a local bookmark; peers are addressed by feedId
-    // in sendOffer/sendAnswer. Optional broadcast is out of scope for DMs.
-    this._displayName = displayName;
   }
 
   async leaveRoom() {
@@ -122,33 +121,33 @@ export class SsbPrivateSignalingService extends SignalingService {
     if (!this._connected || !this._transport) {
       throw new Error('Not connected to SSB private signaling transport');
     }
-    const to = message.to;
+    const gated = this._gatedOutbound(message);
+    const to = gated.to;
     if (!to) {
       throw new Error('SSB private signaling requires message.to (peer feedId)');
     }
 
-    const signal = ABSTRACT_TO_SSB_SIGNAL[message.type];
+    const signal = ABSTRACT_TO_SSB_SIGNAL[gated.type];
     if (!signal) {
-      throw new Error(`Unknown signaling message type for SSB: ${message.type}`);
+      throw new Error(`Unknown signaling message type for SSB: ${gated.type}`);
     }
 
     const content = {
       type: SSB_WEBRTC_SIGNAL_TYPE,
       signal,
-      from: message.from || this.userId,
+      from: gated.from || this.userId,
       to,
-      roomId: message.roomId || this.roomId || undefined,
-      timestamp: message.timestamp ?? Date.now(),
-      messageId: message.messageId || createMessageId(this.userId),
+      roomId: gated.roomId || this.roomId || undefined,
+      timestamp: gated.timestamp ?? Date.now(),
+      messageId: gated.messageId || createMessageId(this.userId),
       recps: [to]
     };
 
-    if (message.offer != null) content.offer = message.offer;
-    if (message.answer != null) content.answer = message.answer;
-    if (message.candidate != null) content.candidate = message.candidate;
-    if (message.data != null) content.data = message.data;
-    if (message.displayName != null) content.displayName = message.displayName;
-    else if (this._displayName != null) content.displayName = this._displayName;
+    if (gated.offer != null) content.offer = gated.offer;
+    if (gated.answer != null) content.answer = gated.answer;
+    if (gated.candidate != null) content.candidate = gated.candidate;
+    if (gated.data != null) content.data = gated.data;
+    if (gated.peerCard != null) content.peerCard = gated.peerCard;
 
     await this._transport.publishPrivate(content, [to]);
   }
@@ -180,6 +179,7 @@ export class SsbPrivateSignalingService extends SignalingService {
     if (!this._allowTrickle && content.signal === 'ice-candidate') return;
 
     const abstractType = SSB_SIGNAL_TO_ABSTRACT[content.signal] || content.signal;
+    const peerCard = peerCardFromMessage(content);
     /** @type {import('./signaling-service.mjs').SignalingMessage} */
     const message = {
       type: abstractType,
@@ -188,7 +188,8 @@ export class SsbPrivateSignalingService extends SignalingService {
       roomId: content.roomId || this.roomId,
       timestamp: content.timestamp ?? msg.value.timestamp ?? Date.now(),
       messageId: content.messageId || createMessageId(from || 'peer'),
-      data: content.data
+      data: content.data,
+      ...(peerCard != null ? { peerCard } : {})
     };
 
     if (abstractType === 'offer') message.offer = content.offer ?? content.data;
@@ -196,7 +197,6 @@ export class SsbPrivateSignalingService extends SignalingService {
     if (abstractType === 'ice-candidate') {
       message.candidate = content.candidate ?? content.data;
     }
-    if (content.displayName != null) message.displayName = content.displayName;
 
     this.handleMessage(message);
   }
