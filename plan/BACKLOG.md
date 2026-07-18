@@ -20,8 +20,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 > **Refundación + capa B drenadas** (U00–U118 ✅). **Sprint 1 cerrado
 > en código** ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**):
-> U119–U122 ✅. **0 DA** abiertas. Publish real ⏳ ops
-> (`NPM_USERNAME`/`NPM_PASSWORD` + primer publish) → **U55**.
+> U119–U122 ✅. **0 DA** abiertas. Publish real ✅ ops
+> (`npm view @zeus/protocol` → **0.2.0** registry propio) → **GO U55 + U123**.
 > DNS U106/U107 ⏳. Diferidos U87 §5–6 / residuales → **sin GO**.
 
 | Frente | WP | Estado |
@@ -30,16 +30,16 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 | Post-U87 — micro + editor + schema | **U109–U117** | ✅ |
 | Estabilización mesa plan | **U118** | ✅ |
 | **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
-| Publish real → demoler `file:` | ops + **U55** | gated (ops post-U122) |
+| Publish real → demoler `file:` | **U55** ∥ **U123** | 🔶 GO |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Orden Sprint 1:** ~~**U119**~~ ✅ → ~~**U120**~~ ✅ ∥ ~~**U121**~~ ✅ → ~~**U122**~~ ✅ → GO U55 natural (ops).
+**Orden Sprint 1:** ~~**U119**~~ ✅ → ~~**U120**~~ ✅ ∥ ~~**U121**~~ ✅ → ~~**U122**~~ ✅ → ~~ops publish~~ ✅ → **U55** ∥ **U123**.
 
-**En curso:** _(ninguno — Sprint 1 cerrado en código)_
-
-**⬜ / bloqueados (fuera Sprint 1):**
-- **U55** — demoler `file:` (dep publish real; **no 🔶** hasta tick ops:
-  secrets `NPM_USERNAME`/`NPM_PASSWORD` + primer publish)
+**En curso:**
+- 🔶 **WP-U55** — demoler `file:` operator-ui/threejs-ui-lib (orquestador→worker /
+  2026-07-18) · `wp/u55-demoler-file-deps`
+- 🔶 **WP-U123** — library retiro `file:`/`.deps` → registry (orquestador→worker /
+  2026-07-18) · `wp/u123-retiro-file-deps`
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -137,14 +137,51 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 
 ---
 
+## Post-publish — demoler `file:` (GO · 2026-07-18)
+
+Evidencia ops: `npm view @zeus/protocol --registry
+https://npm.scriptorium.escrivivir.co` → **0.2.0**. Solo `engine/*`
+publicado; mesh sigue `private` (salvo lo que U55 haga publicable para CA).
+
+### WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib — 🔶
+
+- 🔶 **WP-U55 · Demoler deps `file:`** — en curso (orquestador→worker /
+  2026-07-18). Rama `wp/u55-demoler-file-deps` · worktree
+  `.worktrees/wp-u55-demoler-file-deps`. Brief:
+  [REPORTES/briefs/WP-U55-demoler-file-deps.md](REPORTES/briefs/WP-U55-demoler-file-deps.md).
+  Sustituye `file:` vivos en `@zeus/operator-ui` /
+  `@zeus/threejs-ui-lib` por versiones del registry D-7. Si
+  `@zeus/operator-bridge` (mesh) no está publicado: hacerlo publicable +
+  publish mínimo necesario para el CA (no abrir frente mesh completo).
+  **CA:** operator-ui / threejs-ui-lib resuelven `@zeus/*` sin `file:`;
+  install aislado Angular verde; grep `file:` en esos package.json → 0.
+  **Demolición:** deps `file:` residuales en esos paquetes.
+
+### WP-U123 · Library retiro `file:` / `.deps` → registry — 🔶
+
+- 🔶 **WP-U123 · Retiro puente `file:`/`.deps` en games-library** — en curso
+  (orquestador→worker / 2026-07-18). Rama
+  `wp/u123-retiro-file-deps` (zeus + library) · worktrees
+  `.worktrees/wp-u123-retiro-file-deps`. Brief:
+  [REPORTES/briefs/WP-U123-retiro-file-deps.md](REPORTES/briefs/WP-U123-retiro-file-deps.md).
+  Plan U61 («post-publish → quitar file: y resolver desde registry»):
+  juegos consumen `@zeus/*` publicados; raíz library sin deps `file:`.
+  Criterio `.deps`: **fallback dev documentado** (setup opcional para
+  demos/e2e que spawnean mesh no publicado) **o** demolición total —
+  documentar en reporte.
+  **CA:** `npm install` limpio en library **sin** `file:` en package.json
+  (raíz + workspaces); unit tests verdes; demos/e2e que requieran mesh
+  documentan `ZEUS_SDK_ROOT` / sibling / setup opcional.
+  **Demolición:** deps `file:.deps/...` en package.json; `preinstall` que
+  fuerce el puente si el camino default es registry.
+
 ## Ops gated (fuera del swarm hasta tick)
 
-- **⬜ WP-U55 · Demoler deps `file:`** — tras publish real (post **U122**
-  + secret basic-auth `_password` en Actions + registry
-  `npm.scriptorium.escrivivir.co`). Detalle CA en histórico (Ola 5).
 - DNS / Custom domain ⏳: `z-sdk.escrivivir.co` (U106) ·
   `games.z-sdk.escrivivir.co` (U107)
 - Sidecar / `ZEUS_BLOB_*` — **DIFERIDO** D-22
+- Publish mesh `*` (salvo operator-bridge si U55 lo publica) — residual
+  post-U55/U123
 
 ---
 
