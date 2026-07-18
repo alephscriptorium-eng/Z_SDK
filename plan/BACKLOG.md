@@ -842,10 +842,9 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 ## Lote higiene / hallazgos vigilante (2026-07-18)
 
 > Revisión externa (ADDENDA `ENTREGA-2026-07-18-revision-externa.md`).
-> No bloqueado por Ola 6. **U93** desbloqueado por **D-20** (cablear-puente);
-> espera A-11 / brief aparte — NO en lote-higiene-11c.
-> Higiene vigilante **U94–U99 cerrada** (salvo U93 ⬜). Lote 11c cerrado
-> (U98+U99 ✅). Ola 6 no.
+> No bloqueado por Ola 6. Higiene vigilante **U94–U99 cerrada**.
+> Lote 11c cerrado (U98+U99 ✅). **A-11 recibida** → **D-21**; U93
+> desbloqueado (D-20 + A-11 no lo bloquea) — prep 🔶. Ola 6 no.
 
 ### Coordinación re-plan identidad/transporte (2026-07-18)
 
@@ -858,26 +857,30 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 3. **Lote higiene U94+U96** (lote-higiene-11b) — **cerrado** (U94 ✅ +
    U96 ✅).
 4. **Lote higiene U98+U99** (lote-higiene-11c) — **cerrado** (U98 ✅
-   merge `f94282d`; U99 ✅ merge `7b20002`). U93 espera A-11 / brief
-   aparte (no en este lote).
+   merge `f94282d`; U99 ✅ merge `7b20002`).
+5. **A-11 / DA-OasisTransport** — **recibida y cerrada en D-21**
+   (2026-07-18). Filas 2–6 → veredictos; WPs **U100** (spike) +
+   **U101** (saliente hermano U84) ⬜. U93 **no bloqueado** — prep 🔶
+   (brief + worktree; worker no lanzado aún).
 
-**Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
-`A-09` → **WP-U97** (feed-kit/volumes-ops) y `A-10` → **WP-U93**
-(peer-card). El plan del conector Oasis que reservaba A-09 debe
-renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
-(placeholder; falta nota-tabla formal A-11 con IDs vivos).
-**Orquestador espera A-11 del marco; rellena veredicto, no redacta.**
-**(2026-07-18 lote-11c):** A-11 aún no llegó → U93 sigue ⬜.
+**Colisión addendas A-09/A-10 (histórico):** el lote higiene/vigilante
+ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
+**A-11** (entregada). Fila 6 (follows) = **operación**, no WP.
 
-- ⬜ **WP-U93 · Peer-card como torno del carril WebRTC** *(dep U88–U90 ✅;
-  D-20)* — Cadena puente: la autoridad de sala **emite** peer-card al
-  join (`makePeerCard`); `webrtc-signaling` **valida** rol/frescura
+- 🔶 **WP-U93 · Peer-card como torno del carril WebRTC** *(dep U88–U90 ✅;
+  D-20; A-11 no bloquea)* — prep orquestador / 2026-07-18 (brief
+  `plan/REPORTES/briefs/WP-U93-peer-card.md`; rama `wp/u93-peer-card`;
+  worktree `.worktrees/wp-u93-peer-card`; **worker no lanzado**).
+  Cadena puente: la autoridad de sala **emite** peer-card al join
+  (`makePeerCard`); `webrtc-signaling` **valida** rol/frescura
   (`peerCardGrantsRole`, `isPeerCardFresh`) antes de retransmitir
   offer/answer/ICE; el WP **documenta el punto de enganche SSB**
   (extensión futura: asiento/credencial en grafo Oasis / follows — sin
   implementar el puente ni blobs). El DataChannel es carril de datos /
   VOLUMES LAN (D-17; fila 1 nota conector: complementario a `ssb-blobs`
-  WAN). Sustituye identidad plana (`userId`/`peerId`/`displayName`).
+  WAN). Con D-21 fila 4 (b): el sidecar pub respetará este peer-card
+  como portero del carril LAN. Sustituye identidad plana
+  (`userId`/`peerId`/`displayName`).
   **CA:** `makePeerCard` con consumidores de producción fuera de
   protocol: autoridad **emite** al join **y** signaling **exige**
   (ambos extremos obligatorios — anti A-02 / media cadena); test que
@@ -887,6 +890,36 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   este WP).
   **Demolición:** campos de identidad ad-hoc del handshake que el card
   sustituya.
+
+### Transporte Oasis / blobs (post A-11 · D-21)
+
+> Ejecutor (b): el equipo del pub entrega sidecar; zeus valida.
+> U71 permanece horizonte — no asignable. No Ola 6.
+
+- ⬜ **WP-U100 · Spike blob-sync Oasis 2-nodos** *(dep D-21; antes de
+  U101)* — Spike barato de sync content-addressed (`ssb-blobs` /
+  chunks) entre dos nodos antes de comprometer el carril saliente.
+  Necesita cliente/pub levantado (ops). Zeus registra evidencia y CA de
+  validación cuando el pub entregue el entorno; no implementa el
+  servicio de blobs en este WP.
+  **CA:** acta/reporte con evidencia de sync 2-nodos (o ⏳ honesto si el
+  pub aún no entrega); verdicto «despeja / no despeja» compromiso de
+  U101; cero código de producto del sidecar en monorepo zeus salvo
+  harness de validación mínimo si hace falta.
+  **Demolición:** n/a (spike).
+
+- ⬜ **WP-U101 · Carril saliente VOLUMES/blobs (hermano U84)** *(dep
+  U84 ✅, U100, U93 ✅)* — Encaje del carril **saliente** (blobs/pinning)
+  como WP hermano de U84 (entrante SSB→VOLUMES ya ✅). Zeus consume el
+  sidecar del pub y valida contra CAs / manifests (`cid`, D-14/D-21
+  fila 2). Enganche LAN: peer-card de U93 como control de acceso del
+  DataChannel; WAN vía `ssb-blobs`. **No** re-abre U84. **No** es U71
+  (horizonte p2p pleno).
+  **CA:** flujo saliente documentado y testeado contra manifests
+  VOLUMES; rechazo sin peer-card válida en carril LAN; U84 entrante
+  intacto; evidencia de consumo del sidecar (no reimplementar `blobs.*`
+  en zeus).
+  **Demolición:** stubs/notas «saliente diferido» que este WP sustituya.
 
 - ✅ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
   aceptado (orquestador / 2026-07-18; merge `38ff80b`) — en

@@ -191,28 +191,21 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   WebRTC/DataChannel LAN complementario a `ssb-blobs` WAN). No demoler
   `makePeerCard` / helpers de protocol. Consecuencia: U93 desbloqueado.
 
+- **D-21 · 2026-07-18 · Transporte VOLUMES sobre pub Oasis (filas 2–6)**
+  (resuelve **DA-OasisTransport**; nota-tabla **A-11** recibida; orquestador
+  rellena veredictos, no redacta la nota). Fila 1 ya cerrada en D-20/U93.
+  | # | Tema | Veredicto | Destino |
+  |---|------|-----------|---------|
+  | 2 | VOLUMES blobs content-addressed (hash=`cid`; chunk-as-blob >50 MB) | **aceptar (adoptar)** | Alineado a **D-14** (manifests ya toleran `cid`); no WP solo por el modelo |
+  | 3 | Encaje carril **saliente** vs U84 ✅ entrante | **WP nuevo ⬜** (opción **b**) | **WP-U101** hermano post-U84; **no** re-abrir U84; **no** asignar horizonte U71 |
+  | 4 | Quién ejecuta | **aceptar (b)** | Equipo del pub entrega servicio/sidecar sobre `blobs.*`; zeus consume y valida contra CAs. Enganche LAN: **peer-card U93 = portero** (no bloquea U93) |
+  | 5 | Spike blob-sync 2-nodos antes de comprometer | **WP nuevo ⬜** (**sí**) | **WP-U100** — barato; su evidencia despeja compromiso de U101; necesita cliente levantado (ops/pub) |
+  | 6 | Grafo de follows como prerequisito P2P | **aceptar como operación** | Nodos se siguen entre sí; **no** WP de producto ni «romper follows como feature» |
+  Consecuencia: U93 sigue desbloqueado (frontera A-11). U100→U101 ⬜;
+  U71 permanece horizonte (no inventar como asignable). Ola 6 no.
+
 ## Abiertas (bloquean lo indicado)
 
-- **DA-OasisTransport · 2026-07-18 · Nota-tabla transporte VOLUMES /
-  Oasis 0.8.8 (filas 2–6)** — El borrador del conector propone 6 filas;
-  **fila 1** queda cubierta por D-20 + U93 (veredicto orquestador:
-  **(a)** blobs WAN + DataChannel LAN, complementarios). Faltan
-  veredictos formales — y una **addenda A-11+** entregada en lengua de
-  zeus — para:
-  | # | Tema | Recomendación borrador | Estado |
-  |---|------|------------------------|--------|
-  | 2 | VOLUMES como blobs content-addressed (hash=cid, chunk>50 MB) | adoptar (D-14 tolera) | `____` |
-  | 3 | Encaje saliente vs U84 entrante | WP hermano / horizonte U71 (U84 ya ✅ — **re-apuntar**) | `____` |
-  | 4 | Quién ejecuta (swarm zeus vs sidecar pub) | (b) pub entrega; zeus valida | `____` |
-  | 5 | Spike blob-sync 2-nodos antes de comprometer | sí | `____` |
-  | 6 | Grafo de follows como prerequisito P2P | operación (nodos se siguen) | `____` |
-  **No se inventan WPs** hasta que llegue la nota-tabla A-11 (IDs vivos:
-  U84✅, U88–U90✅, U71 horizonte). Colisión numeración: A-09/A-10 ya
-  tomados por el lote higiene (→ U97 / U93); el conector usa **A-11+**.
-  **Orquestador espera A-11 del marco; rellena veredicto, no redacta.**
-  **Bloquea:** WPs nuevos de transporte saliente Oasis/blobs. No bloquea
-  U93 ni el lote higiene U94–U99.
-
-*(Los horizontes WP-U71/72/73 siguen esperando evidencia o diseño externo;
-Ola 6/U55/U60+ siguen pausados por credenciales — no son decisiones de
-diseño abiertas.)*
+*(Ninguna decisión de diseño abierta tras D-21. Los horizontes
+WP-U71/72/73 siguen esperando evidencia o diseño externo; Ola 6/U55/U60+
+siguen pausados por credenciales — no son decisiones de diseño abiertas.)*
