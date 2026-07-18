@@ -5,7 +5,7 @@
 | agente | worker (frente editor / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u112-carpeta-instantiate-from-obra` (zeus) · `wp/u112-carpeta-instantiate-from-obra` (library) |
-| commit(s) | library: `5c48c7d` (zeus: pendiente push) |
+| commit(s) | zeus: `fd30c9e` · library: `5c48c7d` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
