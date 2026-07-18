@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u100-blob-sync-spike` |
-| commit(s) | _(ver log de la rama)_ |
+| commit(s) | `bd69e17`, `1b10293` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
