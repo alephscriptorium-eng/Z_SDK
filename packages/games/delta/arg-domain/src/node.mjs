@@ -4,7 +4,6 @@
  * dominio browser-safe crudo (mismo patrón que @zeus/game-engine/node).
  */
 
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { nodeSrcDir } from '@zeus/protocol/node-src-dir';
 
-export const srcDir = path.dirname(fileURLToPath(import.meta.url));
+export const srcDir = nodeSrcDir(import.meta.url);

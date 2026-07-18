@@ -6,7 +6,7 @@
  * import map, NOT by node. Nothing here imports node builtins.
  *
  * Node-only path helpers live in the separate entry `@zeus/ui-3d-kit/node`
- * (src/paths.node.mjs) — do not re-export them here.
+ * (src/node.mjs) — do not re-export them here.
  */
 
 // core

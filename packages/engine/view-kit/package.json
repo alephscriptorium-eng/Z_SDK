@@ -6,7 +6,7 @@
   "main": "src/index.mjs",
   "exports": {
     ".": "./src/index.mjs",
-    "./node": "./src/paths.node.mjs"
+    "./node": "./src/node.mjs"
   },
   "scripts": {
     "test": "node --test test/*.test.mjs"
@@ -16,6 +16,7 @@
     "role": "lib"
   },
   "dependencies": {
+    "@zeus/protocol": "0.1.0",
     "@zeus/ui-3d-kit": "0.1.0",
     "three": "^0.170.0"
   },

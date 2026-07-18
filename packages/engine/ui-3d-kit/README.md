@@ -31,7 +31,7 @@ con stubs. `vaiven-dos-nodos.mjs` y `map-engine.mjs` están **vendorizados** des
 ## Cómo se sirve
 
 Entrada browser: `@zeus/ui-3d-kit` (`src/index.mjs`). Entrada **node-only** para
-montar rutas: `@zeus/ui-3d-kit/node` (`src/paths.node.mjs`), que expone `srcDir`,
+montar rutas: `@zeus/ui-3d-kit/node` (`src/node.mjs`), que expone `srcDir`,
 `assetsDir`, `modelsDir` y `getThreeDir()`.
 
 ```js
