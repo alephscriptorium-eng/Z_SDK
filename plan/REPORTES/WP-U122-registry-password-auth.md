@@ -151,7 +151,7 @@ $ rg -n "NODE_AUTH_TOKEN|secrets\.NPM_TOKEN|registry-url:" .github/workflows/rel
 
 ## Revisión del orquestador
 
-**Aceptado ✅** — orquestador / 2026-07-18 · tip `9374ae5`.
+**Aceptado ✅** — orquestador / 2026-07-18 · tip `ea1fead`.
 
 Verificado:
 - Diff = `release.yml` + contrato U53 + docs del gate (sin BACKLOG / sin
