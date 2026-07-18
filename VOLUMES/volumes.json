@@ -1,73 +1,51 @@
 {
   "root": ".",
+  "policy": "synthetic-fixtures-only",
+  "note": "WP-U62: live DISK operator data lives outside this monorepo (ZEUS_VOLUMES_ROOT or @zeus/startpack-*). Only synthetic fixtures for CI/mesh tests remain here.",
   "volumes": {
     "firehose": {
       "disk": "DISK_01",
       "path": "DISK_01/FIREHOSE",
       "readonly": true,
-      "label": "Firehose ONFALO",
+      "deferred": true,
+      "label": "Firehose (live — set ZEUS_VOLUMES_ROOT outside monorepo or use startpack)",
       "source": {
         "remotePath": "${ZEUS_FIREHOSE_REMOTE_PATH}",
-        "syncedAt": "2026-07-09T18:37:46.183Z"
+        "note": "Not shipped in monorepo after WP-U62"
       },
-      "corpora": [
-        {
-          "id": "candidate",
-          "path": "candidate",
-          "label": "Candidatos",
-          "files": 605
-        },
-        {
-          "id": "raw",
-          "path": "raw",
-          "label": "Raw",
-          "files": 4076
-        },
-        {
-          "id": "discarded",
-          "path": "discarded",
-          "label": "Descartados",
-          "files": 3706
-        },
-        {
-          "id": "labeled",
-          "path": "labeled",
-          "label": "Etiquetados",
-          "files": 0
-        }
-      ]
+      "corpora": []
     },
     "lineas": {
       "disk": "DISK_02",
       "path": "DISK_02/LINEAS",
       "readonly": true,
-      "label": "Lineas de poder",
+      "label": "Lineas (synthetic fixture)",
       "source": {
-        "migratedAt": "2026-07-09T19:50:00Z",
-        "legacyRemovedAt": "2026-07-09T19:50:00Z"
+        "kind": "fixture",
+        "provenance": "packages/engine/linea-kit/test/fixtures/lineas (WP-U62)"
       }
     },
     "forces": {
       "disk": "DISK_03",
       "path": "DISK_03/FORCES",
       "readonly": true,
-      "label": "Forces y cotas (la fisica del sistema, D-19)",
+      "label": "Forces (synthetic fixture)",
       "source": {
-        "importedAt": "2026-07-15",
-        "provenance": "network-engine: engines/ (registry 10) + sima-aleph/ + cima-aleph/; curado segun DISK_03/FORCES/IMPORT_NOTES.md (trace y raw no viajan)"
+        "kind": "fixture",
+        "provenance": "packages/engine/linea-kit/test/fixtures/forces (WP-U62)"
       },
       "corpora": [
         {
           "id": "forces",
           "path": "forces",
-          "label": "Forces (boot main + 9 forces)",
-          "files": 163
+          "label": "Forces fixture",
+          "files": 1
         },
         {
           "id": "cotas",
           "path": "cotas",
-          "label": "Cotas sima/cima (polos colapso/victoria)",
-          "files": 46
+          "label": "Cotas fixture",
+          "files": 1
         }
       ]
     },
@@ -75,33 +53,15 @@
       "disk": "DISK_04",
       "path": "DISK_04/SSB",
       "readonly": true,
-      "label": "SSB OASIS (Tribes & Parliament)",
+      "deferred": true,
+      "label": "SSB OASIS (live sync — outside monorepo)",
       "source": {
         "kind": "ssb-pub-export",
-        "provenance": "OASIS pub typed log (tribe*/parliament*/votes*) → JSON; sync via @zeus/ssb-system (ZEUS_SSB_LOG_PATH)",
+        "provenance": "OASIS pub typed log → JSON; sync via @zeus/ssb-system",
         "pubUrl": "${ZEUS_SSB_PUB_URL}",
         "logPath": "${ZEUS_SSB_LOG_PATH}"
       },
-      "corpora": [
-        {
-          "id": "tribes",
-          "path": "tribes",
-          "label": "Tribes (tribe*)",
-          "files": 0
-        },
-        {
-          "id": "parliament",
-          "path": "parliament",
-          "label": "Parliament (parliament*)",
-          "files": 0
-        },
-        {
-          "id": "votes",
-          "path": "votes",
-          "label": "Votes (votes*)",
-          "files": 0
-        }
-      ]
+      "corpora": []
     }
   }
 }

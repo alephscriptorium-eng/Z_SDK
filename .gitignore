@@ -6,11 +6,19 @@ data/*
 !data/.gitkeep
 !data/seeds/
 !data/seeds/**
-# VOLUMES: DISK_01/02/04 son datos pesados o sync de operador (gitignorados);
-# DISK_03 es corpus curado pequeño y viaja con el repo (plan autocontenido, D-19)
+# VOLUMES: solo fixtures sintéticos en git (WP-U62).
+# DISK_01/04 vivos y cualquier sync de operador → fuera del monorepo
+# (ZEUS_VOLUMES_ROOT externo o @zeus/startpack-* en games-library).
 VOLUMES/*
 !VOLUMES/README.md
 !VOLUMES/volumes.json
+!VOLUMES/DISK_02/
+!VOLUMES/DISK_02/**
+!VOLUMES/DISK_03/
+!VOLUMES/DISK_03/**
+# Nunca trackear DISK vivos pesados aunque alguien los copie aquí
+VOLUMES/DISK_01/
+VOLUMES/DISK_04/
 docs/public/api/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
