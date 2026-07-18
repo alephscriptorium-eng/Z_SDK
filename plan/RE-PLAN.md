@@ -21,11 +21,11 @@ A-14–A-15) está **drenada en diseño y en código de producto**: 0 DA
 abiertas post D-21/D-23; frentes D-22 en código ✅; Ola 6 y Ola 9 cerradas.
 
 **Estado holón 2 (post-triaje registro):** micro ~~U109~~/~~U110~~ ✅;
-frente editor **U111 🔶** · U112–U114 ⬜; residual kit schema → **U115** ⬜
-(ver BACKLOG). Lo que queda no es «terminar la refundación», sino que el
-mundo A **produzca juegos reales** (sensor = U87). IDs/CAs solo en
-[BACKLOG.md](BACKLOG.md); este documento explica *por qué* y *qué
-aprendimos*.
+frente editor ~~U111–U114~~ ✅; residual kit schema → **U115** 🔶
+(AJV / schema-as-truth en carpeta; ver BACKLOG). Lo que queda no es
+«terminar la refundación», sino que el mundo A **produzca juegos
+reales** (sensor = U87). IDs/CAs solo en [BACKLOG.md](BACKLOG.md);
+este documento explica *por qué* y *qué aprendimos*.
 
 Ops residuales (publish real → U55; DNS custom U106/U107; sidecar blob)
 siguen fuera del swarm — no son deuda de diseño.
@@ -154,9 +154,9 @@ con dueño) sale más barato que rematar tras N copias. PRACTICAS §1.4 +
 
 - **Este archivo no enumera WPs nuevos** (salvo citar IDs ya en BACKLOG).
   Tras GO capa B + triaje registro vigilante 2026-07-18: micro U109–U110
-  ✅; frente editor U111–U114; residual schema kit **U115**; diferidos
-  §5–6 en [DECISIONES.md](DECISIONES.md). Detalle solo en
-  [BACKLOG.md](BACKLOG.md).
+  ✅; frente editor ~~U111–U114~~ ✅; residual schema kit **U115** 🔶;
+  diferidos §5–6 en [DECISIONES.md](DECISIONES.md) (**sin GO** → sin
+  WP). Detalle solo en [BACKLOG.md](BACKLOG.md).
 - Horizontes previos (U71–U74) siguen en BACKLOG §Horizonte; no se
   reabren aquí.
 - U55 permanece gated a publish real (ops); no forma parte del holón 2.
@@ -166,6 +166,6 @@ con dueño) sale más barato que rematar tras N copias. PRACTICAS §1.4 +
 ## 6. Cierre
 
 Refundación: **cerrada como programa**. Producto mundo A: **abierto como
-holón** (U111 🔶 en curso; U112–U115 ⬜). Siguiente llenado del swarm =
-tras U111 o lote que el usuario autorice — brief + worktree bajo
-PRACTICAS / roles.
+holón** (frente editor U111–U114 ✅; **U115** 🔶 schema kit). Siguiente
+llenado del swarm = tras U115 o lote que el usuario autorice — brief +
+worktree bajo PRACTICAS / roles.

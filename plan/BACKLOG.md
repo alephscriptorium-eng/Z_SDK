@@ -11,7 +11,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 🔶)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
 > **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 ✅**; **U114 ✅**.
@@ -26,8 +26,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 > **GO** 2026-07-18 · ~~**U111**~~ ✅ · ~~**U112**~~ ✅ · ~~**U113**~~ ✅
 > · ~~**U114**~~ ✅ · **lote 1–4+8 cerrado** · (3)
 > diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable) ·
-> (4) triaje vigilante → **U115** ⬜ (schema story-board real; tras
-> U114 ✅ / sin solapar AJV — ver nota U114/U115).
+> (4) triaje vigilante → **U115** 🔶 (schema story-board real / AJV en
+> kit carpeta; sin solapar editor-ui U114).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -55,18 +55,19 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — carpeta: importar obra | **U112** | ✅ |
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ✅ |
 | Post-U87 — dialectos story-board en editor | **U114** | ✅ |
-| Vigilante — schema story-board real (kit) | **U115** | ⬜ (tras U114 ✅; no 🔶) |
+| Vigilante — schema story-board real (kit) | **U115** | 🔶 |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
-- **U115** — schema story-board real (AJV en kit); **U114 ✅** → listo
-  para encadenar (padre); **no solapar** editor-ui (U114 = registro
-  dialectos en editor; U115 = schema en carpeta kit); **no 🔶** aún.
 
-**En curso:** — (ninguno)
+**En curso:**
+- **U115** 🔶 — schema story-board real (AJV en kit carpeta);
+  agente swarm 2026-07-18; brief
+  `plan/REPORTES/briefs/WP-U115-schema-story-board-ajv.md`;
+  worktrees zeus + library. **No solapar** editor-ui (U114).
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -102,9 +103,10 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
     zeus `a8a28dc` · library `5ba0b33`; revisión `be86bad`
 19. ~~**WP-U114**~~ ✅ — dialectos story-board en editor; merge zeus
     `79c042c` (sin library); revisión `188e4a2` · **lote 1–4+8 cerrado**
-20. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
-21. ~~Triaje registro vigilante 2026-07-18~~ → **U115** ⬜ + addenda
-    RE-PLAN; residual STOP_SERVICES pozo/solve en cola (sin WP)
+20. **WP-U115** 🔶 — schema story-board real (AJV kit); en curso
+21. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP;
+    **sin GO** → no inventar micros / STOP_SERVICES)
+22. Residual STOP_SERVICES pozo/solve en cola (sin WP; **sin GO**)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -1375,8 +1377,8 @@ cerrado):
 > ~~**U112**~~ ✅ (merge zeus `2fc9021` · library `a76c93f`; revisión
 > `3807aac`); ~~**U113**~~ ✅ (merge zeus `a8a28dc` · library `5ba0b33`;
 > revisión `be86bad`); ~~**U114**~~ ✅ (merge zeus `79c042c`; sin
-> library; revisión `188e4a2`) · **lote 1–4+8 cerrado**; **U115** ⬜
-> (schema kit; listo tras U114 ✅ / sin solapar).
+> library; revisión `188e4a2`) · **lote 1–4+8 cerrado**; **U115** 🔶
+> (schema kit AJV; brief + worktrees 2026-07-18).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
 
@@ -1403,7 +1405,7 @@ cerrado):
 
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
 > Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; ~~**U113**~~ ✅;
-> ~~**U114**~~ ✅ — **cerrado**. Siguiente: **U115** ⬜ (padre encadena).
+> ~~**U114**~~ ✅ — **cerrado**. Siguiente: **U115** 🔶 (en curso).
 
 - ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
   *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
@@ -1445,16 +1447,17 @@ cerrado):
   **Deps:** U70 ✅ · U86 ✅. **Residual (cola):** env sibling library
   sin link `@zeus/startpack-kit` (routes release e2e editor) — sin WP.
 
-- ⬜ **WP-U115 · Schema story-board real (no solo existsSync)**
-  *(vigilante registro 2026-07-18 · H1 U70/U86; dep U86 ✅)* — en
+- 🔶 **WP-U115 · Schema story-board real (no solo existsSync)**
+  *(vigilante registro 2026-07-18 · H1 U70/U86; dep U86 ✅)* —
+  **en curso** (swarm 2026-07-18). En
   `kits/carpeta-dramaturgo/scripts/validate-story-board.mjs` el JSON
   Schema se **cita** (`existsSync(SCHEMA_PATH)`) pero la validación
   real es a mano (`validateStoryBoard`); riesgo de drift schema↔código.
   Cablear validador al schema (AJV u equivalente ya en monorepo/library)
   como fuente de verdad; dialectos/fixtures SOLVE+ALEPH+juguete siguen
   pasando; test que un board inválido contra schema falle con error
-  explicable. **U114 ✅** → listo para encadenar (padre); coord. sin
-  tocar editor-ui; **no 🔶** aún.
+  explicable. Coord. sin tocar editor-ui.
+  Brief: `plan/REPORTES/briefs/WP-U115-schema-story-board-ajv.md`.
   **CA:** `validate-story-board` carga y aplica el schema (no solo
   exists); fixtures/dialectos verdes; board sintético inválido → rechazo
   claro; README kit veraz (schema = contrato, no decoración).
@@ -1470,8 +1473,8 @@ Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
 (orquestador; no reabre addendas A-02…A-15 ya cerradas).
 
 - ~~U109/U110 cumplidos~~ — ya ✅; residual STOP_SERVICES pozo/solve →
-  nota bajo U110 arriba.
-- U86 H1 schema decorativo → **WP-U115** ⬜ (arriba).
+  nota bajo U110 arriba (**sin GO** → sin WP).
+- U86 H1 schema decorativo → **WP-U115** 🔶 (arriba).
 - U86 H2 one-liner paths en editor-ui — **ignorado** (mitigado en review).
 - U93 grieta viewer auto-fabrica peer-card — ya cola U93; **no WP** hasta
   GO usuario (firma SSB vs «visor pide card»); no abrir mesh a
