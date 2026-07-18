@@ -37,12 +37,13 @@ npm run e2e:blob-sync-spike
 
 | Env | Uso |
 | --- | --- |
-| `ZEUS_BLOB_SIDECAR_URL` | Base URL del sidecar `blobs.*` |
-| `ZEUS_BLOB_SYNC_NODE_A` | Identidad / endpoint nodo A |
-| `ZEUS_BLOB_SYNC_NODE_B` | Identidad / endpoint nodo B |
+| `ZEUS_BLOB_SIDECAR_URL` | Base URL del namespace `/x/blobstore/v0` |
+| `ZEUS_BLOB_SYNC_NODE_A` | Identidad / endpoint nodo A (cliente Oasis local) |
+| `ZEUS_BLOB_SYNC_NODE_B` | Identidad / endpoint nodo B (pub VPS) |
 
-Si faltan → probe = `⏳` (no se abre red). Con las tres → `ready` (este
-harness mínimo **no** dialea aún el sidecar; U101 consumirá la API real).
+Si faltan → probe = `⏳` (no se abre red). Con las tres → `ready` (spike
+env-only). El dial HTTP real (`GET /salud`, put/estado/deseos) vive en
+[`@zeus/blobstore-client`](../blobstore-client/) (WP-U101).
 
 `ZEUS_OPEN_BROWSER` no aplica (CLI headless).
 
@@ -52,7 +53,8 @@ Infra mesh/ops: cero nombres exclusivos de delta/pozo.
 
 ## Fuera de alcance (a propósito)
 
-- Implementar el sidecar Oasis / `ssb-blobs` producto
-- WP-U101 (carril saliente hermano U84)
+- Implementar el sidecar Oasis / `blobs.*` producto
 - Horizonte U71 (p2p pleno)
 - Re-abrir U84 (entrante SSB→VOLUMES)
+
+Carril saliente de producto: `@zeus/blobstore-client` (WP-U101).

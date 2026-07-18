@@ -28,8 +28,8 @@ export function assertLanBlobTransferAllowed(peerCard, opts = {}) {
 }
 
 /**
- * WAN lane is owned by the Oasis pub sidecar (`blobs.*` / ssb-blobs).
- * Zeus only documents the dependency here — no product sidecar code.
+ * WAN data plane is Oasis gossip `ssb-blobs` (pub). Control HTTP is
+ * `@zeus/blobstore-client` (U101). Zeus does not implement `blobs.*`.
  *
  * @returns {{ ok: false, lane: string, error: string, pending: true }}
  */
@@ -39,6 +39,6 @@ export function assertWanBlobTransferPendingSidecar() {
     lane: BLOB_LANES.wan,
     pending: true,
     error:
-      'WAN ssb-blobs requires pub sidecar (D-21 fila 4b) — not implemented in zeus'
+      'WAN data plane is ssb-blobs gossip (pub ops) — zeus only speaks HTTP control via @zeus/blobstore-client'
   };
 }

@@ -113,6 +113,8 @@
     "e2e:peer-card-chain": "node e2e/peer-card-chain.mjs",
     "e2e:blob-sync-spike": "npm run spike -w @zeus/blob-sync-harness",
     "test:blob-sync-harness": "npm test -w @zeus/blob-sync-harness",
+    "e2e:volumes-outbound": "npm run fixture -w @zeus/blobstore-client",
+    "test:blobstore-client": "npm test -w @zeus/blobstore-client",
     "e2e:webrtc-viewer": "node e2e/webrtc-viewer.mjs",
     "e2e:ssb-webrtc-signaling": "node e2e/ssb-webrtc-signaling.mjs",
     "e2e:arg": "node e2e/arg-demo.mjs",

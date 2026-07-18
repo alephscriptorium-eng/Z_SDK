@@ -1,0 +1,24 @@
+{
+  "name": "@zeus/blobstore-client",
+  "version": "0.0.0",
+  "description": "WP-U101: Zeus HTTP consumer of Oasis /x/blobstore/v0 control plane + VOLUMES cid/manifest validation (not the pub sidecar)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs",
+    "fixture": "node src/run-fixture.mjs"
+  },
+  "license": "AIPLv1",
+  "private": true,
+  "dependencies": {
+    "@zeus/blob-sync-harness": "*",
+    "@zeus/webrtc-signaling": "*"
+  },
+  "devDependencies": {
+    "@zeus/authority-kit": "*",
+    "@zeus/protocol": "*"
+  }
+}
