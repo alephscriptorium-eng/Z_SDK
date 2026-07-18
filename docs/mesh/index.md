@@ -11,6 +11,7 @@ Operar y jugar: transporte, UIs de malla, browsers de volúmenes, monitores.
 | `console-monitor` | Monitor de consola |
 | `3d-monitor` / `player-3d-ui` | Portal de vistas 3D / visor de room |
 | `linea-system` / `linea-firehose` / `solar-system` | MCP servers de corpus / demo |
+| coturn (VPS) | STUN/TURN propio para WebRTC (D-17) — [runbook](./coturn-runbook.md) |
 
 ```bash
 npm run start:socket-server
