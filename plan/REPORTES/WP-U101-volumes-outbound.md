@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u101-volumes-outbound` |
-| commit(s) | _(ver `git log` en rama; hashes al cerrar)_ |
+| commit(s) | `3eaef25`, `bc2dcec`, `6edfc30`, `74993b5` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
