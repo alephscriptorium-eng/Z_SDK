@@ -203,9 +203,24 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   | 6 | Grafo de follows como prerequisito P2P | **aceptar como operación** | Nodos se siguen entre sí; **no** WP de producto ni «romper follows como feature» |
   Consecuencia: U93 sigue desbloqueado (frontera A-11). U100→U101 ⬜;
   U71 permanece horizonte (no inventar como asignable). Ola 6 no.
-  **Nota ops (2026-07-18):** cadena transporte U100→U101 **pausada en
-  U101** hasta refinement del marco (autoridad usuario); no asignar
-  U101. U100 puede cerrar con veredicto spike.
+  **Nota ops (2026-07-18):** ~~cadena transporte U100→U101 pausada en
+  U101 hasta refinement~~ — **cerrada**. U100 ✅ (veredicto spike «no
+  despeja»; live `ZEUS_BLOB_*` ⏳).
+  **Nota refinement U101 (2026-07-18):** pausa levantada con la
+  **§Cara ciega** del handoff vigía (solo el bloque citado al
+  orquestador — voz «equipo del pub»). (1) Entorno 2 nodos calza
+  `ZEUS_BLOB_SIDECAR_URL` / `ZEUS_BLOB_SYNC_NODE_A` /
+  `ZEUS_BLOB_SYNC_NODE_B` (A=cliente Oasis local; B=pub VPS 0.8.8;
+  precond follows mutuos). (2) Interfaz servicio objetos adoptada como
+  contrato de U101; **veredictos orquestador a las 5 preguntas:**
+  ① poll `estado/:cid` basta en v0 (sin webhook/evento); ② auth HTTP
+  del namespace: nada en LAN / token opcional vía env (mTLS fuera);
+  ③ campos manifiesto: `cid`, `manifestCid`, chunks 5 MB (alineado
+  D-14); ④ U101 consume por **HTTP** el plano control (no muxrpc en
+  monorepo); datos siguen `ssb-blobs` gossip; ⑤ autorización
+  sbot↔cliente del servicio = ops (socket unix local; zeus no habla
+  sbot). (3) Residual peer-card del visor = informativo → cola U93;
+  no abre alcance en U101. U101 asignable (🔶).
 
 ## Abiertas (bloquean lo indicado)
 

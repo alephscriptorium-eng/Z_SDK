@@ -861,8 +861,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 5. **A-11 / DA-OasisTransport** — **recibida y cerrada en D-21**
    (2026-07-18). Filas 2–6 → veredictos; **U93 ✅** (merge `0d38755`);
    WP **U100** (spike) ✅ (merge `626cbde`; veredicto spike **«no
-   despeja»** U101); **U101** ⬜ **pausado** hasta refinement del marco
-   (no asignar; cadena U100→U101 no continúa a U101).
+   despeja»** U101); **U101** 🔶 — pausa «hasta refinement» **levantada**
+   (cara ciega pub / 2026-07-18; ver D-21 nota refinement).
 
 **Colisión addendas A-09/A-10 (histórico):** el lote higiene/vigilante
 ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
@@ -892,11 +892,13 @@ ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
 
 ### Cola hallazgos WP-U93 (peer-card)
 
-Diferidos del reporte/revisión WP-U93 (no bloquean; U100 ✅; U101
-pausado hasta refinement):
+Diferidos del reporte/revisión WP-U93 (no bloquean; U100 ✅; U101 🔶):
 - Viewer fabrica peer-card local (`webrtc-viewer/.../viewer-app.mjs`
   `makePeerCard` como ticket UI); no consume `onPeerCard` de autoridad
   viva. Emisión canónica de sala = authority-kit al join.
+  **Nota cara ciega (3):** mitigación barata = el visor **pida** el card
+  a la autoridad (no fabricárselo); firma SSB del asiento = carril listo
+  cuando toque — fuera de alcance U101 (no expandir este WP).
 - Coturn VPS sigue ⏳ (ops; ya cola U88/U90).
 - `userId` de socket = dirección de transporte (routing to/from); no
   demolido — correcto: el card cubre identidad de handshake, no routing.
@@ -919,21 +921,40 @@ pausado hasta refinement):
   harness de validación mínimo si hace falta.
   **Demolición:** n/a (spike).
 
-- ⬜ **WP-U101 · Carril saliente VOLUMES/blobs (hermano U84)** *(dep
-  U84 ✅, U100 ✅, U93 ✅)* — Encaje del carril **saliente** (blobs/pinning)
-  como WP hermano de U84 (entrante SSB→VOLUMES ya ✅). Zeus consume el
-  sidecar del pub y valida contra CAs / manifests (`cid`, D-14/D-21
-  fila 2). Enganche LAN: peer-card de U93 como control de acceso del
-  DataChannel; WAN vía `ssb-blobs`. **No** re-abre U84. **No** es U71
-  (horizonte p2p pleno).
-  **CA:** flujo saliente documentado y testeado contra manifests
-  VOLUMES; rechazo sin peer-card válida en carril LAN; U84 entrante
-  intacto; evidencia de consumo del sidecar (no reimplementar `blobs.*`
-  en zeus).
+- 🔶 **WP-U101 · Carril saliente VOLUMES/blobs (hermano U84)** *(dep
+  U84 ✅, U100 ✅, U93 ✅)* — en curso (lote-transporte-12b /
+  orquestador / 2026-07-18) — Encaje del carril **saliente**
+  (blobs/pinning) como WP hermano de U84 (entrante SSB→VOLUMES ya ✅).
+  **Refinado desde HANDOFF_VIGIA… §Cara ciega** (voz equipo del pub;
+  solo el bloque citado — no el resto del handoff). Zeus **consume** el
+  servicio de objetos del pub; **no** reimplementa `blobs.*` / sbot.
+  **Contrato (cara ciega §2):** dos planos nunca mezclados — (a)
+  **control** HTTP JSON bajo `/x/blobstore/v0/*` (`objetos`,
+  `objetos/:cid`, `estado/:cid`, `deseos`, `salud`); (b) **datos** por
+  gossip `ssb-blobs` (`want`/`has`/`get`). `cid` = ref blob
+  `&<base64>.sha256` (mismo `cid` que manifests VOLUMES, D-14). Objetos
+  >50 MB: manifiesto **chunk-as-blob** (chunks 5 MB) como blob; 
+  `manifestCid` = referencia canónica. Invariantes: (i) mensajes de
+  room solo cids/manifiestos, nunca bytes; (ii) ningún blob >50 MB;
+  (iii) mismo contenido ⇒ mismo cid; (iv) alcance = grafo de follows
+  (operación, D-21 fila 6). Enganche LAN: peer-card U93 = portero
+  DataChannel; WAN = `ssb-blobs`. **No** re-abre U84. **No** es U71.
+  **Entorno live (cara ciega §1 → `ZEUS_BLOB_*` de U100):** nodo A =
+  cliente Oasis local (`ZEUS_BLOB_SYNC_NODE_A`); nodo B = pub VPS 0.8.8
+  (`ZEUS_BLOB_SYNC_NODE_B`); `ZEUS_BLOB_SIDECAR_URL` = base del
+  namespace `/x/blobstore/v0`. Precond ops: follows mutuos A↔B. Live
+  ⏳ honesto si unset (igual U100).
+  **CA:** cliente zeus del plano control (HTTP) + validación contra
+  manifests VOLUMES/`cid`; rechazo sin peer-card válida en carril LAN;
+  U84 entrante intacto; cero reimplementación de `blobs.*` en monorepo;
+  tests de contrato (fixture) verdes; evidencia live vía `ZEUS_BLOB_*`
+  o ⏳; runbook de los invariantes (i)–(iv).
   **Demolición:** stubs/notas «saliente diferido» que este WP sustituya.
-  _(pausado — orquestador / 2026-07-18 · U100 cerró con veredicto spike
-  «no despeja»; cadena transporte **no continúa a U101** hasta
-  refinement del marco; no asignar; no 🔶.)_
+  **Veredictos 5 preguntas (cara ciega §2 → D-21 nota):** ① poll
+  `estado/:cid` (v0; sin webhook); ② auth HTTP: nada en LAN / token
+  opcional env; ③ campos `cid`/`manifestCid`/chunks 5 MB; ④ zeus
+  consume **HTTP** control (no muxrpc); ⑤ auth sbot↔servicio = ops
+  (unix socket local; fuera de monorepo).
 
 - ✅ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
   aceptado (orquestador / 2026-07-18; merge `38ff80b`) — en
