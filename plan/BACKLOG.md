@@ -843,8 +843,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 
 > Revisión externa (ADDENDA `ENTREGA-2026-07-18-revision-externa.md`).
 > No bloqueado por Ola 6. Higiene vigilante **U94–U99 cerrada**.
-> Lote 11c cerrado (U98+U99 ✅). **A-11 recibida** → **D-21**; U93
-> desbloqueado (D-20 + A-11 no lo bloquea) — prep 🔶. Ola 6 no.
+> Lote 11c cerrado (U98+U99 ✅). **A-11 recibida** → **D-21**; **U93 ✅**
+> (merge `0d38755`). Ola 6 no.
 
 ### Coordinación re-plan identidad/transporte (2026-07-18)
 
@@ -859,28 +859,25 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 4. **Lote higiene U98+U99** (lote-higiene-11c) — **cerrado** (U98 ✅
    merge `f94282d`; U99 ✅ merge `7b20002`).
 5. **A-11 / DA-OasisTransport** — **recibida y cerrada en D-21**
-   (2026-07-18). Filas 2–6 → veredictos; WPs **U100** (spike) +
-   **U101** (saliente hermano U84) ⬜. U93 **no bloqueado** — prep 🔶
-   (brief + worktree; worker no lanzado aún).
+   (2026-07-18). Filas 2–6 → veredictos; **U93 ✅** (merge `0d38755`);
+   WPs **U100** (spike) + **U101** (saliente hermano U84) ⬜.
 
 **Colisión addendas A-09/A-10 (histórico):** el lote higiene/vigilante
 ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
 **A-11** (entregada). Fila 6 (follows) = **operación**, no WP.
 
-- 🔶 **WP-U93 · Peer-card como torno del carril WebRTC** *(dep U88–U90 ✅;
-  D-20; A-11 no bloquea)* — prep orquestador / 2026-07-18 (brief
-  `plan/REPORTES/briefs/WP-U93-peer-card.md`; rama `wp/u93-peer-card`;
-  worktree `.worktrees/wp-u93-peer-card`; **worker no lanzado**).
-  Cadena puente: la autoridad de sala **emite** peer-card al join
-  (`makePeerCard`); `webrtc-signaling` **valida** rol/frescura
-  (`peerCardGrantsRole`, `isPeerCardFresh`) antes de retransmitir
-  offer/answer/ICE; el WP **documenta el punto de enganche SSB**
-  (extensión futura: asiento/credencial en grafo Oasis / follows — sin
-  implementar el puente ni blobs). El DataChannel es carril de datos /
-  VOLUMES LAN (D-17; fila 1 nota conector: complementario a `ssb-blobs`
-  WAN). Con D-21 fila 4 (b): el sidecar pub respetará este peer-card
-  como portero del carril LAN. Sustituye identidad plana
-  (`userId`/`peerId`/`displayName`).
+- ✅ **WP-U93 · Peer-card como torno del carril WebRTC** *(dep U88–U90 ✅;
+  D-20; A-11 no bloquea)* — aceptado (orquestador / 2026-07-18; merge
+  `0d38755`) — Cadena puente: la autoridad de sala **emite** peer-card
+  al join (`makePeerCard` / `issuePeerCard`); `webrtc-signaling`
+  **valida** rol/frescura (`peerCardGrantsRole`, `isPeerCardFresh`)
+  antes de retransmitir offer/answer/ICE; el WP **documenta el punto
+  de enganche SSB** (extensión futura: asiento/credencial en grafo
+  Oasis / follows — sin implementar el puente ni blobs). El DataChannel
+  es carril de datos / VOLUMES LAN (D-17; fila 1 nota conector:
+  complementario a `ssb-blobs` WAN). Con D-21 fila 4 (b): el sidecar
+  pub respetará este peer-card como portero del carril LAN. Sustituye
+  identidad plana (`userId`/`peerId`/`displayName` del handshake).
   **CA:** `makePeerCard` con consumidores de producción fuera de
   protocol: autoridad **emite** al join **y** signaling **exige**
   (ambos extremos obligatorios — anti A-02 / media cadena); test que
@@ -890,6 +887,16 @@ ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
   este WP).
   **Demolición:** campos de identidad ad-hoc del handshake que el card
   sustituya.
+
+### Cola hallazgos WP-U93 (peer-card)
+
+Diferidos del reporte/revisión WP-U93 (no bloquean; U100/U101 siguen):
+- Viewer fabrica peer-card local (`webrtc-viewer/.../viewer-app.mjs`
+  `makePeerCard` como ticket UI); no consume `onPeerCard` de autoridad
+  viva. Emisión canónica de sala = authority-kit al join.
+- Coturn VPS sigue ⏳ (ops; ya cola U88/U90).
+- `userId` de socket = dirección de transporte (routing to/from); no
+  demolido — correcto: el card cubre identidad de handshake, no routing.
 
 ### Transporte Oasis / blobs (post A-11 · D-21)
 
