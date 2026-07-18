@@ -28,21 +28,37 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 3. Triaje CI rojo parcial — **hecho** (run
    [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
    27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos) → **WP-U102** 🔶
-4. Usuario: **publish** → desbloquea U55
-5. Usuario: repo **U60** games-library → Ola 6 / 9
-6. Usuario: sidecar / `ZEUS_BLOB_*` ops (live U100/U101)
-7. Residual **viewer peer-card** (cola U93) antes de mesh abierto
+4. **WP-U103** 🔶 — docs públicas Pages + piel fanzine (A-12; paralelo a U102)
+5. Usuario: **activar GitHub Pages** (Settings → Pages → fuente GitHub Actions)
+   — ops custodio; no CA de código U103
+6. Usuario: **publish** → desbloquea U55
+7. Usuario: repo **U60** games-library → Ola 6 / 9
+8. Usuario: sidecar / `ZEUS_BLOB_*` ops (live U100/U101)
+9. Residual **viewer peer-card** (cola U93) antes de mesh abierto
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
 **Cola residuales (sin WP grande nuevo; higiene / candidatos):**
-- ~~Triaje CI U03 (4 WS no herméticos)~~ → **WP-U102** 🔶 (lote-ci-hermetic)
+- ~~Triaje CI U03 (4 WS no herméticos)~~ → **WP-U102** 🔶 (lote-ci-hermetic;
+  revisión aceptada; ✅ + merge pendientes)
+- ~~Docs públicas Pages + piel zine (cierre U41)~~ → **WP-U103** 🔶 (A-12)
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
 - Harness U100 cid hex → formato SSB `&…sha256` (cola U101)
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
 - dual-emit `arg:*` ×3 sitios; domain-helpers `session:state`; flake e2e DJ
 - salvage dual / cache milestone (cola U94); gamemap SCRIPTORIUM (cola U96)
 - `release:changeset-dry` / linea-kit `exports ./schemas/*` (publish)
+- (U102) `resolveStopServicePorts` switch → tabla (PRACTICAS §1.2)
+- (U102) fixture firehose duplicada (`firehose-core` × `linea-firehose`) —
+  extraer helper compartido
+- (U102) linea-system: skip ⏳ sin corpus; falta fixture mínima
+  «espana-shaped» para cobertura activa en CI
+- (U102) `resolveRoomClientConfig` ignora `ZEUS_SCRIPTORIUM_ROOM` (solo
+  `ZEUS_ARG_ROOM`); 3d-monitor parchea en `resolveViewerConfig` — otros
+  consumidores (p.ej. player-3d-ui) pueden heredar el hueco
+- (U102) linea-system: import de `loader` falla si `ZEUS_VOLUMES_ROOT`
+  apunta a `volumes.json` sin volume `lineas` (más duro que CI; skip no
+  alcanza) — endurecer lazy-resolve o try/catch en load path
 
 ---
 
@@ -410,6 +426,7 @@ Diferidos del reporte/revisión WP-U31 (no bloquean cierre; van a U32 / cleanup)
 Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
 - READMEs mesh residuales `session:*` (player-3d-ui, 3d-monitor,
   ping-pong-bots) — protocolo muerto vivo fuera del alcance U41
+- ~~Portal VitePress sin publish~~ → **WP-U103** 🔶 (A-12)
 
 - ✅ **WP-U41 · Portal de docs refundado** *(dep U10, U40)* — aceptado
   (orquestador / 2026-07-17) — VitePress
@@ -420,6 +437,30 @@ Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
   **CA:** `npm run docs:build` verde; navegación sin enlaces rotos; cero
   menciones al protocolo muerto.
   **Demolición:** páginas/specs de la sesión Scriptorium.
+
+- 🔶 **WP-U103 · Docs públicas: Pages + piel zine** *(dep U41 ✅; A-12)* —
+  en curso (lote-docs-pages / orquestador / 2026-07-18) — el portal
+  VitePress de U41 está construido pero no publicado. Tres piezas:
+  (1) **workflow `.github/workflows/docs.yml`**: build de VitePress y
+  deploy a GitHub Pages (fuente «GitHub Actions»);
+  (2) **piel zine** vía theme override (`docs/.vitepress/theme/custom.css`),
+  SIN sustituir VitePress ni tocar la estructura de U41 — tokens:
+  tipografía monoespaciada (Courier/mono del sistema), paleta
+  blanco/negro pura con grises mínimos, acentos con
+  `repeating-linear-gradient` diagonal, hover en negativo (fondo
+  negro/texto blanco), `@media print` cuidado (doc imprimible como
+  fanzine = identidad);
+  (3) **portada zine**: `docs/index.md` como cover — título grande,
+  manifiesto de 3-4 líneas (qué es el SDK, contrato único, dos juegos
+  como prueba), y tres puertas: Guía / Contratos / Juegos.
+  **CA (código):** `npm run docs:build` verde en CI; workflow `docs.yml`
+  presente y verde; API HTML (AsyncAPI + OpenAPI) accesibles desde el
+  nav publicado; contraste AA (b/n); la piel no rompe búsqueda ni
+  navegación VitePress.
+  **Ops usuario (no CA de código):** activar Pages en Settings → fuente
+  GitHub Actions; tras eso, URL de Pages viva = verificación final.
+  **Demolición:** n/a (U41 se conserva entero; la piel es aditiva).
+  **Paralelo:** sí con U102 (sin solape de paths; no interrumpir U102).
 
 ## Ola 5 — Monorepo publicable y layout final
 
@@ -889,9 +930,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
   headless cubre chat/bulk/state).
 - Angular `ng build` no ejecutado (toolchain); runtime = shell ESM +
   fuentes Angular anotadas.
-- `ZEUS_STOP_SERVICES` incluye `'webrtc-viewer'` pero
-  `resolveStopServicePorts` no tiene `case` →
-  `Unknown Zeus stop service: webrtc-viewer`.
+- ~~`ZEUS_STOP_SERVICES` incluye `'webrtc-viewer'` sin `case` en
+  `resolveStopServicePorts`~~ — cerrado en **WP-U102**.
 - Coturn VPS sigue ⏳ (ops); ya cola U88/U90.
 - Puerto default visor: **3023** (`webrtcViewer` /
   `ZEUS_PORT_WEBRTC_VIEWER`) — documentado; no colisiona con 3022.
@@ -1138,10 +1178,9 @@ cerrado):
 
 ### Cola hallazgos lote higiene 11b (WP-U96)
 
-- (U96) **3d-monitor gamemap / `ZEUS_SCRIPTORIUM_ROOM`** —
-  `resolveViewerConfig` vs `resolveRoomClientConfig` no alinean env
-  SCRIPTORIUM; test `gamemap room resolution…` rojo en master
-  (`ZEUS_SCRIPTORIUM_ROOM must beat the view fallback`). Candidato higiene.
+- (U96/U102) **`ZEUS_SCRIPTORIUM_ROOM`** — `resolveViewerConfig` alineado
+  en **WP-U102**; residual: `resolveRoomClientConfig` sigue sin leer
+  `ZEUS_SCRIPTORIUM_ROOM` (ver cola residuales U102).
 - (U96) **`release:changeset-dry` / `@zeus/linea-kit`** —
   `exports ./schemas/*` missing from tarball; al fallar el dry **restaura**
   el working tree (riesgo mid-WP). Candidato higiene / publish.
