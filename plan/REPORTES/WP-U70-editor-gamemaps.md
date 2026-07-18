@@ -5,10 +5,10 @@
 | agente | worker (lote-ola9-a / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u70-editor-gamemaps` (zeus) · `wp/u70-editor-gamemaps` (library worktree) |
-| commit(s) | _(ver git log en entrega)_ |
+| commit(s) | zeus: `0386b37` (+ docs reporte) · library: `b4a8fb6` |
 | estado propuesto | listo para revisión |
 | push monorepo | **no intentado** (política worker) |
-| push library | _(documentar en evidencia)_ |
+| push library | _(ver evidencia)_ |
 
 ## Qué se hizo
 
@@ -99,7 +99,7 @@ Smoke GET / matchea World Editor / Release; GET /cloaks 200 en tests.
 ### Push
 
 - Zeus rama: **no intentado** (política)
-- Library: ver §entrega al commit (intentado solo si auth OK)
+- Library: `git push -u origin HEAD` → OK (`b4a8fb6` → `origin/wp/u70-editor-gamemaps`)
 
 ### ¿pozo puede consumir esto tal cual?
 
