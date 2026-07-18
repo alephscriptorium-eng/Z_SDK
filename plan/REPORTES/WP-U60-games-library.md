@@ -5,7 +5,7 @@
 | agente | worker (lote-d22-post-u104 / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u60-games-library` |
-| commit(s) | `096aeb3` (zeus); remoto library `c079945` |
+| commit(s) | zeus: `docs(plan): WP-U60 games-library repo + reporte` (`wp/u60-games-library`); library: `c079945` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
