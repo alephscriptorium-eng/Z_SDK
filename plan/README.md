@@ -22,6 +22,7 @@ agente de sesión del usuario). La regla de reparto:
 | [ARQUITECTURA.md](ARQUITECTURA.md) | diagnóstico datado de la codebase y arquitectura objetivo | orquestador |
 | [DATOS.md](DATOS.md) | el plano de datos: líneas (troncos/satélites), formatos canónicos, familias de feed, ciclo crecer/vaciar de VOLUMES, files-first/IPFS, kits del dramaturgo | orquestador |
 | [BACKLOG.md](BACKLOG.md) | olas y WPs con criterios de aceptación y demolición | orquestador (estado); swarm propone |
+| [RE-PLAN.md](RE-PLAN.md) | balance de cierre de la refundación (lecciones; **no** inventa WPs) | orquestador |
 | [PRACTICAS.md](PRACTICAS.md) | **lectura obligatoria antes de tocar código** — anti-monkey-code, auto-revisión, formato de reporte | orquestador |
 | [DECISIONES.md](DECISIONES.md) | decisiones tomadas (con fecha) y decisiones abiertas | orquestador |
 | [REPORTES/](REPORTES/) | un acta por WP ejecutado, según [REPORTES/PLANTILLA.md](REPORTES/PLANTILLA.md) | swarm |
