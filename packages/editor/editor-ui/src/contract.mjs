@@ -145,7 +145,7 @@ export const EDITOR_ROUTES = defineRoutes('editor-ui', [
     id: 'api.world.materials',
     method: 'GET',
     path: '/api/world/materials',
-    summary: 'List selectable world materials (scenes, lines, games, cloaks)',
+    summary: 'List selectable world materials (scenes, lines, games, cloaks, dialects)',
     tags: ['world'],
     responses: { 200: z.looseObject({ success: z.literal(true) }) },
     envelope: 'success-editor',

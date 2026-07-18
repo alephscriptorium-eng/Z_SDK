@@ -1,11 +1,15 @@
 /**
  * Materials catalog for the world-A editor (scene / line / casos / cloaks / actos).
  * Game-agnostic: sketch = toy preset; plaza = narrative toy (carpeta dialect).
- * Full dialect registry → WP-U114; here: mínimo `solve-inline` only.
+ * Story-board dialects → STORY_BOARD_DIALECTS (WP-U114).
  */
 
 import { vaivenDosNodos } from '@zeus/game-engine';
-import { validateSolveInlineBoard } from './story-board-min.mjs';
+import {
+  STORY_BOARD_DIALECTS,
+  listStoryBoardDialectIds,
+  validateStoryBoard
+} from './story-board-dialects.mjs';
 
 /** @typedef {'toy' | 'narrative'} GameKind */
 
@@ -32,7 +36,7 @@ export const GAME_CATALOG = {
     label: 'plaza (narrativo · carpeta / actos)',
     packageName: '@zeus/startpack-plaza',
     kind: 'narrative',
-    dialect: 'solve-inline'
+    dialect: 'plantilla'
   }
 };
 
@@ -57,14 +61,15 @@ export const DEFAULT_PLAZA_CASOS_MD = `# Playbook — plaza (narrativo mínimo)
 - **Precondición**: start pack plaza instalado; story-board con act-0.
 - **Pasos del agente (uno)**:
   1. \`plaza_smoke {"ok":true}\`
-- **Qué observa el humano**: actos (solve-inline) + línea + casos.
+- **Qué observa el humano**: actos (plantilla / solve-inline) + línea + casos.
 - **Criterio de éxito**: \`ok:true\`.
 - **Errores esperados**: ninguno.
 `;
 
-/** Default story-board (carpeta plantilla shape; dialect solve-inline). */
+/** Default story-board (carpeta plantilla shape; dialect plantilla). */
 export const DEFAULT_PLAZA_STORY_BOARD = {
   version: 1,
+  dialect: 'plantilla',
   title: 'Plaza — story-board',
   slug: 'plaza',
   acts: [
@@ -135,9 +140,10 @@ export function createPlazaDraft() {
 /**
  * Normalize storyBoard from object or JSON string.
  * @param {unknown} raw
- * @returns {{ ok: true, board: object } | { ok: false, error: string, rule: string }}
+ * @param {{ dialect?: string | null }} [opts]
+ * @returns {{ ok: true, board: object, dialect: string } | { ok: false, error: string, rule: string }}
  */
-export function normalizeStoryBoard(raw) {
+export function normalizeStoryBoard(raw, opts = {}) {
   if (raw == null || raw === '') {
     return { ok: false, error: 'storyBoard required for narrative games', rule: 'world.draft.storyBoard' };
   }
@@ -152,15 +158,15 @@ export function normalizeStoryBoard(raw) {
   if (!board || typeof board !== 'object' || Array.isArray(board)) {
     return { ok: false, error: 'storyBoard must be an object', rule: 'world.draft.storyBoard' };
   }
-  const checked = validateSolveInlineBoard(board);
+  const checked = validateStoryBoard(board, { dialect: opts.dialect });
   if (!checked.ok) {
     return {
       ok: false,
-      error: `storyBoard (solve-inline): ${checked.errors.join('; ')}`,
+      error: `storyBoard: ${checked.errors.join('; ')}`,
       rule: 'world.draft.storyBoard'
     };
   }
-  return { ok: true, board };
+  return { ok: true, board, dialect: checked.dialect };
 }
 
 /**
@@ -219,8 +225,8 @@ export function validateDraft(draft) {
     return { ok: true, draft: next };
   }
 
-  // narrative: actos / story-board (carpeta dialect mínimo)
-  const sb = normalizeStoryBoard(draft.storyBoard);
+  // narrative: story-board vía registro de dialectos (tabla)
+  const sb = normalizeStoryBoard(draft.storyBoard, { dialect: game.dialect });
   if (!sb.ok) return sb;
   next.storyBoard = sb.board;
   if (draft.sceneId && !SCENE_CATALOG[draft.sceneId]) {
@@ -244,12 +250,8 @@ export function listMaterials() {
       kind,
       dialect: dialect || null
     })),
-    dialects: {
-      'solve-inline': {
-        id: 'solve-inline',
-        label: 'SOLVE-inline (acts[].widgets) — mínimo U111; registro completo → U114'
-      }
-    },
+    dialects: Object.values(STORY_BOARD_DIALECTS).map(({ id, label }) => ({ id, label })),
+    dialectIds: listStoryBoardDialectIds(),
     narrativeDefaults: {
       plaza: DEFAULT_PLAZA_STORY_BOARD
     }
