@@ -103,8 +103,7 @@ Diferidos del reporte/revisión WP-U10 (no bloquean cierre):
 - portal VitePress ausente → WP-U41; HTML AsyncAPI bajo `docs/public/api/` (gitignored) cumple CA de render
 - nota: U10 apoya APIs de http-contract/presets-sdk (2/9 workspaces rojos de cola U03) pero CA no exige esas suites verdes
 - ~~duda worker: ¿Peer Card en handshake U11 o basta `role` hasta ola WebRTC?~~
-  → **vencida** (ola WebRTC cerró sin cablear) — ver **DA-PeerCard** en
-  DECISIONES §abiertas + WP-U93
+  → **vencida** (ola WebRTC cerró sin cablear) — resuelta **D-20** + WP-U93
 - e2e banners «CAUDAL» residuales (cola U02) — fuera de alcance
 
 - ✅ **WP-U11 · `@zeus/authority-kit`** *(dep U10)* — aceptado (orquestador / 2026-07-17) — autoridad genérica
@@ -126,7 +125,7 @@ Diferidos del reporte/revisión WP-U11 (no bloquean cierre):
   retirar alias.
 - `stop:services` no limpia puertos e2e aislados (≠ env canónico; p.ej. 13027 huérfano)
 - ~~Peer Card handshake diferido (`role` en intent basta hasta ola WebRTC)~~
-  → **vencida** — ver **DA-PeerCard** + WP-U93
+  → **vencida** — resuelta **D-20** + WP-U93
 
 - ✅ **WP-U12 · `@zeus/player-mcp-kit`** *(dep U10)* — aceptado (orquestador / 2026-07-17) — generalizar
   `arg-player-mcp`: patrón «un MCP por actor» con semántica verificable
@@ -843,20 +842,41 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 ## Lote higiene / hallazgos vigilante (2026-07-18)
 
 > Revisión externa (ADDENDA `ENTREGA-2026-07-18-revision-externa.md`).
-> No bloqueado por Ola 6. **U93** espera **DA-PeerCard**. U94–U99
-> paralelizables entre sí (deps solo olas ya ✅). NO asignar workers aún
-> (swarm en pausa / lote a proponer tras decisión Peer Card o sin U93).
+> No bloqueado por Ola 6. **U93** desbloqueado por **D-20** (cablear-puente).
+> U94–U99 paralelizables entre sí (deps solo olas ya ✅). NO asignar
+> workers aún (swarm en pausa / lote a proponer; Ola 6 no).
 
-- ⬜ **WP-U93 · La señalización WebRTC presenta peer-card** *(dep U88–U90 ✅;
-  **bloqueado por DA-PeerCard**)* — `webrtc-signaling` gestiona identidad con
-  strings planos (`userId`/`peerId`/`displayName`); `protocol#peer-card`
-  (reservado desde U10) sin consumidores fuera de protocol. Si DA-PeerCard
-  = (A): el handshake presenta `makePeerCard` y el servicio valida rol/
-  frescura (`peerCardGrantsRole`, `isPeerCardFresh`) antes de retransmitir
-  offer/answer/ICE. Si (B): este WP se cancela y se demuele peer-card.
-  **CA (A):** `makePeerCard` con ≥1 consumidor de producción fuera de
-  protocol; test que rechaza card caducada o sin rol; e2e WebRTC verde.
-  **Demolición (A):** campos de identidad ad-hoc que el card sustituya.
+### Coordinación re-plan identidad/transporte (2026-07-18)
+
+**Frentes — conjunta parcial (escalonados):**
+1. **Nota conjunta identidad/transporte** — D-20 + U93 (peer-card torno
+   WebRTC + fila 1 conector: DataChannel = carril VOLUMES LAN). Un solo
+   hilo de decisión; no mezclar con higiene en el mismo commit de plan.
+2. **Lote higiene U95+U97** (y U94/U96/U98/U99) — frente **separado**;
+   no saturar la misma nota de decisiones.
+
+**Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
+`A-09` → **WP-U97** (feed-kit/volumes-ops) y `A-10` → **WP-U93**
+(peer-card). El plan del conector Oasis que reservaba A-09 debe
+renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
+(placeholder; falta nota-tabla formal A-11 con IDs vivos).
+
+- ⬜ **WP-U93 · Peer-card como torno del carril WebRTC** *(dep U88–U90 ✅;
+  D-20)* — Cadena puente: la autoridad de sala **emite** peer-card al
+  join (`makePeerCard`); `webrtc-signaling` **valida** rol/frescura
+  (`peerCardGrantsRole`, `isPeerCardFresh`) antes de retransmitir
+  offer/answer/ICE; el WP **documenta el punto de enganche SSB**
+  (extensión futura: asiento/credencial en grafo Oasis / follows — sin
+  implementar el puente ni blobs). El DataChannel es carril de datos /
+  VOLUMES LAN (D-17; fila 1 nota conector: complementario a `ssb-blobs`
+  WAN). Sustituye identidad plana (`userId`/`peerId`/`displayName`).
+  **CA:** `makePeerCard` con ≥1 consumidor de producción fuera de
+  protocol (autoridad al join y/o signaling); test que rechaza card
+  caducada o sin rol; e2e WebRTC verde; README del paquete de señalización
+  nombra el hook SSB como extensión explícita (cero código SSB nuevo en
+  este WP).
+  **Demolición:** campos de identidad ad-hoc del handshake que el card
+  sustituya.
 
 - ⬜ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
   en `games/delta/arg-domain`: curate (gate `reducer` ↔ mutador `line-board`)

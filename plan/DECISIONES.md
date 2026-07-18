@@ -177,20 +177,40 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   (`segmentar-force`, `crear-cotas`) para que el dramaturgo cree sus
   forces desde sus propios contextos y sus líneas de cota.
 
+- **D-20 · 2026-07-18 · Peer-card como puente autoridad → WebRTC → SSB**
+  (resuelve DA-PeerCard; opción **A cablear-puente**, no B). Premisa
+  «SSB = horizonte lejano» queda retirada: pub Oasis 0.8.8 desplegado y
+  sano; U88–U90 ya son **carril de datos** (DataChannel / VOLUMES LAN),
+  no solo A/V — el control de acceso es función básica del torno.
+  Cadena hoy: (1) la autoridad de sala **emite** el peer-card al join;
+  (2) la señalización WebRTC **exige** card válida (rol/frescura) antes
+  de offer/answer/ICE — **WP-U93**; (3) el asiento SSB (credencial de
+  room / grafo de follows del pub) queda como **punto de extensión
+  explícito** en U93 (documentado, sin implementar el puente), alineado
+  con la **fila 1** de la nota-tabla del conector Oasis (carril
+  WebRTC/DataChannel LAN complementario a `ssb-blobs` WAN). No demoler
+  `makePeerCard` / helpers de protocol. Consecuencia: U93 desbloqueado.
+
 ## Abiertas (bloquean lo indicado)
 
-- **DA-PeerCard · 2026-07-18 · ¿Peer Card en handshake WebRTC o identidad
-  plana?** — La cola U11 difirió peer-card «hasta ola WebRTC»; U88–U90
-  cerraron sin cablear `makePeerCard` / `peerCardGrantsRole` /
-  `isPeerCardFresh` (cero consumidores fuera de `engine/protocol`). La
-  reserva eterna sin uso es insostenible. Elegir una:
-  - **(A) Cablear** — WP-U93: la señalización presenta peer-card y valida
-    rol/frescura antes de retransmitir offer/answer/ICE.
-  - **(B) Demoler** — la identidad plana (`userId`/`peerId`/`displayName`)
-    basta; retirar las APIs peer-card de protocol sin consumidores (o WP
-    de demolición equivalente).
-  **Bloquea:** WP-U93 (y cualquier demolición peer-card si B). No bloquea
-  el resto del lote higiene U94–U99.
+- **DA-OasisTransport · 2026-07-18 · Nota-tabla transporte VOLUMES /
+  Oasis 0.8.8 (filas 2–6)** — El borrador del conector propone 6 filas;
+  **fila 1** queda cubierta por D-20 + U93 (veredicto orquestador:
+  **(a)** blobs WAN + DataChannel LAN, complementarios). Faltan
+  veredictos formales — y una **addenda A-11+** entregada en lengua de
+  zeus — para:
+  | # | Tema | Recomendación borrador | Estado |
+  |---|------|------------------------|--------|
+  | 2 | VOLUMES como blobs content-addressed (hash=cid, chunk>50 MB) | adoptar (D-14 tolera) | `____` |
+  | 3 | Encaje saliente vs U84 entrante | WP hermano / horizonte U71 (U84 ya ✅ — **re-apuntar**) | `____` |
+  | 4 | Quién ejecuta (swarm zeus vs sidecar pub) | (b) pub entrega; zeus valida | `____` |
+  | 5 | Spike blob-sync 2-nodos antes de comprometer | sí | `____` |
+  | 6 | Grafo de follows como prerequisito P2P | operación (nodos se siguen) | `____` |
+  **No se inventan WPs** hasta que llegue la nota-tabla A-11 (IDs vivos:
+  U84✅, U88–U90✅, U71 horizonte). Colisión numeración: A-09/A-10 ya
+  tomados por el lote higiene (→ U97 / U93); el conector usa **A-11+**.
+  **Bloquea:** WPs nuevos de transporte saliente Oasis/blobs. No bloquea
+  U93 ni el lote higiene U94–U99.
 
 *(Los horizontes WP-U71/72/73 siguen esperando evidencia o diseño externo;
 Ola 6/U55/U60+ siguen pausados por credenciales — no son decisiones de
