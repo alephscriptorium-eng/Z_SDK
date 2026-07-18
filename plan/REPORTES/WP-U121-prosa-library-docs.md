@@ -125,4 +125,12 @@ Ninguno. Listo para revisión orquestador (sin merge).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18 · library `2314b8e` · zeus `b196075`.
+
+Verificado:
+- Diff library = solo 6 md en `docs/` (alcance WP); heros `index.md` intactos (D-24).
+- `docs:build` verde (re-smoke orquestador ~11s); grep doctrinales patrón ENTREGA → 0.
+- releases = mecanismo + GitHub Releases vivo; startpacks separa publish; `file:` provisional encajonado; futuros = estado.
+- Zeus: solo reporte. Hallazgo README raíz library → cola residual (no bloquea).
+
+**Merge:** library `wp/u121-prosa-library-docs` → `main` primero; luego zeus (reporte). Paralelo sano con U120 (no solapa docs/).
