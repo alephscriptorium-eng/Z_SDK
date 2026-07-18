@@ -22,10 +22,11 @@ en `packages/mesh/3d-monitor`.
 Una vista es un **layout** que combina elementos reutilizables con su propia
 lógica de negocio:
 
-- **Servidor** (`src/view-kit/`): `defineView({...})` normaliza el descriptor
-  (id, title, entry, campos de HUD, log panel…), `createViewRegistry` lo indexa
-  y `renderViewLayout` rinde el layout compartido (stage + HUD + import map +
-  `#viewer-config` + entry del navegador).
+- **Servidor** (`@zeus/app-shell/ssr-view-registry`): `defineView({...})`
+  normaliza el descriptor (id, title, entry, campos de HUD, log panel…),
+  `createViewRegistry` lo indexa y `renderViewLayout` rinde el layout
+  compartido (stage + HUD + import map + `#viewer-config` + entry del
+  navegador).
 - **Navegador genérico** (`@zeus/view-kit`, montado en `/view-kit`):
   `createViewerScene`, `setText`/`createCounters`, `connectRoom`/
   `readViewerConfig`, `createLogPanel`, `createLabelSprite`/`createGlowSprite`,

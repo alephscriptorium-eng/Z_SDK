@@ -1,13 +1,14 @@
 /**
- * The 3d-monitor view catalog. Each view is a layout that combines the view
- * kit's reusable elements (stage, HUD, ring, markers, log panel, room wiring)
- * with its own business logic (the browser entry under /assets/js/views/).
+ * The 3d-monitor view catalog. Each view is a layout that combines the SSR
+ * registry (`@zeus/app-shell/ssr-view-registry`: stage, HUD, ring, markers,
+ * log panel) with its own business logic (the browser entry under
+ * /assets/js/views/).
  *
  * To add a view: defineView(...) here + write its browser entry. The portal,
  * routing and local nav pick it up from this registry.
  */
 
-import { defineView, createViewRegistry, renderViewLayout } from '../view-kit/index.mjs';
+import { defineView, createViewRegistry, renderViewLayout } from '@zeus/app-shell/ssr-view-registry';
 import { template, IMPORT_MAP } from './shell.mjs';
 
 const CONN_FIELD = { id: 'hud-conn', label: 'conn', value: '…' };
@@ -113,6 +114,7 @@ export const VIEWS = [
     entry: '/assets/js/views/bots-log.mjs',
     elements: ['stage 3D', 'HUD', 'columnas por rol', 'trayectorias', 'log panel DOM', 'room wiring'],
     logPanel: true,
+    logPanelPlacement: 'split',
     hud: {
       fields: [
         CONN_FIELD,

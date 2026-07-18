@@ -4,9 +4,9 @@
  * @zeus/3d-monitor server.
  *
  * Portal of 3D views over the scriptorium runtime (Express, server-rendered,
- * no bundler). Views live in src/views/registry.mjs on top of the SSR view
- * kit (src/view-kit); each view's business logic is a browser entry under
- * /assets/js/views/. Serves:
+ * no bundler). Views live in src/views/registry.mjs on
+ * `@zeus/app-shell/ssr-view-registry`; each view's business logic is a
+ * browser entry under /assets/js/views/. Serves:
  *   /assets            → ui-kit shell assets + own assets/
  *   /vendor/three      → node_modules/three
  *   /vendor/socket.io  → socket.io-client browser ESM dist

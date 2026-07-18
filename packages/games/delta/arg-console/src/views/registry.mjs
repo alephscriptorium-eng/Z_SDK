@@ -1,12 +1,13 @@
 /**
- * Catálogo de vistas de delta. Cada vista combina el view kit (stage, HUD,
- * log panel, room wiring) con su entry de navegador bajo /assets/js/views/.
+ * Catálogo de vistas de delta. Cada vista combina el registro SSR
+ * (`@zeus/app-shell/ssr-view-registry`: stage, HUD, log panel) con su entry
+ * de navegador bajo /assets/js/views/.
  *
  * Para añadir una vista: defineView(...) aquí + escribir su entry. El portal
  * y el routing la recogen del registro.
  */
 
-import { defineView, createViewRegistry, renderViewLayout } from '../view-kit/index.mjs';
+import { defineView, createViewRegistry, renderViewLayout } from '@zeus/app-shell/ssr-view-registry';
 import { template, IMPORT_MAP } from './shell.mjs';
 
 const CONN_FIELD = { id: 'hud-conn', label: 'conn', value: '…' };
