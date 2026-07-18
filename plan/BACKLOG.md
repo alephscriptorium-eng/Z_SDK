@@ -184,7 +184,7 @@ Diferidos del reporte/revisión WP-U20 (no bloquean cierre):
 - e2e:arg G-ARG-E2E.10 flaky (timeout track:cast; 1ª rojo / 2ª verde)
 - ~~`packages/platform/3d-monitor` aún tiene `assets/js/kit/` propio — WP-U22~~ → **cumplida en WP-U22**
 - ~~colisión de nombre: arg-console `src/view-kit/` (SSR defineView) ≠
-  `@zeus/view-kit` (browser)~~ → formalizada en **WP-U96**
+  `@zeus/view-kit` (browser)~~ → **cumplida en WP-U96**
 - clave localStorage de paneles `vk:…` (antes `delta:…`): posiciones
   guardadas del usuario se resetean (aceptable en extracción)
 
@@ -203,7 +203,7 @@ Diferidos del reporte/revisión WP-U21 (no bloquean cierre):
 - `plan/ARQUITECTURA.md` §1: «arg-console evita app-shell a propósito» —
   mentira post-U21; actualizar con U20/U22 (kit / solape 3d-monitor) —
   higiene orquestador
-- ~~colisión SSR `src/view-kit/` vs `@zeus/view-kit`~~ → **WP-U96**
+- ~~colisión SSR `src/view-kit/` vs `@zeus/view-kit`~~ → **cumplida en WP-U96**
 - OpenAPI drift preexistente (player-ui / editor-ui / cache-browser /
   firehose-browser) — no causado por U21
 
@@ -223,7 +223,7 @@ Diferidos del reporte/revisión WP-U22 (no bloquean cierre):
   arg-console / solape 3d-monitor; «arg-console evita app-shell» mentira
   post-U21) — higiene orquestador
 - ~~colisión SSR `src/view-kit/` vs `@zeus/view-kit` en 3d-monitor~~ →
-  **WP-U96**
+  **cumplida en WP-U96**
 - vista humana demos 3d ⏳ (headless OK por brief)
 - escenas didácticas mínimas en `examples/` (apps quedan mesh / D-9)
 
@@ -854,8 +854,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
    hilo de decisión; no mezclar con higiene en el mismo commit de plan.
 2. **Lote higiene U95+U97** (lote-higiene-11a) — **cerrado** (U95 ✅ +
    U97 ✅).
-3. **Lote higiene U94+U96** (lote-higiene-11b) — **parcial** (U94 ✅;
-   U96 🔶) (orquestador / 2026-07-18). Quedan U98/U99 para lote siguiente.
+3. **Lote higiene U94+U96** (lote-higiene-11b) — **cerrado** (U94 ✅ +
+   U96 ✅). Quedan U98/U99 para lote siguiente (11c).
    U93 espera A-11 / brief aparte (no en este lote).
 
 **Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
@@ -904,13 +904,11 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   verdes.
   **Demolición:** las 4 copias.
 
-- 🔶 **WP-U96 · Un solo registro SSR** — en curso (lote-higiene-11b /
-  orquestador / 2026-07-18) — formaliza el diferido «colisión SSR
-  `src/view-kit/` vs `@zeus/view-kit`» (colas U20/U21/U22).
-  `defineView/createViewRegistry/renderHud/renderViewLayout` duplicados en
-  `games/delta/arg-console/src/view-kit/` y `mesh/3d-monitor/src/view-kit/`
-  (ya divergiendo ES/EN). Extraer a módulo compartido y renombrar para
-  deshacer la colisión léxica con `@zeus/view-kit`.
+- ✅ **WP-U96 · Un solo registro SSR** — aceptado (orquestador / 2026-07-18;
+  merge `adaaee4`) — formaliza el diferido «colisión SSR `src/view-kit/` vs
+  `@zeus/view-kit`» (colas U20/U21/U22). `defineView` / `createViewRegistry`
+  / `renderViewLayout` en `@zeus/app-shell/ssr-view-registry`; arg-console y
+  3d-monitor consumen; demolidas ambas copias `src/view-kit/`.
   **CA:** una sola implementación; `*view-kit*` deja de dar 3 rutas de código
   con la misma API; SSR de ambos consumidores verde.
   **Demolición:** la segunda copia.
@@ -984,6 +982,16 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
 - (U94) `applyOps` ante `!res.ok` hace **break silencioso** (patrón
   excavate) — no propaga error al caller de `applyIntent`; WP aparte si
   se quiere ledger de inconsistencia gate/mutador.
+
+### Cola hallazgos lote higiene 11b (WP-U96)
+
+- (U96) **3d-monitor gamemap / `ZEUS_SCRIPTORIUM_ROOM`** —
+  `resolveViewerConfig` vs `resolveRoomClientConfig` no alinean env
+  SCRIPTORIUM; test `gamemap room resolution…` rojo en master
+  (`ZEUS_SCRIPTORIUM_ROOM must beat the view fallback`). Candidato higiene.
+- (U96) **`release:changeset-dry` / `@zeus/linea-kit`** —
+  `exports ./schemas/*` missing from tarball; al fallar el dry **restaura**
+  el working tree (riesgo mid-WP). Candidato higiene / publish.
 
 ## Horizonte (post-refundación, no tomar aún)
 
