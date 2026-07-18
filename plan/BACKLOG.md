@@ -860,8 +860,9 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
    merge `f94282d`; U99 ✅ merge `7b20002`).
 5. **A-11 / DA-OasisTransport** — **recibida y cerrada en D-21**
    (2026-07-18). Filas 2–6 → veredictos; **U93 ✅** (merge `0d38755`);
-   WP **U100** (spike) 🔶; **U101** ⬜ **pausado** hasta refinement del
-   marco (no asignar; cadena U100→U101 no continúa a U101).
+   WP **U100** (spike) ✅ (merge `626cbde`; veredicto spike **«no
+   despeja»** U101); **U101** ⬜ **pausado** hasta refinement del marco
+   (no asignar; cadena U100→U101 no continúa a U101).
 
 **Colisión addendas A-09/A-10 (histórico):** el lote higiene/vigilante
 ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
@@ -891,7 +892,7 @@ ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
 
 ### Cola hallazgos WP-U93 (peer-card)
 
-Diferidos del reporte/revisión WP-U93 (no bloquean; U100 sigue; U101
+Diferidos del reporte/revisión WP-U93 (no bloquean; U100 ✅; U101
 pausado hasta refinement):
 - Viewer fabrica peer-card local (`webrtc-viewer/.../viewer-app.mjs`
   `makePeerCard` como ticket UI); no consume `onPeerCard` de autoridad
@@ -905,13 +906,13 @@ pausado hasta refinement):
 > Ejecutor (b): el equipo del pub entrega sidecar; zeus valida.
 > U71 permanece horizonte — no asignable. No Ola 6.
 
-- 🔶 **WP-U100 · Spike blob-sync Oasis 2-nodos** *(dep D-21; antes de
-  U101)* — en curso (lote-transporte-12a / orquestador / 2026-07-18) —
-  Spike barato de sync content-addressed (`ssb-blobs` /
+- ✅ **WP-U100 · Spike blob-sync Oasis 2-nodos** *(dep D-21; antes de
+  U101)* — aceptado (orquestador / 2026-07-18; merge `626cbde`; revisión
+  `4fcf132`) — Spike barato de sync content-addressed (`ssb-blobs` /
   chunks) entre dos nodos antes de comprometer el carril saliente.
-  Necesita cliente/pub levantado (ops). Zeus registra evidencia y CA de
-  validación cuando el pub entregue el entorno; no implementa el
-  servicio de blobs en este WP.
+  Harness `@zeus/blob-sync-harness` (fixture 2-nodos + portero U93);
+  live ops ⏳ (sidecar pub no entregado). **Veredicto spike: «no
+  despeja»** compromiso de U101 (sin evidencia live sync Oasis).
   **CA:** acta/reporte con evidencia de sync 2-nodos (o ⏳ honesto si el
   pub aún no entrega); verdicto «despeja / no despeja» compromiso de
   U101; cero código de producto del sidecar en monorepo zeus salvo
@@ -919,7 +920,7 @@ pausado hasta refinement):
   **Demolición:** n/a (spike).
 
 - ⬜ **WP-U101 · Carril saliente VOLUMES/blobs (hermano U84)** *(dep
-  U84 ✅, U100, U93 ✅)* — Encaje del carril **saliente** (blobs/pinning)
+  U84 ✅, U100 ✅, U93 ✅)* — Encaje del carril **saliente** (blobs/pinning)
   como WP hermano de U84 (entrante SSB→VOLUMES ya ✅). Zeus consume el
   sidecar del pub y valida contra CAs / manifests (`cid`, D-14/D-21
   fila 2). Enganche LAN: peer-card de U93 como control de acceso del
@@ -930,9 +931,9 @@ pausado hasta refinement):
   intacto; evidencia de consumo del sidecar (no reimplementar `blobs.*`
   en zeus).
   **Demolición:** stubs/notas «saliente diferido» que este WP sustituya.
-  _(pausado — orquestador / 2026-07-18 · nota técnica usuario: la cadena
-  transporte U100→U101 **no continúa a U101** hasta refinement del marco;
-  no asignar; no 🔶. U100 puede cerrar con veredicto spike.)_
+  _(pausado — orquestador / 2026-07-18 · U100 cerró con veredicto spike
+  «no despeja»; cadena transporte **no continúa a U101** hasta
+  refinement del marco; no asignar; no 🔶.)_
 
 - ✅ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
   aceptado (orquestador / 2026-07-18; merge `38ff80b`) — en
