@@ -6,7 +6,7 @@
 | fecha | 2026-07-18 |
 | rama | `wp/u61-migrate-games` (zeus) · `wp/u61-migrate-games` (library) |
 | commit(s) | library: `daddf72`; zeus: `812f249` (corrección) |
-| estado propuesto | listo para re-revisión (corrección Devuelto) |
+| estado propuesto | aceptado (re-revisión; sin ✅ BACKLOG aún) |
 
 ## Qué se hizo
 
@@ -306,3 +306,55 @@ Eliminadas 6 entradas `packages/games/*` residuales del
 
 - Library: push de la corrección (este ciclo).
 - Zeus: **no intentado**.
+
+---
+
+## Revisión del orquestador (re-revisión)
+
+**Veredicto: Aceptado ✅** — orquestador / 2026-07-18. Sin merge, sin push,
+sin ✅ BACKLOG (pedido explícito). Correcciones 1–3 del Devuelto cerradas.
+
+### Qué se verificó
+
+1. **`resolveZeusSdkRoot`** (library `@ daddf72`):
+   `toRealPath` vía `fs.realpathSync.native` (fallback `realpathSync`);
+   `ensure-zeus-sdk.mjs` acepta junction ya válido sin exigir
+   `linkPath ≡ root`. Con `ZEUS_SDK_ROOT` unset:
+   `resolveZeusSdkRoot → …\.worktrees\wp-u61-migrate-games` (sin
+   `.deps` en el path).
+2. **Smoke puntual** (orquestador, sin `ZEUS_SDK_ROOT`): spawn
+   `socket-server` con path realpath →
+   `SOCKET_OK_DEFAULT_DEPS {"ok":true,"bridge":"local",…}`. Evidencia
+   worker e2e:arg / e2e:pozo-mcp sin env aceptada como Re-CA.
+3. **Higiene zeus**: `package-lock.json` sin entradas
+   `packages/games/*`; `packages/games/` ausente.
+4. Library remoto `origin/wp/u61-migrate-games` = `daddf72` (pusheado).
+   Zeus tip `c4715ca` (812f249 + hashes); push no intentado.
+
+### CA
+
+- [x] Demolición `packages/games/` en monorepo
+- [x] `file:` temporal documentado
+- [x] Demos ambos juegos verdes vs mesh monorepo — default `.deps`
+  (realpath) OK
+- [x] e2e matriz adaptados — evidencia worker sin `ZEUS_SDK_ROOT` +
+  smoke orquestador socket
+
+### PRACTICAS
+
+Alcance limpio; demolición completa; commits §6 OK; worker no tocó
+BACKLOG. Hallazgos previos (race pozo sleep, arg-track opcional,
+VitePress residual) → cola, no bloquean.
+
+### Merge (autorizado; no ejecutado aquí)
+
+1. Library: merge `wp/u61-migrate-games` → `main` de
+   `Z_SDK-games-library` (**primero**).
+2. Zeus: merge `wp/u61-migrate-games` → `main`.
+3. Orquestador en `main`: ✅ BACKLOG + `git worktree remove`
+   `.worktrees/wp-u61-migrate-games`. U62 no asignar hasta U61 ✅.
+
+### Acción siguiente
+
+Usuario/orquestador: merge library → merge zeus → ✅ BACKLOG.
+**Push: no intentado.**
