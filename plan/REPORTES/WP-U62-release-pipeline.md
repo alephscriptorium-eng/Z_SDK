@@ -173,4 +173,34 @@ Release + e2e) lista.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-18 · **sin merge aún** · **sin ✅ BACKLOG**
+(autorización de merge pendiente de acción de usuario; este commit solo cierra
+la §revisión en la rama WP).
+
+### Verificado
+
+| CA | Evidencia orquestador |
+| -- | --------------------- |
+| GitHub Release (library) tarball + acta | `gh release view startpack-delta-v0.1.0` y `startpack-pozo-v0.1.0`: assets `zeus-startpack-*-0.1.0.tgz` + `ACTA-*-v0.1.0.md` |
+| Mesh / ronda desde start pack | Re-ejecutado `npm run e2e:startpack` en library → 🟢 OK (install tarball + `loadStartPack` + authority) |
+| `VOLUMES/` monorepo solo fixtures | `git ls-files VOLUMES/` = README + volumes.json + DISK_02/03 sintéticos; DISK_01/04 ausentes; gitignore policy OK |
+| `npm install @zeus/startpack-delta` registry | ⏳ OK (brief: gated `NPM_TOKEN`; equivalente file:/Release documentado) |
+
+### PRACTICAS
+
+- Alcance acotado zeus (fixtures + docs + reporte) + library (pipeline Notario).
+- Catálogo tabla `STARTPACK_GAMES`; simetría delta/pozo en kit.
+- Commits convencionales; worker **no** tocó `plan/BACKLOG.md`.
+- Demolición política VOLUMES vivos: docs + git; fixtures conservados.
+- Hallazgos (junction Windows, presets-sdk drift, compactación Notario) → fuera de alcance; no bloquean.
+
+### Orden de merge sugerido
+
+1. **Library** `wp/u62-release-pipeline` (`688be30`) → `main`
+2. **Zeus** `wp/u62-release-pipeline` → `main`
+3. Orquestador en zeus `main`: BACKLOG 🔶→✅ U62 + remate ola 6 → desbloquea ola 9
+4. `git worktree remove .worktrees/wp-u62-release-pipeline`
+
+### Push
+
+No intentado (zeus ni library desde esta revisión).
