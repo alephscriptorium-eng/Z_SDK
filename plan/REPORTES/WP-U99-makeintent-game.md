@@ -129,9 +129,9 @@ Ninguno. CA vía (a) verde.
 
 ## Revisión del orquestador
 
-**Aceptado ✅** — 2026-07-18 (orquestador). Vía (a). BACKLOG queda 🔶
-(sin ✅ en esta revisión; sin merge a master; sin push). Worktree
-`.worktrees/wp-u99-makeintent-game` vivo hasta merge.
+**Aceptado ✅** — 2026-07-18 (orquestador). Vía (a). Merge `7b20002` en
+master. BACKLOG 🔶→✅. Push no intentado. Worktree U99 eliminado. Lote
+higiene 11c cerrado.
 
 ### Qué se verificó
 
@@ -165,7 +165,5 @@ Ninguno. CA vía (a) verde.
 
 ### Acción siguiente
 
-1. Usuario: autorizar `chore(plan): acepta WP-U99` en master (🔶→✅) +
-   `git merge wp/u99-makeintent-game` (lote higiene 11c cierra).
-2. Tras merge: `git worktree remove` del árbol U99.
-3. Push: no intentado.
+Hecho: merge `7b20002` + BACKLOG ✅ + worktree remove. Push: no
+intentado. Siguiente: espera A-11 para U93.

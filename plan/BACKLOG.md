@@ -844,7 +844,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 > Revisión externa (ADDENDA `ENTREGA-2026-07-18-revision-externa.md`).
 > No bloqueado por Ola 6. **U93** desbloqueado por **D-20** (cablear-puente);
 > espera A-11 / brief aparte — NO en lote-higiene-11c.
-> U98+U99 = lote-higiene-11c (deps U10 ✅). Ola 6 no.
+> Higiene vigilante **U94–U99 cerrada** (salvo U93 ⬜). Lote 11c cerrado
+> (U98+U99 ✅). Ola 6 no.
 
 ### Coordinación re-plan identidad/transporte (2026-07-18)
 
@@ -856,9 +857,9 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
    U97 ✅).
 3. **Lote higiene U94+U96** (lote-higiene-11b) — **cerrado** (U94 ✅ +
    U96 ✅).
-4. **Lote higiene U98+U99** (lote-higiene-11c) — **en curso** (U98 ✅
-   merge `f94282d`; U99 🔶 2026-07-18). U93 espera A-11 / brief aparte
-   (no en este lote).
+4. **Lote higiene U98+U99** (lote-higiene-11c) — **cerrado** (U98 ✅
+   merge `f94282d`; U99 ✅ merge `7b20002`). U93 espera A-11 / brief
+   aparte (no en este lote).
 
 **Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
 `A-09` → **WP-U97** (feed-kit/volumes-ops) y `A-10` → **WP-U93**
@@ -941,8 +942,8 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   · Anexo trivial: tests domain-state usan `32 * 1024` a mano →
   `checkSnapshotBudget`.
 
-- 🔶 **WP-U99 · `game` obligatorio también en `makeIntent`** *(dep U10, U24 ✅;
-  sin urgencia)* — en curso (lote-higiene-11c / orquestador / 2026-07-18) —
+- ✅ **WP-U99 · `game` obligatorio también en `makeIntent`** *(dep U10, U24 ✅;
+  sin urgencia)* — aceptado (orquestador / 2026-07-18; merge `7b20002`) —
   `makeIntent` deja `game` opcional (`if (game != null)`), asimétrico con
   `makeEnvelope`. Emisores actuales ya pasan `game` (U30/U92). Vía (a):
   exigirlo y lanzar; vía (b): test engine 4-kinds + doc del alcance.
@@ -950,17 +951,13 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   **CA (b):** test 4-kinds + CONTRATO.md.
   **Demolición (a):** el condicional.
 
-### Cola hallazgos lote higiene 11c (WP-U98 / WP-U99)
+### Cola hallazgos lote higiene 11c (WP-U98 / WP-U99) — cerrado
 
-- (U98) asimetría `makeIntent` / `game` vs `isShaped('intent')` → **U99**
-  revisado en rama `wp/u99-makeintent-game` (merge master `e68eca8`);
-  BACKLOG 🔶 hasta `chore(plan): acepta WP-U99` + merge a master.
+- (U98) asimetría `makeIntent` / `game` → **U99 ✅** (merge `7b20002`).
 - (U98/U99) `release:changeset-dry` / `@zeus/linea-kit` `exports ./schemas/*`
-  missing from tarball — ya en cola U96; no usar dry como verificación
-  inocua mid-WP.
-- (U98/U99) CRLF `spec-sync`/`types-sync` Windows — ya en cola vigilante
-  (U95); re-run U99: `types-sync` falla solo por `\r\n` vs `\n` (contenido
-  idéntico).
+  missing from tarball — residual → cola U96.
+- (U98/U99) CRLF `spec-sync`/`types-sync` Windows — residual → cola U95;
+  post-merge: suite protocol 17/19 (solo EOL); contract+roles CA 11/11.
 
 ### Cola hallazgos vigilante 2026-07-18 (sin WP propio)
 
