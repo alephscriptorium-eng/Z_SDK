@@ -109,4 +109,32 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(pendiente)_
+**Aceptado ✅** (orquestador / 2026-07-18) — **sin merge / sin ✅ BACKLOG /
+sin push** hasta GO usuario (esta revisión solo deja rastro en la rama).
+
+### Verificado
+- Diff `main...HEAD`: 1 commit producto `0eec9eb` (`feat(view-kit): …`);
+  alcance solo view-kit + changeset + reporte (worker no tocó BACKLOG ni
+  U117).
+- CA GO **A**: factory `CAST_TABLE_WIDGET_IDS` (`cast-table` canónico +
+  alias `panel-elenco` → mismo `renderCastTableWidget`); tests montan por
+  id neutro y alias; fallback `ctx.id || 'cast-table'`; README veraz;
+  SOLVE boards no tocados.
+- Demolición: greps `ctx.id || 'panel-elenco'` y
+  `'panel-elenco': renderCastTableWidget` → vacío.
+- PRACTICAS §1/§3/§6: tabla de ids (no if/switch), sin nombres de
+  transición, changeset patch `@zeus/view-kit`, commit convencional.
+- Re-smoke orquestador (worktree): `npm test -w @zeus/view-kit` →
+  39/39; `npm run gates` → OK; lint 0 errors / 11 warnings preexistentes;
+  `rg solve-coagula|SOLVE|REIC|SolveCoagula packages/engine/view-kit/` →
+  vacío (case-sensitive).
+
+### Hallazgos (cola; no bloquean)
+- Labels ES hardwired en render (residual ya anotado en BACKLOG U116).
+- Rama 1 commit detrás de `main` (`d886a38` asigna U117) — al mergear,
+  integrar/rebase sobre tip de `main`; no pisa paths U117.
+
+### Merge (cuando usuario autorice)
+1. Rebase/merge `main` → `wp/u116-cast-table-alias` si hace falta.
+2. Merge a `main`; orquestador marca ✅ BACKLOG en `main`.
+3. `git worktree remove .worktrees/wp-u116-cast-table-alias`.
