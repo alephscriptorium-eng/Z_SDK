@@ -854,8 +854,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
    hilo de decisión; no mezclar con higiene en el mismo commit de plan.
 2. **Lote higiene U95+U97** (lote-higiene-11a) — **cerrado** (U95 ✅ +
    U97 ✅).
-3. **Lote higiene U94+U96** (lote-higiene-11b) — **asignado** 🔶
-   (orquestador / 2026-07-18). Quedan U98/U99 para lote siguiente.
+3. **Lote higiene U94+U96** (lote-higiene-11b) — **parcial** (U94 ✅;
+   U96 🔶) (orquestador / 2026-07-18). Quedan U98/U99 para lote siguiente.
    U93 espera A-11 / brief aparte (no en este lote).
 
 **Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
@@ -884,14 +884,11 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   **Demolición:** campos de identidad ad-hoc del handshake que el card
   sustituya.
 
-- 🔶 **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
-  en curso (lote-higiene-11b / orquestador / 2026-07-18) — en
+- ✅ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
+  aceptado (orquestador / 2026-07-18; merge `38ff80b`) — en
   `games/delta/arg-domain`: curate (gate `reducer` ↔ mutador `line-board`)
-  y vaciar (gate ↔ `flow-engine`) duplican codes; `domain-state.mjs` invoca
-  mutadores sin comprobar `{ok,error}` en 4 sitios. Exportar por mecánica
-  una función pura de validación que consuman gate y mutador; domain-state
-  comprueba el resultado o documenta por qué el gate previo lo hace
-  redundante.
+  y vaciar (gate ↔ `flow-engine`) unificados en `validateCurate` /
+  `validateEmptySea`; domain-state comprueba `{ok,error}` / boolean.
   **CA:** cada regla y sus codes en un solo sitio; test por mecánica: caso
   inválido → gate y mutador el mismo error desde la misma función; cero
   mutadores invocados sin comprobar resultado; tests arg-domain verdes.
@@ -976,6 +973,17 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
 - (U95) Worktree sin `node_modules` propio: exports nuevos de `@zeus/*`
   (p.ej. `./node-src-dir`) no resuelven hasta `npm install` en el worktree
   (o merge a master con install en el checkout principal).
+
+### Cola hallazgos lote higiene 11b (WP-U94)
+
+- (U94) **salvage dual** — gate `mar_colapsado` vs mutador `colapsado`
+  (mismo patrón pre-U94 que vaciar). Candidato `validateSalvage` /
+  extender estilo `validateEmptySea`.
+- (U94) **cache / milestone** — reglas/codes aún duplicados gate↔mutador
+  (`ya_cacheado`, `no_curado`, …) sin validador compartido.
+- (U94) `applyOps` ante `!res.ok` hace **break silencioso** (patrón
+  excavate) — no propaga error al caller de `applyIntent`; WP aparte si
+  se quiere ledger de inconsistencia gate/mutador.
 
 ## Horizonte (post-refundación, no tomar aún)
 
