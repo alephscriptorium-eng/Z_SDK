@@ -11,7 +11,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 ✅ · U116 🔶 · U117 ⬜)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U114 ✅ · U115 ✅ · U116 🔶 · U117 🔶)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
 > **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 ✅**; **U114 ✅**;
@@ -29,8 +29,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 > (4) triaje vigilante → ~~**U115**~~ ✅ (schema story-board real / AJV
 > en kit carpeta) · (5) vigilante post-U114 → **U116** 🔶 (GO diseño
 > **A** · alias `cast-table` + `panel-elenco`; swarm 2026-07-18) ·
-> (6) vigilante post-U115 → **U117** ⬜ (schema story-board único en
-> zeus; library+editor consumen; **sin 🔶**).
+> (6) vigilante post-U115 → **U117** 🔶 (schema story-board único en
+> zeus; library+editor; swarm 2026-07-18).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -60,7 +60,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — dialectos story-board en editor | **U114** | ✅ |
 | Vigilante — schema story-board real (kit) | **U115** | ✅ |
 | Vigilante post-U114 — alias neutro view-kit | **U116** | 🔶 |
-| Vigilante post-U115 — schema story-board único (zeus) | **U117** | ⬜ |
+| Vigilante post-U115 — schema story-board único (zeus) | **U117** | 🔶 |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
@@ -70,7 +70,8 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 
 **En curso:** **U116** 🔶 (swarm / 2026-07-18 · GO diseño **A** ·
 rama `wp/u116-cast-table-alias` · worktree `.worktrees/wp-u116-cast-table-alias`);
-**U117** ⬜ sin 🔶 (puede ir en paralelo en otro worktree)
+**U117** 🔶 (swarm / 2026-07-18 · rama `wp/u117-story-board-schema` ·
+worktree `.worktrees/wp-u117-story-board-schema` · repos zeus+library)
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -110,8 +111,8 @@ rama `wp/u116-cast-table-alias` · worktree `.worktrees/wp-u116-cast-table-alias
     `aedd4f3` · library `ff30419`; revisión `d2b6604`
 21. **WP-U116** 🔶 — view-kit: alias neutro `cast-table` (**GO A** ·
     factory; swarm 2026-07-18; ver WP abajo)
-22. **WP-U117** ⬜ — schema story-board único en zeus (library+editor);
-    **sin 🔶** (ver WP abajo)
+22. **WP-U117** 🔶 — schema story-board único en zeus (library+editor);
+    swarm 2026-07-18 (ver WP abajo)
 23. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP;
     **sin GO** → no inventar micros / STOP_SERVICES)
 24. Residual STOP_SERVICES pozo/solve en cola (sin WP; **sin GO**)
@@ -1388,7 +1389,7 @@ cerrado):
 > library; revisión `188e4a2`) · **lote 1–4+8 cerrado**; ~~**U115**~~ ✅
 > (merge zeus `aedd4f3` · library `ff30419`; revisión `d2b6604`);
 > **U116** 🔶 (GO **A** · alias factory; swarm 2026-07-18);
-> **U117** ⬜ (schema story-board único en zeus; sin 🔶).
+> **U117** 🔶 (schema único `@zeus/story-board-schema`; swarm 2026-07-18).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
 
@@ -1416,7 +1417,7 @@ cerrado):
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
 > Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; ~~**U113**~~ ✅;
 > ~~**U114**~~ ✅ — **cerrado**. ~~**U115**~~ ✅ (schema kit).
-> Candidatos: **U116** 🔶 (GO **A**) · **U117** ⬜ (sin 🔶).
+> En curso: **U116** 🔶 (GO **A**) · **U117** 🔶 (schema único zeus).
 
 - ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
   *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
@@ -1492,8 +1493,12 @@ cerrado):
   `data` en WP futuro si hace falta.
 
 
-- ⬜ **WP-U117 · Schema story-board único en zeus (post-U115)**
-  *(vigilante post-U115; dep U115 ✅ · U114 ✅)* — **sin 🔶**.
+- 🔶 **WP-U117 · Schema story-board único en zeus (post-U115)**
+  *(vigilante post-U115; dep U115 ✅ · U114 ✅)* — **en curso** (swarm /
+  2026-07-18) · rama `wp/u117-story-board-schema` · worktree
+  `.worktrees/wp-u117-story-board-schema` · library
+  `wp/u117-story-board-schema` · brief
+  `plan/REPORTES/briefs/WP-U117-story-board-schema.md`.
   Hallazgo: U115 centralizó AJV+schema en library
   (`kits/carpeta-dramaturgo/schema/story-board.schema.json` +
   `validate-story-board.mjs`); el editor
@@ -1557,7 +1562,7 @@ Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
 - Vigilante **post-U114** · factory view-kit solo `panel-elenco` →
   **WP-U116** 🔶 (arriba; GO **A** · swarm 2026-07-18).
 - Vigilante **post-U115** · editor regex vs schema AJV library →
-  **WP-U117** ⬜ (arriba; schema único en zeus; sin 🔶).
+  **WP-U117** 🔶 (arriba; schema único en zeus).
 
 ### Diferidos U87 §5–6 — sin WP ejecutable
 
