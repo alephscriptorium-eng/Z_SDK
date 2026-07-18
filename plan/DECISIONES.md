@@ -223,7 +223,7 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   no abre alcance en U101. U101 asignable (🔶).
 
 - **D-22 · 2026-07-18 · Frentes post-docs (U103 ✅)** (por el usuario /
-  custodio; entrega `ENTREGA-2026-07-18b-frentes-post-docs`). Cuatro
+  custodio; entrega `ENTREGA-2026-07-18b-frentes-post-docs`). Cinco
   frentes, orden de ejecución:
   | # | Frente | Veredicto | Destino |
   |---|--------|-----------|---------|
@@ -231,11 +231,18 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   | 2 | Publish `engine/*` | **prep GO; publish real gated ops** | **WP-U105** (`release:dry` + PR versión changesets); publish real cuando registry D-7 + `NPM_TOKEN`; juegos NO (ola 6). Tras publish real → **U55** |
   | 3 | Ola 6 — `Z_SDK-games-library` | **GO** (creds GitHub) | **WP-U60** crea repo (D-11); luego U61/U62; abre ola 9 |
   | 4 | Sidecar / `ZEUS_BLOB_*` | **DIFERIDO sin plazo** | Live U100/U101 queda ⏳ **por diseño**; no preguntar ni reabrir hasta ops |
-  Orden: **(1) → (3) ∥ (2)-prep → publish real (ops) → U55**.
+  | 5 | Dominio propio docs Pages (`z-sdk.escrivivir.co`) | **GO** (WP micro) | **WP-U106** — VitePress `base` `/Z_SDK/`→`/`; Custom domain + Enforce HTTPS (Settings); DNS `CNAME z-sdk → alephscriptorium-eng.github.io` = **ops usuario**. ⬜ hasta U104 ✅ (solapa path-filters `docs.yml`) |
+  Orden: **(1) → (3) ∥ (5) ∥ (2)-prep → publish real (ops) → U55**.
+  **Addendum orquestador (2026-07-18):** el punto (5) llegó en la misma
+  entrega b; D-22 se amplía de 4→5 frentes. Hostname con guion medio
+  (`z-sdk`; guion bajo inválido en DNS/certs). URL viva hoy:
+  `https://alephscriptorium-eng.github.io/Z_SDK/` (`base: /Z_SDK/` en
+  Actions vía `resolveDocsBase()`).
 
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-22. Ops residuales — no son
 DA: (a) endpoint registry + secret `NPM_TOKEN` para publish real → U55;
-(b) sidecar blob cuando ops lo entregue. Horizontes WP-U71/72/73 siguen
-esperando evidencia o diseño externo.)*
+(b) sidecar blob cuando ops lo entregue; (c) DNS CNAME `z-sdk` +
+Custom domain/HTTPS en Pages Settings → CA de U106. Horizontes
+WP-U71/72/73 siguen esperando evidencia o diseño externo.)*
