@@ -125,4 +125,33 @@ Ninguno. Listo para revisión orquestador (merge library + zeus reporte).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador). Sin merge / sin ✅ BACKLOG /
+sin push en este paso (pedido usuario: veredicto primero; commit de
+revisión en rama WP).
+
+### Verificado
+
+- Diff zeus `main...HEAD`: solo reporte plan (commits `5d29512`,
+  `530cb8b`). BACKLOG no tocado por worker. Sin editor-ui.
+- Diff library `main...HEAD` (`7050664`): `validate-story-board.mjs`
+  (AJV 2020), `test/run.mjs` (board sintético inválido), README
+  (schema = contrato), `package.json`/`lock` dep `ajv` explícita.
+- CA: schema cargado y aplicado (no solo `existsSync`); fixtures
+  SOLVE+ALEPH+plantilla+juguete+instantiate verdes; `BAD_Widget` →
+  `/acts/0/widgets/0: must match pattern "^[a-z][a-z0-9-]*$"`;
+  README veraz.
+- Demolición: `touch schema so CA…`, `validateSolve` / `validateAleph`
+  ausentes; `existsSync(SCHEMA_PATH)` solo error de carga. Post-check
+  `blocks[].act` → act id documentado (JSON Schema no lo expresa).
+- Re-smoke orquestador (library worktree): `npm run test:carpeta-dramaturgo`
+  → 🟢 OK (ajv 8.20.0).
+- PRACTICAS: patrón linea-kit; sin puertos hardcodeados; sin solape
+  U114; commits convencionales.
+
+### Merge sugerido (cuando usuario autorice)
+
+1. Library `wp/u115-schema-story-board-ajv` → `main` (`7050664`).
+2. Zeus `wp/u115-schema-story-board-ajv` → `main` (reporte + este
+   §revisión).
+3. Orquestador en zeus `main`: BACKLOG U115 🔶 → ✅; `git worktree remove`
+   ambos worktrees.
