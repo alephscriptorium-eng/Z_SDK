@@ -903,8 +903,9 @@ Diferidos del reporte/revisión WP-U93 (no bloquean; U100/U101 siguen):
 > Ejecutor (b): el equipo del pub entrega sidecar; zeus valida.
 > U71 permanece horizonte — no asignable. No Ola 6.
 
-- ⬜ **WP-U100 · Spike blob-sync Oasis 2-nodos** *(dep D-21; antes de
-  U101)* — Spike barato de sync content-addressed (`ssb-blobs` /
+- 🔶 **WP-U100 · Spike blob-sync Oasis 2-nodos** *(dep D-21; antes de
+  U101)* — en curso (lote-transporte-12a / orquestador / 2026-07-18) —
+  Spike barato de sync content-addressed (`ssb-blobs` /
   chunks) entre dos nodos antes de comprometer el carril saliente.
   Necesita cliente/pub levantado (ops). Zeus registra evidencia y CA de
   validación cuando el pub entregue el entorno; no implementa el
