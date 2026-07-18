@@ -4,19 +4,18 @@ import { defineConfig } from 'vitepress';
  * Zeus SDK docs portal — layout objetivo engine / editor / mesh / games.
  * El move físico de carpetas es WP-U51; aquí documentamos el mapa conceptual.
  *
- * base Pages (proyecto Z_SDK): `/Z_SDK/` en GitHub Actions.
- * Local / docs:dev: `/`. Override opcional ZEUS_DOCS_BASE=Z_SDK (sin slash
- * inicial: Git Bash/MSYS reescribe rutas tipo `/Z_SDK/`).
+ * base Pages (custom domain z-sdk.escrivivir.co): `/` también en Actions.
+ * Local / docs:dev: `/`. Override opcional ZEUS_DOCS_BASE (sin slash
+ * inicial: Git Bash/MSYS reescribe rutas tipo `/foo/`).
  */
 function resolveDocsBase() {
   const raw = process.env.ZEUS_DOCS_BASE?.trim();
   if (raw) {
     // MSYS path conversion → `C:/Program Files/Git/...` — no es un base válido
-    if (/^[A-Za-z]:[\\/]/.test(raw)) return '/Z_SDK/';
+    if (/^[A-Za-z]:[\\/]/.test(raw)) return '/';
     const cleaned = raw.replace(/^\/+|\/+$/g, '');
     return cleaned ? `/${cleaned}/` : '/';
   }
-  if (process.env.GITHUB_ACTIONS === 'true') return '/Z_SDK/';
   return '/';
 }
 
