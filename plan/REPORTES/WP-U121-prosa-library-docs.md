@@ -7,7 +7,7 @@
 | rama zeus | `wp/u121-prosa-library-docs` |
 | rama library | `wp/u121-prosa-library-docs` |
 | commit(s) library | `2314b8e` |
-| commit(s) zeus | `54cc94a` |
+| commit(s) zeus | `54cc94a` · `4388b55` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
