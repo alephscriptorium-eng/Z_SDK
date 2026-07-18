@@ -203,6 +203,9 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   | 6 | Grafo de follows como prerequisito P2P | **aceptar como operación** | Nodos se siguen entre sí; **no** WP de producto ni «romper follows como feature» |
   Consecuencia: U93 sigue desbloqueado (frontera A-11). U100→U101 ⬜;
   U71 permanece horizonte (no inventar como asignable). Ola 6 no.
+  **Nota ops (2026-07-18):** cadena transporte U100→U101 **pausada en
+  U101** hasta refinement del marco (autoridad usuario); no asignar
+  U101. U100 puede cerrar con veredicto spike.
 
 ## Abiertas (bloquean lo indicado)
 

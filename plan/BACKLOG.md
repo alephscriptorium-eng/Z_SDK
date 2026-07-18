@@ -860,7 +860,8 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
    merge `f94282d`; U99 ✅ merge `7b20002`).
 5. **A-11 / DA-OasisTransport** — **recibida y cerrada en D-21**
    (2026-07-18). Filas 2–6 → veredictos; **U93 ✅** (merge `0d38755`);
-   WPs **U100** (spike) + **U101** (saliente hermano U84) ⬜.
+   WP **U100** (spike) 🔶; **U101** ⬜ **pausado** hasta refinement del
+   marco (no asignar; cadena U100→U101 no continúa a U101).
 
 **Colisión addendas A-09/A-10 (histórico):** el lote higiene/vigilante
 ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
@@ -890,7 +891,8 @@ ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
 
 ### Cola hallazgos WP-U93 (peer-card)
 
-Diferidos del reporte/revisión WP-U93 (no bloquean; U100/U101 siguen):
+Diferidos del reporte/revisión WP-U93 (no bloquean; U100 sigue; U101
+pausado hasta refinement):
 - Viewer fabrica peer-card local (`webrtc-viewer/.../viewer-app.mjs`
   `makePeerCard` como ticket UI); no consume `onPeerCard` de autoridad
   viva. Emisión canónica de sala = authority-kit al join.
@@ -928,6 +930,9 @@ Diferidos del reporte/revisión WP-U93 (no bloquean; U100/U101 siguen):
   intacto; evidencia de consumo del sidecar (no reimplementar `blobs.*`
   en zeus).
   **Demolición:** stubs/notas «saliente diferido» que este WP sustituya.
+  _(pausado — orquestador / 2026-07-18 · nota técnica usuario: la cadena
+  transporte U100→U101 **no continúa a U101** hasta refinement del marco;
+  no asignar; no 🔶. U100 puede cerrar con veredicto spike.)_
 
 - ✅ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
   aceptado (orquestador / 2026-07-18; merge `38ff80b`) — en
