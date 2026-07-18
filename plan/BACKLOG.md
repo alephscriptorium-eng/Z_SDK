@@ -14,13 +14,13 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 ## Remate — estado swarm (2026-07-18 · post-U87 · U109 ✅)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
-> **0 DA** abiertas; **0 🔶**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> **0 DA** abiertas; **1 🔶** (U110). Balance propio: [RE-PLAN.md](RE-PLAN.md)
 > (no inventa WPs). Línea de producto en **`main`**.
 > **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus `bd5f46c`).
 > Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107 ⏳ ops.
 >
-> **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ luego
-> U110 ⬜ · (2) frente editor **U111–U114** DESPUÉS (⬜; **no 🔶** hasta
+> **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ ·
+> **U110** 🔶 · (2) frente editor **U111–U114** DESPUÉS (⬜; **no 🔶** hasta
 > abrir frente) · (3) diferidos U87 §5–6 → DECISIONES / horizonte (sin WP
 > ejecutable).
 
@@ -45,7 +45,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Ola 9 — CARPETA DRAMATURGO | **U86** | ✅ |
 | Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ✅ |
 | Post-U87 — slots puertos `solve*` (+ residual pozo) | **U109** | ✅ |
-| Post-U87 — `@zeus/startpack-kit` | **U110** | ⬜ micro YA (tras U109) |
+| Post-U87 — `@zeus/startpack-kit` | **U110** | 🔶 swarm / 2026-07-18 |
 | Post-U87 — editor materializa juegos reales | **U111** | ⬜ frente (no 🔶) |
 | Post-U87 — carpeta: importar obra | **U112** | ⬜ frente (no 🔶) |
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ frente (no 🔶) |
@@ -59,7 +59,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - **U111–U114** — definidos; **no asignar** hasta que usuario/orquestador
   abra el frente «editor produce juegos»
 
-**En curso:** _(ninguno)_
+**En curso:** **WP-U110** 🔶 (swarm / 2026-07-18) — `@zeus/startpack-kit`
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -84,8 +84,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
     library `1f85294`; revisión `f2cdc2a`
 14. ~~**WP-U109**~~ ✅ — slots solve/pozo ports; merge zeus `6abe3ba` ·
     library `aea9e04`; revisión `3e602e3`
-15. **Micro higiene post-U87** — **U110** ⬜ (startpack-kit; no 🔶
-    hasta GO)
+15. **Micro higiene post-U87** — **U110** 🔶 (startpack-kit; GO 2026-07-18)
 16. **Frente editor produce juegos** — U111–U114 ⬜ (tras micro; no 🔶)
 17. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
 
@@ -1347,8 +1346,8 @@ cerrado):
 > Fuente: §hallazgos WP-U87 + residual pozo (cola U23) + vigilante
 > `loadStartPack` ×4. Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar**
 > con `packages/arg/spec/BACKLOG.md`. ~~**U109**~~ ✅ (merge zeus
-> `6abe3ba` · library `aea9e04`; revisión `3e602e3`); U110 ⬜;
-> frente U111–U114 **no 🔶** hasta abrir frente.
+> `6abe3ba` · library `aea9e04`; revisión `3e602e3`); **U110** 🔶
+> (swarm / 2026-07-18); frente U111–U114 **no 🔶** hasta abrir frente.
 
 ### Lote «higiene post-U87» — micro YA (próximos a ejecutar)
 
@@ -1360,8 +1359,11 @@ cerrado):
   `presets-sdk/env`; consumidores library (solve + pozo) leen el
   resolver.
 
-- ⬜ **WP-U110 · `@zeus/startpack-kit` — una sola `loadStartPack`**
-  *(vigilante post-U87; PRACTICAS §1.4)* — `loadStartPack` (y helpers
+- 🔶 **WP-U110 · `@zeus/startpack-kit` — una sola `loadStartPack`**
+  *(vigilante post-U87; PRACTICAS §1.4)* — **en curso** (swarm /
+  2026-07-18) · brief `plan/REPORTES/briefs/WP-U110-startpack-kit.md`
+  · rama `wp/u110-startpack-kit` · worktree
+  `.worktrees/wp-u110-startpack-kit`. `loadStartPack` (y helpers
   gemelos de validación/acta/volumes del Notario) está copiada en los
   start packs de la games-library (delta · pozo · sketch ·
   solve-coagula — ×4). Extraer paquete `@zeus/startpack-kit` (library
