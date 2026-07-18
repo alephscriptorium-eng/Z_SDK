@@ -67,11 +67,7 @@ jobs:
           - '@zeus/player-ui'
           - '@zeus/player-3d-ui'
           - '@zeus/3d-monitor'
-          - '@zeus/ping-pong-bots'
-          - '@zeus/arg-domain'
-          - '@zeus/arg-feeds'
-          - '@zeus/arg-console'
-          - '@zeus/arg-player-mcp'
+          - '@zeus/ping-pong-bots'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

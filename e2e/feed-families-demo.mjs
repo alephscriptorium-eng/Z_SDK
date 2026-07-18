@@ -20,8 +20,10 @@ import { syncJetstreamFixture, resolveRuntimeFeeds, probeFeedMcpHealth } from '@
 import { exportSsbLogFile } from '@zeus/ssb-system';
 import { startFirehoseMcp } from '../packages/mesh/linea-firehose/src/start.mjs';
 import { startAll as startSsb } from '../packages/mesh/ssb-system/src/start.mjs';
-import { createPozoDomainState } from '../packages/games/pozo/src/domain.mjs';
 import { shutdownE2E } from './helpers.mjs';
+import { gamesPaths } from './games-root.mjs';
+
+const { createPozoDomainState } = await import(gamesPaths().pozoDomain);
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SSB_FIXTURE = join(root, 'packages/mesh/ssb-system/fixtures/ssb-log.json');

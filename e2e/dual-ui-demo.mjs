@@ -1,3 +1,4 @@
+import { gamesPaths } from './games-root.mjs';
 /**
  * E2E dual-ui — WP-U32: player-ui (DJ) + player-3d + operator-ui on contrato único.
  *
@@ -14,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { io as ioClient } from 'socket.io-client';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
-import { makeIntent } from '@zeus/arg-domain';
+import { makeIntent } from '@zeus/protocol';
 import { createPlayerServer } from '../packages/mesh/player-ui/src/server.mjs';
 import { createPlayer3dServer } from '../packages/mesh/player-3d-ui/src/server.mjs';
 import { createOperatorUiServer } from '../packages/mesh/operator-ui/serve.mjs';
@@ -113,7 +114,7 @@ try {
   console.log('2. Starting socket-server + authority...');
   startApp('socket', path.join(repoRoot, 'packages/mesh/socket-server/src/index.mjs'));
   await waitForHttp(`http://${HOST}:${SCRIPTORIUM_PORT}/health`);
-  startApp('authority', path.join(repoRoot, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+  startApp('authority', gamesPaths().deltaAuthority);
 
   console.log('3. Starting player-ui (DJ)...');
   const player = await createPlayerServer({
@@ -230,7 +231,7 @@ try {
     socket.on('arg:ledger', onEntry);
   });
   emitIntent(
-    makeIntent(ACTOR_ID, 'inspect', { targetId: 'dual-spawn', label: 'dual' }, { role: 'operator' })
+    makeIntent(ACTOR_ID, 'inspect', { targetId: 'dual-spawn', label: 'dual' }, { role: 'operator', game: 'delta' })
   );
   await ledgerPromise;
   console.log('   G-DUI.1 OK');
@@ -244,7 +245,7 @@ try {
   };
   socket.on('ledger', watch);
   socket.on('arg:ledger', watch);
-  emitIntent(makeIntent('player-spoof', 'inspect', { targetId: 'x' }, { role: 'player' }));
+  emitIntent(makeIntent('player-spoof', 'inspect', { targetId: 'x' }, { role: 'player', game: 'delta' }));
   await sleep(1500);
   socket.off('ledger', watch);
   socket.off('arg:ledger', watch);

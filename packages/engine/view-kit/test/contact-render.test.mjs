@@ -5,7 +5,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolvePresetOffer } from '@zeus/presets-sdk/horse';
-import { grifoCloakDef } from '@zeus/arg-domain/scenes/tap-cloaks';
 import {
   renderContactMenu,
   bindContactMenu,
@@ -13,7 +12,40 @@ import {
   formatContactLive
 } from '../src/contact-render.mjs';
 
-const { preset, catalog } = grifoCloakDef('grifo-a');
+/** Fixture local — no importar juegos (WP-U61). */
+function fixtureCloakDef(tapId) {
+  const tool = {
+    name: 'tap.set_aperture',
+    description: 'Ajusta la apertura',
+    parameters: {
+      type: 'object',
+      properties: { aperture: { type: 'number', minimum: 0, maximum: 1 } },
+      required: ['aperture']
+    },
+    type: 'tool'
+  };
+  return {
+    preset: {
+      id: `${tapId}-cloak`,
+      name: `${tapId}-cloak`,
+      description: `Cloak ${tapId}`,
+      category: 'fixture-tap',
+      prompt: `Opera ${tapId}`,
+      items: [{ serverName: 'fixture-tap', type: 'tool', name: 'tap.set_aperture' }]
+    },
+    catalog: [{
+      serverName: 'fixture-tap',
+      serverInfo: { name: 'Fixture Tap' },
+      isConnected: true,
+      tools: [tool],
+      resources: [],
+      resourceTemplates: [],
+      prompts: []
+    }]
+  };
+}
+
+const { preset, catalog } = fixtureCloakDef('grifo-a');
 const offer = resolvePresetOffer(preset, catalog);
 
 test('renderContactMenu: tres columnas PROMPTS / TOOLS / RESOURCES', () => {

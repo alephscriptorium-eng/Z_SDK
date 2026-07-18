@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@zeus/app-shell": "*",
-    "@zeus/arg-domain": "*",
     "@zeus/http-contract": "*",
     "@zeus/linea-system": "*",
     "@zeus/presets-sdk": "*",

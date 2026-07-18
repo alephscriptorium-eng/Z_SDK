@@ -1,0 +1,180 @@
+# WP-U61 · migrate-games — reporte
+
+| dato | valor |
+| ---- | ----- |
+| agente | worker (lote-ola6-b / Cursor) |
+| fecha | 2026-07-18 |
+| rama | `wp/u61-migrate-games` (zeus) · `wp/u61-migrate-games` (library) |
+| commit(s) | library: `85e41f6`; zeus: _(pendiente commit en este paso)_ |
+| estado propuesto | listo para revisión |
+
+## Qué se hizo
+
+Se migraron `packages/games/delta/*` y `packages/games/pozo` del monorepo
+Z_SDK al repo hermano `Z_SDK-games-library`. La library consume `@zeus/*`
+vía **`file:` temporal documentado** (deps raíz → `.deps/zeus-sdk`, setup
+`npm run setup:zeus-sdk` / `ZEUS_SDK_ROOT`) porque publish real sigue gated.
+Se demolió `packages/games/` en el monorepo; CI/matriz, scripts, docs y gates
+ya no asumen ese path. Mesh `cache-browser`/`firehose-browser` dejan de
+depender estáticamente de `@zeus/arg-domain` (carga dinámica opcional para
+arg-track). E2e de juegos viven en la library; e2e mesh que aún levantan
+autoridad delta resuelven `ZEUS_GAMES_LIBRARY` / hermano.
+
+## Archivos tocados
+
+### Library `Z_SDK-games-library` (push OK)
+
+| archivo | acción |
+| ------- | ------ |
+| `packages/delta/*`, `packages/pozo/` | creados — juegos migrados |
+| `e2e/*` | creados — matriz e2e de juegos |
+| `scripts/zeus-sdk-root.*`, `ensure-zeus-sdk.mjs` | creados — resolución file: |
+| `package.json` / lock / CI / README | modificados — workspaces + file: + demos |
+| `packages/scaffold/*` | borrados — scaffold U60 demolicionado |
+
+### Monorepo Z_SDK (`wp/u61-migrate-games`)
+
+| archivo | acción |
+| ------- | ------ |
+| `packages/games/**` | borrado — demolición |
+| `package.json` / workspaces / scripts | modificados — sin demos/tests de juego |
+| `.github/workflows/ci.yml`, `release.yml` | modificados — sin `@zeus/arg-*` en matriz |
+| `packages/mesh/{cache,firehose}-browser/**` | modificados — sin dep estática arg-domain |
+| `e2e/games-root.mjs` + e2e mesh restantes | creados/adaptados |
+| `e2e/arg-*.mjs`, `pozo-mcp-demo.mjs`, … | borrados — viven en library |
+| `scripts/gates/*`, `test/gates/*` | modificados — regla (c) post-games |
+| `README.md`, `docs/games/*`, guías | modificados — puntero a library |
+| `packages/engine/view-kit/test/contact-render.test.mjs` | modificado — fixture local |
+
+## Evidencia
+
+> Regla CASOS.md: no inventes observaciones. Salida literal o `⏳ sin verificar`.
+
+### Library — unit tests
+
+```
+# tests 9  (pozo) + familia delta (arg-domain/feeds/console/player-mcp)
+# pass … fail 0
+```
+
+(`npm test` en library con `.deps/zeus-sdk` → worktree U61: exit 0)
+
+### Library — e2e:arg (contra mesh monorepo)
+
+```
+✅ G-ARG-E2E.1 consola · health 200, shells ok
+✅ G-ARG-E2E.2 join · uno en plaza
+✅ G-ARG-E2E.3 no-op · grifo sigue cerrado desde la plaza
+✅ G-ARG-E2E.4 riada · 1 gotas en rio-a
+✅ G-ARG-E2E.6 cloak · tronco
+✅ G-ARG-E2E.5 etiqueta · ledger: label
+✅ G-ARG-E2E.6b presets API · HTTP 200
+✅ G-ARG-E2E.9 salvage · murk 6→5, crystals 0→1
+✅ G-ARG-E2E.10 track:cast · firehose://synthetic/5/0#brindis
+🟢 e2e CAUDAL: todos los gates en verde
+```
+
+### Library — e2e:pozo-mcp
+
+```
+✅ G-POZO.0 coherencia CASOS.md · C-01,C-02,C-03
+✅ G-POZO.1 tools · player_join,player_state,player_draw_drop,player_empty
+✅ G-POZO.2 C-01 · ok evidencia=sí
+✅ G-POZO.2 C-02 · ok evidencia=sí
+✅ G-POZO.2 C-03 · error=pozo_ya_vacio
+✅ G-POZO.3 runner ok · 3 filas
+✅ G-POZO.4 sin imports arg/delta · limpio
+🟢 e2e pozo-mcp: C-01/C-02/C-03 + gates en verde
+```
+
+(Nota: C-03 muestra `error=pozo_ya_vacio` en el **último** paso esperado del
+caso; el case `ok` es true. Se añadió `sleep(2500)` tras levantar autoridad
+para evitar race `actor_desconocido`.)
+
+### Library — demos smoke (health)
+
+```
+arg-console health {"status":"ok","service":"arg-console",...}
+socket health {"ok":true,"bridge":"local",...}
+DEMO_ARG_OK
+pozo view { status: 'ok', service: 'pozo-view', game: 'pozo', ... }
+pozo mcp { status: 'ok', server: 'pozo-player-mcp-uno', ... }
+DEMO_POZO_OK
+```
+
+### Monorepo
+
+```
+gates: OK (0 offenders)
+npm run lint → 0 errors (11 warnings preexistentes)
+npm test -w @zeus/view-kit → # pass 30 # fail 0
+npm test -w @zeus/cache-browser → # pass 4 # fail 0
+npm test -w @zeus/firehose-browser → # pass 5 # fail 0
+test ! -d packages/games → packages/games ABSENT_OK
+```
+
+### Push
+
+- Library: `git push -u origin wp/u61-migrate-games` → OK (`85e41f6`)
+- Zeus rama: **no intentado** (política worker)
+
+### file: temporal (documentado)
+
+| Pieza | Valor |
+| ----- | ----- |
+| Mecanismo | `dependencies` `file:.deps/zeus-sdk/packages/{engine,mesh}/…` en library root |
+| Link | `npm run setup:zeus-sdk` → `.deps/zeus-sdk` (o `ZEUS_SDK_ROOT`) |
+| Por qué | publish real `@zeus/*` ⏳ ops / `NPM_TOKEN` |
+| Retiro | post-publish → U55: quitar `file:` y resolver desde registry D-7 |
+
+## Demolición
+
+- `packages/games/` ausente en monorepo.
+- Grep código (excl. plan/docs): solo mención en comentario de gate (c) en
+  `scripts/gates/scan.mjs`.
+- Scaffold library U60 eliminado.
+- Excepciones gate `arg-import` de mesh estáticas retiradas (imports ya no
+  estáticos).
+
+```
+test ! -d packages/games && echo packages/games ABSENT_OK
+# packages/games ABSENT_OK
+rg -n "from '@zeus/arg-" packages e2e --glob '!**/node_modules/**' → ZERO
+```
+
+## Auto-revisión (PRACTICAS.md §3 — con honestidad, no mecánica)
+
+- [x] Puertos/URLs/rutas/rooms hardcodeados: e2e siguen con puertos aislados
+  propios (preexistente); demos usan presets-sdk/env. `file:` path documentado.
+- [x] Cadenas if/switch → tabla: no nuevas.
+- [x] Duplicación: no se copió engine; file: apunta al monorepo.
+- [x] console.log / código comentado / TODO sin backlog: no añadidos.
+- [x] Nombres de transición: no (`scaffold` demolicionado, no `*-old`).
+- [x] Demolición completa: `packages/games/` cero; gate (c) actualizado.
+- [x] Tests comportamentales: e2e arg/pozo + unit library.
+- [x] Arranque real: demos health + e2e verdes.
+- [x] README/specs: library README + monorepo README/docs apuntan a library;
+  openapi cache/firehose regenerados tras cambio de server.
+- [x] Diff solo alcance U61: sí (más docs/gates/mesh necesarios para CA).
+
+## Hallazgos fuera de alcance
+
+- Race e2e pozo `actor_desconocido` si autoridad aún no está en room (mitigado
+  con sleep; candidato a wait explícito de join authority).
+- `arg-track` en mesh queda opcional: sin `@zeus/arg-domain` instalado en
+  monorepo, `ZEUS_ARG_TRACK_ACTOR` falla al activar track (documentado en
+  error). e2e:arg-track en library puede requerir link file: de arg-domain
+  hacia el monorepo si se quiere CA track completo post-demolición.
+- Docs VitePress aún hablan de paths viejos en prosa residual — parcialmente
+  actualizados; barrido Pages completo puede ser higiene.
+- Publish real / U55 / U62 no tocados.
+
+## Dudas / bloqueos
+
+Ninguno bloqueante. CA demos+e2e matriz juegos cumplido con `file:`.
+
+---
+
+## Revisión del orquestador
+
+_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_

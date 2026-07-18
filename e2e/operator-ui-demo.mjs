@@ -1,3 +1,4 @@
+import { gamesPaths } from './games-root.mjs';
 /**
  * E2E WP-U32 CA: operator-ui sobre contrato único.
  *
@@ -14,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { io as ioClient } from 'socket.io-client';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
-import { makeIntent } from '@zeus/arg-domain';
+import { makeIntent } from '@zeus/protocol';
 import { createOperatorUiServer } from '../packages/mesh/operator-ui/serve.mjs';
 import { assert, safeClose } from './helpers.mjs';
 
@@ -148,7 +149,7 @@ try {
   console.log('2. Starting socket-server + authority...');
   startApp('socket', path.join(repoRoot, 'packages/mesh/socket-server/src/index.mjs'));
   await waitForHttp(`http://${HOST}:${SCRIPTORIUM_PORT}/health`);
-  startApp('authority', path.join(repoRoot, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
+  startApp('authority', gamesPaths().deltaAuthority);
 
   const zeusInject = {
     scriptoriumUrl: RUNTIME_URL,
@@ -209,7 +210,7 @@ try {
     12000
   );
   observer.emitIntent(
-    makeIntent(ACTOR_ID, 'inspect', { targetId: 'spawn', label: 'e2e-operator' }, { role: 'operator' })
+    makeIntent(ACTOR_ID, 'inspect', { targetId: 'spawn', label: 'e2e-operator' }, { role: 'operator', game: 'delta' })
   );
   const entry = await ledgerOk;
   assert(
@@ -228,7 +229,7 @@ try {
   observer.socket.on('ledger', rejectWatch);
   observer.socket.on('arg:ledger', rejectWatch);
   observer.emitIntent(
-    makeIntent('player-spoof', 'inspect', { targetId: 'spawn' }, { role: 'player' })
+    makeIntent('player-spoof', 'inspect', { targetId: 'spawn' }, { role: 'player', game: 'delta' })
   );
   await sleep(1500);
   observer.socket.off('ledger', rejectWatch);

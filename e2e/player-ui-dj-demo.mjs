@@ -10,6 +10,7 @@ import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { io } from 'socket.io-client';
+import { gamesPaths } from './games-root.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -85,8 +86,8 @@ try {
   startApp('socket', join(root, 'packages/mesh/socket-server/src/index.mjs'));
   await waitForHttp(`http://${HOST}:${SOCKET_PORT}/health`);
 
-  startApp('authority', join(root, 'packages/games/delta/arg-demos/apps/authority/index.mjs'));
-  startApp('console', join(root, 'packages/games/delta/arg-console/src/server.mjs'), {
+  startApp('authority', gamesPaths().deltaAuthority);
+  startApp('console', gamesPaths().deltaConsole, {
     ZEUS_PORT_ARG_CONSOLE: String(CONSOLE_PORT)
   });
   startApp('player', join(root, 'packages/mesh/player-ui/src/server.mjs'), {

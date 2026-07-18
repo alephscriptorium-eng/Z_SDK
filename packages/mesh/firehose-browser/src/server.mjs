@@ -31,7 +31,6 @@ import { settingsView } from './views/settings_view.mjs';
 import { createBrowseRoutes } from './browse-routes.mjs';
 import { buildFirehoseSpec } from '../spec/build.mjs';
 import { createArgTrackSubscriber, mountTrackFocusRoute } from './arg-track-subscriber.mjs';
-import { DEFAULT_ARG_ROOM } from '@zeus/arg-domain';
 
 /** @type {{ corpus: string|null, path: string|null, mode: string|null, name: string|null, summary: string|null }} */
 let currentFocus = {
@@ -72,7 +71,7 @@ export async function createFirehoseServer(options = {}) {
     extendConfig: (cfg) => {
       const volume = resolveVolume('firehose');
       const trackActor = options.trackActor ?? process.env.ZEUS_ARG_TRACK_ACTOR ?? null;
-      const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? DEFAULT_ARG_ROOM;
+      const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? 'ARG_DELTA';
       return {
         discovery: cfg.discovery,
         defaultCorpus: cfg.defaultCorpus,
@@ -99,10 +98,10 @@ export async function createFirehoseServer(options = {}) {
   mountSwaggerUi(app, { title: 'Firehose View UI API' });
 
   const trackActor = options.trackActor ?? process.env.ZEUS_ARG_TRACK_ACTOR ?? null;
-  const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? DEFAULT_ARG_ROOM;
+  const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? 'ARG_DELTA';
   let trackSubscriber = null;
   if (trackActor) {
-    trackSubscriber = createArgTrackSubscriber({
+    trackSubscriber = await createArgTrackSubscriber({
       actor: trackActor,
       browserHint: 'firehose-browser',
       room: trackRoom,
