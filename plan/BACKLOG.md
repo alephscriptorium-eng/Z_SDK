@@ -861,8 +861,9 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 5. **A-11 / DA-OasisTransport** — **recibida y cerrada en D-21**
    (2026-07-18). Filas 2–6 → veredictos; **U93 ✅** (merge `0d38755`);
    WP **U100** (spike) ✅ (merge `626cbde`; veredicto spike **«no
-   despeja»** U101); **U101** 🔶 — pausa «hasta refinement» **levantada**
-   (cara ciega pub / 2026-07-18; ver D-21 nota refinement).
+   despeja»** U101); **U101** ✅ (merge `c2d9b22`).
+6. **Lote transporte U100+U101** (lote-transporte-12) — **cerrado**
+   (U100 ✅ merge `626cbde`; U101 ✅ merge `c2d9b22`).
 
 **Colisión addendas A-09/A-10 (histórico):** el lote higiene/vigilante
 ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
@@ -892,13 +893,13 @@ ocupó `A-09` → **WP-U97** y `A-10` → **WP-U93**. El conector renumeró a
 
 ### Cola hallazgos WP-U93 (peer-card)
 
-Diferidos del reporte/revisión WP-U93 (no bloquean; U100 ✅; U101 🔶):
+Diferidos del reporte/revisión WP-U93 (no bloquean; U100 ✅; U101 ✅):
 - Viewer fabrica peer-card local (`webrtc-viewer/.../viewer-app.mjs`
   `makePeerCard` como ticket UI); no consume `onPeerCard` de autoridad
   viva. Emisión canónica de sala = authority-kit al join.
   **Nota cara ciega (3):** mitigación barata = el visor **pida** el card
   a la autoridad (no fabricárselo); firma SSB del asiento = carril listo
-  cuando toque — fuera de alcance U101 (no expandir este WP).
+  cuando toque — higiene del visor (candidato WP; no bloquea).
 - Coturn VPS sigue ⏳ (ops; ya cola U88/U90).
 - `userId` de socket = dirección de transporte (routing to/from); no
   demolido — correcto: el card cubre identidad de handshake, no routing.
@@ -921,13 +922,16 @@ Diferidos del reporte/revisión WP-U93 (no bloquean; U100 ✅; U101 🔶):
   harness de validación mínimo si hace falta.
   **Demolición:** n/a (spike).
 
-- 🔶 **WP-U101 · Carril saliente VOLUMES/blobs (hermano U84)** *(dep
-  U84 ✅, U100 ✅, U93 ✅)* — en curso (lote-transporte-12b /
-  orquestador / 2026-07-18) — Encaje del carril **saliente**
+- ✅ **WP-U101 · Carril saliente VOLUMES/blobs (hermano U84)** *(dep
+  U84 ✅, U100 ✅, U93 ✅)* — aceptado (orquestador / 2026-07-18; merge
+  `c2d9b22`; revisión `bd30786`) — Encaje del carril **saliente**
   (blobs/pinning) como WP hermano de U84 (entrante SSB→VOLUMES ya ✅).
-  **Refinado desde HANDOFF_VIGIA… §Cara ciega** (voz equipo del pub;
-  solo el bloque citado — no el resto del handoff). Zeus **consume** el
-  servicio de objetos del pub; **no** reimplementa `blobs.*` / sbot.
+  Cliente `@zeus/blobstore-client` (HTTP `/x/blobstore/v0/*` + cid SSB +
+  manifests chunk-as-blob + portero LAN U93); live ops ⏳ (`ZEUS_BLOB_*`
+  unset). **Refinado desde HANDOFF_VIGIA… §Cara ciega** (voz equipo del
+  pub; solo el bloque citado — no el resto del handoff). Zeus
+  **consume** el servicio de objetos del pub; **no** reimplementa
+  `blobs.*` / sbot.
   **Contrato (cara ciega §2):** dos planos nunca mezclados — (a)
   **control** HTTP JSON bajo `/x/blobstore/v0/*` (`objetos`,
   `objetos/:cid`, `estado/:cid`, `deseos`, `salud`); (b) **datos** por
@@ -955,6 +959,16 @@ Diferidos del reporte/revisión WP-U93 (no bloquean; U100 ✅; U101 🔶):
   opcional env; ③ campos `cid`/`manifestCid`/chunks 5 MB; ④ zeus
   consume **HTTP** control (no muxrpc); ⑤ auth sbot↔servicio = ops
   (unix socket local; fuera de monorepo).
+
+### Cola hallazgos WP-U101 (carril saliente)
+
+Diferidos del reporte/revisión WP-U101 (no bloquean; lote-transporte-12
+cerrado):
+- Viewer fabrica peer-card — ya cola U93 (cara ciega §3); persiste hasta
+  higiene del visor.
+- Harness U100 cid hex vs SSB — `blob-sync-harness` sigue `sha256` hex
+  en fixture spike; producto U101 usa `&…sha256`. Convergencia harness →
+  formato SSB = higiene aparte (candidato WP).
 
 - ✅ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
   aceptado (orquestador / 2026-07-18; merge `38ff80b`) — en
