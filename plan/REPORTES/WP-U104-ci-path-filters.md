@@ -189,4 +189,32 @@ arriba).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (orquestador / 2026-07-18)
+
+### Verificado
+- Diff `main...HEAD` acotado a los 3 YAML + este reporte (tras merge
+  `29d50ef` de `main` tip `13898df` U106 plan — sin conflicto).
+- **CA-1** (solo `plan/*.md` → 0 jobs): `ci` paths-ignore `plan/**`+`**.md`;
+  `release`/`docs` allowlist no incluye `plan/**` → no disparan.
+- **CA-2** (`packages/**` → CI completo): no está en paths-ignore → CI sí;
+  release también (paths allowlist).
+- **CA-3** (docs solo `docs/**` o `workflow_dispatch`): paths + dispatch
+  sin filtro — confirmado en YAML.
+- Glob `**.md`: alineado con docs GHA («`**.js` matches all `.js`»).
+- PR alineado con push en `ci`/`docs`; concurrency/secrets release intactos.
+- Worker no tocó `plan/BACKLOG.md`. Commits convencionales §6.
+- Actions remoto: ⏳ honesto + checklist post-merge (aceptable; no-push).
+
+### PRACTICAS
+§1 n/a (solo workflows). §3 auto-revisión honesta. Demolición = triggers
+anchos sustituidos. Sin alcance extra.
+
+### Merge (cuando el usuario autorice)
+1. Merge `wp/u104-ci-path-filters` → `main` (FF o merge commit).
+2. Orquestador en `main`: BACKLOG U104 🔶→✅; desbloquea lote
+   **U60 ∥ U105 ∥ U106**.
+3. `git worktree remove` `.worktrees/wp-u104-ci-path-filters`.
+4. Checklist Actions del reporte (plan-only / packages / docs / dispatch).
+
+**Push: no intentado.** **BACKLOG ✅: no aplicado** (pedido explícito de
+esta revisión).
