@@ -157,4 +157,45 @@ Ninguno que bloquee CA. U87 / U86 no tocados.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-18) — **sin** ✅ en `plan/BACKLOG.md`
+aún (pendiente merge; ritual de esta pasada: NO merge / NO push / NO ✅
+BACKLOG).
+
+### Qué se verificó
+
+- **Diff zeus** `main...wp/u70-editor-gamemaps` (tip `5e99b03`): editor-ui
+  mundo A (`src/world/*`, `world_view`, assets), demole CRUD presets
+  (`home_view`/`preset_view`/`preset-library.js`/`preset-view.css`),
+  app-shell defaults nav, changeset, reporte. Sin `plan/BACKLOG.md`.
+  Alcance OK (+ app-shell patch justificado).
+- **Diff library** `main...wp/u70-editor-gamemaps` (`b4a8fb6`):
+  `@zeus/startpack-sketch` + fila `sketch` en `STARTPACK_GAMES` + docs/npm
+  script. Alcance OK.
+- **CA re-ejecutado** (worktree zeus): `npm test` en
+  `packages/editor/editor-ui` → `# tests 8` / `# pass 8` / `# fail 0`,
+  incl. `editor world release produces installable tarball` (Notario →
+  `zeus-startpack-sketch-*.tgz`).
+- **Demolición:** archivos CRUD borrados; `rg preset_view|home_view|preset-library\.js|preset-view\.css`
+  en editor-ui → 0 hits. `GET /presets` → 301 `/`. API `/api/presets`
+  retenida a propósito (cloaks).
+- **PRACTICAS:** Notario U62 reutilizado (spawn, no reinvent); catálogos
+  tabla; juguete `sketch`/`juguete` (cero delta/pozo en materiales);
+  commits convencionales; worker no tocó BACKLOG.
+- **Sync pre-merge:** library rama va **1 commit detrás** de `main`
+  (`a28b9ad` U86). Zeus rama va detrás de `main` (U86 + U108 y merges).
+  Sync `main` en ambos lados antes de merge.
+
+### Orden de merge sugerido
+
+1. **Library:** sync `main` (U86) → `wp/u70-editor-gamemaps` → merge a
+   `main` library (`b4a8fb6` + sync).
+2. **Zeus:** sync `main` → `wp/u70-editor-gamemaps` → merge a `main`
+   zeus.
+3. Tras merges: ✅ BACKLOG U70; habilitar asignación U87; `git worktree
+   remove` del worktree U70.
+
+### Notas no bloqueantes
+
+- `mcp-editor.js` aún redirige post-save a `/presets` (301 → `/`);
+  higiene residual (hallazgo worker + settings toggle `preset-library`).
+- UI visual en navegador: ⏳ (smoke HTTP + tests cubren Release).
