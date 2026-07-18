@@ -1,8 +1,9 @@
 # `@zeus/editor-ui`
 
-Editor del **mundo A** (WP-U70): compose un juego mínimo (escena, labelset,
-línea, casos, cloaks) y dispara el pipeline Notario de
-`Z_SDK-games-library` (WP-U62) → start pack + acta + tarball instalable.
+Editor del **mundo A** (WP-U70 / U111): compose un juego mínimo (escena,
+labelset, línea, casos, cloaks; o **actos / story-board** narrativo) y
+dispara el pipeline Notario de `Z_SDK-games-library` (WP-U62) → start pack +
+acta + tarball instalable.
 
 ## Arranque
 
@@ -21,11 +22,11 @@ Puerto vía `presets-sdk/env` (`ZEUS_PORT_EDITOR` / mesh editor).
 | `GET /` | World editor (borrador + Release) |
 | `GET /cloaks` | Explorador MCP / cloaks (presets) |
 | `GET /presets` | 301 → `/` (vista CRUD demolida) |
-| `POST /api/world/release` | Materializa `@zeus/startpack-sketch` + Notario |
+| `POST /api/world/release` | Materializa startpack del `gameId` + Notario |
 
 ## Games library
 
-Release necesita el checkout de `Z_SDK-games-library` (o worktree U70):
+Release necesita el checkout de `Z_SDK-games-library`:
 
 ```bash
 export ZEUS_GAMES_LIBRARY_ROOT=/path/to/Z_SDK-games-library
@@ -33,6 +34,15 @@ export ZEUS_GAMES_LIBRARY_ROOT=/path/to/Z_SDK-games-library
 
 Si no hay env, se busca un sibling `Z_SDK-games-library` / `Z_SDK-games-library-u70`.
 
-## Juego de CA
+## Juegos en catálogo
 
-`sketch` — juguete parametrizado (`@zeus/startpack-sketch`), no delta/pozo.
+| gameId | kind | paquete | notas |
+| ------ | ---- | ------- | ----- |
+| `sketch` | toy | `@zeus/startpack-sketch` | Preset juguete (escena + casos); **no** es techo |
+| `plaza` | narrative | `@zeus/startpack-plaza` | Actos / story-board `solve-inline` (carpeta) |
+
+Dialecto story-board en U111: **mínimo `solve-inline`** (`acts[].widgets`).
+Registro multi-dialecto → WP-U114.
+
+Materialize usa tabla por `kind` (`toy` \| `narrative`); el hard-gate
+`gameId === 'sketch'` quedó demolido.
