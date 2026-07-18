@@ -8,7 +8,7 @@ actor. Derivado evolucionado del `3d-monitor`, autocontenido en esta familia.
 | paquete | qué es |
 | ------- | ------ |
 | [`arg-domain`](arg-domain/) | dominio puro: capa delta sobre `@zeus/protocol`, escena `delta-v0`, flow/maze engines, reducers, feeds sintéticos |
-| [`arg-feeds`](arg-feeds/) | feeds node-only (sintético / real) |
+| [`arg-feeds`](arg-feeds/) | adaptador delta (maze) + familias vía `@zeus/feed-kit` |
 | [`arg-console`](arg-console/) | portal de vistas — `tablero` (overview) y `jugador` (vista encarnada) |
 | [`arg-player-mcp`](arg-player-mcp/) | MCP por actor sobre `@zeus/player-mcp-kit` |
 | [`arg-demos`](arg-demos/) | autoridad del juego (10 Hz vía authority-kit) + launcher de la demo de 3 visores |

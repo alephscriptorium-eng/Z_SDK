@@ -36,11 +36,6 @@ export const EXCEPTIONS = [
     reason: 'fallback ZEUS_PORT_* pre-U00; pendiente alinear con resolveZeusUiPorts'
   },
   {
-    path: 'packages/games/delta/arg-feeds/src/real.mjs',
-    rule: 'ports',
-    reason: 'comentario de cabecera cita puertos MCP; no hay literal de bind'
-  },
-  {
     path: 'packages/mesh/linea-firehose/src/config.mjs',
     rule: 'ports',
     reason: 'DEFAULT_PORT 3008 pre-U00; espejo de DEFAULT_ZEUS_MCP.firehose.disk'

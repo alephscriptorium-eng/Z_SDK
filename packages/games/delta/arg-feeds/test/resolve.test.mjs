@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveFeeds } from '@zeus/arg-domain';
-import { probeMcpHealth } from '../src/mcp-client.mjs';
+import { probeMcpHealth } from '../src/index.mjs';
 import { resolveRuntimeFeeds } from '../src/resolve.mjs';
 
 test('probeMcpHealth: false when ports unreachable', async () => {

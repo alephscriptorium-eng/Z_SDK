@@ -1,9 +1,12 @@
-export { probeMcpHealth, createArgMcpClients, parseToolJson } from './mcp-client.mjs';
-export { createRealFeeds } from './real.mjs';
-export { resolveRuntimeFeeds } from './resolve.mjs';
 export {
+  probeMcpHealth,
+  createArgMcpClients,
+  parseToolJson,
+  callToolJson,
   CURATION_STATUSES,
   normalizeCurationStatus,
   curationStatusFromCorpus,
   readCurationStatus
-} from '@zeus/linea-kit/curation';
+} from './exports.mjs';
+export { createRealMazeSource } from './maze.mjs';
+export { resolveRuntimeFeeds } from './resolve.mjs';
