@@ -60,7 +60,11 @@ JSONL append-only: `{volumesRoot}/.ops-ledger.jsonl` (configurable).
 npm test -w @zeus/volumes-ops
 ```
 
-Usan `mkdtemp` + `ZEUS_VOLUMES_ROOT` — nunca purgan DISK_01/02/03 reales.
+Usan `mkdtemp` + `ZEUS_VOLUMES_ROOT` — nunca purgan DISK vivos.
+
+Post WP-U62 el monorepo solo trae fixtures en `VOLUMES/DISK_02|03`; datos
+de ronda vienen de `@zeus/startpack-*` (games-library) o de un
+`ZEUS_VOLUMES_ROOT` externo.
 
 ## Regla de los dos juegos
 
