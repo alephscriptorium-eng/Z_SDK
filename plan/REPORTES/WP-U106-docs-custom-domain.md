@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok 4.5) |
 | fecha | 2026-07-18 |
 | rama | `wp/u106-docs-custom-domain` |
-| commit(s) | `1704ce1` refactor(docs)! · `0aad41b` docs(reportes) |
+| commit(s) | `1704ce1` refactor(docs)! · `40a87db` docs(reportes) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 
