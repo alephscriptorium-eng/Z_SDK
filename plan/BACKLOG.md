@@ -24,8 +24,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 **Next steps (orden vigilante + usuario):**
 1. Housekeeping `.worktrees/` residuos + `git worktree prune`
-2. Push **solo** `main` (~343 commits refundación) → dispara CI U03 real
-3. Triaje CI si rojo parcial → WP futuro (no pánico en remate)
+2. Push **solo** `main` (~343 commits refundación) → dispara CI U03 real — **hecho**
+3. Triaje CI rojo parcial — **hecho** (run
+   [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
+   27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos) → **WP-U102** 🔶
 4. Usuario: **publish** → desbloquea U55
 5. Usuario: repo **U60** games-library → Ola 6 / 9
 6. Usuario: sidecar / `ZEUS_BLOB_*` ops (live U100/U101)
@@ -34,6 +36,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
 **Cola residuales (sin WP grande nuevo; higiene / candidatos):**
+- ~~Triaje CI U03 (4 WS no herméticos)~~ → **WP-U102** 🔶 (lote-ci-hermetic)
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
 - Harness U100 cid hex → formato SSB `&…sha256` (cola U101)
 - CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
@@ -103,8 +106,30 @@ Diferidos del reporte WP-U00 (no bloquean cierre):
 
 Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente fuera del swarm):
 - CA remoto PR ⏳ (push a `Z_SDK` fuera del swarm; sin credenciales en agente)
-- 9/31 workspaces fallan `npm test -w` (matriz CI parcialmente roja al publicar)
+- ~~9/31 workspaces fallan `npm test -w`~~ — triaje 2026-07-18 run
+  [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
+  27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos (no bugs
+  producto) → **WP-U102** 🔶 (cierra CA remoto U03 cuando CI main verde)
 - mismatch credencial git/gh (nota operativa)
+
+- 🔶 **WP-U102 · Tests herméticos para CI** *(dep U03 ✅; cierra CA remoto U03)*
+  — en curso (lote-ci-hermetic / orquestador / 2026-07-18) — Micro WP: los
+  4 workspaces rojos del run CI 29634248585 fallan por tests no herméticos
+  en el runner (paths VOLUMES / env / puertos / room), no por bugs de
+  producto. Alcance estricto:
+  | WS | Causa |
+  | --- | --- |
+  | linea-system | ENOENT `VOLUMES/DISK_02/LINEAS/registry.yaml` |
+  | linea-firehose | mismo patrón VOLUMES |
+  | presets-sdk | `resolveStopTargets` / `ZEUS_STOP_SERVICES` / puertos zeus-docs |
+  | 3d-monitor | `PUBLIC_ROOM` < env < `?room=` |
+  Fixture mínima VOLUMES (o skip ⏳ honesto sin datos) + env explícito en
+  presets-sdk / 3d-monitor. Sin cambios de producto salvo lo imprescindible
+  para que los tests no dependan del host.
+  **CA:** run CI completamente verde en `main` (matriz tests + lint +
+  gates). Cierra CA remoto U03 pendiente.
+  **Demolición:** asunciones de paths/env del host en esos 4 suites (o
+  skip documentado si el dato no puede vivir en repo).
 
 ## Ola 1 — El contrato único (engine nace)
 
