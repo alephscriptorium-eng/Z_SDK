@@ -1,8 +1,7 @@
 import { defineConfig } from 'vitepress';
 
 /**
- * Zeus SDK docs portal — layout objetivo engine / editor / mesh / games.
- * El move físico de carpetas es WP-U51; aquí documentamos el mapa conceptual.
+ * Zeus SDK docs portal — mapa conceptual engine / editor / mesh / games.
  *
  * base Pages (custom domain z-sdk.escrivivir.co): `/` también en Actions.
  * Local / docs:dev: `/`. Override opcional ZEUS_DOCS_BASE (sin slash
@@ -51,8 +50,9 @@ export default defineConfig({
         items: [
           { text: 'Arranque rápido', link: '/guide/getting-started' },
           { text: 'Mapa del monorepo', link: '/guide/layout' },
-          { text: 'Dos juegos (D-8)', link: '/guide/two-games' },
-          { text: 'Handshake externo', link: '/guide/external-handshake' }
+          { text: 'Juegos de referencia', link: '/guide/two-games' },
+          { text: 'Handshake externo', link: '/guide/external-handshake' },
+          { text: 'Estado del swarm', link: '/guide/estado' }
         ]
       },
       {

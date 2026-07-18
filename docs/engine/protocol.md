@@ -6,14 +6,14 @@ Envelope canónico del runtime de juego:
 | ------ | --------- |
 | `state` | Snapshot a Hz de la autoridad |
 | `intent` | Petición de mutación de un actor |
-| `track` | Pista de navegación (no muta) |
+| `track` | Pista de navegación (observación) |
 | `ledger` | Hecho registrado |
 
-El namespace por juego va en el envelope (`game: "…"`), no multiplicando
-nombres de evento. Roles: `player` | `dj` | `operator` en el catálogo de
-intents. Gates G-PROTO.1–5: una autoridad por room; vistas solo proyectan y
-emiten intents; dominio browser-safe; reducers con tabla de handlers;
-presupuesto de snapshot.
+El namespace por juego va en el envelope (`game: "…"`); el wire del kit
+sigue siendo `state|intent|track|ledger`. Roles: `player` | `dj` |
+`operator` en el catálogo de intents. Gates G-PROTO.1–5: una autoridad por
+room; vistas solo proyectan y emiten intents; dominio browser-safe;
+reducers con tabla de handlers; presupuesto de snapshot.
 
 ```js
 import { makeIntent, createIntentCatalog, validateIntent } from '@zeus/protocol';

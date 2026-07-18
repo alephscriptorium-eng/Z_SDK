@@ -1,21 +1,24 @@
 # Handshake externo — consumidores anónimos
 
-La frontera pública del SDK es el registry `@zeus/*` (D-18): cualquier
-runtime JS/TS (Node, Bun, navegador vía kits browser) puede instalar los
-paquetes tipados y unirse a una room **sin** que Zeus conozca al consumidor
-ni publique nada a medida.
+La frontera pública del SDK es el registry `@zeus/*`: cualquier runtime
+JS/TS (Node, Bun, navegador vía kits browser) instala los paquetes tipados
+y se une a una room. Zeus trata al consumidor como anónimo: el contrato y
+las variables de entorno bastan.
+
+Ids y estado de publish: [estado del swarm](/guide/estado).
 
 ## Variables de entorno
 
 | Variable | Rol |
 | -------- | --- |
-| `ZEUS_SCRIPTORIUM_URL` | Base HTTP del transporte de rooms (sin hardcodear host:puerto en tu app) |
+| `ZEUS_SCRIPTORIUM_URL` | Base HTTP del transporte de rooms (resolver vía `@zeus/rooms`) |
 | `ZEUS_SCRIPTORIUM_ROOM` | Id de room (default de desarrollo: `PUBLIC_ROOM`) |
 | `ZEUS_SCRIPTORIUM_USER` | Identidad de socket / registro |
 | `ZEUS_SCRIPTORIUM_SECRET` | Token de auth (obligatorio si `NODE_ENV=production`) |
 
-En desarrollo, `@zeus/rooms` aporta un secret por defecto solo cuando el secret
-no está en el entorno. En producción falla cerrado sin `ZEUS_SCRIPTORIUM_SECRET`.
+En desarrollo, `@zeus/rooms` aporta un secret por defecto solo cuando el
+secret falta en el entorno. En producción el arranque exige
+`ZEUS_SCRIPTORIUM_SECRET`.
 
 ## Auth Socket.IO
 
@@ -40,11 +43,11 @@ Wire event = kind del contrato único ([`@zeus/protocol`](/engine/protocol)):
 | ---- | ---------------- | --------- |
 | `intent` | cliente → autoridad | Petición de mutación tipada (`makeIntent`) |
 | `state` | autoridad → room | Snapshot compacto |
-| `track` | autoridad → room | Pista de navegación (no muta) |
+| `track` | autoridad → room | Pista de navegación (observación) |
 | `ledger` | autoridad → room | Hecho append-only |
 
-El campo `game` en el envelope discrimina el juego; el engine **no** nombra
-juegos concretos. Roles de intent: `player` | `dj` | `operator`.
+El campo `game` en el envelope discrimina el juego; el engine habla el
+protocolo común. Roles de intent: `player` | `dj` | `operator`.
 
 ```ts
 import {
@@ -79,19 +82,19 @@ Tipos `.d.ts` viajan en los tarballs de `@zeus/protocol` y `@zeus/rooms`
 
 ## Smoke reproducible
 
-Desde el monorepo (sin publish al registry):
+Desde el monorepo (tarballs locales, sin registry):
 
 ```bash
 npm run smoke:external-consumer
 ```
 
 Empaqueta tarballs, instala en un directorio **fuera** del workspace y corre
-el consumidor con **Node** y **Bun**. Install-from-registry live queda
-`⏳` hasta el pipeline de publish (ola 5 / U53).
+el consumidor con **Node** y **Bun**. El install-from-registry live espera
+el pipeline de publish verde — ver [estado](/guide/estado).
 
 Plantilla: `examples/external-consumer/`.
 
 ## Navegador
 
 `ZEUS_OPEN_BROWSER` es **opt-in**: solo abre si vale exactamente `1`. Smoke y
-e2e no lo setean.
+e2e dejan el default (cerrado).

@@ -1,7 +1,7 @@
 # Runbook — coturn (STUN/TURN) en el VPS
 
-WP-U88 / D-17: ICE propio (FOSS). Zeus no usa Google STUN en producción.
-Los `iceServers` salen de `presets-sdk/env` (`resolveIceServers`).
+ICE propio (FOSS) vía coturn. Los `iceServers` salen de `presets-sdk/env`
+(`resolveIceServers`). Estado de verificación en VPS: [estado del swarm](/guide/estado).
 
 ## Variables
 
@@ -14,7 +14,7 @@ ZEUS_WEBRTC_TURN_URL=turn:coturn.tu-dominio:3478
 ZEUS_WEBRTC_TURN_USER=zeus
 ZEUS_WEBRTC_TURN_PASS=********
 
-# Nunca en prod:
+# Solo laboratorio / diagnóstico (fuera de prod):
 # ZEUS_WEBRTC_ALLOW_GOOGLE_STUN=1
 ```
 
@@ -59,15 +59,9 @@ turnutils_stunclient coturn.tu-dominio
 En Zeus: arrancar el mesh con las `ZEUS_WEBRTC_*` apuntando al coturn y
 correr `npm run e2e:webrtc-signaling` (ese e2e usa iceServers vacíos a
 propósito; para validar coturn, setear STUN en el entorno de prueba y
-repetir un peer manual / U89).
-
-## Estado de verificación en este WP
-
-⏳ **sin verificar en VPS** — este worker no tiene acceso al VPS del pub.
-El runbook queda documentado; la prueba real queda para cuando haya
-credenciales/acceso (orquestador / ops).
+repetir un peer manual).
 
 ## Alternativa
 
 [eturnal](https://github.com/processone/eturnal) es TURN FOSS compatible;
-misma idea: URL en `ZEUS_WEBRTC_*`, nunca Google en prod.
+misma idea: URL en `ZEUS_WEBRTC_*` apuntando al servicio propio.

@@ -1,6 +1,6 @@
 # Método playbook (CASOS)
 
-Un juego sin `CASOS.md` + acta de validación no tiene release. El método:
+Un juego con release lleva `CASOS.md` + acta de validación. El método:
 
 1. **Agente** ejecuta la mitad MCP-verificable (tools + resources).
 2. **Humano** verifica el checklist visual.
@@ -20,17 +20,23 @@ Secciones markdown `## C-xx — título` con:
 
 ## Runner
 
-```bash
-npm exec -w @zeus/playbook-kit -- zeus-playbook-run \
-  --casos packages/delta (Z_SDK-games-library)/spec/CASOS.md \
-  --check
+Desde la library (playbooks de delta/pozo):
 
+```bash
+cd ../Z_SDK-games-library
 npm exec -w @zeus/playbook-kit -- zeus-playbook-run \
-  --casos packages/delta (Z_SDK-games-library)/spec/CASOS.md \
+  --casos packages/delta/spec/CASOS.md \
+  --check
+```
+
+```bash
+cd ../Z_SDK-games-library
+npm exec -w @zeus/playbook-kit -- zeus-playbook-run \
+  --casos packages/delta/spec/CASOS.md \
   --ids C-01,C-03 \
   --game delta \
   --out /tmp/acta-delta.md
 ```
 
-Playbooks de referencia: `packages/delta (Z_SDK-games-library)/spec/CASOS.md`,
-`packages/pozo (Z_SDK-games-library)/spec/CASOS.md`.
+Playbooks de referencia en la library: `packages/delta/spec/CASOS.md`,
+`packages/pozo/spec/CASOS.md`.

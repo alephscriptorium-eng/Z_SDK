@@ -4,7 +4,7 @@
 
 Cliente Node de rooms Socket.IO sobre el transporte de plataforma
 (`socket-server` `/runtime`). Resuelve la URL de room vía
-`ZEUS_SCRIPTORIUM_URL` / presets — sin hardcodear host:puerto en el juego.
+`ZEUS_SCRIPTORIUM_URL` / presets (`presets-sdk/env`).
 
 ## `@zeus/presets-sdk`
 

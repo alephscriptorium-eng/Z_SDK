@@ -1,28 +1,36 @@
 # Mapa del monorepo
 
-Layout canónico (ARQUITECTURA §2; move físico **WP-U51**).
+Layout canónico ([ARQUITECTURA §2](https://github.com/alephscriptorium-eng/zeus-sdk/blob/main/plan/ARQUITECTURA.md)).
+Histórico de moves: [estado del swarm](/guide/estado).
 
 ```
 packages/
   engine/    # SDK genérico, publicable
-    protocol/  authority-kit/  player-mcp-kit/  playbook-kit/  view-kit/
-    game-engine/  rooms/  presets-sdk/  http-contract/
-    ui-kit/  ui-3d-kit/  app-shell/  firehose-core/  test-utils/  room-client-browser/
   editor/    # mundo A — crear juegos
-    editor-ui/
   mesh/      # mundo B — operar y jugar
-    socket-server/  player-ui/  player-3d-ui/  operator-ui/  operator-bridge/
-    cache-browser/  firehose-browser/  console-monitor/  3d-monitor/
-    linea-system/  linea-firehose/  solar-system/
-  games/     # hasta ola 6; luego Z_SDK-games-library
-    delta/   # domain, feeds, console, player-mcp, demos, spec
-    pozo/
-examples/    # game-demos, ping-pong-bots — material didáctico
+examples/    # material didáctico
 ```
+
+Los juegos de referencia viven en el repo hermano
+[`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-library).
+
+## Paquetes engine (mínimo)
+
+| Paquete | Rol |
+| ------- | --- |
+| `@zeus/protocol` | Envelope `state\|intent\|track\|ledger` |
+| `@zeus/authority-kit` | Loop de tick + reducer inyectado |
+| `@zeus/player-mcp-kit` | Un MCP por actor |
+| `@zeus/playbook-kit` | CASOS / acta / runner |
+| `@zeus/http-contract` | RouteEntry → OpenAPI + MCP |
+| `@zeus/rooms` / `@zeus/presets-sdk` | Rooms Socket.IO + env/puertos |
+
+Fuente viva (lista completa): directorio `packages/engine/*/package.json` en
+este monorepo. Detalle por página: [Engine](/engine/).
 
 ## Reglas de dependencia
 
-1. `games/*`, `mesh/*`, `editor/*` importan de `engine/*`. Nunca al revés.
-2. Nada importa de `games/*` salvo sus subpaquetes y launchers.
-3. Dominio de juego: browser-safe, sin red/fs (feeds node-only en paquete propio).
+1. `mesh/*`, `editor/*` y los juegos importan de `engine/*`. Nunca al revés.
+2. Nada importa un juego salvo sus subpaquetes y launchers.
+3. Dominio de juego: browser-safe; feeds node-only en paquete propio.
 4. Puertos/URLs solo desde `presets-sdk/env`.

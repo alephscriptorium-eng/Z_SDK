@@ -5,14 +5,14 @@ Operar y jugar: transporte, UIs de malla, browsers de volúmenes, monitores.
 | Pieza (hoy) | Rol |
 | ----------- | --- |
 | `socket-server` | Transporte rooms Socket.IO `/runtime` |
-| `player-ui` | DJ / tablero de líneas — **vista de mesh**, no autoridad del juego |
+| `player-ui` | DJ / tablero de líneas — **vista de mesh**; la autoridad vive en el juego |
 | `operator-ui` + `operator-bridge` | Shell Angular tier-2 + puente al contrato vivo |
 | `cache-browser` / `firehose-browser` | Browsers REST (+ proyección MCP vía http-contract) |
 | `console-monitor` | Monitor de consola |
 | `3d-monitor` / `player-3d-ui` | Portal de vistas 3D / visor de room |
 | `linea-system` / `linea-firehose` / `solar-system` | MCP servers de corpus / demo |
-| `oasis-webrtc` | Módulo `/webrtc` OASIS adaptado — señalización SSB privada (WP-U90) |
-| coturn (VPS) | STUN/TURN propio para WebRTC (D-17) — [runbook](./coturn-runbook.md) |
+| `oasis-webrtc` | Módulo `/webrtc` OASIS adaptado — señalización SSB privada |
+| coturn (VPS) | STUN/TURN propio para WebRTC — [runbook](./coturn-runbook.md) |
 
 ```bash
 npm run start:socket-server
@@ -29,4 +29,4 @@ Specs Redoc: [player-ui](/api/player-ui.html) ·
 [MCP HTTP](/api/mcp-http.html).
 
 La **autoridad del juego** vive en el paquete del juego (p. ej.
-`arg-demos` / pozo), no en player-ui.
+`arg-demos` / pozo); player-ui proyecta y emite intents.

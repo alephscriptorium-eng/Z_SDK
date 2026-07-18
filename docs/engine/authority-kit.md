@@ -5,8 +5,8 @@ registrado (dominio inyectado), emisión `state` / `ledger` / `track` con
 envelope de `@zeus/protocol` (`game` obligatorio), presupuesto de snapshot y
 apagado limpio.
 
-Node-only (usa `@zeus/rooms`). El caller pasa `game` y el dominio; el kit no
-nombra juegos.
+Node-only (usa `@zeus/rooms`). El caller pasa `game` y el dominio; el kit
+habla el protocolo común.
 
 ```js
 import { startAuthority, PROTOCOL_EVENTS } from '@zeus/authority-kit';

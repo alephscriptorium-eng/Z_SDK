@@ -1,7 +1,6 @@
 # Engine
 
-Lo genérico y publicable del SDK. Hoy vive en `packages/engine/*`; el layout
-objetivo lo agrupa bajo `engine/` (WP-U51 no mueve carpetas aún).
+Lo genérico y publicable del SDK. Vive en `packages/engine/*`.
 
 | Paquete | Rol |
 | ------- | --- |
@@ -13,9 +12,13 @@ objetivo lo agrupa bajo `engine/` (WP-U51 no mueve carpetas aún).
 | [`@zeus/http-contract`](/engine/http-contract) | RouteEntry → OpenAPI + proyección MCP |
 | [`@zeus/rooms`](/engine/rooms-presets) | Cliente de rooms Socket.IO |
 | [`@zeus/presets-sdk`](/engine/rooms-presets) | Catálogo MCP, env/puertos, volúmenes |
-| `@zeus/webrtc-signaling` | Señalización WebRTC: rooms (U88) + DMs SSB vía pub (U90); ICE desde env |
+| `@zeus/webrtc-signaling` | Señalización WebRTC: rooms + DMs SSB vía pub; ICE desde env |
 
 También: `game-engine`, `ui-kit`, `ui-3d-kit`, `app-shell`, `firehose-core`,
-`test-utils`, `room-client-browser`.
+`test-utils`, `room-client-browser`, `feed-kit`, `linea-kit`,
+`story-board-schema`, `volumes-ops`.
 
-**Regla D-8:** el engine no nombra `delta` ni `pozo`. Ver [dos juegos](/guide/two-games).
+Fuente viva (lista completa y versiones): `packages/engine/*/package.json`.
+
+El engine habla el protocolo común; los nombres de juego viven en sus
+paquetes. Ver [juegos de referencia](/guide/two-games).
