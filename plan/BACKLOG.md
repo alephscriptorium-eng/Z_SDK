@@ -842,9 +842,9 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
 ## Lote higiene / hallazgos vigilante (2026-07-18)
 
 > Revisión externa (ADDENDA `ENTREGA-2026-07-18-revision-externa.md`).
-> No bloqueado por Ola 6. **U93** desbloqueado por **D-20** (cablear-puente).
-> U94–U99 paralelizables entre sí (deps solo olas ya ✅). NO asignar
-> workers aún (swarm en pausa / lote a proponer; Ola 6 no).
+> No bloqueado por Ola 6. **U93** desbloqueado por **D-20** (cablear-puente);
+> espera A-11 / brief aparte — NO en lote-higiene-11b.
+> U94–U99 paralelizables entre sí (deps solo olas ya ✅). Ola 6 no.
 
 ### Coordinación re-plan identidad/transporte (2026-07-18)
 
@@ -853,7 +853,10 @@ Diferidos del reporte/revisión WP-U89 (no bloquean; ola 10 cerrada):
    WebRTC + fila 1 conector: DataChannel = carril VOLUMES LAN). Un solo
    hilo de decisión; no mezclar con higiene en el mismo commit de plan.
 2. **Lote higiene U95+U97** (lote-higiene-11a) — **cerrado** (U95 ✅ +
-   U97 ✅). Quedan U94/U96/U98/U99 en el frente higiene (sin asignar).
+   U97 ✅).
+3. **Lote higiene U94+U96** (lote-higiene-11b) — **asignado** 🔶
+   (orquestador / 2026-07-18). Quedan U98/U99 para lote siguiente.
+   U93 espera A-11 / brief aparte (no en este lote).
 
 **Colisión addendas A-09/A-10:** el lote higiene/vigilante ocupó
 `A-09` → **WP-U97** (feed-kit/volumes-ops) y `A-10` → **WP-U93**
@@ -881,8 +884,9 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   **Demolición:** campos de identidad ad-hoc del handshake que el card
   sustituya.
 
-- ⬜ **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
-  en `games/delta/arg-domain`: curate (gate `reducer` ↔ mutador `line-board`)
+- 🔶 **WP-U94 · Una sola fuente por transición del dominio** *(dep U30, U83 ✅)* —
+  en curso (lote-higiene-11b / orquestador / 2026-07-18) — en
+  `games/delta/arg-domain`: curate (gate `reducer` ↔ mutador `line-board`)
   y vaciar (gate ↔ `flow-engine`) duplican codes; `domain-state.mjs` invoca
   mutadores sin comprobar `{ok,error}` en 4 sitios. Exportar por mecánica
   una función pura de validación que consuman gate y mutador; domain-state
@@ -903,7 +907,8 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   verdes.
   **Demolición:** las 4 copias.
 
-- ⬜ **WP-U96 · Un solo registro SSR** — formaliza el diferido «colisión SSR
+- 🔶 **WP-U96 · Un solo registro SSR** — en curso (lote-higiene-11b /
+  orquestador / 2026-07-18) — formaliza el diferido «colisión SSR
   `src/view-kit/` vs `@zeus/view-kit`» (colas U20/U21/U22).
   `defineView/createViewRegistry/renderHud/renderViewLayout` duplicados en
   `games/delta/arg-console/src/view-kit/` y `mesh/3d-monitor/src/view-kit/`
