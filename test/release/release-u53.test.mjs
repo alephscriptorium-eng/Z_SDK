@@ -47,6 +47,37 @@ test('verifyTarball rejects invalid semver, accepts divergent versions', () => {
   }
 });
 
+test('verifyTarball accepts exports subpath wildcards when files exist (linea-kit)', () => {
+  const tmp = fs.mkdtempSync(path.join(root, '.release-dry-test-'));
+  try {
+    fs.writeFileSync(path.join(tmp, 'README.md'), '# t\n');
+    const pkg = {
+      name: '@zeus/fake-schemas',
+      version: '0.1.0',
+      files: ['README.md', 'schemas'],
+      publishConfig: { registry: REGISTRY },
+      exports: {
+        '.': './README.md',
+        './schemas/*': './schemas/*'
+      }
+    };
+    const ok = verifyTarball(tmp, pkg, [
+      'README.md',
+      'package.json',
+      'schemas/force.json',
+      'schemas/cota.json'
+    ]);
+    assert.deepEqual(ok.errors, []);
+
+    const missing = verifyTarball(tmp, pkg, ['README.md', 'package.json']);
+    assert.ok(
+      missing.errors.some((e) => /exports target missing from tarball: \.\/schemas\/\*/.test(e))
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('release.yml: release job needs quality+test; publish gated on NPM_TOKEN', () => {
   const yml = fs.readFileSync(
     path.join(root, '.github/workflows/release.yml'),
