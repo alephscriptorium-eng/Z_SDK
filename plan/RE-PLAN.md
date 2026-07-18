@@ -11,6 +11,7 @@
 Fecha: 2026-07-18 · rama de referencia: `main` post-merge U87 (`bd5f46c`).
 Addenda vigilante: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
 (triaje orquestador → BACKLOG/RE-PLAN; sin importar protocolo externo).
+Addendas propias: post-U114 (U116) · post-U115 (U117).
 
 ---
 
@@ -24,10 +25,11 @@ abiertas post D-21/D-23; frentes D-22 en código ✅; Ola 6 y Ola 9 cerradas.
 frente editor ~~U111–U114~~ ✅; residual kit schema → ~~**U115**~~ ✅
 (AJV / schema-as-truth en carpeta; ver BACKLOG); residual view-kit
 post-U114 → **U116** ⬜ (id neutro `cast-table` / map dialecto — GO
-diseño antes de 🔶). Lo que queda no es «terminar la refundación»,
-sino que el mundo A **produzca juegos reales** (sensor = U87). IDs/CAs
-solo en [BACKLOG.md](BACKLOG.md); este documento explica *por qué* y
-*qué aprendimos*.
+diseño antes de 🔶); residual post-U115 → **U117** ⬜ (schema
+story-board único en zeus para library+editor). Lo que queda no es
+«terminar la refundación», sino que el mundo A **produzca juegos
+reales** (sensor = U87). IDs/CAs solo en [BACKLOG.md](BACKLOG.md);
+este documento explica *por qué* y *qué aprendimos*.
 
 Ops residuales (publish real → U55; DNS custom U106/U107; sidecar blob)
 siguen fuera del swarm — no son deuda de diseño.
@@ -116,7 +118,7 @@ Tras U87, el siguiente arco de producto coherente es:
 2. Frente editor / carpeta / story-board / widgets — para que un
    dramaturgo produzca un juego real sin armar a mano en la library
    (U111–U114; residual schema kit → U115; residual id widget fábrica
-   → U116).
+   → U116; residual schema único zeus → U117).
 3. Diferidos conscientes (linea-aleph vivo; skills stub) sin convertirlos
    en WPs ejecutables hasta que el usuario los active.
 
@@ -158,7 +160,8 @@ con dueño) sale más barato que rematar tras N copias. PRACTICAS §1.4 +
 - **Este archivo no enumera WPs nuevos** (salvo citar IDs ya en BACKLOG).
   Tras GO capa B + triaje registro vigilante 2026-07-18: micro U109–U110
   ✅; frente editor ~~U111–U114~~ ✅; residual schema kit ~~**U115**~~ ✅;
-  residual view-kit alias **U116** ⬜ (GO diseño); diferidos §5–6 en
+  residual view-kit alias **U116** ⬜ (GO diseño); residual schema
+  único **U117** ⬜; diferidos §5–6 en
   [DECISIONES.md](DECISIONES.md) (**sin GO** → sin WP). Detalle solo en
   [BACKLOG.md](BACKLOG.md).
 - Horizontes previos (U71–U74) siguen en BACKLOG §Horizonte; no se
@@ -180,10 +183,24 @@ sin activar.
 
 ---
 
+## 5ter. Addenda vigilante post-U115 (schema único)
+
+Observación (2026-07-18): U115 dejó AJV+schema como verdad en
+library (`kits/carpeta-dramaturgo`); el editor U114 sigue con regex a
+mano en `story-board-dialects.mjs` (`ACT_ID` / `WIDGET_ID`). Misma
+forma, dos tecnologías — §3.8 otra vez. Triaje → **WP-U117** ⬜:
+mover schema a zeus (`@zeus/story-board-schema` propuesto; no
+`linea-kit`), library importa (deps library→zeus), editor valida contra
+él; CA un solo fichero schema + `rg ACT_ID` editor = 0. No solapa U116.
+**Sin 🔶** hasta que el usuario autorice el lote (paquete recomendado
+sin GO bloqueante salvo otro nombre/hogar).
+
+---
+
 ## 6. Cierre
 
 Refundación: **cerrada como programa**. Producto mundo A: **abierto como
 holón** (frente editor U111–U114 ✅; ~~**U115**~~ ✅ schema kit;
-**U116** ⬜ alias view-kit pendiente GO). Siguiente llenado del swarm =
-tras GO U116 / lote que el usuario autorice — brief + worktree bajo
-PRACTICAS / roles.
+**U116** ⬜ alias view-kit pendiente GO; **U117** ⬜ schema único
+pendiente). Siguiente llenado del swarm = tras GO U116 / U117 / lote
+que el usuario autorice — brief + worktree bajo PRACTICAS / roles.
