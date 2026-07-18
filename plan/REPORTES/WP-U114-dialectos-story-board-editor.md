@@ -136,4 +136,45 @@ aquí.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** — 2026-07-18 · orquestador
+
+### CA (todos OK)
+
+1. Registro tabla `STORY_BOARD_DIALECTS` (`solve-inline`, `plantilla`,
+   `aleph-blocks`); `validateDraft` / `normalizeStoryBoard` vía
+   `validateStoryBoard` — sin if-creciente. Plaza → dialecto `plantilla`.
+2. Fixture SOLVE → `solve-inline`; fixture ALEPH → `aleph-blocks`;
+   dialecto desconocido (board + hint) → rechazo con lista de conocidos.
+3. OpenAPI/README al día (`materials` summary + dialects; README tabla).
+4. Re-smoke orquestador (worktree):
+   - `node --test test/world-draft.test.mjs` → **11/11**
+   - `node --test test/spec-sync.test.mjs` → **1/1**
+   - suite `@zeus/editor-ui`: **15 pass / 2 fail** — fallos solo
+     routes release sketch/plaza (`Cannot find package '@zeus/startpack-kit'`
+     desde sibling library). **No bloqueante** para U114: residual env
+     local (hallazgo worker); `materializeStartPack` unit verde; U114 no
+     tocó rutas release. Documentado; ops/link library fuera de alcance.
+5. `npm run gates` → `gates: OK (0 offenders)`.
+6. U115 no tocado (AJV / kit carpeta). Worker no editó `plan/BACKLOG.md`.
+
+### PRACTICAS / Demolición
+
+- §1.2 tabla registry; §1.6 rechazo explicable; §1.9 README+OpenAPI;
+  §1.10 tests de comportamiento con fixtures.
+- Demolición: `story-board-min.mjs` borrado; grep
+  `story-board-min|validateSolveInlineBoard` → cero símbolos vivos.
+- Alcance acotado (`main...HEAD`): editor-ui world + tests/fixtures +
+  docs + reporte. Tip feat `6ba6b94` + tip docs `6d507e5`.
+- Commits convencionales. editor-ui privado → sin changeset (PRACTICAS §6).
+
+### Merge (cuando usuario autorice)
+
+1. zeus `wp/u114-dialectos-story-board-editor` → `main` (incl. esta
+   revisión) — **sin** rama library.
+2. Orquestador: ✅ BACKLOG en `main` + `git worktree remove`
+   `.worktrees/wp-u114-dialectos-story-board-editor`
+3. Luego **U115** ⬜ (schema AJV kit; no solapar editor) — abrir 🔶
+   cuando el usuario lo pida.
+
+**Push:** no intentado. **✅ BACKLOG:** no aplicado (pendiente autorización
+merge del usuario).
