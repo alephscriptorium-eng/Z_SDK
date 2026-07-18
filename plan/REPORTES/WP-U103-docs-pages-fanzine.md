@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok 4.5) |
 | fecha | 2026-07-18 |
 | rama | `wp/u103-docs-pages-fanzine` |
-| commit(s) | `a6a6a75` feat(docs) · _(este reporte)_ |
+| commit(s) | `a6a6a75` feat(docs) · `fff34cf` docs(reportes) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 
