@@ -5,7 +5,7 @@
 | agente | worker (swarm) / Cursor Grok |
 | fecha | 2026-07-18 |
 | rama | `wp/u104-ci-path-filters` |
-| commit(s) | `1ad710a` ci(workflows): path filters…; _(este reporte)_ |
+| commit(s) | `1ad710a` ci(workflows)…; `538c176` docs(reportes)… |
 | estado propuesto | listo para revisión |
 | push | **no intentado** (política swarm) |
 
