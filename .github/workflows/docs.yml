@@ -33,7 +33,7 @@ jobs:
       - name: Install
         run: npm ci
       - name: Build VitePress portal
-        # base `/Z_SDK/` vía GITHUB_ACTIONS en docs/.vitepress/config.mjs
+        # base `/` (custom domain z-sdk.escrivivir.co; WP-U106)
         run: npm run docs:build
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

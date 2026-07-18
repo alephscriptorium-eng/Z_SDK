@@ -16,7 +16,7 @@ a ambos (D-8). Layout: **engine · editor · mesh · games · examples**.
 | **Engine** | `packages/engine/*` | `protocol`, `authority-kit`, `player-mcp-kit`, `playbook-kit`, `view-kit`, `http-contract`, `rooms`, `presets-sdk`, `game-engine`, `ui-*-kit`… |
 | **Editor** | `packages/editor/editor-ui` | crear presets / camino a gamemap |
 | **Mesh** | `packages/mesh/*` | socket-server, player-ui (DJ), operator-ui, browsers, monitores 3D, MCPs |
-| **Games** | `packages/games/delta/*`, `packages/games/pozo` | delta · pozo |
+| **Games** | `packages/games/delta/*`, `packages/games/pozo` | delta · pozo (hasta WP-U61; destino: [`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-library)) |
 | **Examples** | `examples/*` | game-demos, ping-pong-bots |
 
 ## Arranque rápido
