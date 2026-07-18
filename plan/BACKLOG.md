@@ -11,15 +11,15 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18f · post-U61)
+## Remate — estado swarm (2026-07-18g · lote-ola6-c)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes D-22 cerrados en
 > código (U104/U60/U106/U105 ✅). Línea de producto en rama **`main`**.
 > **U61 ✅**. Residual **publish real** ⏳ ops (`NPM_TOKEN`) → U55 —
-> **no 🔶**. **U62** ⬜ (no asignar aún).
+> **no 🔶**. **U62** 🔶 (lote-ola6-c / orquestador / 2026-07-18).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
-~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → **U62** →
+~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → **U62** 🔶 →
 publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 
 | Frente | WP | Estado |
@@ -29,14 +29,13 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 | (3) Ola 6 — crear `Z_SDK-games-library` | **U60** | ✅ |
 | (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | ✅ |
 | Ola 6 — migración juegos | **U61** | ✅ |
-| Ola 6 — pipeline releases de datos | **U62** | ⬜ |
+| Ola 6 — pipeline releases de datos | **U62** | 🔶 lote-ola6-c / orquestador / 2026-07-18 |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
-- **U62** — ⬜ (dep U61 ✅; **no 🔶** aún)
-- **Ola 9** — U70 / U86 / U87 (dep Ola 6 completa = U62)
+- **Ola 9** — U70 / U86 / U87 (dep Ola 6 completa = U62 ✅)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
 **Next steps:**
@@ -51,7 +50,7 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 6. Residual **viewer peer-card** (cola U93) antes de mesh abierto
 7. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
 8. ~~WP-U61~~ ✅ — migración delta/pozo → games-library
-9. Ola 6: **U62** ⬜ (no asignar aún) → cierra ola 6
+9. Ola 6: **U62** 🔶 (lote-ola6-c) → cierra ola 6
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -578,9 +577,10 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
-> **Nota orquestador (2026-07-18f / post-U61):** U105 ✅. U55 sigue
+> **Nota orquestador (2026-07-18g / lote-ola6-c):** U105 ✅. U55 sigue
 > **pausado** hasta publish real (registry + `NPM_TOKEN`) — **no 🔶**.
-> Ola 6: **U60 ✅**; **U61 ✅**; U62 ⬜ (dep U61 ✅; no asignar aún).
+> Ola 6: **U60 ✅**; **U61 ✅**; **U62** 🔶 (lote-ola6-c / orquestador /
+> 2026-07-18).
 
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
   **publish real** de `engine/*` (no basta U105 prep). Sustituye los
@@ -619,10 +619,10 @@ Hallazgos diferidos U56 (no bloquean):
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
 
-> **En curso** (orquestador / 2026-07-18f · post-U61): **U60 ✅** ·
-> **U61 ✅** (merge zeus `6d38287`; library `9baf67a`). **U62** ⬜
-> (dep U61 ✅; no asignar aún). Con ola 6 completa (U62) se abre ola 9
-> (U70/U86/U87).
+> **En curso** (orquestador / 2026-07-18g · lote-ola6-c): **U60 ✅** ·
+> **U61 ✅** (merge zeus `6d38287`; library `9baf67a`). **U62** 🔶
+> (lote-ola6-c / orquestador / 2026-07-18). Con ola 6 completa (U62 ✅)
+> se abre ola 9 (U70/U86/U87).
 
 - ✅ **WP-U60 · Repo Z_SDK-games-library** (D-11; D-22) — aceptado
   (orquestador / 2026-07-18; merge `wp/u60-games-library`; revisión
@@ -643,7 +643,8 @@ Hallazgos diferidos U56 (no bloquean):
   **Demolición:** `packages/games/` en el monorepo — ✅.
   Reporte: `plan/REPORTES/WP-U61-migrate-games.md`.
   Brief: `plan/REPORTES/briefs/WP-U61-migrate-games.md`.
-- ⬜ **WP-U62 · Pipeline de releases de datos** *(dep U61 ✅)* — el Notario (ARG
+- 🔶 **WP-U62 · Pipeline de releases de datos** *(dep U61 ✅)* —
+  en curso (lote-ola6-c / orquestador / 2026-07-18) — el Notario (ARG
   WP-20/23) escribe start packs contra la library: cada release = paquete
   `@zeus/startpack-<game>` en el registry propio + GitHub Release espejo
   (tarball + acta). `VOLUMES/` sale del monorepo; quedan solo datos sintéticos
@@ -652,6 +653,9 @@ Hallazgos diferidos U56 (no bloquean):
   (`npm install @zeus/startpack-delta`) y su Release en GitHub; el mesh
   arranca una ronda nueva desde ese start pack.
   **Demolición:** `VOLUMES/` del monorepo.
+  Brief: `plan/REPORTES/briefs/WP-U62-release-pipeline.md`.
+  Worktree: `.worktrees/wp-u62-release-pipeline`
+  (`wp/u62-release-pipeline`). Toca zeus + library.
 
 ## Ola 7 — El plano de datos (diseño en [DATOS.md](DATOS.md); paralelizable
 con olas 2–5 salvo deps indicadas) — **cerrada** (orquestador / 2026-07-18;
