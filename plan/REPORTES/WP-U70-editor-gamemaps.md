@@ -5,10 +5,10 @@
 | agente | worker (lote-ola9-a / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u70-editor-gamemaps` (zeus) · `wp/u70-editor-gamemaps` (library worktree) |
-| commit(s) | zeus: `0386b37` (+ docs reporte) · library: `b4a8fb6` |
+| commit(s) | zeus: `0386b37`..`9424986` · library: `b4a8fb6` (pushed) |
 | estado propuesto | listo para revisión |
 | push monorepo | **no intentado** (política worker) |
-| push library | _(ver evidencia)_ |
+| push library | OK `origin/wp/u70-editor-gamemaps` |
 
 ## Qué se hizo
 
