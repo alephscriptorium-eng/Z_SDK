@@ -6,6 +6,7 @@
 import assert from 'node:assert/strict';
 import { createScriptoriumServer } from '@zeus/socket-server';
 import { resolveIceServers } from '@zeus/presets-sdk/env';
+import { issuePeerCard } from '@zeus/authority-kit';
 import {
   SocketRoomSignalingService,
   loadRtcPeerConnection
@@ -97,8 +98,24 @@ async function main() {
 
     await aliceSig.connect('alice', { url: RUNTIME_BASE, room: SIGNAL_ROOM });
     await bobSig.connect('bob', { url: RUNTIME_BASE, room: SIGNAL_ROOM });
-    await aliceSig.joinRoom(SIGNAL_ROOM);
-    await bobSig.joinRoom(SIGNAL_ROOM);
+    await aliceSig.joinRoom(
+      SIGNAL_ROOM,
+      issuePeerCard({
+        roomId: SIGNAL_ROOM,
+        endpoint: RUNTIME_BASE,
+        role: 'player',
+        sessionId: 'alice'
+      })
+    );
+    await bobSig.joinRoom(
+      SIGNAL_ROOM,
+      issuePeerCard({
+        roomId: SIGNAL_ROOM,
+        endpoint: RUNTIME_BASE,
+        role: 'player',
+        sessionId: 'bob'
+      })
+    );
     await new Promise((r) => setTimeout(r, 200));
 
     const alice = new WebRTCEngine({

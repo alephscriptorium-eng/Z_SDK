@@ -5,6 +5,7 @@
  */
 
 import { resolveIceServers } from '@zeus/presets-sdk/env';
+import { issuePeerCard } from '@zeus/authority-kit';
 import {
   createInMemorySsbPrivateBus,
   SsbPrivateSignalingService,
@@ -59,8 +60,24 @@ async function main() {
 
     await alice.connect(ALICE);
     await bob.connect(BOB);
-    await alice.joinRoom('oasis-private');
-    await bob.joinRoom('oasis-private');
+    await alice.joinRoom(
+      'oasis-private',
+      issuePeerCard({
+        roomId: 'oasis-private',
+        endpoint: 'ssb:oasis',
+        role: 'player',
+        sessionId: ALICE
+      })
+    );
+    await bob.joinRoom(
+      'oasis-private',
+      issuePeerCard({
+        roomId: 'oasis-private',
+        endpoint: 'ssb:oasis',
+        role: 'player',
+        sessionId: BOB
+      })
+    );
 
     const RTCPeerConnection = await loadRtcPeerConnection();
 
