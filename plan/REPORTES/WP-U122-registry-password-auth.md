@@ -5,7 +5,7 @@
 | agente | worker (swarm chat WP-U122 · resume) |
 | fecha | 2026-07-18 |
 | rama | `wp/u122-registry-password-auth` |
-| commit(s) | `27427d9` + tip HEAD (alineación canónica) |
+| commit(s) | `27427d9` `5a4db5a` (tip) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
