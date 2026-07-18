@@ -11,16 +11,16 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · GO B+A)
+## Remate — estado swarm (2026-07-18 · post-U87 · U109 🔶)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
-> **0 DA** abiertas; **0 🔶**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> **0 DA** abiertas; **1 🔶** (U109). Balance propio: [RE-PLAN.md](RE-PLAN.md)
 > (no inventa WPs). Línea de producto en **`main`**.
 > **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus `bd5f46c`).
 > Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107 ⏳ ops.
 >
-> **Priorización usuario (GO capa B):** (1) micro higiene **U109+U110**
-> YA · (2) frente editor **U111–U114** DESPUÉS (⬜; **no 🔶** hasta
+> **Priorización usuario (GO capa B):** (1) micro higiene **U109 🔶** luego
+> U110 ⬜ · (2) frente editor **U111–U114** DESPUÉS (⬜; **no 🔶** hasta
 > abrir frente) · (3) diferidos U87 §5–6 → DECISIONES / horizonte (sin WP
 > ejecutable).
 
@@ -44,8 +44,8 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Ola 9 — editor gamemaps / releases | **U70** | ✅ |
 | Ola 9 — CARPETA DRAMATURGO | **U86** | ✅ |
 | Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ✅ |
-| Post-U87 — slots puertos `solve*` (+ residual pozo) | **U109** | ⬜ micro YA |
-| Post-U87 — `@zeus/startpack-kit` | **U110** | ⬜ micro YA |
+| Post-U87 — slots puertos `solve*` (+ residual pozo) | **U109** | 🔶 micro YA |
+| Post-U87 — `@zeus/startpack-kit` | **U110** | ⬜ micro YA (tras U109) |
 | Post-U87 — editor materializa juegos reales | **U111** | ⬜ frente (no 🔶) |
 | Post-U87 — carpeta: importar obra | **U112** | ⬜ frente (no 🔶) |
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ frente (no 🔶) |
@@ -59,7 +59,12 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - **U111–U114** — definidos; **no asignar** hasta que usuario/orquestador
   abra el frente «editor produce juegos»
 
-**En curso:** _(ninguno)_
+**En curso:**
+- **WP-U109** 🔶 — slots puertos `solve*` (+ residual `pozo*`)
+  (orquestador / 2026-07-18; GO usuario) · `wp/u109-solve-ports` ·
+  `.worktrees/wp-u109-solve-ports` · brief
+  `plan/REPORTES/briefs/WP-U109-solve-ports.md` · library sibling
+  `../Z_SDK-games-library` rama `wp/u109-solve-ports`
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -82,8 +87,8 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
     `a8608ab`
 13. ~~**WP-U87**~~ ✅ — SOLVE ET COAGULA; merge zeus `bd5f46c` ·
     library `1f85294`; revisión `f2cdc2a`
-14. **Micro higiene post-U87** — **U109** (slots ports) luego **U110**
-    (startpack-kit); **no 🔶** hasta OK usuario + brief
+14. **Micro higiene post-U87** — **U109 🔶** (slots ports) → luego
+    **U110** ⬜ (startpack-kit; no 🔶 hasta cierre U109)
 15. **Frente editor produce juegos** — U111–U114 ⬜ (tras micro; no 🔶)
 16. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
 
@@ -1344,20 +1349,23 @@ cerrado):
 
 > Fuente: §hallazgos WP-U87 + residual pozo (cola U23) + vigilante
 > `loadStartPack` ×4. Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar**
-> con `packages/arg/spec/BACKLOG.md`. **No 🔶** micro hasta OK usuario;
-> frente U111–U114 **no 🔶** hasta abrir frente.
+> con `packages/arg/spec/BACKLOG.md`. **U109 🔶** (GO usuario 2026-07-18);
+> U110 ⬜ tras U109; frente U111–U114 **no 🔶** hasta abrir frente.
 
 ### Lote «higiene post-U87» — micro YA (próximos a ejecutar)
 
-- ⬜ **WP-U109 · Slots puertos `solve*` (+ residual `pozo*`) en
-  presets-sdk** *(U87 §7; cola U23 pozo; PRACTICAS §1.1)* — Añadir
-  slots canónicos en `presets-sdk/env` (`resolveZeusUiPorts` /
-  `resolveZeusMcpPorts` + mapa `KNOWN`/defaults): `solvePlayer` /
-  `solveView` (defaults alineados a lo que hoy hardcodea
-  `@zeus/solve-coagula` vía `readEnvPort`, p.ej. MCP/vista) y el
-  residual histórico `pozoPlayer` / `pozoView`. Consumidores en library
-  (solve + pozo) dejan de aportar defaults de puerto en código de juego;
-  leen el resolver. Tests presets-sdk + gates verdes; README env al día.
+- 🔶 **WP-U109 · Slots puertos `solve*` (+ residual `pozo*`) en
+  presets-sdk** *(U87 §7; cola U23 pozo; PRACTICAS §1.1)* — en curso
+  (orquestador / 2026-07-18; GO usuario) · rama `wp/u109-solve-ports` ·
+  worktree `.worktrees/wp-u109-solve-ports` · brief
+  `plan/REPORTES/briefs/WP-U109-solve-ports.md`. Añadir slots canónicos
+  en `presets-sdk/env` (`resolveZeusUiPorts` / `resolveZeusMcpPorts` +
+  mapa `KNOWN`/defaults): `solvePlayer` / `solveView` (defaults
+  alineados a lo que hoy hardcodea `@zeus/solve-coagula` vía
+  `readEnvPort`, p.ej. MCP/vista) y el residual histórico `pozoPlayer` /
+  `pozoView`. Consumidores en library (solve + pozo) dejan de aportar
+  defaults de puerto en código de juego; leen el resolver. Tests
+  presets-sdk + gates verdes; README env al día.
   **CA:** `rg` sin defaults de puerto hardcodeados para solve/pozo fuera
   de `presets-sdk/env` y docs/specs; `resolveZeus*Ports` expone las
   claves; `npm test -w @zeus/presets-sdk` + `npm run gates` verdes;
@@ -1367,7 +1375,8 @@ cerrado):
   cualquier `?? 30xx`/`41xx` de solve/pozo) que el resolver sustituya.
   **Deps:** U87 ✅ · U23 ✅. **Paralelo:** no con U110 (mismo remate;
   orden sugerido U109 → U110).
-  **Nota:** no tocar publish/U55/DNS.
+  **Nota:** no tocar publish/U55/DNS. **No** tocar U110 ni frente
+  U111–U114.
 
 - ⬜ **WP-U110 · `@zeus/startpack-kit` — una sola `loadStartPack`**
   *(vigilante post-U87; PRACTICAS §1.4)* — `loadStartPack` (y helpers
