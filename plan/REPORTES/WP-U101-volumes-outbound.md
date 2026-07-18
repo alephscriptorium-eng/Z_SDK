@@ -164,4 +164,56 @@ Push: **no intentado**.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** — 2026-07-18 (orquestador). **No** merge / **no**
+push / **no** ✅ BACKLOG en este paso (pedido explícito). Autoriza merge a
+master cuando el usuario lo pida; BACKLOG 🔶→✅ solo en master al mergear.
+
+### Verificado
+
+- Diff `master...wp/u101-volumes-outbound` (5 commits: `3eaef25` feat +
+  `bc2dcec` docs mesh + `6edfc30`/`da9137f`/`4fc8753` docs plan): 21
+  archivos / +1568. Paquete nuevo `@zeus/blobstore-client` + scripts
+  workspace + `.env.example` `ZEUS_BLOB_*` + demolición notas U100 +
+  enganche signaling/ARQUITECTURA + reporte. Worker **no** tocó
+  `plan/BACKLOG.md`. Cero edits `@zeus/ssb-system` (U84).
+- Commits convencionales (`feat(blobstore-client)`, `docs(mesh)`,
+  `docs(plan)`). Auto-revisión PRACTICAS §3 honesta. Live ⏳ OK.
+- Demolición: `rg "saliente diferido|WP-U101 \(carril saliente" packages`
+  limpio; WAN message apunta a blobstore-client.
+
+### CA (re-ejecutados en worktree, 2026-07-18)
+
+| CA | Resultado |
+| -- | --------- |
+| Cliente HTTP `/x/blobstore/v0/*` | OK — `createBlobstoreClient`: salud/objetos/estado/deseos; fixture dial |
+| cid SSB `&<base64>.sha256` + manifests | OK — `assertSsbBlobCid`, chunk-as-blob 5 MB, `manifestCid` canónico |
+| Validación VOLUMES cid/manifests | OK — `validateVolumesCidFields` / `validateOutboundManifest` (inv. i) |
+| Rechazo peer-card LAN (U93) | OK — `requireLanPeerCard` → harness `assertLanBlobTransferAllowed` |
+| U84 intacto | OK — cero diff ssb-system; `npm test -w @zeus/ssb-system` 4/4 |
+| Cero reimpl `blobs.*` | OK — solo menciones «no implementar»; Map spike U100 no es muxrpc |
+| Fixture verde | OK — unit 19/19; `e2e:volumes-outbound` OK |
+| Live `ZEUS_BLOB_*` o ⏳ | ⏳ OK — unset; probe `pending` / sin red |
+| Runbook invariantes (i)–(iv) | OK — `invariantsRunbook()` + README |
+
+### PRACTICAS
+
+- §1: private mesh/ops; reusa torno U93; no sidecar producto; regla dos
+  juegos limpia (`src/` sin delta/pozo).
+- §3: auto-revisión honesta; evidencia literal; ⏳ live no inventado.
+- §6: commits convencionales. Worker no editó BACKLOG.
+
+### Hallazgos → cola (no arreglar aquí; no bloquean)
+
+1. **Viewer fabrica peer-card** — ya cola U93 (cara ciega §3); U101 no
+   tocó. Persiste hasta higiene del visor.
+2. **Harness U100 cid hex vs SSB** — `blob-sync-harness` sigue
+   `sha256` hex en fixture spike; producto U101 usa `&…sha256`. Convergencia
+   harness → formato SSB = higiene aparte (candidato WP o nota cola
+   transporte al mergear).
+
+### Acción siguiente
+
+1. **Merge** de `wp/u101-volumes-outbound` → master (usuario / orquestador
+   en master). Tras merge: ✅ BACKLOG U101 + volcar hallazgos a cola +
+   `git worktree remove`.
+2. Push: no intentado.
