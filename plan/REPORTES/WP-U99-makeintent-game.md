@@ -6,7 +6,7 @@
 | fecha | 2026-07-18 |
 | rama | `wp/u99-makeintent-game` |
 | worktree | `.worktrees/wp-u99-makeintent-game` |
-| commit(s) | `5c382a4` feat(protocol)! · `6c78a43` refactor(volumes-ops) · `c5f3449` chore(changeset) · (este) docs(plan) |
+| commit(s) | `5c382a4` feat(protocol)! · `6c78a43` refactor(volumes-ops) · `c5f3449` chore(changeset) · `f401d2f` docs(plan) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 | browsers | no launch (`ZEUS_OPEN_BROWSER` unset / no opt-in) |
