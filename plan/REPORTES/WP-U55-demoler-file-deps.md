@@ -125,4 +125,8 @@ Ninguno bloqueante.
 
 ## Revisión del orquestador
 
-_(pendiente)_
+**Aceptado ✅** (orquestador / 2026-07-18).
+
+Verificado: publish `operator-bridge@0.1.0` (Actions); smoke install
+sin `file:`; lockfile → registry D-7; bridge tests 9/9; package.json
+sin `file:`. Merge autorizado (ciclo GO usuario).
