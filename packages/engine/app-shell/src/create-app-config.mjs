@@ -39,7 +39,7 @@ const APP_DEFAULTS = {
   editor: {
     port: DEFAULT_ZEUS_UI_MESH.editor.port,
     theme: DEFAULT_THEME,
-    features: { presetLibrary: true, mcpExplorer: true, themeSystem: true },
+    features: { worldEditor: true, cloakExplorer: true, themeSystem: true, mcpExplorer: true },
     presets: { dataDir: '../../../data', library: 'default', autoLoad: true },
     ui: { language: 'en', animations: true, darkMode: false },
     player: {
@@ -47,11 +47,10 @@ const APP_DEFAULTS = {
       port: DEFAULT_ZEUS_UI_MESH.player.port
     },
     view: { host: DEFAULT_ZEUS_UI_MESH.view.host, port: DEFAULT_ZEUS_UI_MESH.view.port },
-    branding: { title: 'Zeus Presets Editor', tag: 'Scriptorium · Zeus SDK' },
+    branding: { title: 'Zeus World Editor', tag: 'Scriptorium · Mundo A' },
     localNav: [
-      { href: '/', emoji: '🏠', text: 'Home', pageKey: 'home' },
-      { href: '/presets', emoji: '📚', text: 'Preset Library', pageKey: 'presets' },
-      { href: '/editor', emoji: '🔧', text: 'MCP Editor', pageKey: 'mcp' },
+      { href: '/', emoji: '🗺️', text: 'World', pageKey: 'home' },
+      { href: '/cloaks', emoji: '🧥', text: 'Cloaks', pageKey: 'mcp' },
       { href: '/docs', emoji: '📖', text: 'API', pageKey: 'api' },
       { href: '/settings', emoji: '⚙️', text: 'Settings', pageKey: 'settings' }
     ],

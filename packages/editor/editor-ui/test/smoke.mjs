@@ -21,6 +21,8 @@ test('editor-ui smoke', async (t) => {
 
   const root = await fetch(`http://localhost:${TEST_PORT}/`);
   assert.equal(root.status, 200, 'GET / should return 200');
+  const html = await root.text();
+  assert.match(html, /World Editor|Release \(Notario\)/i);
   const health = await fetch(`http://localhost:${TEST_PORT}/health`);
   assert.equal(health.status, 200, 'GET /health should return 200');
   const body = await health.json();

@@ -5,7 +5,7 @@ export function buildEditorSpec() {
   return buildOpenApiDoc(EDITOR_ROUTES, {
     title: 'Zeus Editor UI API',
     version: readPackageVersion(import.meta.url),
-    description: 'REST API for @zeus/editor-ui preset library and MCP catalog.',
+    description: 'REST API for @zeus/editor-ui world editor (gamemap/release) and cloak/MCP catalog.',
     servers: zeusOpenApiServers('editor')
   });
 }
