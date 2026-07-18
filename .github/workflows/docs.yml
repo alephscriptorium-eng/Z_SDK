@@ -8,7 +8,12 @@ on:
     branches:
       - main
       - 'wp/**'
+    # WP-U104 / D-22: portal solo cuando cambia docs/** (o workflow_dispatch).
+    paths:
+      - 'docs/**'
   pull_request:
+    paths:
+      - 'docs/**'
   workflow_dispatch:
 
 concurrency:
