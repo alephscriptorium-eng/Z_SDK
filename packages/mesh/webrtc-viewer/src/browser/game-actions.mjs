@@ -10,7 +10,7 @@ export const WEBRTC_REST_ACTIONS = Object.freeze([
 ]);
 
 /**
- * @param {string} baseUrl — e.g. http://localhost:3022 from viewer-config
+ * @param {string} baseUrl — e.g. http://localhost:3023 from viewer-config
  * @param {object} opts
  * @param {string} opts.action
  * @param {string} [opts.room]

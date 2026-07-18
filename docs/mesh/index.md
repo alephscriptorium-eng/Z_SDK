@@ -11,6 +11,7 @@ Operar y jugar: transporte, UIs de malla, browsers de volúmenes, monitores.
 | `console-monitor` | Monitor de consola |
 | `3d-monitor` / `player-3d-ui` | Portal de vistas 3D / visor de room |
 | `linea-system` / `linea-firehose` / `solar-system` | MCP servers de corpus / demo |
+| `oasis-webrtc` | Módulo `/webrtc` OASIS adaptado — señalización SSB privada (WP-U90) |
 | coturn (VPS) | STUN/TURN propio para WebRTC (D-17) — [runbook](./coturn-runbook.md) |
 
 ```bash
@@ -19,6 +20,7 @@ npm run start:player
 npm run start:cache-browser
 npm run start:firehose
 npm run start:3d-monitor
+npm run start:oasis-webrtc
 ```
 
 Specs Redoc: [player-ui](/api/player-ui.html) ·

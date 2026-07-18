@@ -53,7 +53,7 @@ function resolveViewerPort(port) {
       process.env.ZEUS_PORT_WEBRTC_VIEWER ??
       uis.webrtcViewer?.port ??
       DEFAULT_ZEUS_UI_MESH.webrtcViewer?.port ??
-      3022
+      3023
   );
 }
 

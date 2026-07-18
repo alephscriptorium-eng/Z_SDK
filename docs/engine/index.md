@@ -13,7 +13,7 @@ objetivo lo agrupa bajo `engine/` (WP-U51 no mueve carpetas aún).
 | [`@zeus/http-contract`](/engine/http-contract) | RouteEntry → OpenAPI + proyección MCP |
 | [`@zeus/rooms`](/engine/rooms-presets) | Cliente de rooms Socket.IO |
 | [`@zeus/presets-sdk`](/engine/rooms-presets) | Catálogo MCP, env/puertos, volúmenes |
-| `@zeus/webrtc-signaling` | Señalización WebRTC sobre rooms + ICE desde env (WP-U88) |
+| `@zeus/webrtc-signaling` | Señalización WebRTC: rooms (U88) + DMs SSB vía pub (U90); ICE desde env |
 
 También: `game-engine`, `ui-kit`, `ui-3d-kit`, `app-shell`, `firehose-core`,
 `test-utils`, `room-client-browser`.

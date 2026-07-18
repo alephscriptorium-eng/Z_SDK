@@ -71,5 +71,15 @@ export default [
         ...globals.browser
       }
     }
+  },
+  {
+    files: ['packages/mesh/oasis-webrtc/public/**'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'script',
+      globals: {
+        ...globals.browser
+      }
+    }
   }
 ];

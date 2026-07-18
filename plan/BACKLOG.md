@@ -764,25 +764,26 @@ clonados en [recursos/](recursos/README.md), decisión D-17)
 
 ### Cola hallazgos ola 10 (WP-U88)
 
-Diferidos del reporte/revisión WP-U88 (no bloquean; U89/U90 siguen ⬜):
+Diferidos del reporte/revisión WP-U88 (no bloquean; U89/U90 → lote-10b):
 - Coturn en VPS: prueba real pendiente de acceso ops (⏳ del CA).
 - Quirk repo A: `emit(type.replace('webrtc-', ''))` vs listen `webrtc-*` —
   documentado; nuestra impl emite nombre completo. Nota para U89 / upstream
   si se porta más de A.
 
-- ⬜ **WP-U89 · Visor WebRTC del mesh (salas y privados)** *(dep U88)* — el
-  visor nuevo, hermano Angular de operator-ui, construido sobre la lib del
-  repo A (`WebRTCEngine` + peer-list/media-controls/chat): **datos, audio y
-  vídeo por salas o en privado (2 peers)**. En las vistas de juego, usuarios
-  y admins tienen los **botones** (llamar/compartir/colgar) integrados vía
-  canales rabbit-spider-horse: la oferta HORSE de un actor puede incluir
-  «contactar por WebRTC» y el contacto del juego abre la negociación.
-  Regla dura: **WebRTC no toca la verdad del estado** — la autoridad y el
-  ledger siguen mandando (los peers conectados por WebRTC mantienen TODA la
-  infra de rooms debajo para recibir `state`/`ledger`/`track`); el
-  DataChannel es para media, chat y **bulk de datos: consolidación de caches
-  de feeds/firehose entre peers** (transferir objetos de volumen validando
-  contra manifests — la primera materialización del transporte p2p de D-14).
+- 🔶 **WP-U89 · Visor WebRTC del mesh (salas y privados)** *(dep U88)* —
+  (lote-10b / orquestador / 2026-07-18) — el visor nuevo, hermano Angular de
+  operator-ui, construido sobre la lib del repo A (`WebRTCEngine` +
+  peer-list/media-controls/chat): **datos, audio y vídeo por salas o en
+  privado (2 peers)**. En las vistas de juego, usuarios y admins tienen los
+  **botones** (llamar/compartir/colgar) integrados vía canales
+  rabbit-spider-horse: la oferta HORSE de un actor puede incluir «contactar
+  por WebRTC» y el contacto del juego abre la negociación. Regla dura:
+  **WebRTC no toca la verdad del estado** — la autoridad y el ledger siguen
+  mandando (los peers conectados por WebRTC mantienen TODA la infra de rooms
+  debajo para recibir `state`/`ledger`/`track`); el DataChannel es para
+  media, chat y **bulk de datos: consolidación de caches de feeds/firehose
+  entre peers** (transferir objetos de volumen validando contra manifests —
+  la primera materialización del transporte p2p de D-14).
   **CA:** demo — dos navegadores en una sala del juego abren video-llamada y
   chat desde los botones del juego; un peer recibe de otro un objeto de
   cache que valida contra su manifest (U80) y su vista lo refleja; el estado
@@ -790,13 +791,14 @@ Diferidos del reporte/revisión WP-U88 (no bloquean; U89/U90 siguen ⬜):
   **Demolición:** lo que se adapte de la lib A entra por import/port con su
   procedencia anotada, no como copia muerta.
 
-- ⬜ **WP-U90 · El pub como mediador (señalización SSB)** *(dep U88)* —
-  segunda implementación de la `SignalingService`: mensajes SSB privados
-  (`type: 'webrtc-signal'`, cifrado `ssb-box`, DM al feedId del peer) para
-  que **nuestro pub haga de mediador** entre dos usuarios OASIS — el módulo
-  `/webrtc` del repo B deja el copy-paste y usa este transporte (necesita el
-  endpoint backend sobre el `sbot`, hoy el módulo es solo frontend). Basta
-  offer+answer completos (sin trickle) para tolerar la latencia del gossip.
+- 🔶 **WP-U90 · El pub como mediador (señalización SSB)** *(dep U88)* —
+  (lote-10b / orquestador / 2026-07-18) — segunda implementación de la
+  `SignalingService`: mensajes SSB privados (`type: 'webrtc-signal'`,
+  cifrado `ssb-box`, DM al feedId del peer) para que **nuestro pub haga de
+  mediador** entre dos usuarios OASIS — el módulo `/webrtc` del repo B deja
+  el copy-paste y usa este transporte (necesita el endpoint backend sobre el
+  `sbot`, hoy el módulo es solo frontend). Basta offer+answer completos (sin
+  trickle) para tolerar la latencia del gossip.
   **CA:** dos identidades SSB contra el pub negocian un DataChannel sin
   servidor de señalización central ni copy-paste; documentado como PR
   candidato upstream al fork.
