@@ -19,6 +19,8 @@ import { explainActivate, explainDeactivate } from '@zeus/linea-kit/force-activa
 import { EMOTES, INTENTS } from './contract.mjs';
 import { cloakModFor } from './cloak-mods.mjs';
 import { seaLayout } from './sea-layout.mjs';
+import { validateEmptySea } from './flow-engine.mjs';
+import { validateCurate } from './line-board.mjs';
 
 const SHORE_NODES = new Set(['orilla-mar', 'boya-1', 'boya-2']);
 
@@ -285,14 +287,13 @@ const HANDLERS = {
    * Coste narrativo: se destruye el vertido — ya no se puede salvage.
    */
   empty(view, intent) {
-    if (view.sea?.collapsed) return fail('mar_colapsado');
     const actor = view.actors[intent.actorId];
     if (!actor) return fail('actor_desconocido');
     const nearSea =
       actor.zone === 'mar' || (actor.nodeId != null && SHORE_NODES.has(actor.nodeId));
     if (!nearSea) return fail('fuera_de_mar');
-    const sunken = (view.seaDroplets?.() ?? []).filter((d) => d.state === 'sunken');
-    if (sunken.length === 0) return fail('nada_que_vaciar');
+    const check = validateEmptySea(view.sea, view.seaDroplets?.() ?? []);
+    if (!check.ok) return fail(check.error);
     return okOps(
       { op: 'sea:empty', actorId: actor.id },
       { op: 'actor:score', id: actor.id, key: 'emptied' }
@@ -342,22 +343,14 @@ const HANDLERS = {
       if (!view.lines?.[intent.lineId]) return fail('linea_invalida');
       return fail('registro_invalido');
     }
-    if (!reg.cached) return fail('no_cacheado');
-    const order = ['pending', 'draft', 'curated'];
-    const currentIdx = order.indexOf(reg.deltaStatus);
-    const to = intent.to ?? order[Math.min(currentIdx + 1, order.length - 1)];
-    if (to !== 'draft' && to !== 'curated') return fail('status_invalido');
-    const targetIdx = order.indexOf(to);
-    if (targetIdx <= currentIdx) {
-      return fail(currentIdx === targetIdx ? 'ya_curado' : 'status_retroceso');
-    }
-    if (targetIdx > currentIdx + 1) return fail('status_salto');
+    const check = validateCurate(reg, intent.to);
+    if (!check.ok) return fail(check.error);
     return okOps(
       {
         op: 'line:curate',
         lineId: intent.lineId,
         registroId: intent.registroId,
-        to,
+        to: check.to,
         actorId: actor.id
       },
       { op: 'actor:score', id: actor.id, key: 'curated' }

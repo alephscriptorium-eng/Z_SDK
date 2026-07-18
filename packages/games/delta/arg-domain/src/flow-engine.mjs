@@ -17,6 +17,21 @@ export const LABEL_WINDOW = 0.08;
 
 const DEFAULT_SEA_POOL_MAX = { floating: 96, sunken: 48 };
 
+/**
+ * Validación pura de vaciar (empty soft): mar no colapsado + gotas hundidas.
+ * Fuente única de reglas/codes para gate (reducer) y mutador (emptySoft).
+ *
+ * @param {{ collapsed?: boolean } | null | undefined} sea
+ * @param {Iterable<{ state: string }> | null | undefined} droplets
+ * @returns {{ ok: true, sunken: object[] } | { ok: false, error: string }}
+ */
+export function validateEmptySea(sea, droplets) {
+  if (sea?.collapsed) return { ok: false, error: 'mar_colapsado' };
+  const sunken = [...(droplets ?? [])].filter((d) => d.state === 'sunken');
+  if (sunken.length === 0) return { ok: false, error: 'nada_que_vaciar' };
+  return { ok: true, sunken };
+}
+
 export function createFlowEngine(scene, firehoseFeed) {
   const taps = {};
   for (const [id, def] of Object.entries(scene.taps)) {
@@ -198,9 +213,9 @@ export function createFlowEngine(scene, firehoseFeed) {
      * @param {string|null} [actorId]
      */
     emptySoft(actorId = null) {
-      if (sea.collapsed) return { ok: false, error: 'colapsado' };
-      const sunken = sea.droplets.filter((d) => d.state === 'sunken');
-      if (sunken.length === 0) return { ok: false, error: 'nada_que_vaciar' };
+      const check = validateEmptySea(sea, sea.droplets);
+      if (!check.ok) return check;
+      const { sunken } = check;
       const murkBefore = sea.murk;
       const removedIds = [];
       for (const d of sunken) {
