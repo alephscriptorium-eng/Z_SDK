@@ -30,20 +30,27 @@ import {
 } from '@zeus/view-kit';
 ```
 
-### Widgets de story-board (WP-U113)
+### Widgets de story-board (WP-U113 · U116)
 
 Registro genérico `id → render` (tabla). El juego inyecta datos; el kit no
-nombra juegos. Por defecto incluye `panel-elenco` (tabla de elenco / cast).
+nombra juegos. Por defecto:
+
+| id | rol |
+| -- | --- |
+| `cast-table` | **canónico** — tabla de elenco / cast |
+| `panel-elenco` | alias de dialecto (mismo render; p. ej. boards existentes) |
+
+
 Ids desconocidos → placeholder «widget sin runtime».
 
 ```js
 const registry = createDefaultWidgetRegistry();
 mountStoryWidgets({
   registry,
-  widgets: ['panel-elenco'], // p. ej. act.widgets del story-board
+  widgets: ['cast-table'], // o 'panel-elenco' (mismo render)
   dataById: {
-    'panel-elenco': {
-      title: 'Elenco',
+    'cast-table': {
+      title: 'Cast',
       rows: [{ participant: 'A', role: 'aliado', oldid: '1', cached: true }]
     }
   },

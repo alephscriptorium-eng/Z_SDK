@@ -60,6 +60,7 @@ export {
 export {
   createWidgetRegistry,
   createDefaultWidgetRegistry,
+  CAST_TABLE_WIDGET_IDS,
   renderCastTableWidget,
   mountStoryWidgets
 } from './widgets.mjs';
