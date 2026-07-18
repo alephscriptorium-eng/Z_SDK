@@ -133,4 +133,35 @@ Ninguno. CA cumplido en library; monorepo solo punteros.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-18) — **sin** ✅ en `plan/BACKLOG.md`
+aún (pendiente merge; ritual de esta pasada: NO merge / NO push / NO ✅
+BACKLOG).
+
+### Qué se verificó
+
+- **Diff zeus** `main...wp/u86-carpeta-dramaturgo` (tip `0d77640`): solo
+  `README.md`, `docs/games/index.md`, este reporte. Sin BACKLOG. Alcance OK.
+- **Diff library** `main...wp/u86-carpeta-dramaturgo` (`a28b9ad`): kit
+  `kits/carpeta-dramaturgo/**` + scripts npm + README. Originales de
+  producto no tocados en library.
+- **CA-1 re-ejecutado:** `npm run instantiate:carpeta-dramaturgo -- --slug
+  orch-recheck-u86 …` → solo `?? kits/.../instances/orch-recheck-u86/`
+  (limpiado tras re-CA). Confinamiento OK.
+- **CA-2 re-ejecutado:** `npm run test:carpeta-dramaturgo` → exit 0;
+  fixtures SOLVE (`solve-inline`) + ALEPH (`aleph-blocks`) + plantilla +
+  `toy-plaza` verdes.
+- **Stubs:** `plantilla/STUBS.md` (y copia en instancias) documenta
+  `disfraz-rude-bot` + browsers de caché sin reimplementarlos.
+- **PRACTICAS:** demolición n/a; commits convencionales; sin monkey-ports
+  de runtime en el kit; regla dos juegos respetada (juguete ≠ U87).
+- **Nota no bloqueante:** working tree local de
+  `scriptorium-network-games` tiene dirt ajeno
+  (`ALEPH_ET_OMEGA/PLAYER-UI-MCP.md`); no forma parte del diff U86.
+
+### Orden de merge futuro
+
+1. **Library** `wp/u86-carpeta-dramaturgo` (`a28b9ad`) → `main` library
+2. **Zeus** `wp/u86-carpeta-dramaturgo` → `main` zeus (punteros + reporte)
+
+Tras merge zeus: orquestador marca ✅ BACKLOG en `main` y
+`git worktree remove` del worktree U86.
