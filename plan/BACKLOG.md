@@ -33,13 +33,14 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 | Publish real → demoler `file:` | ops + **U55** | gated (tras U122) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Orden Sprint 1:** **U119** → **U120 ∥ U121** → **U122** → GO U55 natural.
+**Orden Sprint 1:** ~~**U119**~~ ✅ → **U120 ∥ U121** → **U122** → GO U55 natural.
 
 **En curso:**
-- 🔶 **WP-U119** · CI main verde (orquestador / 2026-07-18)
+- 🔶 **WP-U120** · prosa zeus/docs (orquestador / 2026-07-18)
+- 🔶 **WP-U121** · prosa library/docs (orquestador / 2026-07-18)
 
 **⬜ en cola (Sprint 1):**
-- **U120** prosa zeus/docs · **U121** prosa library/docs · **U122** auth `_password`
+- **U122** auth `_password` (tras U120/U121 o post-U119 suave)
 
 **⬜ / bloqueados (fuera Sprint 1):**
 - **U55** — demoler `file:` (dep publish real; **no 🔶** hasta tick ops post-U122)
@@ -53,30 +54,24 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 Fuente: [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md).
 Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
 
-### WP-U119 · CI main verde (4 workspaces) — 🔶
+### WP-U119 · CI main verde (4 workspaces) — ✅
 
-- 🔶 **WP-U119 · Diagnosticar y dejar CI de main verde** — asignado
+- ✅ **WP-U119 · Diagnosticar y dejar CI de main verde** — aceptado
+  (orquestador / 2026-07-18). Merge `c58d5ea` · tip WP `3d45b8b`.
+  Reporte:
+  [REPORTES/WP-U119-ci-main-verde.md](REPORTES/WP-U119-ci-main-verde.md).
+  Root causes: http pin+EOL · linea demo≠espana · firehose deferred corpora ·
+  editor throw sin library. Patrón U102; re-smoke orquestador fail 0.
+  Run CI remoto en main tras merge: ⏳ seguimiento.
+  **CA:** cumplido en código (4 WS verdes local; skips ⏳ documentados).
+  **Demolición:** throw module-level library; pin `0.1.0`; skip linea débil.
+
+### WP-U120 · Prosa portal zeus/docs — 🔶
+
+- 🔶 **WP-U120 · Refactor prosa `docs/` (zeus, ~23 md)** — asignado
   (orquestador / 2026-07-18). Brief:
-  [REPORTES/briefs/WP-U119-ci-main-verde.md](REPORTES/briefs/WP-U119-ci-main-verde.md).
-  Worktree: `.worktrees/wp-u119-ci-main-verde` · rama `wp/u119-ci-main-verde`.
-  Desde ~U116/U117, fallan en CI/Release (runs 29656058145 / 29656058148):
-  `@zeus/http-contract`, `@zeus/linea-system`, `@zeus/firehose-browser`,
-  `@zeus/editor-ui`. Re-smokes locales de esos WP salían verdes → sospecha
-  regresión de integración U111–U117 (candidato: `@zeus/story-board-schema`
-  U117 + consumidores; linea-system ya tuvo dep de entorno en U102) o
-  deriva local-vs-runner.
-  **CA:** run de CI completo verde en `main`; causa raíz de **cada**
-  workspace anotada en el reporte (no solo el fix); si el fix es «test no
-  hermético», patrón U102 (fixture/env explícito/skip-⏳) — **nunca**
-  debilitar asserts.
-  **Demolición:** stubs/skips que oculten el fallo sin causa; asserts
-  aflojados «para pasar CI»; workarounds que no documenten root cause.
-  **Deps:** ninguna (prioridad del sprint; gate de publish/U122).
-  **No:** U120–U122 · U55 · residuales · docs prosa.
-
-### WP-U120 · Prosa portal zeus/docs — ⬜
-
-- ⬜ **WP-U120 · Refactor prosa `docs/` (zeus, ~23 md)** — tras U119 ✅.
+  [REPORTES/briefs/WP-U120-prosa-zeus-docs.md](REPORTES/briefs/WP-U120-prosa-zeus-docs.md).
+  Worktree: `.worktrees/wp-u120-prosa-zeus-docs` · rama `wp/u120-prosa-zeus-docs`.
   Mover WP-U## / D-## / «ola» / ⏳ / fechas a `guide/estado.md` (nueva);
   arreglar comandos rotos (p.ej. `getting-started.md`); contador «dos
   juegos» → regla paramétrica; tabla de paquetes mínima con puntero a
@@ -89,11 +84,16 @@ Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
   muertos (puertos/versiones/fechas) en páginas de producto.
   **Deps:** U119 ✅. **Paralelo con U121.** Repo: solo zeus.
 
-### WP-U121 · Prosa portal library/docs — ⬜
+### WP-U121 · Prosa portal library/docs — 🔶
 
-- ⬜ **WP-U121 · Refactor prosa `Z_SDK-games-library/docs/` (~6 md)** —
-  tras U119 ✅. `releases.md` describe mecanismo + apunta a GitHub
-  Releases (verdad viva; fuera fechas «consultado» / versiones a mano);
+- 🔶 **WP-U121 · Refactor prosa `Z_SDK-games-library/docs/` (~6 md)** —
+  asignado (orquestador / 2026-07-18). Brief:
+  [REPORTES/briefs/WP-U121-prosa-library-docs.md](REPORTES/briefs/WP-U121-prosa-library-docs.md).
+  Worktree zeus: `.worktrees/wp-u121-prosa-library-docs` · rama
+  `wp/u121-prosa-library-docs`. Worktree library:
+  `../Z_SDK-games-library/.worktrees/wp-u121-prosa-library-docs`.
+  `releases.md` describe mecanismo + apunta a GitHub Releases (verdad
+  viva; fuera fechas «consultado» / versiones a mano);
   `startpacks.md` separa pipeline de publish-⏳; `file:` / `.deps`
   encajonado como «modo provisional». **Heros/lemas intactos** (D-24).
   **CA:** `docs:build` verde (library); doctrinales: mismo grep → 0;
@@ -105,17 +105,14 @@ Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
 ### WP-U122 · Auth durable registry (`_password`) — ⬜
 
 - ⬜ **WP-U122 · `release.yml` → patrón `_password` (basic-auth)** — al
-  final del sprint (tras U119; idealmente tras U120/U121 o en paralelo
-  suave post-U119 si no solapa). Token JWT caduca (`expiresIn: 7d`);
-  modelo **(a)** D-24: basic-auth no caducable (user + `_password`
-  base64, como `.npmrc.example` del registry). Ajuste del bloque auth de
-  `release.yml`; el secret lo carga **ops** cuando U119 deje el gate
-  verde.
+  final del sprint (tras U119; idealmente tras U120/U121). Token JWT
+  caduca (`expiresIn: 7d`); modelo **(a)** D-24: basic-auth no caducable
+  (user + `_password` base64). Ajuste del bloque auth de `release.yml`;
+  el secret lo carga **ops** cuando CI esté verde.
   **CA:** con secret presente y tests verdes, `npm view @zeus/protocol
-  --registry=…` devuelve versión publicada; sin secret, skip «⏳» limpio
-  (hoy ni se evalúa: muere antes en test).
+  --registry=…` devuelve versión publicada; sin secret, skip «⏳» limpio.
   **Demolición:** wiring `_authToken` / JWT-as-NPM_TOKEN como única vía
-  en el workflow (sustituir por `_password` durable).
+  en el workflow.
   **Deps:** U119 ✅ (gate CI). Ops carga secret tras merge. Luego → U55.
 
 ---
