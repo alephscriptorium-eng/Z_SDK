@@ -705,6 +705,9 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
 
 ## Ola 9 — El mundo del dramaturgo (dep olas 6–8)
 
+> **Bloqueada** (orquestador / 2026-07-18): dep Ola 6 pausada (sin
+> credenciales). NO asignar U70/U86/U87.
+
 - ⬜ **WP-U70 · Editor de gamemaps y releases** — editor-ui evoluciona de CRUD
   de presets a editor del mundo A: gamemaps, labelsets, cloaks, casos, y las
   líneas del dramaturgo (U80/U81) como materia prima seleccionable; botón
@@ -742,17 +745,17 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
 ## Ola 10 — Peers WebRTC (dep U10; paralelizable con olas 7–9; recursos
 clonados en [recursos/](recursos/README.md), decisión D-17)
 
-- ⬜ **WP-U88 · Señalización WebRTC vía nuestro mesh + ICE propio** — la
-  señalización viaja por lo que ya tenemos: implementación de la
-  `SignalingService` abstracta del repo A sobre las **rooms del
-  socket-server** (adoptando su contrato de mensajes `webrtc-offer/answer/
-  ice-candidate/join-room/…`, con trickle ICE en vez del `waitForIceComplete`
-  de B). ICE: **coturn** (STUN+TURN FOSS) desplegado en el VPS junto al pub;
-  `iceServers` SIEMPRE desde `presets-sdk/env` (`ZEUS_WEBRTC_STUN`,
-  `ZEUS_WEBRTC_TURN*`) — el STUN de Google que ambos repos hardcodean queda
-  solo como fallback de pruebas tras flag explícito
-  (`ZEUS_WEBRTC_ALLOW_GOOGLE_STUN=1`) que imprime un WARNING gigante; gate
-  U00 amplía: `stun.l.google` en código = rojo.
+- 🔶 **WP-U88 · Señalización WebRTC vía nuestro mesh + ICE propio** —
+  (lote-10a / orquestador / 2026-07-18) — la señalización viaja por lo que
+  ya tenemos: implementación de la `SignalingService` abstracta del repo A
+  sobre las **rooms del socket-server** (adoptando su contrato de mensajes
+  `webrtc-offer/answer/ice-candidate/join-room/…`, con trickle ICE en vez
+  del `waitForIceComplete` de B). ICE: **coturn** (STUN+TURN FOSS)
+  desplegado en el VPS junto al pub; `iceServers` SIEMPRE desde
+  `presets-sdk/env` (`ZEUS_WEBRTC_STUN`, `ZEUS_WEBRTC_TURN*`) — el STUN de
+  Google que ambos repos hardcodean queda solo como fallback de pruebas
+  tras flag explícito (`ZEUS_WEBRTC_ALLOW_GOOGLE_STUN=1`) que imprime un
+  WARNING gigante; gate U00 amplía: `stun.l.google` en código = rojo.
   **CA:** e2e — dos clientes headless negocian DataChannel vía señalización
   por room (sin Google); runbook de coturn en el VPS documentado y probado
   (⏳ honesto si no hay acceso); gate rojo con STUN google sintético.
