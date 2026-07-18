@@ -258,3 +258,18 @@ Custom domain/HTTPS en Pages Settings → CA de U106; (d) DNS CNAME
 `games.z-sdk` + Custom domain/HTTPS en Pages de la library → CA de
 U107. Horizontes WP-U71/72/73 siguen esperando evidencia o diseño
 externo.)*
+
+### Diferidos post-U87 (no DA; no WP ejecutable hasta GO)
+
+Anotados tras GO capa B (2026-07-18). **No bloquean** micro U109–U110
+ni el frente U111–U114. Activar = usuario pide WP explícito.
+
+- **U87 §5 · linea-aleph vivo** — starterkit = `juguete`; corpus
+  ~48 MB fuera de git; fixture subset en `@zeus/startpack-solve-coagula`;
+  montaje completo vía `ZEUS_LINEA_ALEPH_ROOT` documentado, **no**
+  cableado al editor ni como VOLUMES de producto en monorepo. Candidato
+  futuro: WP de montaje/editor o pipeline de datos — **sin ID** aún.
+- **U87 §6 · skills stub (network-engine)** — `disfraz-rude-bot` y
+  browsers de caché siguen solo documentados en `STUBS.md` (carpeta
+  U86); no reimplementar en zeus/library hasta GO. Candidato futuro:
+  WP de skills o puente — **sin ID** aún.

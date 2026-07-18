@@ -11,16 +11,18 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · Ola 9 cerrada)
+## Remate — estado swarm (2026-07-18 · post-U87 · GO B+A)
 
-> Diseño drenado: **0 DA abiertas** post D-21; frentes D-22 cerrados en
-> código (U104/U60/U106/U105 ✅). Línea de producto en rama **`main`**.
-> **Ola 6 cerrada** (U60–U62 ✅). Residual **A-15** → ~~**U108**~~ ✅
-> (merge `a8608ab`). Residual **A-14** → ~~**U107**~~ ✅ (merge zeus
-> `c0a35d6`; library `dfd6f06`; remoto `games.z-sdk` ⏳ Custom domain).
-> Residual **publish real** ⏳ ops (`NPM_TOKEN`) → U55 — **no 🔶**.
-> **Ola 9 cerrada**: **U70 ✅** · **U86 ✅** · **U87 ✅** (merge zeus
-> `bd5f46c`; library `1f85294`; revisión `f2cdc2a`).
+> **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
+> **0 DA** abiertas; **0 🔶**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> (no inventa WPs). Línea de producto en **`main`**.
+> **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus `bd5f46c`).
+> Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107 ⏳ ops.
+>
+> **Priorización usuario (GO capa B):** (1) micro higiene **U109+U110**
+> YA · (2) frente editor **U111–U114** DESPUÉS (⬜; **no 🔶** hasta
+> abrir frente) · (3) diferidos U87 §5–6 → DECISIONES / horizonte (sin WP
+> ejecutable).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -42,12 +44,20 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Ola 9 — editor gamemaps / releases | **U70** | ✅ |
 | Ola 9 — CARPETA DRAMATURGO | **U86** | ✅ |
 | Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ✅ |
+| Post-U87 — slots puertos `solve*` (+ residual pozo) | **U109** | ⬜ micro YA |
+| Post-U87 — `@zeus/startpack-kit` | **U110** | ⬜ micro YA |
+| Post-U87 — editor materializa juegos reales | **U111** | ⬜ frente (no 🔶) |
+| Post-U87 — carpeta: importar obra | **U112** | ⬜ frente (no 🔶) |
+| Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ frente (no 🔶) |
+| Post-U87 — dialectos story-board en editor | **U114** | ⬜ frente (no 🔶) |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
+- **U111–U114** — definidos; **no asignar** hasta que usuario/orquestador
+  abra el frente «editor produce juegos»
 
 **En curso:** _(ninguno)_
 
@@ -72,6 +82,10 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
     `a8608ab`
 13. ~~**WP-U87**~~ ✅ — SOLVE ET COAGULA; merge zeus `bd5f46c` ·
     library `1f85294`; revisión `f2cdc2a`
+14. **Micro higiene post-U87** — **U109** (slots ports) luego **U110**
+    (startpack-kit); **no 🔶** hasta OK usuario + brief
+15. **Frente editor produce juegos** — U111–U114 ⬜ (tras micro; no 🔶)
+16. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -939,7 +953,8 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
 > **U87 ✅** (merge zeus `bd5f46c`; library `1f85294`; revisión
 > `f2cdc2a`). ~~**U107**~~ ✅ (A-14; fuera de ola 9; merge zeus
 > `c0a35d6`; library `dfd6f06`). U55 **no** (gated publish real).
-> Hallazgos U87 §1–8 → backlog mundo A (no WPs nuevos en este cierre).
+> Hallazgos U87 §1–8 (+ vigilante startpack) → **WPs post-U87**
+> (U109–U114 + diferidos); ver sección siguiente y [RE-PLAN.md](RE-PLAN.md).
 
 - ✅ **WP-U70 · Editor de gamemaps y releases** — aceptado
   (orquestador / 2026-07-18; merge zeus `54f08d6`; library `cdddf59`
@@ -1325,6 +1340,134 @@ cerrado):
   `exports ./schemas/*` missing from tarball; al fallar el dry **restaura**
   el working tree (riesgo mid-WP). Candidato higiene / publish.
 
+## Post-U87 — higiene + frente editor (GO capa B · 2026-07-18)
+
+> Fuente: §hallazgos WP-U87 + residual pozo (cola U23) + vigilante
+> `loadStartPack` ×4. Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar**
+> con `packages/arg/spec/BACKLOG.md`. **No 🔶** micro hasta OK usuario;
+> frente U111–U114 **no 🔶** hasta abrir frente.
+
+### Lote «higiene post-U87» — micro YA (próximos a ejecutar)
+
+- ⬜ **WP-U109 · Slots puertos `solve*` (+ residual `pozo*`) en
+  presets-sdk** *(U87 §7; cola U23 pozo; PRACTICAS §1.1)* — Añadir
+  slots canónicos en `presets-sdk/env` (`resolveZeusUiPorts` /
+  `resolveZeusMcpPorts` + mapa `KNOWN`/defaults): `solvePlayer` /
+  `solveView` (defaults alineados a lo que hoy hardcodea
+  `@zeus/solve-coagula` vía `readEnvPort`, p.ej. MCP/vista) y el
+  residual histórico `pozoPlayer` / `pozoView`. Consumidores en library
+  (solve + pozo) dejan de aportar defaults de puerto en código de juego;
+  leen el resolver. Tests presets-sdk + gates verdes; README env al día.
+  **CA:** `rg` sin defaults de puerto hardcodeados para solve/pozo fuera
+  de `presets-sdk/env` y docs/specs; `resolveZeus*Ports` expone las
+  claves; `npm test -w @zeus/presets-sdk` + `npm run gates` verdes;
+  demos/e2e solve y pozo siguen resolviendo puertos (library o smoke
+  documentado).
+  **Demolición:** defaults/puertos literales en paquetes de juego (y
+  cualquier `?? 30xx`/`41xx` de solve/pozo) que el resolver sustituya.
+  **Deps:** U87 ✅ · U23 ✅. **Paralelo:** no con U110 (mismo remate;
+  orden sugerido U109 → U110).
+  **Nota:** no tocar publish/U55/DNS.
+
+- ⬜ **WP-U110 · `@zeus/startpack-kit` — una sola `loadStartPack`**
+  *(vigilante post-U87; PRACTICAS §1.4)* — `loadStartPack` (y helpers
+  gemelos de validación/acta/volumes del Notario) está copiada en los
+  start packs de la games-library (delta · pozo · sketch ·
+  solve-coagula — ×4). Extraer paquete `@zeus/startpack-kit` (library
+  o engine si el corte es genérico y pasa regla de dos juegos); los
+  cuatro `@zeus/startpack-*` + scripts Notario/`STARTPACK_GAMES`
+  consumen el kit. Sin renombres `legacy`/`v2`; sin segundo camino.
+  **CA:** una sola implementación de `loadStartPack` en el repo
+  library (grep: cero copias en `packages/startpack-*/`); los cuatro
+  packs cargan vía kit; `npm test -w` de packs + Notario dry / release
+  de al menos un juego (preferible solve o sketch) verde; README del
+  kit + changeset si el kit es publicable.
+  **Demolición:** las N−1 copias de `loadStartPack` (y helpers
+  duplicados que el kit absorba).
+  **Deps:** U62 ✅ · U87 ✅ (cuarto consumidor). **Tras** U109
+  preferible (no hard dep). Alcance principal: `Z_SDK-games-library`;
+  punteros/docs en zeus si aplica.
+
+### Lote «editor produce juegos» — frente DESPUÉS (definido; no 🔶)
+
+> Holón 2 candidato ([RE-PLAN.md](RE-PLAN.md) §3.6). Abrir solo cuando
+> micro U109–U110 estén ✅ o el usuario autorice solape.
+
+- ⬜ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
+  *(U87 §1+§2; dep U70 ✅, U86 ✅)* — Hoy `validateDraft` /
+  materialize exigen `gameId === 'sketch'`; el catálogo del editor es
+  escena juguete + línea juguete + casos, sin REIC / actos / uichain /
+  agentchain. El editor gana modo mundo A: materiales narrativos de la
+  carpeta dramaturgo y materialize que produzca un start pack / juego
+  instalable **distinto de sketch** (al menos un `gameId` narrativo de
+  prueba o parametrizable), sin armar a mano en library.
+  **CA:** desde editor-ui se define un juego mínimo con materiales
+  narrativos (actos o equivalente carpeta) y se produce release
+  instalable cuyo `gameId !== 'sketch'`; tests editor + Notario/path
+  release verdes; README editor veraz.
+  **Demolición:** el hard-gate `gameId === 'sketch'` como único camino
+  de materialize (queda sketch como un preset/plantilla, no como techo).
+  **Deps:** U70 ✅ · U86 ✅. Coordina con U114 (dialectos); puede ir
+  antes con dialecto mínimo documentado.
+
+- ⬜ **WP-U112 · Carpeta dramaturgo: instantiate desde obra**
+  *(U87 §3; dep U86 ✅)* — `instantiate` solo rellena plantilla vacía;
+  no hay `--from SOLVE_ET_COAGULA` (ni obra ALEPH) ni sync de
+  blockchain/story-board real. Añadir import/overlay desde obra fuente
+  (path o slug documentado) que copie dramaturgia real a una instancia
+  confinada en la carpeta, sin modificar originales en
+  `scriptorium-network-games`.
+  **CA:** `instantiate … --from <obra>` (o API equivalente) produce
+  instancia con story-board/actos coherentes con la obra; schema U86
+  valida; originales intactos (`git status` limpio en fuente); test de
+  kit + docs starterkit.
+  **Demolición:** el camino «solo plantilla vacía» como única vía si
+  queda sustituido; o documentar ambas vías sin duplicar lógica
+  (tabla/map de fuentes).
+  **Deps:** U86 ✅. Paralelo razonable con U111 tras abrir frente.
+
+- ⬜ **WP-U113 · Widgets SOLVE con runtime en view-kit**
+  *(U87 §4; dep U20 ✅, U87 ✅)* — `panel-elenco`, `panel-heatmap`, etc.
+  viven como `uichain/*.prompt.md`; view-kit no los renderiza. Vista
+  U87 = lista de actos + meta. Implementar runtime mínimo en
+  `@zeus/view-kit` (o registro de widgets consumible por la vista
+  solve) para al menos un widget SOLVE real en demo/e2e; sin meter
+  nombres de juego en engine si el registro es genérico (widgets por
+  id/schema).
+  **CA:** un widget declarado en story-board SOLVE se renderiza en la
+  vista del juego (no solo prompt); test/e2e o smoke con evidencia;
+  gate two-games: engine sin conceptos exclusivos solve si el corte es
+  genérico.
+  **Demolición:** stubs «solo prompt» del widget elegido si el runtime
+  los sustituye.
+  **Deps:** U20 ✅ · U87 ✅. Paralelo con U111/U112.
+
+- ⬜ **WP-U114 · Dialectos story-board en el editor**
+  *(U87 §8; dep U70 ✅, U86 ✅)* — SOLVE usa dialecto `solve-inline`
+  (widgets en `acts[]`); el editor sketch no conoce el schema U86. El
+  editor valida/edita story-boards según dialectos registrados (tabla,
+  no if-creciente) y rechaza dialecto desconocido con error explicable.
+  **CA:** editor acepta al menos `solve-inline` (+ dialecto sketch/
+  plantilla); test de validación con fixture SOLVE; dialecto
+  desconocido → rechazo claro; OpenAPI/README al día.
+  **Demolición:** asunción «solo sketch JSON» en validateDraft si
+  aplica.
+  **Deps:** U70 ✅ · U86 ✅. Ideal **antes o con** U111 (materialize
+  narrativo).
+
+### Diferidos U87 §5–6 — sin WP ejecutable
+
+Anotados en [DECISIONES.md](DECISIONES.md) §abiertas y abajo en
+horizonte. **No** crear U-number ni 🔶 hasta GO explícito del usuario.
+
+- U87 §5 — montaje **linea-aleph vivo** (corpus ~48 MB; fixture subset
+  ya en startpack; `ZEUS_LINEA_ALEPH_ROOT` documentado, no cableado al
+  editor).
+- U87 §6 — **skills stub** (`disfraz-rude-bot`, browsers de caché) solo
+  en network-engine / `STUBS.md`; no reimplementar en zeus aún.
+
+---
+
 ## Horizonte (post-refundación, no tomar aún)
 
 - **WP-U71 · VOLUMES p2p** — publicar/pinnear los volúmenes en una red
@@ -1350,3 +1493,7 @@ cerrado):
   de dramaturgo sobre U86 + U91/U92. Valida kits y forces, no toca la
   regla de los dos juegos. U87 ✅ entregó informe «qué faltó» (§hallazgos
   reporte); candidata horizonte (no asignada).
+- **(diferido U87 §5 · sin WP)** linea-aleph vivo / montaje editor —
+  ver DECISIONES §abiertas.
+- **(diferido U87 §6 · sin WP)** skills stub network-engine —
+  ver DECISIONES §abiertas.
