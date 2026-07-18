@@ -29,8 +29,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
    [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
    27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos) → **WP-U102** ✅
 4. **WP-U103** 🔶 — docs públicas Pages + piel fanzine (A-12)
-5. Usuario: **activar GitHub Pages** (Settings → Pages → fuente GitHub Actions)
-   — ops custodio; no CA de código U103
+5. ~~Usuario: activar GitHub Pages~~ — **hecho** (usuario / 2026-07-18;
+   Settings → fuente GitHub Actions)
 6. Usuario: **publish** → desbloquea U55
 7. Usuario: repo **U60** games-library → Ola 6 / 9
 8. Usuario: sidecar / `ZEUS_BLOB_*` ops (live U100/U101)
@@ -459,8 +459,9 @@ Diferidos del reporte/revisión WP-U41 (no bloquean cierre; cierra ola 4):
   presente y verde; API HTML (AsyncAPI + OpenAPI) accesibles desde el
   nav publicado; contraste AA (b/n); la piel no rompe búsqueda ni
   navegación VitePress.
-  **Ops usuario (no CA de código):** activar Pages en Settings → fuente
-  GitHub Actions; tras eso, URL de Pages viva = verificación final.
+  **Ops usuario (no CA de código):** ~~activar Pages en Settings → fuente
+  GitHub Actions~~ — **hecho** (usuario / 2026-07-18); URL de Pages viva =
+  verificación final (post-merge U103 + workflow verde).
   **Demolición:** n/a (U41 se conserva entero; la piel es aditiva).
   **Paralelo:** sí con U102 (sin solape de paths; no interrumpir U102).
 
