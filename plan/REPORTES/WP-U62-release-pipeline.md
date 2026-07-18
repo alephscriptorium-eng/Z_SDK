@@ -5,7 +5,7 @@
 | agente | worker (lote-ola6-c / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u62-release-pipeline` (zeus) · `wp/u62-release-pipeline` (library) |
-| commit(s) | library: `688be30` (push OK); zeus: `df0c8f7` + `2172d38` |
+| commit(s) | library: `688be30` (push OK); zeus: `df0c8f7`..`e06233b` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
