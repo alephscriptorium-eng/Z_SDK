@@ -178,4 +178,48 @@ Ninguno. Push no intentado (política).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-18) — **sin merge aún** (usuario:
+prioridad merge inmediato tras esta aceptación; orquestador no mergea /
+no push / no ✅ BACKLOG en esta pasada).
+
+### Verificado
+
+- Diff `main...HEAD` acotado: `.gitignore`, `VOLUMES/README.md`,
+  reporte U62 (honestidad), reporte U108. Sin BACKLOG. Sin U70/U86.
+- Demolición: `grep '!VOLUMES/DISK_0[23]/\*\*'` → `DEMOLITION_OK` (rama).
+  En `main` aún viven las wildcards anchas (líneas 16/18) — se cierran
+  al merge.
+- `git ls-files VOLUMES/` = 15 paths; idéntico a `main` (fixtures
+  siguen en árbol).
+- `git check-ignore -v` rutas vivas (espana, force-a/g, cima,
+  sima/escenas, FORCES/README) → IGNORADO (`live_exit:0`).
+- Fixtures trackeados (`registry.yaml`, `demo/…`, `force-sample`,
+  `sima/{cota,manifest}.json`, …) → `check-ignore` vacío (`fix_exit:1`).
+- `git add VOLUMES/ --dry-run` en worktree → vacío (`dry_lines:0`);
+  `git status --short VOLUMES/` limpio.
+- Contraste en `main` (gitignore pre-U108): `??` de datos vivos +
+  dry-run añade espana/force-a..g — confirma el hueco que U108 cierra.
+- Commits convencionales (`fix(volumes):` / `docs(plan):`). PRACTICAS
+  §1–3 OK para micro gitignore/docs.
+- Hallazgo `test:lineas` rojo preexistente (espana-shaped) — fuera de
+  alcance; no bloquea CA de este WP.
+
+### CA
+
+- [x] `check-ignore` rutas vivas → IGNORADO
+- [x] `git add VOLUMES/ --dry-run` no añade fuera de fixtures
+- [x] `git ls-files VOLUMES/` sin cambios (15)
+- [x] fixtures en árbol; datos vivos ignorados / no trackeables
+- [x] docs honestas (README + nota U62)
+- [x] demolición `!DISK_0{2,3}/**`
+
+### Merge
+
+**Inmediato** — urgente A-15 (repo público). Independiente de U70/U86.
+Orden: merge `wp/u108-volumes-gitignore` → `main` → push → BACKLOG
+🔶→✅ → `git worktree remove` del worktree U108.
+
+### Acción siguiente
+
+Usuario/orquestador en sesión de merge: merge + push main + ✅ BACKLOG
++ retirar worktree. Push de esta rama: **no intentado**.
