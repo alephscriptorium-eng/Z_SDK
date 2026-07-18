@@ -34,6 +34,21 @@ validateIntent(
 ); // { ok: false, error: 'rol_no_autorizado' }
 ```
 
+## Node
+
+Path helpers for Express `express.static` + import maps (no browser):
+
+```js
+import { nodeSrcDir } from '@zeus/protocol/node-src-dir';
+import { srcDir } from '@zeus/protocol/node';
+
+// Shared one-liner — pass import.meta.url from the calling module:
+const here = nodeSrcDir(import.meta.url);
+```
+
+`nodeSrcDir` is the single implementation used by package `./node` entries
+(`@zeus/game-engine/node`, `@zeus/view-kit/node`, …).
+
 ## Specs
 
 - Contrato: [`spec/CONTRATO.md`](spec/CONTRATO.md)

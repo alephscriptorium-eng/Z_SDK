@@ -10,7 +10,7 @@
       "types": "./src/index.d.ts",
       "default": "./src/index.mjs"
     },
-    "./node": "./src/paths.node.mjs"
+    "./node": "./src/node.mjs"
   },
   "scripts": {
     "test": "node --test test/*.test.mjs"
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@zeus/game-engine": "0.1.0",
+    "@zeus/protocol": "0.1.0",
     "three": "^0.170.0"
   },
   "publishConfig": {

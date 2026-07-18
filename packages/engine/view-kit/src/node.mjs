@@ -14,9 +14,9 @@
  */
 
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { nodeSrcDir } from '@zeus/protocol/node-src-dir';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
+const here = nodeSrcDir(import.meta.url);
 
 /** Package root (contains package.json). */
 export const pkgDir = path.resolve(here, '..');

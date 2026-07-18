@@ -3,7 +3,8 @@
  * srcDir se sirve estático en arg-console para resolver el import map.
  */
 
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { nodeSrcDir } from './node-src-dir.mjs';
 
-export const srcDir = path.dirname(fileURLToPath(import.meta.url));
+export { nodeSrcDir };
+
+export const srcDir = nodeSrcDir(import.meta.url);

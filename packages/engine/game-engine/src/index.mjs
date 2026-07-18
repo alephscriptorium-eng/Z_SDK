@@ -8,7 +8,7 @@
  * scenes — replaces the old vendor-sync from gea-sdk (block-11 GA-B).
  *
  * Node-only path helpers live in the separate entry `@zeus/game-engine/node`
- * (src/paths.node.mjs) — do not re-export them here.
+ * (src/node.mjs) — do not re-export them here.
  */
 
 // engine — pure logic (no three)
