@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok 4.5) |
 | fecha | 2026-07-18 |
 | rama | `wp/u107-games-catalog-pages` (zeus) · library `wp/u107-games-catalog-pages` → `main` |
-| commit(s) | zeus: _(commits locales, sin push)_ · library: `dfd6f06` feat(docs) |
+| commit(s) | zeus: `b59eb33` docs(plan) · library: `dfd6f06` feat(docs) |
 | estado propuesto | listo para revisión |
 | push zeus | no intentado |
 | push library | sí (`origin/wp/u107-games-catalog-pages` + `origin/main` `dfd6f06`) |
