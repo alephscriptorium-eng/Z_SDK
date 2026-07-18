@@ -11,15 +11,15 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18e · lote-ola6-b)
+## Remate — estado swarm (2026-07-18f · post-U61)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes D-22 cerrados en
 > código (U104/U60/U106/U105 ✅). Línea de producto en rama **`main`**.
-> **U61** 🔶 (lote-ola6-b). Residual **publish real** ⏳ ops
-> (`NPM_TOKEN`) → U55 — **no 🔶**.
+> **U61 ✅**. Residual **publish real** ⏳ ops (`NPM_TOKEN`) → U55 —
+> **no 🔶**. **U62** ⬜ (no asignar aún).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
-~~(5) U106~~ → ~~(2) U105~~ → **U61** (migración juegos) → U62 →
+~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → **U62** →
 publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 
 | Frente | WP | Estado |
@@ -28,14 +28,15 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 | (2) Publish prep `engine/*` (`release:dry` + changeset versión) | **U105** | ✅ |
 | (3) Ola 6 — crear `Z_SDK-games-library` | **U60** | ✅ |
 | (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | ✅ |
-| Ola 6 — migración juegos | **U61** | 🔶 lote-ola6-b / orquestador / 2026-07-18 |
+| Ola 6 — migración juegos | **U61** | ✅ |
+| Ola 6 — pipeline releases de datos | **U62** | ⬜ |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
-- **U62** — ⬜ (dep U61)
-- **Ola 9** — U70 / U86 / U87 (dep Ola 6 completa)
+- **U62** — ⬜ (dep U61 ✅; **no 🔶** aún)
+- **Ola 9** — U70 / U86 / U87 (dep Ola 6 completa = U62)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
 **Next steps:**
@@ -49,7 +50,8 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
    Enforce HTTPS en Pages Settings
 6. Residual **viewer peer-card** (cola U93) antes de mesh abierto
 7. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
-8. Ola 6: **U61** 🔶 (lote-ola6-b) → **U62** ⬜ (no asignar aún)
+8. ~~WP-U61~~ ✅ — migración delta/pozo → games-library
+9. Ola 6: **U62** ⬜ (no asignar aún) → cierra ola 6
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -576,9 +578,9 @@ Diferidos del reporte/revisión WP-U51 (no bloquean cierre):
 
 Hallazgos grandes diferidos (no bloquean cierre de ola 5):
 
-> **Nota orquestador (2026-07-18e / lote-ola6-b):** U105 ✅. U55 sigue
+> **Nota orquestador (2026-07-18f / post-U61):** U105 ✅. U55 sigue
 > **pausado** hasta publish real (registry + `NPM_TOKEN`) — **no 🔶**.
-> Ola 6: **U60 ✅**; **U61** 🔶; U62 ⬜ (dep U61).
+> Ola 6: **U60 ✅**; **U61 ✅**; U62 ⬜ (dep U61 ✅; no asignar aún).
 
 - ⬜ **WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib** — tras
   **publish real** de `engine/*` (no basta U105 prep). Sustituye los
@@ -617,11 +619,10 @@ Hallazgos diferidos U56 (no bloquean):
 
 ## Ola 6 — Z_SDK-games-library (dep WP-U50; diseño en ARQUITECTURA §6, D-10)
 
-> **En curso** (orquestador / 2026-07-18e · lote-ola6-b): **U60 ✅** —
-> repo
-> [`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-library)
-> (merge revisión `5c664f0`). **U61** 🔶 · **U62** ⬜ (dep U61). Con
-> ola 6 completa se abre ola 9 (U70/U86/U87).
+> **En curso** (orquestador / 2026-07-18f · post-U61): **U60 ✅** ·
+> **U61 ✅** (merge zeus `6d38287`; library `9baf67a`). **U62** ⬜
+> (dep U61 ✅; no asignar aún). Con ola 6 completa (U62) se abre ola 9
+> (U70/U86/U87).
 
 - ✅ **WP-U60 · Repo Z_SDK-games-library** (D-11; D-22) — aceptado
   (orquestador / 2026-07-18; merge `wp/u60-games-library`; revisión
@@ -632,17 +633,17 @@ Hallazgos diferidos U56 (no bloquean):
   **CA:** repo existe; clone limpio + `npm install` + tests verdes — ✅.
   **Demolición:** n/a.
   Reporte: `plan/REPORTES/WP-U60-games-library.md`.
-- 🔶 **WP-U61 · Migración de los juegos** *(dep U60 ✅, U51 ✅)* —
-  (lote-ola6-b / orquestador / 2026-07-18) — `games/delta` y
-  `games/pozo` se mueven a la library; consumen `@zeus/*` del registry
-  (o `file:` temporal **documentado** si publish real aún ⏳); el
-  monorepo se queda con engine/mesh/editor/examples.
-  **CA:** demos de ambos juegos verdes desde la library contra un mesh
-  levantado del monorepo; e2e de la matriz adaptados.
-  **Demolición:** `packages/games/` en el monorepo.
+- ✅ **WP-U61 · Migración de los juegos** *(dep U60 ✅, U51 ✅)* —
+  aceptado (orquestador / 2026-07-18; merge zeus `6d38287`; library
+  `9baf67a`) — `games/delta` y `games/pozo` viven en
+  `Z_SDK-games-library`; monorepo sin `packages/games/`; e2e/docs
+  apuntan a la library.
+  **CA:** demos de ambos juegos verdes desde la library contra mesh del
+  monorepo; e2e adaptados — ✅.
+  **Demolición:** `packages/games/` en el monorepo — ✅.
+  Reporte: `plan/REPORTES/WP-U61-migrate-games.md`.
   Brief: `plan/REPORTES/briefs/WP-U61-migrate-games.md`.
-  Worktree: `.worktrees/wp-u61-migrate-games` · rama `wp/u61-migrate-games`.
-- ⬜ **WP-U62 · Pipeline de releases de datos** *(dep U61)* — el Notario (ARG
+- ⬜ **WP-U62 · Pipeline de releases de datos** *(dep U61 ✅)* — el Notario (ARG
   WP-20/23) escribe start packs contra la library: cada release = paquete
   `@zeus/startpack-<game>` en el registry propio + GitHub Release espejo
   (tarball + acta). `VOLUMES/` sale del monorepo; quedan solo datos sintéticos
