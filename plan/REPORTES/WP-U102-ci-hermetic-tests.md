@@ -5,7 +5,7 @@
 | agente | worker (wp-u102-ci-hermetic-tests) |
 | fecha | 2026-07-18 |
 | rama | `wp/u102-ci-hermetic-tests` |
-| commit(s) | `d363de4` `14bf2f4` `edb8282` `6b08bc6` `f9926d7` |
+| commit(s) | `d363de4` `14bf2f4` `edb8282` `6b08bc6` `65e1ce5` `54726fc` |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 
