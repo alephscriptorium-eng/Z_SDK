@@ -11,10 +11,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U111 ✅)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
-> **0 DA** abiertas; **U111 🔶**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> **0 DA** abiertas; **U111 ✅**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
 > (addenda triaje registro vigilante 2026-07-18). Línea de producto en
 > **`main`**. **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus
 > `bd5f46c`). Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107
@@ -22,10 +22,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 >
 > **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ ·
 > ~~U110~~ ✅ (lote 7+9 cerrado) · (2) frente editor **U111–U114** —
-> **GO** 2026-07-18 · **U111 🔶** (lote 1–4+8; U112–U114 aún ⬜) ·
-> (3) diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable) ·
-> (4) triaje vigilante → **U115** ⬜ (schema story-board real; no 🔶
-> mientras U111 vuele).
+> **GO** 2026-07-18 · ~~**U111**~~ ✅ (lote 1–4+8; U112–U114 aún ⬜;
+> listo para encadenar U112) · (3) diferidos U87 §5–6 → DECISIONES /
+> horizonte (sin WP ejecutable) · (4) triaje vigilante → **U115** ⬜
+> (schema story-board real; tras U111 ✅ o c/U114).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -49,24 +49,22 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ✅ |
 | Post-U87 — slots puertos `solve*` (+ residual pozo) | **U109** | ✅ |
 | Post-U87 — `@zeus/startpack-kit` | **U110** | ✅ |
-| Post-U87 — editor materializa juegos reales | **U111** | 🔶 |
-| Post-U87 — carpeta: importar obra | **U112** | ⬜ (lote; tras U111) |
+| Post-U87 — editor materializa juegos reales | **U111** | ✅ |
+| Post-U87 — carpeta: importar obra | **U112** | ⬜ (lote; listo) |
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ (lote; tras U111) |
 | Post-U87 — dialectos story-board en editor | **U114** | ⬜ (lote; tras U111) |
-| Vigilante — schema story-board real (kit) | **U115** | ⬜ (tras U111 o c/U114) |
+| Vigilante — schema story-board real (kit) | **U115** | ⬜ (tras U111 ✅ o c/U114) |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
-- **U112–U114** — definidos; encadenar tras U111 (padre/lote); **no 🔶**
-  aún en esta sesión
-- **U115** — schema story-board real; **no 🔶** mientras U111 vuele
+- **U112–U114** — definidos; **U111 ✅** → listo para encadenar U112
+  (padre/lote); **no 🔶** aún en esta sesión
+- **U115** — schema story-board real; tras U111 ✅ o c/U114; **no 🔶**
 
-**En curso:** **WP-U111** 🔶 (orquestador / 2026-07-18) — frente editor
-lote 1–4+8 · brief `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo.md`
-· worktree `.worktrees/wp-u111-editor-materialize-narrativo`
+**En curso:** — (ninguno)
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -94,7 +92,9 @@ lote 1–4+8 · brief `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo
     library `aea9e04`; revisión `3e602e3`
 15. ~~**WP-U110**~~ ✅ — `@zeus/startpack-kit`; merge zeus `4bcd045` ·
     library `294c97c`; revisión `8b91a84` · **micro lote 7+9 cerrado**
-16. **Frente editor** — **U111 🔶** (esta sesión) → luego U112–U114
+16. ~~**WP-U111**~~ ✅ — editor materialize narrativo (plaza); merge
+    zeus `16ee4a0` · library `e778bdf`; revisión `084a006` · **listo
+    para U112** (padre encadena)
 17. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
 18. ~~Triaje registro vigilante 2026-07-18~~ → **U115** ⬜ + addenda
     RE-PLAN; residual STOP_SERVICES pozo/solve en cola (sin WP)
@@ -1360,8 +1360,9 @@ cerrado):
 > Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar** con
 > `packages/arg/spec/BACKLOG.md`. ~~**U109**~~ ✅ · ~~**U110**~~ ✅
 > (merge zeus `4bcd045` · library `294c97c`; revisión `8b91a84`) —
-> **micro lote 7+9 cerrado**; frente editor **GO** · **U111 🔶**
-> (2026-07-18); U112–U114 aún ⬜; **U115** ⬜ (schema kit).
+> **micro lote 7+9 cerrado**; frente editor **GO** · ~~**U111**~~ ✅
+> (merge zeus `16ee4a0` · library `e778bdf`; revisión `084a006`);
+> U112–U114 aún ⬜ (**listo para U112**); **U115** ⬜ (schema kit).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
 
@@ -1387,29 +1388,17 @@ cerrado):
 ### Lote «editor produce juegos» — frente ABIERTO (GO 2026-07-18)
 
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
-> Lote 1–4+8: **U111 primero**; padre encadena U112–U114.
+> Lote 1–4+8: ~~**U111**~~ ✅; padre encadena U112–U114.
 
-- 🔶 **WP-U111 · Editor materializa juegos reales (no solo sketch)**
-  *(U87 §1+§2; dep U70 ✅, U86 ✅)* — en curso (orquestador /
-  2026-07-18) · brief
-  `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo.md` ·
-  rama `wp/u111-editor-materialize-narrativo` · worktree
-  `.worktrees/wp-u111-editor-materialize-narrativo`. Hoy
-  `validateDraft` / materialize exigen `gameId === 'sketch'`; el
-  catálogo del editor es escena juguete + línea juguete + casos, sin
-  REIC / actos / uichain / agentchain. El editor gana modo mundo A:
-  materiales narrativos de la carpeta dramaturgo y materialize que
-  produzca un start pack / juego instalable **distinto de sketch** (al
-  menos un `gameId` narrativo de prueba o parametrizable), sin armar a
-  mano en library.
-  **CA:** desde editor-ui se define un juego mínimo con materiales
-  narrativos (actos o equivalente carpeta) y se produce release
-  instalable cuyo `gameId !== 'sketch'`; tests editor + Notario/path
-  release verdes; README editor veraz.
-  **Demolición:** el hard-gate `gameId === 'sketch'` como único camino
-  de materialize (queda sketch como un preset/plantilla, no como techo).
-  **Deps:** U70 ✅ · U86 ✅. Coordina con U114 (dialectos); puede ir
-  antes con dialecto mínimo documentado.
+- ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
+  *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
+  2026-07-18) · merge zeus `16ee4a0` · library `e778bdf` · revisión
+  `084a006` · reporte
+  `plan/REPORTES/WP-U111-editor-materialize-narrativo.md`. Demolido
+  hard-gate sketch-only; materialize plaza (startpack-plaza) vía
+  dialecto mínimo `solve-inline`; tests editor + Notario/path release
+  verdes.
+  **Deps:** U70 ✅ · U86 ✅.
 
 - ⬜ **WP-U112 · Carpeta dramaturgo: instantiate desde obra**
   *(U87 §3; dep U86 ✅)* — `instantiate` solo rellena plantilla vacía;
@@ -1425,7 +1414,7 @@ cerrado):
   **Demolición:** el camino «solo plantilla vacía» como única vía si
   queda sustituido; o documentar ambas vías sin duplicar lógica
   (tabla/map de fuentes).
-  **Deps:** U86 ✅. Paralelo razonable con U111 tras abrir frente.
+  **Deps:** U86 ✅ · U111 ✅. **Siguiente** (padre encadena).
 
 - ⬜ **WP-U113 · Widgets SOLVE con runtime en view-kit**
   *(U87 §4; dep U20 ✅, U87 ✅)* — `panel-elenco`, `panel-heatmap`, etc.
@@ -1464,8 +1453,8 @@ cerrado):
   Cablear validador al schema (AJV u equivalente ya en monorepo/library)
   como fuente de verdad; dialectos/fixtures SOLVE+ALEPH+juguete siguen
   pasando; test que un board inválido contra schema falle con error
-  explicable. **No 🔶** mientras U111 vuele (solape posible con
-  validate/materialize); preferible tras U111 ✅ o en lote con U114.
+  explicable. Preferible tras U111 ✅ (hecho) o en lote con U114;
+  **no 🔶** aún.
   **CA:** `validate-story-board` carga y aplica el schema (no solo
   exists); fixtures/dialectos verdes; board sintético inválido → rechazo
   claro; README kit veraz (schema = contrato, no decoración).
