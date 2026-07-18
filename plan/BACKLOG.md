@@ -11,12 +11,13 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18h · cierre WP-U62 / Ola 6)
+## Remate — estado swarm (2026-07-18 · lote-ola9-a)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes D-22 cerrados en
 > código (U104/U60/U106/U105 ✅). Línea de producto en rama **`main`**.
 > **Ola 6 cerrada** (U60–U62 ✅). Residual **publish real** ⏳ ops
-> (`NPM_TOKEN`) → U55 — **no 🔶**. Ola 9 desbloqueada — **no asignar aquí**.
+> (`NPM_TOKEN`) → U55 — **no 🔶**. **Ola 9 lote-ola9-a** en curso:
+> U70 + U86 🔶 (2026-07-18). U87 ⬜ (dep U70+U86).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -30,12 +31,15 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 | (5) Dominio custom Pages (`z-sdk.escrivivir.co`) | **U106** | ✅ |
 | Ola 6 — migración juegos | **U61** | ✅ |
 | Ola 6 — pipeline releases de datos | **U62** | ✅ |
+| Ola 9 — editor gamemaps / releases | **U70** | 🔶 lote-ola9-a |
+| Ola 9 — CARPETA DRAMATURGO | **U86** | 🔶 lote-ola9-a |
+| Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ⬜ dep U70+U86 |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
-- **Ola 9** — U70 / U86 / U87 (dep Ola 6 ✅; **padre decide** asignación)
+- **U87** — dep U70 ✅ + U86 ✅ (no asignar en lote-ola9-a)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
 **Next steps:**
@@ -51,8 +55,8 @@ publish real (ops) → U55. Sidecar / `ZEUS_BLOB_*` = **DIFERIDO**.
 7. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
 8. ~~WP-U61~~ ✅ — migración delta/pozo → games-library
 9. ~~Ola 6 / WP-U62~~ ✅ — pipeline startpack; ola 6 cerrada
-10. Siguiente sugerido: **Ola 9** (U70/U86) | ops NPM_TOKEN/DNS
-    (padre decide; no asignar en este cierre)
+10. **Ola 9 / lote-ola9-a** — U70 + U86 🔶 (asignados 2026-07-18);
+    U87 espera ambos ✅ | ops NPM_TOKEN/DNS (U55 sigue gated)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -623,8 +627,8 @@ Hallazgos diferidos U56 (no bloquean):
 
 > **Cerrada** (orquestador / 2026-07-18h): **U60 ✅** · **U61 ✅**
 > (merge zeus `6d38287`; library `9baf67a`) · **U62 ✅** (merge zeus
-> `2ad8c36`; library `688be30`). Ola 9 (U70/U86/U87) desbloqueada —
-> asignación la decide el padre.
+> `2ad8c36`; library `688be30`). Ola 9 desbloqueada → **lote-ola9-a**
+> (U70 + U86 🔶).
 
 - ✅ **WP-U60 · Repo Z_SDK-games-library** (D-11; D-22) — aceptado
   (orquestador / 2026-07-18; merge `wp/u60-games-library`; revisión
@@ -871,25 +875,35 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
 
 ## Ola 9 — El mundo del dramaturgo (dep olas 6–8)
 
-> **Desbloqueada** (orquestador / 2026-07-18h): Ola 6 cerrada (U60–U62 ✅).
-> NO asignar U70/U86/U87 en este cierre — padre decide.
+> **En curso** (orquestador / 2026-07-18): **lote-ola9-a** — U70 + U86 🔶
+> en paralelo. U87 ⬜ (dep U70+U86; **no asignar**). U55 **no** (gated
+> publish real). Briefs:
+> `plan/REPORTES/briefs/WP-U70-editor-gamemaps.md`,
+> `plan/REPORTES/briefs/WP-U86-carpeta-dramaturgo.md`.
 
-- ⬜ **WP-U70 · Editor de gamemaps y releases** — editor-ui evoluciona de CRUD
-  de presets a editor del mundo A: gamemaps, labelsets, cloaks, casos, y las
-  líneas del dramaturgo (U80/U81) como materia prima seleccionable; botón
-  «release» = start pack + versiones + acta (dispara el pipeline de WP-U62).
+- 🔶 **WP-U70 · Editor de gamemaps y releases** — en curso (lote-ola9-a /
+  orquestador / 2026-07-18) — editor-ui evoluciona de CRUD de presets a
+  editor del mundo A: gamemaps, labelsets, cloaks, casos, y las líneas del
+  dramaturgo (U80/U81) como materia prima seleccionable; botón «release» =
+  start pack + versiones + acta (dispara el pipeline de WP-U62).
+  Rama: `wp/u70-editor-gamemaps` · worktree:
+  `.worktrees/wp-u70-editor-gamemaps` · brief:
+  `plan/REPORTES/briefs/WP-U70-editor-gamemaps.md`.
   **CA:** desde el editor se define un juego mínimo (escena, labelset, línea,
   casos) y se produce un release instalable.
   **Demolición:** las vistas CRUD que el editor nuevo sustituya.
 
-- ⬜ **WP-U86 · CARPETA DRAMATURGO (kit de experiencia)** — en la
-  games-library: plantilla destilada de ALEPH_ET_OMEGA y SOLVE_ET_COAGULA
-  (DATOS.md §6.2): constitución parametrizable (título/tema + 4 ejes REIC),
-  cadenas de 4 capas con README-plantilla, `story-board.json` (schema
-  actos→widgets), plantillas `uichain/panel-*.prompt.md`, `AYUDA.md`, marcas
-  epistémicas y hot files. Con stubs/desacople documentado de las skills
-  externas de network-engine (disfraz-rude-bot y browsers de caché) que hoy
-  ambos juegos asumen.
+- 🔶 **WP-U86 · CARPETA DRAMATURGO (kit de experiencia)** — en curso
+  (lote-ola9-a / orquestador / 2026-07-18) — en la games-library: plantilla
+  destilada de ALEPH_ET_OMEGA y SOLVE_ET_COAGULA (DATOS.md §6): constitución
+  parametrizable (título/tema + 4 ejes REIC), cadenas de 4 capas con
+  README-plantilla, `story-board.json` (schema actos→widgets), plantillas
+  `uichain/panel-*.prompt.md`, `AYUDA.md`, marcas epistémicas y hot files.
+  Con stubs/desacople documentado de las skills externas de network-engine
+  (disfraz-rude-bot y browsers de caché) que hoy ambos juegos asumen.
+  Rama: `wp/u86-carpeta-dramaturgo` · worktree:
+  `.worktrees/wp-u86-carpeta-dramaturgo` · brief:
+  `plan/REPORTES/briefs/WP-U86-carpeta-dramaturgo.md`.
   **CA:** desde la carpeta, un dramaturgo (humano o agente) instancia un
   juego narrativo nuevo de juguete sin editar nada fuera de su carpeta; el
   schema del story-board valida los dos story-boards reales existentes.
@@ -902,7 +916,7 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
   de SolveCoagula en Wikipedia). Entra al mesh como juego de la
   games-library con su CASOS.md y su acta. Lo que no se pueda hacer sin
   tocar engine/editor es el backlog de mejoras del mundo A (mismo patrón que
-  WP-U23).
+  WP-U23). **No asignar** hasta U70 ✅ + U86 ✅.
   **CA:** el juego corre en el mesh desde release de la games-library; acta
   de validación en verde; informe «qué faltó al editor/kits».
   **Demolición:** n/a. delta+pozo siguen siendo el mínimo de la regla de los
