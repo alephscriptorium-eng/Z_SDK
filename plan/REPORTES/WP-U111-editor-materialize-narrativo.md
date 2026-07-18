@@ -5,7 +5,7 @@
 | agente | worker (frente editor / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u111-editor-materialize-narrativo` (zeus) · `wp/u111-editor-materialize-narrativo` (library) |
-| commit(s) | zeus: `cadcddd` + corrección (ver §CORRECCION) · library: `51d7420` |
+| commit(s) | zeus: `0079ee1` (corrección) · base `cadcddd` · library: `51d7420` |
 | estado propuesto | devuelto-corregido |
 
 ## Qué se hizo
@@ -198,7 +198,7 @@ No autorizado. Sin ✅ BACKLOG. Sin push orquestador.
 
 ## CORRECCION (worker · 2026-07-18)
 
-Corregido en la misma rama tras Devuelto `a07ffe0`. Fixes del orquestador:
+Corregido en commit `0079ee1` (misma rama) tras Devuelto `a07ffe0`. Fixes del orquestador:
 
 1. **Release sketch** — `createDefaultDraft()` en body + assert
    `body.draft.gameId === 'sketch'` + tarball sketch.
