@@ -11,6 +11,38 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
+## Remate — estado swarm (2026-07-18)
+
+> Diseño drenado: **0 DA abiertas** post D-21 (`plan/DECISIONES.md` §abiertas
+> vacío). Línea de producto en rama **`main`** (no `master`; tip local
+> refundación → push a `origin/main`).
+
+**⬜ restantes (bloqueados sin credenciales / publish / ops):**
+- **U55** — demoler `file:` (dep registry tras publish)
+- **Ola 6** — U60–U62 (U60 = nuevo repo GitHub; no crear desde swarm)
+- **Ola 9** — U70 / U86 / U87 (dep Ola 6)
+
+**Next steps (orden vigilante + usuario):**
+1. Housekeeping `.worktrees/` residuos + `git worktree prune`
+2. Push **solo** `main` (~343 commits refundación) → dispara CI U03 real
+3. Triaje CI si rojo parcial → WP futuro (no pánico en remate)
+4. Usuario: **publish** → desbloquea U55
+5. Usuario: repo **U60** games-library → Ola 6 / 9
+6. Usuario: sidecar / `ZEUS_BLOB_*` ops (live U100/U101)
+7. Residual **viewer peer-card** (cola U93) antes de mesh abierto
+
+**NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
+
+**Cola residuales (sin WP grande nuevo; higiene / candidatos):**
+- Viewer fabrica peer-card local (cara ciega §3 / cola U93)
+- Harness U100 cid hex → formato SSB `&…sha256` (cola U101)
+- CRLF `spec-sync` / `types-sync` Windows (cola U95 / higiene 11c)
+- dual-emit `arg:*` ×3 sitios; domain-helpers `session:state`; flake e2e DJ
+- salvage dual / cache milestone (cola U94); gamemap SCRIPTORIUM (cola U96)
+- `release:changeset-dry` / linea-kit `exports ./schemas/*` (publish)
+
+---
+
 ## Ola 0 — Suelo firme
 
 - ✅ **WP-U00 · Gates de prácticas** — aceptado (orquestador / 2026-07-17) — test raíz `npm run gates` estilo

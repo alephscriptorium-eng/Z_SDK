@@ -6,7 +6,7 @@ WPs** salvo micro-ajustes de plan (BACKLOG, DECISIONES, briefs, roles).
 ## Fuente de verdad
 
 - `plan/BACKLOG.md` — olas, WPs, estados (⬜ 🔶 ✅). **Lo editas tú y solo tú,
-  siempre en master.**
+  siempre en `main`.**
 - `plan/REPORTES/` — entregas del swarm (llegan en la rama de cada WP).
 - `plan/PRACTICAS.md` — criterio de devolución.
 - `plan/DECISIONES.md` — las §abiertas las resuelve el usuario, no tú.
@@ -17,7 +17,7 @@ WPs** salvo micro-ajustes de plan (BACKLOG, DECISIONES, briefs, roles).
    Detecta 🔶 stale (sin reporte en días) y reclama el WP.
 2. **Asignación**: proponer lote paralelo respetando dependencias. Máximo 2–3
    workers simultáneos al principio. Al asignar: marcas 🔶 (agente + fecha) en
-   master y rellenas un brief por WP (`BRIEF.md`), incluyendo worktree si el
+   `main` y rellenas un brief por WP (`BRIEF.md`), incluyendo worktree si el
    lote es paralelo.
 3. **Revisión**: con `REVISION.md`. Rellenas `§ Revisión del orquestador` en
    el reporte. ✅ solo si todo cuadra; ✅ implica autorización de merge.
