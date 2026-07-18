@@ -5,8 +5,8 @@
 | agente | worker (lote-ola9-b+catalog / Cursor Grok) |
 | fecha | 2026-07-18 |
 | rama | `wp/u87-solve-coagula` (zeus) · `wp/u87-solve-coagula` (library) |
-| commit(s) | library: `e2f3eb1`; zeus: `831cf21` |
-| estado propuesto | listo para revisión |
+| commit(s) | library: `e2f3eb1`; zeus: tip WP + sync main (U107) + revisión |
+| estado propuesto | aceptado ✅ (orquestador; sin merge/✅ BACKLOG aún) |
 | push monorepo | **no intentado** (política worker) |
 | push library | OK `origin/wp/u87-solve-coagula` |
 
@@ -187,4 +187,63 @@ solo punteros; push zeus no intentado.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** — 2026-07-18 (orquestador). **No** merge /
+**no** push / **no** ✅ BACKLOG en este paso (pedido explícito). Autoriza
+merge cuando el usuario lo pida; BACKLOG 🔶→✅ solo en `main` al mergear.
+
+### Qué se verificó
+
+- **Diff zeus** `main...wp/u87-solve-coagula` (tras sync U107):
+  `README.md`, `docs/games/index.md`, este reporte. Sin
+  `plan/BACKLOG.md` en el trabajo del worker. Commits convencionales
+  (`docs(reportes)`). Sync: `merge(main)` U107 antes de esta revisión.
+- **Library** `e2f3eb1` en `origin/wp/u87-solve-coagula` (84 archivos):
+  `@zeus/solve-coagula` + `@zeus/startpack-solve-coagula` + e2e +
+  fila Notario. **No** toca delta/pozo. Originales
+  `scriptorium-network-games/SOLVE_ET_COAGULA` intactos. Sin hardcode
+  solve en engine/kits zeus.
+- **Release** `startpack-solve-coagula-v0.1.0`: assets tarball + acta
+  OK; `npm install` del `.tgz` resuelve `@zeus/startpack-solve-coagula@0.1.0`.
+  Nota: el git tag apunta a `dfd6f06` (`origin/main` / U107) — quirk
+  Notario (`gh release create` sin `--target`; mismo patrón
+  delta/pozo). El artefacto de CA es el tarball, no el checkout del tag.
+- **Informe «qué faltó»**: §hallazgos 1–8 honesto (editor sketch-only,
+  instantiate≠import, widgets sin runtime, slots ports, etc.) — backlog
+  mundo A; no bloquea.
+- PRACTICAS §1–3 / §6: auto-revisión honesta; demolición n/a; regla de
+  los dos juegos respetada; alcance acotado.
+
+### CA (re-ejecutados en library @ `e2f3eb1`, 2026-07-18)
+
+- [x] Juego corre en mesh desde release library — e2e C-01..C-03 🟢;
+  tarball Release instalable; Notario acta verde (loadStartPack /
+  volumes / gamemap).
+- [x] Acta de validación en verde —
+  `packages/startpack-solve-coagula/acta/ACTA.md` + asset Release.
+- [x] Informe «qué faltó al editor/kits» — §hallazgos del reporte.
+
+```
+npm test -w @zeus/solve-coagula        → 6/6 pass
+npm test -w @zeus/startpack-solve-coagula → 1/1 pass
+npm run e2e:solve-coagula-mcp          → C-01/C-02/C-03 + gates 🟢
+```
+
+### PRACTICAS
+
+OK. Sin monkey-code en engine; identidad solo en library; worker no
+editó BACKLOG; push monorepo no intentado.
+
+### Merge sugerido
+
+1. **Library** `wp/u87-solve-coagula` (`e2f3eb1`) → `main` (U107 ya en
+   `origin/main`; ramas divergentes desde `cdddf59` — merge limpio
+   esperado: juego vs docs).
+2. **Zeus** `wp/u87-solve-coagula` → `main` (ya sync U107).
+3. Orquestador en `main`: ✅ BACKLOG U87 + remate Ola 9 si aplica;
+   `git worktree remove` del WT zeus.
+4. Hallazgos §1–8 → WPs mundo A (no en este paso).
+
+### Acción siguiente
+
+Merge library→main + zeus→main + ✅ BACKLOG (solo cuando el usuario lo
+pida). Push: **no intentado** en esta revisión.
