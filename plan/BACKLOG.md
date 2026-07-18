@@ -11,10 +11,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U112 ✅)
+## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅ · U113 🔶)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
-> **0 DA** abiertas; **U111 ✅**; **U112 ✅**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> **0 DA** abiertas; **U111 ✅**; **U112 ✅**; **U113 🔶**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
 > (addenda triaje registro vigilante 2026-07-18). Línea de producto en
 > **`main`**. **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus
 > `bd5f46c`). Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107
@@ -22,8 +22,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 >
 > **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ ·
 > ~~U110~~ ✅ (lote 7+9 cerrado) · (2) frente editor **U111–U114** —
-> **GO** 2026-07-18 · ~~**U111**~~ ✅ · ~~**U112**~~ ✅ (importar obra;
-> U113–U114 aún ⬜; listo para encadenar U113) · (3) diferidos U87 §5–6 →
+> **GO** 2026-07-18 · ~~**U111**~~ ✅ · ~~**U112**~~ ✅ · **U113** 🔶
+> (widgets view-kit; U114 aún ⬜) · (3) diferidos U87 §5–6 →
 > DECISIONES / horizonte (sin WP ejecutable) · (4) triaje vigilante →
 > **U115** ⬜ (schema story-board real; tras U111 ✅ o c/U114).
 
@@ -51,7 +51,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — `@zeus/startpack-kit` | **U110** | ✅ |
 | Post-U87 — editor materializa juegos reales | **U111** | ✅ |
 | Post-U87 — carpeta: importar obra | **U112** | ✅ |
-| Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ (lote; listo) |
+| Post-U87 — widgets SOLVE en view-kit | **U113** | 🔶 worker / 2026-07-18 |
 | Post-U87 — dialectos story-board en editor | **U114** | ⬜ (lote; tras U111) |
 | Vigilante — schema story-board real (kit) | **U115** | ⬜ (tras U111 ✅ o c/U114) |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
@@ -60,11 +60,11 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 **⬜ / bloqueados (post-lote):**
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
-- **U113–U114** — definidos; **U112 ✅** → listo para encadenar U113
-  (padre/lote); **no 🔶** aún en esta sesión
+- **U114** — definido; tras U113 (padre encadena); **no 🔶** aún
 - **U115** — schema story-board real; tras U111 ✅ o c/U114; **no 🔶**
 
-**En curso:** — (ninguno)
+**En curso:** **U113** 🔶 (worker / 2026-07-18 · brief
+`plan/REPORTES/briefs/WP-U113-widgets-solve-view-kit.md`)
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -95,10 +95,12 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 16. ~~**WP-U111**~~ ✅ — editor materialize narrativo (plaza); merge
     zeus `16ee4a0` · library `e778bdf`; revisión `084a006`
 17. ~~**WP-U112**~~ ✅ — carpeta: instantiate `--from` obra; merge
-    zeus `2fc9021` · library `a76c93f`; revisión `3807aac` · **listo
-    para U113** (padre encadena)
-18. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
-19. ~~Triaje registro vigilante 2026-07-18~~ → **U115** ⬜ + addenda
+    zeus `2fc9021` · library `a76c93f`; revisión `3807aac`
+18. **WP-U113** 🔶 — widgets SOLVE runtime en view-kit (worker /
+    2026-07-18); brief
+    `plan/REPORTES/briefs/WP-U113-widgets-solve-view-kit.md`
+19. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
+20. ~~Triaje registro vigilante 2026-07-18~~ → **U115** ⬜ + addenda
     RE-PLAN; residual STOP_SERVICES pozo/solve en cola (sin WP)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
@@ -1365,7 +1367,7 @@ cerrado):
 > **micro lote 7+9 cerrado**; frente editor **GO** · ~~**U111**~~ ✅
 > (merge zeus `16ee4a0` · library `e778bdf`; revisión `084a006`);
 > ~~**U112**~~ ✅ (merge zeus `2fc9021` · library `a76c93f`; revisión
-> `3807aac`); U113–U114 aún ⬜ (**listo para U113**); **U115** ⬜
+> `3807aac`); **U113** 🔶 (widgets view-kit); U114 aún ⬜; **U115** ⬜
 > (schema kit).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
@@ -1392,7 +1394,7 @@ cerrado):
 ### Lote «editor produce juegos» — frente ABIERTO (GO 2026-07-18)
 
 > Holón 2 ([RE-PLAN.md](RE-PLAN.md) §3.6). Micro U109–U110 ✅.
-> Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; padre encadena U113–U114.
+> Lote 1–4+8: ~~**U111**~~ ✅; ~~**U112**~~ ✅; **U113** 🔶; padre encadena U114.
 
 - ✅ **WP-U111 · Editor materializa juegos reales (no solo sketch)**
   *(U87 §1+§2; dep U70 ✅, U86 ✅)* — aceptado (orquestador /
@@ -1414,21 +1416,24 @@ cerrado):
   kit + docs.
   **Deps:** U86 ✅ · U111 ✅.
 
-- ⬜ **WP-U113 · Widgets SOLVE con runtime en view-kit**
-  *(U87 §4; dep U20 ✅, U87 ✅)* — `panel-elenco`, `panel-heatmap`, etc.
-  viven como `uichain/*.prompt.md`; view-kit no los renderiza. Vista
-  U87 = lista de actos + meta. Implementar runtime mínimo en
-  `@zeus/view-kit` (o registro de widgets consumible por la vista
-  solve) para al menos un widget SOLVE real en demo/e2e; sin meter
-  nombres de juego en engine si el registro es genérico (widgets por
-  id/schema).
+- 🔶 **WP-U113 · Widgets SOLVE con runtime en view-kit**
+  *(U87 §4; dep U20 ✅, U87 ✅)* — en curso (worker / 2026-07-18) ·
+  brief `plan/REPORTES/briefs/WP-U113-widgets-solve-view-kit.md`
+  · rama `wp/u113-widgets-solve-view-kit` · worktree
+  `.worktrees/wp-u113-widgets-solve-view-kit` (+ library).
+  `panel-elenco`, `panel-heatmap`, etc. viven como
+  `uichain/*.prompt.md`; view-kit no los renderiza. Vista U87 = lista
+  de actos + meta. Implementar runtime mínimo en `@zeus/view-kit`
+  (o registro de widgets consumible por la vista solve) para al menos
+  un widget SOLVE real en demo/e2e; sin meter nombres de juego en
+  engine si el registro es genérico (widgets por id/schema).
   **CA:** un widget declarado en story-board SOLVE se renderiza en la
   vista del juego (no solo prompt); test/e2e o smoke con evidencia;
   gate two-games: engine sin conceptos exclusivos solve si el corte es
   genérico.
   **Demolición:** stubs «solo prompt» del widget elegido si el runtime
   los sustituye.
-  **Deps:** U20 ✅ · U87 ✅. **Siguiente** (padre encadena).
+  **Deps:** U20 ✅ · U87 ✅.
 
 - ⬜ **WP-U114 · Dialectos story-board en el editor**
   *(U87 §8; dep U70 ✅, U86 ✅)* — SOLVE usa dialecto `solve-inline`
