@@ -148,4 +148,53 @@ Ninguna. Push: **no intentado** (política swarm).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-18 (orquestador). Diff + CA + PRACTICAS OK.
+Merge **no** ejecutado en esta revisión (pedido explícito). BACKLOG ✅
+**no** marcado (pedido explícito). Push: no intentado.
+
+### Qué se verificó
+
+- Diff `master...wp/u93-peer-card`: 28 archivos / +1211 −90; alcance
+  authority-kit emit + webrtc-signaling gate + callers viewer/e2e +
+  README + changeset; **sin** `plan/BACKLOG.md` en el diff.
+- Commits convencionales: `feat(authority-kit)`,
+  `feat(webrtc-signaling)!`, `test(e2e)`, `docs(plan)`.
+- **CA ambos extremos (emite y exige — no y/o):**
+  - Emit: `issuePeerCard` → `makePeerCard`; `startAuthority` emite al
+    aceptar `join` (`onPeerCard` / `peerCards`). Unit
+    `emite peer-card al join` + e2e cadena.
+  - Exige: `assertSignalingPeerCard` en outbound (`_gatedOutbound`) e
+    inbound (`handleMessage`) para offer/answer/ICE/room-join.
+  - Anti A-02: consumidores de producción fuera de protocol
+    (`authority-kit` + `webrtc-signaling`); protocol solo fabrica/helpers.
+- **CA rechazo caducada / sin rol:** unit `peer-card-gate.test.mjs` +
+  asserts embebidos en `e2e:peer-card-chain` (re-run OK).
+- **CA e2e:** re-run literal —
+  - `e2e:peer-card-chain OK — authority emit + signaling require + DataChannel`
+  - `e2e:webrtc-signaling OK — DataChannel open, ping delivered, no Google ICE`
+  - `e2e:ssb-webrtc-signaling OK — … via pub-mediated SSB DMs…`
+  - Units: authority-kit 12/12; webrtc-signaling 18/18.
+- **CA README hook SSB:** sección «Hook SSB (extensión explícita)» en
+  `webrtc-signaling/README.md`; diff U93 no añade imports/código SSB
+  nuevo (solo docs + wire `peerCard` en `ssb-private-signaling` ya
+  existente).
+- **Demolición:** `rg peerId: this.userId|displayName, peerId|data: { peerId`
+  en signaling + viewer browser → ZERO.
+- PRACTICAS §1–3/§6: OK (tabla `PEER_CARD_GATED_TYPES`; sin nombres de
+  transición; auto-revisión honesta; alcance acotado).
+
+### Hallazgos → cola (no arreglados en revisión)
+
+1. **Viewer fabrica card local** — `webrtc-viewer/.../viewer-app.mjs`
+   llama `makePeerCard` como ticket UI; no consume `onPeerCard` de
+   autoridad viva. Emisión canónica de sala = authority-kit al join.
+2. **Coturn VPS** — sigue ⏳ (ops; cola U88/U90).
+3. **`userId` socket = routing** — dirección de transporte to/from;
+   no demolido (correcto: el card cubre identidad de handshake, no
+   routing).
+
+### Acción siguiente
+
+Usuario/orquestador en master: merge `wp/u93-peer-card` cuando se
+autorice; entonces BACKLOG 🔶→✅ + volcar hallazgos a cola +
+`git worktree remove`. Push: no intentado.
