@@ -142,4 +142,42 @@ BACKLOG).
 
 ## Revisión del orquestador
 
-_(pendiente)_
+**Veredicto: Aceptado ✅** — 2026-07-18 · orquestador
+
+### CA (todos OK)
+
+1. Widget declarado en story-board se renderiza en la vista (no solo
+   prompt) — library monta `#widgets-mount` + `createDefaultWidgetRegistry`
+   / `mountStoryWidgets`; fixture `panel-elenco.json`; act-0 marcado
+   `widgets runtime`. Re-smoke HTTP (worktree library, view-kit vía
+   `.deps/zeus-sdk`): health
+   `widgets:["panel-elenco"]`; html mount + import-map + fixture
+   SolveCoagula; `/view-kit/widgets.mjs` 200.
+2. Test/e2e o smoke con evidencia — re-ejecutado:
+   `npm test -w @zeus/view-kit` → 36/36; `npm test -w @zeus/solve-coagula`
+   → 8/8 (suite U113 ×2); smoke HTTP verde. Navegador humano sigue
+   `⏳` (aceptable con smoke HTTP).
+3. Gate two-games — `rg solve-coagula|SOLVE|REIC|SolveCoagula` en
+   `packages/engine/view-kit` → limpio; `npm run gates` → OK.
+   Registry genérico `id → render`; pozo puede consumirlo o ignorarlo.
+
+### PRACTICAS / Demolición
+
+- §1.2 tabla registry (no if-creciente).
+- §1.11 engine sin nombres de juego; id `panel-elenco` = widget schema,
+  no dialecto solve.
+- §1.4/§6 changeset patch `@zeus/view-kit`; commits convencionales.
+- Demolición: listado solo-nombre sustituido para widget con payload;
+  uichain docs apuntan a runtime.
+- Alcance: zeus `920841a` (+ docs reporte) · library `5ab457a`. Worker
+  no tocó `plan/BACKLOG.md`.
+
+### Merge (cuando usuario autorice)
+
+1. library `wp/u113-widgets-solve-view-kit` → `main` (`5ab457a`)
+2. zeus `wp/u113-widgets-solve-view-kit` → `main` (incl. esta revisión)
+3. Orquestador: ✅ BACKLOG en `main` + `git worktree remove` (zeus + library)
+4. Luego encadenar **U114** (aún ⬜; no 🔶 hasta abrir)
+
+**Push:** no intentado. **✅ BACKLOG:** no aplicado (pendiente autorización
+merge del usuario).
