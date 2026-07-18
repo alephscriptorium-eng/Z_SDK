@@ -1,7 +1,7 @@
 # delta (ARG)
 
 Juego multijugador three.js: el tablero son los volúmenes (firehose +
-wikicache) y jugar los hace crecer. Familia `packages/games/delta/*`.
+wikicache) y jugar los hace crecer. Familia `packages/delta (Z_SDK-games-library)/*`.
 
 | Paquete | Qué es |
 | ------- | ------ |
@@ -12,8 +12,8 @@ wikicache) y jugar los hace crecer. Familia `packages/games/delta/*`.
 | `arg-demos` | Autoridad (`@zeus/authority-kit`) + launcher |
 
 ```bash
-npm run demo:arg
+npm run demo:arg (en Z_SDK-games-library)
 ```
 
 Wire del juego: `arg:state` / `arg:intent` / … (capa sobre el contrato único).
-Playbook: `packages/games/delta/spec/CASOS.md`. Dosier: `packages/games/delta/README.md`.
+Playbook: `packages/delta (Z_SDK-games-library)/spec/CASOS.md`. Dosier: `packages/delta (Z_SDK-games-library)/README.md`.

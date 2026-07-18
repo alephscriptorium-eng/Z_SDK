@@ -81,7 +81,7 @@ export function isPortsPathExempt(rel) {
   const n = rel.replace(/\\/g, '/');
   if (n.startsWith('packages/engine/presets-sdk/src/env/')) return true;
   if (n.startsWith('docs/') || n.startsWith('plan/')) return true;
-  if (n.includes('/spec/') || n.startsWith('packages/games/delta/spec/')) return true;
+  if (n.includes('/spec/') || n.includes('/spec/')) return true;
   if (n.endsWith('.md')) return true;
   if (
     n.includes('/test/') ||
@@ -226,7 +226,7 @@ const ARG_IMPORT_RE =
   /(?:from|import)\s+['"](@zeus\/arg(?:-[a-z0-9]+)*)['"]|(?:from|import)\s+['"]([^'"]*packages\/games\/delta\/[^'"]+)['"]|require\(\s*['"](@zeus\/arg(?:-[a-z0-9]+)*)['"]\s*\)/;
 
 /**
- * (c) nada fuera de packages/games/delta importa @zeus/arg-* o packages/games/delta/*
+ * (c) el monorepo no importa @zeus/arg-* ni paths packages/games/ (juegos en library)
  * @param {{ repoRoot?: string, files?: string[] }} [opts]
  * @returns {Offender[]}
  */
@@ -235,16 +235,16 @@ export function scanArgImportViolations(opts = {}) {
   const files =
     opts.files ??
     [
-      ...collectFiles('packages', (rel) => !rel.startsWith('packages/games/delta/'), repoRoot),
+      ...collectFiles('packages', () => true, repoRoot),
       ...collectFiles('scripts', () => true, repoRoot),
-      ...collectFiles('examples', () => true, repoRoot)
+      ...collectFiles('examples', () => true, repoRoot),
+      ...collectFiles('e2e', () => true, repoRoot)
     ];
   /** @type {Offender[]} */
   const offenders = [];
   for (const file of files) {
     const rel = normalizeRel(repoRoot, file);
     if (rel.startsWith('scripts/gates/') || rel.startsWith('test/gates/')) continue;
-    if (rel.startsWith('packages/games/delta/')) continue;
     const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
     lines.forEach((line, idx) => {
       if (!ARG_IMPORT_RE.test(line)) return;

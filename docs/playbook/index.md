@@ -22,15 +22,15 @@ Secciones markdown `## C-xx — título` con:
 
 ```bash
 npm exec -w @zeus/playbook-kit -- zeus-playbook-run \
-  --casos packages/games/delta/spec/CASOS.md \
+  --casos packages/delta (Z_SDK-games-library)/spec/CASOS.md \
   --check
 
 npm exec -w @zeus/playbook-kit -- zeus-playbook-run \
-  --casos packages/games/delta/spec/CASOS.md \
+  --casos packages/delta (Z_SDK-games-library)/spec/CASOS.md \
   --ids C-01,C-03 \
   --game delta \
   --out /tmp/acta-delta.md
 ```
 
-Playbooks de referencia: `packages/games/delta/spec/CASOS.md`,
-`packages/games/pozo/spec/CASOS.md`.
+Playbooks de referencia: `packages/delta (Z_SDK-games-library)/spec/CASOS.md`,
+`packages/pozo (Z_SDK-games-library)/spec/CASOS.md`.

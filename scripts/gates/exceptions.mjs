@@ -19,22 +19,7 @@
 export const EXCEPTIONS = [
   // --- (a) puertos/URLs hardcodeados fuera de presets-sdk/env ---
   // Fallbacks preexistentes que duplican DEFAULT_ZEUS_* hasta que un WP
-  // posterior los retire (no es demolición de U00).
-  {
-    path: 'packages/games/delta/arg-console/src/config.mjs',
-    rule: 'ports',
-    reason: 'DEFAULT_*_PORT pre-U00; defaults canónicos viven en presets-sdk/env'
-  },
-  {
-    path: 'packages/games/delta/arg-console/src/server.mjs',
-    rule: 'ports',
-    reason: 'comentario de cabecera cita :3021; puerto real sale de config'
-  },
-  {
-    path: 'packages/games/delta/arg-demos/launch.mjs',
-    rule: 'ports',
-    reason: 'fallback ZEUS_PORT_* pre-U00; pendiente alinear con resolveZeusUiPorts'
-  },
+  // posterior los retire (no es demolición de U00).
   {
     path: 'packages/mesh/linea-firehose/src/config.mjs',
     rule: 'ports',
@@ -134,17 +119,7 @@ export const EXCEPTIONS = [
     path: 'packages/engine/http-contract/src/endpoint.mjs',
     rule: 'ports',
     reason: 'fallback genérico 3000 si appId desconocido; pre-U00'
-  },
-  {
-    path: 'packages/games/delta/arg-player-mcp/src/index.mjs',
-    rule: 'ports',
-    reason: 'comentario de cabecera cita :4121/:4122; bind vía env'
-  },
-  {
-    path: 'packages/games/delta/arg-player-mcp/src/start.mjs',
-    rule: 'ports',
-    reason: 'comentario de cabecera cita puertos MCP arg; bind vía env'
-  },
+  },
   {
     path: 'packages/engine/presets-sdk/src/mcp/runtime.mjs',
     rule: 'ports',
@@ -195,25 +170,5 @@ export const EXCEPTIONS = [
     reason: 'nombre de test «without legacy AlephScript»; pre-U00'
   },
 
-  // --- (c) imports de packages/arg fuera de arg ---
-  {
-    path: 'packages/mesh/cache-browser/src/server.mjs',
-    rule: 'arg-import',
-    reason: 'suscripción ARG track vía @zeus/arg-domain; se corta al mover games/ (ola 5)'
-  },
-  {
-    path: 'packages/mesh/cache-browser/src/arg-track-subscriber.mjs',
-    rule: 'arg-import',
-    reason: 'puente mesh→ARG pre-layout games/; ola 5'
-  },
-  {
-    path: 'packages/mesh/firehose-browser/src/server.mjs',
-    rule: 'arg-import',
-    reason: 'suscripción ARG track vía @zeus/arg-domain; ola 5'
-  },
-  {
-    path: 'packages/mesh/firehose-browser/src/arg-track-subscriber.mjs',
-    rule: 'arg-import',
-    reason: 'puente mesh→ARG pre-layout games/; ola 5'
-  }
+  // (c) arg-import: post-U61 sin imports estáticos @zeus/arg-* en monorepo
 ];

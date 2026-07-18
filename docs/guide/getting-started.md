@@ -20,8 +20,8 @@ El SDK se valida con **dos** juegos. Arrancar demos, no un «master de sesión»
 
 ```bash
 npm run start:socket-server   # transporte de rooms (:3017)
-npm run demo:arg              # delta — 3 visores + autoridad
-npm run demo:pozo             # pozo — autoridad + vista + MCP
+npm run demo:arg (en Z_SDK-games-library)              # delta — 3 visores + autoridad
+npm run demo:pozo (en Z_SDK-games-library)             # pozo — autoridad + vista + MCP
 ```
 
 | Demo | Qué levanta | URLs típicas |
@@ -40,7 +40,7 @@ ver [Handshake externo](/guide/external-handshake).
 npm run lint
 npm run gates                 # PRACTICAS §5
 npm run test:arg              # dominio + feeds + console + player-mcp (delta)
-npm test -w @zeus/pozo        # segundo juego
+npm test -w @zeus/pozo (en Z_SDK-games-library)        # segundo juego
 npm run docs:build            # este portal + contratos generados
 ```
 

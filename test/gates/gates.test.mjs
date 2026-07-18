@@ -79,7 +79,7 @@ test('CA rojo (b): nombre de transición detectado', () => {
   }
 });
 
-test('CA rojo (c): import de @zeus/arg-* fuera de packages/games/delta', () => {
+test('CA rojo (c): import de @zeus/arg-* en monorepo (juegos en library)', () => {
   const root = withTempTree('zeus-gates-argimport-', (dir) => {
     const pkg = path.join(dir, 'packages', 'mesh', 'fake-mesh', 'src');
     fs.mkdirSync(pkg, { recursive: true });

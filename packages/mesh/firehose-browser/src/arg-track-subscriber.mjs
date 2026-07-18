@@ -1,20 +1,30 @@
 /**
  * Suscriptor server-side de arg:track para navegadores reales (WP-13 + WP-26).
- * Se une a la room como firehose-browser#<actor>.
- *
- * WP-26 (deep-links honestos): antes de ofrecer un focus navegable se
- * comprueba con fs si el recurso resuelto existe de verdad. Si no existe, el
- * focus queda con `state: 'ghost'` (la página muestra un aviso suave en vez
- * de morir con ENOENT); un ref sintético (`firehose://synthetic/...`) queda
- * `state: 'synthetic'` — nunca navegable.
+ * Tras WP-U61 `@zeus/arg-domain` vive en Z_SDK-games-library: carga opcional.
+ * Sin el paquete, createArgTrackSubscriber lanza; el server no activa track.
  */
 
 import { createClient, connectAndJoin } from '@zeus/rooms';
-import { resolveTrackRef, EVENTS, DEFAULT_ARG_ROOM } from '@zeus/arg-domain';
 
 /** Un ref es sintético si su uri vive en firehose://synthetic/... */
 export function isSyntheticTrackUri(uri) {
   return /^firehose:\/\/synthetic\//.test(String(uri ?? ''));
+}
+
+/**
+ * @returns {Promise<{ resolveTrackRef: Function, EVENTS: object, DEFAULT_ARG_ROOM: string }>}
+ */
+async function loadArgDomain() {
+  try {
+    return await import('@zeus/arg-domain');
+  } catch (err) {
+    const e = new Error(
+      'arg-track requiere @zeus/arg-domain (Z_SDK-games-library). ' +
+        'Instálalo vía file: o registry, o no pases ZEUS_ARG_TRACK_ACTOR.'
+    );
+    e.cause = err;
+    throw e;
+  }
 }
 
 /**
@@ -23,11 +33,10 @@ export function isSyntheticTrackUri(uri) {
  * @param {string} opts.browserHint 'cache-browser' | 'firehose-browser'
  * @param {string} [opts.room]
  * @param {(resolved: object, ref: object) => Promise<boolean>} [opts.checkExists]
- *   comprobación de existencia en disco del recurso resuelto (WP-26); si no
- *   se pasa, el estado queda 'ok' (comportamiento WP-13)
  * @param {ReturnType<typeof createClient>} [opts.client]
  */
-export function createArgTrackSubscriber(opts) {
+export async function createArgTrackSubscriber(opts) {
+  const { resolveTrackRef, EVENTS, DEFAULT_ARG_ROOM } = await loadArgDomain();
   const actor = opts.actor;
   const browserHint = opts.browserHint;
   const room = opts.room || process.env.ZEUS_ARG_ROOM || DEFAULT_ARG_ROOM;
@@ -45,7 +54,6 @@ export function createArgTrackSubscriber(opts) {
     try {
       return (await checkExists(resolved, ref)) ? 'ok' : 'ghost';
     } catch {
-      // cualquier error de fs se degrada a ghost: NUNCA un ENOENT crudo
       return 'ghost';
     }
   }
@@ -56,7 +64,7 @@ export function createArgTrackSubscriber(opts) {
     if (!resolved) return;
     const seq = ++focusSeq;
     computeState(track.ref, resolved).then((state) => {
-      if (seq !== focusSeq) return; // llegó un focus más nuevo mientras comprobábamos
+      if (seq !== focusSeq) return;
       lastFocus = { ts: Date.now(), ref: track.ref, resolved, state };
     });
   }
@@ -95,7 +103,7 @@ export function createArgTrackSubscriber(opts) {
 
 /**
  * @param {import('express').Express} app
- * @param {ReturnType<typeof createArgTrackSubscriber>|null} subscriber
+ * @param {Awaited<ReturnType<typeof createArgTrackSubscriber>>|null} subscriber
  */
 export function mountTrackFocusRoute(app, subscriber) {
   app.get('/api/track/focus', (_req, res) => {

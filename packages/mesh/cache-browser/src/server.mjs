@@ -34,7 +34,6 @@ import { settingsView } from './views/settings_view.mjs';
 import { createBrowseRoutes } from './browse-routes.mjs';
 import { buildViewSpec } from '../spec/build.mjs';
 import { createArgTrackSubscriber, mountTrackFocusRoute } from './arg-track-subscriber.mjs';
-import { DEFAULT_ARG_ROOM } from '@zeus/arg-domain';
 
 /** @type {{ linea: string|null, path: string|null, viewer: string|null, name: string|null, summary: string|null }} */
 let currentFocus = {
@@ -77,7 +76,7 @@ export async function createViewServer(options = {}) {
   mcp.refresh().catch(() => {});
 
   const trackActor = options.trackActor ?? process.env.ZEUS_ARG_TRACK_ACTOR ?? null;
-  const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? DEFAULT_ARG_ROOM;
+  const trackRoom = options.trackRoom ?? process.env.ZEUS_ARG_ROOM ?? 'ARG_DELTA';
 
   const app = express();
   app.use(cors({ origin: true, credentials: true }));
@@ -108,7 +107,7 @@ export async function createViewServer(options = {}) {
 
   let trackSubscriber = null;
   if (trackActor) {
-    trackSubscriber = createArgTrackSubscriber({
+    trackSubscriber = await createArgTrackSubscriber({
       actor: trackActor,
       browserHint: 'cache-browser',
       room: trackRoom,
