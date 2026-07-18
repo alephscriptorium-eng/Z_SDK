@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import {
   createWidgetRegistry,
   createDefaultWidgetRegistry,
+  CAST_TABLE_WIDGET_IDS,
   renderCastTableWidget,
   mountStoryWidgets
 } from '../src/widgets.mjs';
@@ -133,11 +134,37 @@ test('renderCastTableWidget: vacío explícito', () => {
   assert.equal(empty?.textContent, 'sin participantes');
 });
 
-test('createDefaultWidgetRegistry: panel-elenco monta cast-table', () => {
+test('createDefaultWidgetRegistry: cast-table canónico + alias panel-elenco', () => {
+  const reg = createDefaultWidgetRegistry();
+  assert.deepEqual(CAST_TABLE_WIDGET_IDS, ['cast-table', 'panel-elenco']);
+  assert.equal(reg.has('cast-table'), true);
+  assert.equal(reg.has('panel-elenco'), true);
+  assert.equal(reg.get('cast-table'), reg.get('panel-elenco'));
+  assert.equal(reg.get('cast-table'), renderCastTableWidget);
+});
+
+test('createDefaultWidgetRegistry: monta por id neutro cast-table', () => {
   const doc = fakeDoc();
   const mount = fakeElement('div');
   const reg = createDefaultWidgetRegistry();
-  assert.equal(reg.has('panel-elenco'), true);
+
+  const inst = reg.render('cast-table', {
+    doc,
+    mount,
+    data: {
+      rows: [{ participant: 'A', role: 'aliado', oldid: '1', cached: true }]
+    }
+  });
+  assert.equal(inst.id, 'cast-table');
+  assert.equal(inst.el.getAttribute('data-widget-id'), 'cast-table');
+  assert.ok(inst.el.className.includes('vk-widget-cast-table'));
+  assert.ok(mount.children.includes(inst.el));
+});
+
+test('createDefaultWidgetRegistry: alias panel-elenco mismo render', () => {
+  const doc = fakeDoc();
+  const mount = fakeElement('div');
+  const reg = createDefaultWidgetRegistry();
 
   const inst = reg.render('panel-elenco', {
     doc,
@@ -147,7 +174,18 @@ test('createDefaultWidgetRegistry: panel-elenco monta cast-table', () => {
     }
   });
   assert.equal(inst.el.getAttribute('data-widget-id'), 'panel-elenco');
+  assert.ok(inst.el.className.includes('vk-widget-cast-table'));
   assert.ok(mount.children.includes(inst.el));
+});
+
+test('renderCastTableWidget: fallback id neutro cast-table', () => {
+  const doc = fakeDoc();
+  const { el, id } = renderCastTableWidget({
+    doc,
+    data: { rows: [] }
+  });
+  assert.equal(id, 'cast-table');
+  assert.equal(el.getAttribute('data-widget-id'), 'cast-table');
 });
 
 test('mountStoryWidgets: declara ids del story-board; unknown → placeholder', () => {
