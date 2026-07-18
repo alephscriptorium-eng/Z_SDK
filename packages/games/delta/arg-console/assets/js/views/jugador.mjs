@@ -33,6 +33,10 @@ import {
   fetchPresetSummaries
 } from '@zeus/view-kit';
 import {
+  WEBRTC_REST_ACTIONS,
+  resolveWebRtcRestActionBrowser
+} from '@zeus/webrtc-viewer/game-actions';
+import {
   createDeltaStage,
   createRiverDroplets,
   createSeaDroplets,
@@ -291,6 +295,32 @@ function main() {
   async function runRestAction(actionId = 'list-presets') {
     updateContactLive(`⏳ REST ${actionId}…`);
     try {
+      const webrtcUrl = resolveWebRtcRestActionBrowser(actionId, {
+        webrtcViewerUrl: cfg.webrtcViewerUrl,
+        room: cfg.room,
+        peerId: currentContactPeer,
+        userId: actorId,
+        mode: 'room'
+      });
+      if (webrtcUrl) {
+        updateContactLive(`WebRTC → ${webrtcUrl}`);
+        // Opt-in browser open only when ZEUS_OPEN_BROWSER=1 (swarm policy).
+        if (String(globalThis.__ZEUS_OPEN_BROWSER__ ?? '') === '1') {
+          globalThis.open?.(webrtcUrl, '_blank', 'noopener');
+        } else {
+          const a = document.createElement('a');
+          a.href = webrtcUrl;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = 'abrir visor WebRTC';
+          const live = contactMenu.querySelector('#contact-live');
+          if (live) {
+            live.textContent = `WebRTC · ${actionId}: `;
+            live.appendChild(a);
+          }
+        }
+        return;
+      }
       let url = '/api/mcp/presets';
       if (actionId === 'preset-aleph-tronco') url = '/api/mcp/preset/aleph-tronco-puro';
       const res = await fetch(url);
@@ -305,13 +335,16 @@ function main() {
   function mountContactMenu(peerId, offer, liveText) {
     contactMenu.innerHTML = renderContactMenu(offer, {
       liveText,
-      restActions: [{ id: 'list-presets', label: 'REST · listar presets' }]
+      restActions: [
+        { id: 'list-presets', label: 'REST · listar presets' },
+        ...WEBRTC_REST_ACTIONS
+      ]
     });
     bindContactMenu(contactMenu, {
       onPrompt: (name) => runHorsePrompt(peerId, name),
       onTool: (name, args) => runHorseTool(peerId, name, args),
       onResource: (_name, uri) => runHorseResource(peerId, uri),
-      onRest: () => runRestAction('list-presets'),
+      onRest: (id) => runRestAction(id || 'list-presets'),
       onClose: () => {
         if (currentContactId) intents.contactClose(currentContactId);
         contactPanel.el.hidden = true;
