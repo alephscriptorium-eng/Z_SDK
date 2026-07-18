@@ -327,6 +327,82 @@ export function resolveExtraDiscoveryUrls() {
   return raw.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
+/** Wire event names for Google public STUN (opt-in only; D-17). */
+export const GOOGLE_STUN_URLS = Object.freeze([
+  'stun:stun.l.google.com:19302',
+  'stun:stun1.l.google.com:19302'
+]);
+
+const GOOGLE_STUN_WARNING = `
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+WARNING: ZEUS_WEBRTC_ALLOW_GOOGLE_STUN=1 — using Google public STUN.
+This product is for people who hate Google (D-17). NEVER enable this in
+production. Configure ZEUS_WEBRTC_STUN / ZEUS_WEBRTC_TURN* (coturn) instead.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+`.trim();
+
+/**
+ * Split a comma-separated ICE URL list from env.
+ * @param {string|undefined|null} raw
+ * @returns {string[]}
+ */
+function splitIceUrls(raw) {
+  if (raw == null || raw === '') return [];
+  return String(raw)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * RTCIceServer list from ZEUS_WEBRTC_* env (D-17 / WP-U88).
+ * Never hardcodes Google STUN unless ZEUS_WEBRTC_ALLOW_GOOGLE_STUN=1
+ * (prints a giant WARNING). Empty list = host candidates only (fine for
+ * same-host e2e / LAN).
+ *
+ * Env:
+ * - ZEUS_WEBRTC_STUN — comma-separated stun: URLs (coturn or other)
+ * - ZEUS_WEBRTC_TURN_URL / ZEUS_WEBRTC_TURN — turn: URL(s), comma-separated
+ * - ZEUS_WEBRTC_TURN_USER / ZEUS_WEBRTC_TURN_PASS (or _CREDENTIAL)
+ * - ZEUS_WEBRTC_ALLOW_GOOGLE_STUN=1 — append Google public STUN + WARNING
+ *
+ * @param {NodeJS.ProcessEnv} [env]
+ * @param {{ warn?: (msg: string) => void }} [opts]
+ * @returns {Array<{ urls: string|string[], username?: string, credential?: string }>}
+ */
+export function resolveIceServers(env = process.env, opts = {}) {
+  loadZeusEnv();
+  const warn = opts.warn ?? ((msg) => console.warn(msg));
+  /** @type {Array<{ urls: string|string[], username?: string, credential?: string }>} */
+  const servers = [];
+
+  for (const url of splitIceUrls(env.ZEUS_WEBRTC_STUN)) {
+    servers.push({ urls: url });
+  }
+
+  const turnUrls = splitIceUrls(env.ZEUS_WEBRTC_TURN_URL || env.ZEUS_WEBRTC_TURN);
+  if (turnUrls.length > 0) {
+    /** @type {{ urls: string|string[], username?: string, credential?: string }} */
+    const turn = {
+      urls: turnUrls.length === 1 ? turnUrls[0] : turnUrls
+    };
+    const user = env.ZEUS_WEBRTC_TURN_USER;
+    const pass = env.ZEUS_WEBRTC_TURN_PASS ?? env.ZEUS_WEBRTC_TURN_CREDENTIAL;
+    if (user) turn.username = String(user);
+    if (pass) turn.credential = String(pass);
+    servers.push(turn);
+  }
+
+  if (String(env.ZEUS_WEBRTC_ALLOW_GOOGLE_STUN || '') === '1') {
+    warn(GOOGLE_STUN_WARNING);
+    for (const url of GOOGLE_STUN_URLS) {
+      servers.push({ urls: url });
+    }
+  }
+
+  return servers;
+}
+
 /**
  * Deep-link URL for MCP Inspector UI connected to a Streamable HTTP MCP server.
  * @param {string} mcpUrl — full MCP endpoint (e.g. http://localhost:4101/mcp)

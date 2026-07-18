@@ -29,7 +29,7 @@ const SKIP_DIRS = new Set([
   'vendor'
 ]);
 
-/** @typedef {'ports'|'transition'|'arg-import'|'two-games'} GateRule */
+/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'} GateRule */
 
 /**
  * @typedef {object} Offender
@@ -318,6 +318,66 @@ export function scanTwoGamesRule(opts = {}) {
   return offenders;
 }
 
+/** Google public STUN host (D-17 / WP-U88). */
+export const GOOGLE_STUN_RE = /stun\.l\.google/i;
+
+/**
+ * Paths allowed to mention stun.l.google (canonical opt-in in env + docs).
+ * PRACTICAS §1.1 / D-17: iceServers viven en presets-sdk/env; el resto = rojo.
+ */
+export function isGoogleStunPathExempt(rel) {
+  const n = rel.replace(/\\/g, '/');
+  if (n.startsWith('packages/engine/presets-sdk/src/env/')) return true;
+  if (n.startsWith('docs/') || n.startsWith('plan/')) return true;
+  if (n.endsWith('.md')) return true;
+  if (
+    n.includes('/test/') ||
+    n.includes('/tests/') ||
+    /\.test\./.test(n) ||
+    /\.spec\./.test(n) ||
+    n.startsWith('e2e/')
+  ) {
+    return true;
+  }
+  if (n.startsWith('scripts/gates/') || n.startsWith('test/gates/')) return true;
+  return false;
+}
+
+/**
+ * (e) stun.l.google en código de producción = rojo (D-17).
+ * @param {{ repoRoot?: string, files?: string[] }} [opts]
+ * @returns {Offender[]}
+ */
+export function scanGoogleStun(opts = {}) {
+  const repoRoot = opts.repoRoot ?? REPO_ROOT;
+  const files =
+    opts.files ??
+    [
+      ...collectFiles('packages', () => true, repoRoot),
+      ...collectFiles('scripts', () => true, repoRoot),
+      ...collectFiles('examples', () => true, repoRoot)
+    ];
+  /** @type {Offender[]} */
+  const offenders = [];
+  for (const file of files) {
+    const rel = normalizeRel(repoRoot, file);
+    if (isGoogleStunPathExempt(rel)) continue;
+    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+    lines.forEach((line, idx) => {
+      if (!GOOGLE_STUN_RE.test(line)) return;
+      const lineNo = idx + 1;
+      if (isExcepted('google-stun', rel, lineNo)) return;
+      offenders.push({
+        rule: 'google-stun',
+        path: rel,
+        line: lineNo,
+        detail: line.trim().slice(0, 160)
+      });
+    });
+  }
+  return offenders;
+}
+
 /**
  * @param {{ repoRoot?: string }} [opts]
  * @returns {{ ok: boolean, offenders: Offender[], byRule: Record<GateRule, Offender[]> }}
@@ -327,14 +387,16 @@ export function runAllGates(opts = {}) {
     ...scanHardcodedPorts(opts),
     ...scanTransitionNames(opts),
     ...scanArgImportViolations(opts),
-    ...scanTwoGamesRule(opts)
+    ...scanTwoGamesRule(opts),
+    ...scanGoogleStun(opts)
   ];
   /** @type {Record<GateRule, Offender[]>} */
   const byRule = {
     ports: [],
     transition: [],
     'arg-import': [],
-    'two-games': []
+    'two-games': [],
+    'google-stun': []
   };
   for (const o of offenders) byRule[o.rule].push(o);
   return { ok: offenders.length === 0, offenders, byRule };

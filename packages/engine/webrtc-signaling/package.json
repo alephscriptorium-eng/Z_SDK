@@ -1,0 +1,36 @@
+{
+  "name": "@zeus/webrtc-signaling",
+  "version": "0.1.0",
+  "description": "WebRTC SignalingService over Zeus socket-server rooms + trickle ICE (WP-U88)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs"
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "0.1.0",
+    "@zeus/rooms": "0.1.0"
+  },
+  "optionalDependencies": {
+    "@roamhq/wrtc": "^0.10.0"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "types",
+    "README.md"
+  ]
+}

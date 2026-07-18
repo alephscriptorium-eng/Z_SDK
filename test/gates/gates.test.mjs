@@ -16,6 +16,7 @@ import {
   scanTransitionNames,
   scanArgImportViolations,
   scanTwoGamesRule,
+  scanGoogleStun,
   formatOffenders
 } from '../../scripts/gates/scan.mjs';
 
@@ -141,5 +142,34 @@ test('presets-sdk/env puede declarar puertos sin offender', () => {
     'packages/engine/presets-sdk/src/env/index.mjs'
   );
   const offenders = scanHardcodedPorts({ repoRoot: REPO_ROOT, files: [envFile] });
+  assert.deepEqual(offenders, []);
+});
+
+test('CA rojo (e): stun.l.google sintético detectado (WP-U88 / D-17)', () => {
+  const root = withTempTree('zeus-gates-googlestun-', (dir) => {
+    const pkg = path.join(dir, 'packages', 'engine', 'fake-webrtc', 'src');
+    fs.mkdirSync(pkg, { recursive: true });
+    fs.writeFileSync(
+      path.join(pkg, 'ice.mjs'),
+      "export const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];\n"
+    );
+  });
+  try {
+    const file = path.join(root, 'packages', 'engine', 'fake-webrtc', 'src', 'ice.mjs');
+    const offenders = scanGoogleStun({ repoRoot: root, files: [file] });
+    assert.ok(offenders.length >= 1, 'expected google-stun offender');
+    assert.equal(offenders[0].rule, 'google-stun');
+    assert.match(offenders[0].detail, /stun\.l\.google/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('presets-sdk/env puede citar Google STUN opt-in sin offender google-stun', () => {
+  const envFile = path.join(
+    REPO_ROOT,
+    'packages/engine/presets-sdk/src/env/index.mjs'
+  );
+  const offenders = scanGoogleStun({ repoRoot: REPO_ROOT, files: [envFile] });
   assert.deepEqual(offenders, []);
 });
