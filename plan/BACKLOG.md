@@ -18,28 +18,28 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ## Remate — estado swarm (2026-07-18 · Sprint 1 bug-fixing)
 
-> **Refundación + capa B drenadas** (U00–U118 ✅). **GO Sprint 1**
-> ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**): CI verde →
-> prosa portales → auth registry durable. **0 DA** abiertas.
-> Publish real ⏳ ops (tras **U122** + secret) → **U55**. DNS U106/U107 ⏳.
-> Diferidos U87 §5–6 / residuales → **sin GO** (no activar).
+> **Refundación + capa B drenadas** (U00–U118 ✅). **Sprint 1 cerrado
+> en código** ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**):
+> U119–U122 ✅. **0 DA** abiertas. Publish real ⏳ ops
+> (`NPM_USERNAME`/`NPM_PASSWORD` + primer publish) → **U55**.
+> DNS U106/U107 ⏳. Diferidos U87 §5–6 / residuales → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
 | Olas 0–10 + higiene + remate D-22 | U00…U108 | ✅ (histórico) |
 | Post-U87 — micro + editor + schema | **U109–U117** | ✅ |
 | Estabilización mesa plan | **U118** | ✅ |
-| **Sprint 1** — CI / prosa / registry | **U119–U122** | ver abajo |
-| Publish real → demoler `file:` | ops + **U55** | gated (tras U122) |
+| **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
+| Publish real → demoler `file:` | ops + **U55** | gated (ops post-U122) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Orden Sprint 1:** ~~**U119**~~ ✅ → ~~**U120**~~ ✅ ∥ ~~**U121**~~ ✅ → **U122** → GO U55 natural.
+**Orden Sprint 1:** ~~**U119**~~ ✅ → ~~**U120**~~ ✅ ∥ ~~**U121**~~ ✅ → ~~**U122**~~ ✅ → GO U55 natural (ops).
 
-**En curso:**
-- 🔶 **WP-U122** · auth registry `_password` (orquestador / 2026-07-18)
+**En curso:** _(ninguno — Sprint 1 cerrado en código)_
 
 **⬜ / bloqueados (fuera Sprint 1):**
-- **U55** — demoler `file:` (dep publish real; **no 🔶** hasta tick ops post-U122)
+- **U55** — demoler `file:` (dep publish real; **no 🔶** hasta tick ops:
+  secrets `NPM_USERNAME`/`NPM_PASSWORD` + primer publish)
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -85,20 +85,17 @@ Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
   **CA:** cumplido. **Demolición:** fechas/versiones a mano; publish-⏳ en
   doctrina. Hallazgo: scrub README raíz library → cola residual.
 
-### WP-U122 · Auth durable registry (`_password`) — 🔶
+### WP-U122 · Auth durable registry (`_password`) — ✅
 
-- 🔶 **WP-U122 · `release.yml` → patrón `_password` (basic-auth)** —
-  asignado (orquestador / 2026-07-18). Brief:
-  [REPORTES/briefs/WP-U122-registry-password-auth.md](REPORTES/briefs/WP-U122-registry-password-auth.md).
-  Worktree: `.worktrees/wp-u122-registry-password-auth` · rama
-  `wp/u122-registry-password-auth`. Modelo **(a)** D-24: basic-auth no
-  caducable (user + `_password` base64). Secret lo carga **ops** tras
-  merge. Sin secret → skip ⏳ limpio.
-  **CA:** con secret presente y tests verdes, `npm view @zeus/protocol
-  --registry=…` devuelve versión publicada; sin secret, skip «⏳» limpio.
-  **Demolición:** wiring `_authToken` / JWT-as-NPM_TOKEN como única vía
-  en el workflow.
-  **Deps:** U119 ✅. Luego → U55 (ops).
+- ✅ **WP-U122 · `release.yml` → patrón `_password` (basic-auth)** —
+  aceptado (orquestador / 2026-07-18). Merge `286ca02`. Reporte:
+  [REPORTES/WP-U122-registry-password-auth.md](REPORTES/WP-U122-registry-password-auth.md).
+  Secrets `NPM_USERNAME` + `NPM_PASSWORD` → `.npmrc` `:\_password=`;
+  demolido JWT/`NPM_TOKEN`/`NODE_AUTH_TOKEN`/`registry-url` en job release;
+  skip ⏳ sin secrets; contrato test pass. `npm view` ⏳ hasta ops.
+  **CA:** skip path cumplido; publish real = ops post-merge.
+  **Demolición:** cumplida en `release.yml`. Hallazgo: `ARQUITECTURA.md`
+  §5 aún cita `NPM_TOKEN` → cola residual.
 
 ---
 
@@ -133,6 +130,8 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   del portal VitePress; coherencia repo↔portal
 - (U120) links blob en `docs/guide/estado.md` → repo público `Z_SDK` (hoy
   citan path `zeus-sdk`); scrub README raíz zeus (misma clase)
+- (U122) `plan/ARQUITECTURA.md` §5 aún cita `NPM_TOKEN` (gate publish ya
+  es `_password` en `release.yml`)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
