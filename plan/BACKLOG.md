@@ -33,13 +33,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 | Publish real → demoler `file:` | ops + **U55** | gated (tras U122) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Orden Sprint 1:** ~~**U119**~~ ✅ → **U120** ∥ ~~**U121**~~ ✅ → **U122** → GO U55 natural.
+**Orden Sprint 1:** ~~**U119**~~ ✅ → ~~**U120**~~ ✅ ∥ ~~**U121**~~ ✅ → **U122** → GO U55 natural.
 
 **En curso:**
-- 🔶 **WP-U120** · prosa zeus/docs (orquestador / 2026-07-18)
-
-**⬜ en cola (Sprint 1):**
-- **U122** auth `_password` (tras U120)
+- 🔶 **WP-U122** · auth registry `_password` (orquestador / 2026-07-18)
 
 **⬜ / bloqueados (fuera Sprint 1):**
 - **U55** — demoler `file:` (dep publish real; **no 🔶** hasta tick ops post-U122)
@@ -65,23 +62,16 @@ Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
   **CA:** cumplido en código (4 WS verdes local; skips ⏳ documentados).
   **Demolición:** throw module-level library; pin `0.1.0`; skip linea débil.
 
-### WP-U120 · Prosa portal zeus/docs — 🔶
+### WP-U120 · Prosa portal zeus/docs — ✅
 
-- 🔶 **WP-U120 · Refactor prosa `docs/` (zeus, ~23 md)** — asignado
-  (orquestador / 2026-07-18). Brief:
-  [REPORTES/briefs/WP-U120-prosa-zeus-docs.md](REPORTES/briefs/WP-U120-prosa-zeus-docs.md).
-  Worktree: `.worktrees/wp-u120-prosa-zeus-docs` · rama `wp/u120-prosa-zeus-docs`.
-  Mover WP-U## / D-## / «ola» / ⏳ / fechas a `guide/estado.md` (nueva);
-  arreglar comandos rotos (p.ej. `getting-started.md`); contador «dos
-  juegos» → regla paramétrica; tabla de paquetes mínima con puntero a
-  fuente viva. Páginas doctrinales: P1-sin-negación. **Heros/lemas
-  intactos** (D-24).
-  **CA:** `docs:build` verde; en doctrinales (excluida `estado`): grep
-  `WP-U|D-[0-9]|ola [0-9]|⏳|puede estar|consultado 20` → 0; bloques de
-  comando corren tal cual (spot-check); heros intactos.
-  **Demolición:** prosa de estado/swarm mezclada en doctrinales; números
-  muertos (puertos/versiones/fechas) en páginas de producto.
-  **Deps:** U119 ✅. **Paralelo con U121.** Repo: solo zeus.
+- ✅ **WP-U120 · Refactor prosa `docs/` (zeus, ~23 md)** — aceptado
+  (orquestador / 2026-07-18). Merge `e9b5047` · tip WP `7703768`.
+  Reporte:
+  [REPORTES/WP-U120-prosa-zeus-docs.md](REPORTES/WP-U120-prosa-zeus-docs.md).
+  `guide/estado.md` nueva; doctrinales scrub; heros intactos; `docs:build`
+  + grep → 0 (re-smoke orquestador).
+  **CA:** cumplido. **Demolición:** prosa swarm en doctrinales; puertos
+  muertos en tablas producto. Residual: links blob `estado.md` → `Z_SDK`.
 
 ### WP-U121 · Prosa portal library/docs — ✅
 
@@ -95,18 +85,20 @@ Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
   **CA:** cumplido. **Demolición:** fechas/versiones a mano; publish-⏳ en
   doctrina. Hallazgo: scrub README raíz library → cola residual.
 
-### WP-U122 · Auth durable registry (`_password`) — ⬜
+### WP-U122 · Auth durable registry (`_password`) — 🔶
 
-- ⬜ **WP-U122 · `release.yml` → patrón `_password` (basic-auth)** — al
-  final del sprint (tras U119; idealmente tras U120/U121). Token JWT
-  caduca (`expiresIn: 7d`); modelo **(a)** D-24: basic-auth no caducable
-  (user + `_password` base64). Ajuste del bloque auth de `release.yml`;
-  el secret lo carga **ops** cuando CI esté verde.
+- 🔶 **WP-U122 · `release.yml` → patrón `_password` (basic-auth)** —
+  asignado (orquestador / 2026-07-18). Brief:
+  [REPORTES/briefs/WP-U122-registry-password-auth.md](REPORTES/briefs/WP-U122-registry-password-auth.md).
+  Worktree: `.worktrees/wp-u122-registry-password-auth` · rama
+  `wp/u122-registry-password-auth`. Modelo **(a)** D-24: basic-auth no
+  caducable (user + `_password` base64). Secret lo carga **ops** tras
+  merge. Sin secret → skip ⏳ limpio.
   **CA:** con secret presente y tests verdes, `npm view @zeus/protocol
   --registry=…` devuelve versión publicada; sin secret, skip «⏳» limpio.
   **Demolición:** wiring `_authToken` / JWT-as-NPM_TOKEN como única vía
   en el workflow.
-  **Deps:** U119 ✅ (gate CI). Ops carga secret tras merge. Luego → U55.
+  **Deps:** U119 ✅. Luego → U55 (ops).
 
 ---
 
@@ -139,6 +131,8 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U114) env sibling library sin link `@zeus/startpack-kit` (ops/link)
 - (U121) scrub `README.md` raíz library (WP-U/D-#/file: temporal) — fuera
   del portal VitePress; coherencia repo↔portal
+- (U120) links blob en `docs/guide/estado.md` → repo público `Z_SDK` (hoy
+  citan path `zeus-sdk`); scrub README raíz zeus (misma clase)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
