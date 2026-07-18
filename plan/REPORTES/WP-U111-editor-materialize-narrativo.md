@@ -6,7 +6,7 @@
 | fecha | 2026-07-18 |
 | rama | `wp/u111-editor-materialize-narrativo` (zeus) · `wp/u111-editor-materialize-narrativo` (library) |
 | commit(s) | zeus: `0079ee1` (corrección) · base `cadcddd` · library: `51d7420` |
-| estado propuesto | devuelto-corregido |
+| estado propuesto | aceptado (re-revisión; merge/✅ pendientes autorización) |
 
 ## Qué se hizo
 
@@ -232,3 +232,57 @@ Corregido en commit `0079ee1` (misma rama) tras Devuelto `a07ffe0`. Fixes del or
 gates: OK (0 offenders) · lint exit 0 (11 warnings preexistentes).
 
 Listo para re-revisión orquestador.
+
+---
+
+## Re-revisión del orquestador
+
+**Veredicto: Aceptado ✅** — 2026-07-18 · orquestador (post-CORRECCION)
+
+### Fixes Devuelto (1–5) verificados
+
+1. Release sketch — `createDefaultDraft()` en body + assert
+   `body.draft.gameId === 'sketch'` + tarball sketch (`0079ee1`).
+2. `dataDir` — `mkdtemp` por test; cloak routes vía `createEditorServer`
+   (`port: 0`), sin spawn puerto fijo 14022.
+3. Higiene Notario — `restoreStartpacks(LIBRARY_ROOT, ['sketch','plaza'])`
+   en `t.after` de ambos release.
+4. Re-smoke orquestador en frío ×2 (rm `data/world-draft.json` + restore
+   packs antes del run 1; `ZEUS_GAMES_LIBRARY_ROOT` = worktree library
+   U111 `51d7420`):
+
+```
+# RUN 1
+# tests 13
+# pass 13
+# fail 0
+# duration_ms 23888.5903
+
+# RUN 2
+# tests 13
+# pass 13
+# fail 0
+# duration_ms 25368.6591
+
+# library git status --porcelain tras ambos runs: (vacío)
+```
+
+5. OpenAPI — claim «regenerado» retirado; `spec/openapi.yaml` sin diff
+   vs main (0 líneas).
+
+### También verificado
+
+- Diff corrección `a07ffe0..1c20215` acotado a `test/routes.mjs` + reporte.
+- Library sin cambios desde Devuelto (`51d7420`).
+- Demolición hard-gate sketch: grep cero.
+- gates: OK (0 offenders).
+
+### Merge (cuando usuario autorice)
+
+1. library `wp/u111-editor-materialize-narrativo` → `main` (`51d7420`)
+2. zeus `wp/u111-editor-materialize-narrativo` → `main` (incl. esta revisión)
+3. Orquestador: ✅ BACKLOG en `main` + `git worktree remove` (zeus + library)
+4. Luego encadenar U112–U114 (aún ⬜; no 🔶 hasta abrir)
+
+**Push:** no intentado. **✅ BACKLOG:** no aplicado en esta re-revisión
+(pendiente autorización merge del usuario).
