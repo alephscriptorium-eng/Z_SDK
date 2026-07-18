@@ -913,8 +913,8 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   con la misma API; SSR de ambos consumidores verde.
   **Demolición:** la segunda copia.
 
-- 🔶 **WP-U97 · feed-kit cuenta volúmenes por volumes-ops** *(dep U85 ✅)* —
-  (lote-higiene-11a / orquestador / 2026-07-18) —
+- ✅ **WP-U97 · feed-kit cuenta volúmenes por volumes-ops** *(dep U85 ✅)* —
+  aceptado (orquestador / 2026-07-18; merge `6b4c275`) —
   `feed-kit/jetstream-sync.mjs` duplica recuento de corpus y parcheo de
   `volumes.json` que `volumes-ops` ya provee (`syncVolumeCounters` +
   `resetVolumesCache`). Divergencia: feed-kit solo cuenta `.json` y nunca
@@ -957,6 +957,11 @@ renumerar a **A-11+**. Filas 2–6 del borrador → **DA-OasisTransport**
   (delta) en API compartida; generalizar solo si nace un 3.er consumidor.
 - Prefijo CSS `arg-` en `engine/view-kit` + comentario «gota/cauce» en
   stick-poses — cosmética D-8; agrupar cuando se toque CSS/docs.
+- (U97) `ensureFirehoseVolumeLayout` aún hace upsert manual de la entrada
+  `firehose` en `volumes.json` (layout, no recount) — candidata a helper
+  volumes-ops/presets.
+- (U97) Tras refresh, `source.syncedAt` ya no se reestampa (queda el del
+  `ensure*`) — WP aparte si hace falta stamp post-count.
 
 ## Horizonte (post-refundación, no tomar aún)
 

@@ -48,6 +48,10 @@ npm run volumes:sync:firehose -- --fixture
 ZEUS_JETSTREAM_URL=wss://… npm run volumes:sync:firehose -- --max=20 --ms=15000
 ```
 
+Tras escribir posts, el recuento de corpora usa
+`syncVolumeCounters('firehose')` de `@zeus/volumes-ops` (cualquier tipo de
+fichero + invalidación de caché de `volumes.json`).
+
 La degradación **auto → sintético** vive en `resolveRuntimeFeeds` cuando el
 probe MCP falla (e2e obligatorio).
 
