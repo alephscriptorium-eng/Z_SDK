@@ -51,6 +51,12 @@ puente `ssb-blobs` WAN. Cuando exista el puente, la señalización seguirá
 exigiendo `assertSignalingPeerCard` igual; solo cambia quién firma/emite el
 ticket (autoridad de sala hoy → credencial Oasis mañana).
 
+**Portería del carril LAN para blobs (WP-U100 / D-21 fila 4):** el transfer
+de blobs por DataChannel debe pasar por el mismo torno
+(`assertSignalingPeerCard`). El harness de validación
+[`@zeus/blob-sync-harness`](../../mesh/blob-sync-harness/) lo documenta y
+ejercita sin reimplementar el gate ni el sidecar WAN.
+
 ## Señalización por rooms (U88)
 
 Wire events: `webrtc-offer` | `webrtc-answer` | `webrtc-ice-candidate` |
