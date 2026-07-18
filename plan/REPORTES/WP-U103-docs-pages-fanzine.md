@@ -157,4 +157,41 @@ y abrir `https://alephscriptorium-eng.github.io/Z_SDK/`.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (orquestador / 2026-07-18)
+
+### Qué se verificó
+
+- Diff `main...wp/u103-docs-pages-fanzine` acotado: `docs.yml`, theme
+  zine (`index.js` + `custom.css`), `config.mjs` (`resolveDocsBase`),
+  `docs/index.md` portada, reporte. Sin BACKLOG en commits del worker.
+- Merge `main` → rama: tip `9c7de3d` (tick Pages Settings) incorporado
+  (`cf88356`).
+- Re-CA local (post-merge):
+  - `npm run docs:build` → exit 0 (base `/`).
+  - `GITHUB_ACTIONS=true npm run docs:build` → exit 0; hrefs
+    `/Z_SDK/guide/…`, `/Z_SDK/contracts/…`, `/Z_SDK/games/`.
+  - `.github/workflows/docs.yml` presente; build siempre; upload+deploy
+    solo `refs/heads/main` y no-PR.
+  - Tokens A-12 en `custom.css` + CSS compilado: Courier, `#000`/`#fff`,
+    `repeating-linear-gradient`, hover negativo, `@media print`.
+  - Portada: tres puertas Guía / Contratos / Juegos en `index.md` y dist.
+  - API HTML en dist: `api/protocol/index.html` + `api/editor-ui.html`;
+    nav `API HTML` intacta en `config.mjs`; search local presente.
+- Ops Pages Settings: tick ya en `main` (`9c7de3d`) — OK; no es CA código.
+- PRACTICAS: alcance limpio; demolición n/a; commits convencionales;
+  auto-revisión honesta (`docs:dev` browser ⏳, lint/gates ⏳ N/A).
+
+### Merge
+
+Autorizado. Orden: merge rama → `main` + push (dispara `docs.yml`
+deploy). Luego verificar URL viva
+`https://alephscriptorium-eng.github.io/Z_SDK/`. Worktree remove tras
+merge.
+
+### Notas
+
+- URL Pages viva = post-merge (no bloquea aceptación de código).
+- Hallazgo MSYS/`ZEUS_DOCS_BASE`: no bloquea; candidato nota PRACTICAS.
+- Orquestador **no** marca ✅ BACKLOG en este paso (pedido explícito
+  del usuario: NO ✅ hasta merge/ops); el veredicto de reporte autoriza
+  el merge.
