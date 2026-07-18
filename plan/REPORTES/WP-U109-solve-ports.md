@@ -5,7 +5,7 @@
 | agente | swarm worker (Cursor Grok) |
 | fecha | 2026-07-18 |
 | rama | `wp/u109-solve-ports` (zeus) · `wp/u109-solve-ports` (library) |
-| commit(s) | _(hashes al cierre)_ |
+| commit(s) | zeus `6974189` · library _(al commit)_ |
 | estado propuesto | listo para revisión |
 | push zeus | sí (rama WP) |
 | push library | sí (rama WP) |
