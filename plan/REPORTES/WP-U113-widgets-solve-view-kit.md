@@ -5,7 +5,7 @@
 | agente | worker (frente editor / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u113-widgets-solve-view-kit` (zeus) · `wp/u113-widgets-solve-view-kit` (library) |
-| commit(s) | _(hashes al cerrar)_ |
+| commit(s) | zeus: `920841a` · library: `5ab457a` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
