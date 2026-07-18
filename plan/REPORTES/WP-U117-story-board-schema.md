@@ -5,7 +5,7 @@
 | agente | swarm worker (Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u117-story-board-schema` (zeus + library) |
-| commit(s) | _(tras push)_ |
+| commit(s) | zeus `9003ba1` · library `233c564` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
