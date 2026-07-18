@@ -9,5 +9,3 @@ npm run start:editor
 
 OpenAPI del servicio: [Redoc Editor UI](/api/editor-ui.html) (generado con
 `npm run spec:redoc`).
-
-El move a `packages/editor/` es WP-U51.

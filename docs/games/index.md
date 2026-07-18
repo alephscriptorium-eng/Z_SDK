@@ -1,21 +1,22 @@
 # Games
 
-Dos juegos de referencia consumen el mismo engine ([D-8](/guide/two-games)):
+Juegos de referencia que consumen el mismo engine
+([regla](/guide/two-games)):
 
-| Juego | Ubicación hoy | Demo |
-| ----- | ------------- | ---- |
-| [delta](/games/delta) | `packages/delta (Z_SDK-games-library)/*` | `npm run demo:arg (en Z_SDK-games-library)` |
-| [pozo](/games/pozo) | `packages/pozo (Z_SDK-games-library)` | `npm run demo:pozo (en Z_SDK-games-library)` |
+| Juego | Ubicación | Demo |
+| ----- | --------- | ---- |
+| [delta](/games/delta) | [`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-library) · `packages/delta/*` | `npm run demo:arg` (en la library) |
+| [pozo](/games/pozo) | misma library · `packages/pozo` | `npm run demo:pozo` (en la library) |
 
-Tras la ola 6 viven en `Z_SDK-games-library`; el monorepo queda con engine +
-editor + mesh + examples.
+Este monorepo queda con engine + editor + mesh + examples. Los juegos viven
+en la library.
 
-**Catálogo público** (WP-U107): Pages + piel zine en la library —
+**Catálogo público:** Pages + piel zine en la library —
 dominio objetivo [`games.z-sdk.escrivivir.co`](https://games.z-sdk.escrivivir.co/)
-(DNS = tick usuario). Repo:
+(DNS = tick ops). Repo:
 [`Z_SDK-games-library/docs`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/docs).
 
-## Kit de experiencia (CARPETA DRAMATURGO · WP-U86)
+## Kit de experiencia (CARPETA DRAMATURGO)
 
 Plantilla para juegos narrativos del **mundo A** (dramaturgo), destilada de
 ALEPH_ET_OMEGA / SOLVE_ET_COAGULA. Vive en la library:
@@ -28,10 +29,10 @@ npm run instantiate:carpeta-dramaturgo -- --slug mi-juego --title "…"
 npm run test:carpeta-dramaturgo
 ```
 
-## SOLVE ET COAGULA (tercer juego · WP-U87)
+## SOLVE ET COAGULA
 
-Prueba de fuego del mundo A: dramaturgia + startpack + mesh. **No** endurece
-la regla de los dos juegos (delta+pozo siguen siendo el mínimo del engine).
+Juego adicional del mundo A: dramaturgia + startpack + mesh. delta y pozo
+siguen siendo el mínimo del engine (≥2 juegos de referencia).
 
 → [`packages/solve-coagula/`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/packages/solve-coagula)
 · startpack [`@zeus/startpack-solve-coagula`](https://github.com/alephscriptorium-eng/Z_SDK-games-library/tree/main/packages/startpack-solve-coagula)
@@ -44,4 +45,6 @@ npm run e2e:solve-coagula-mcp
 
 Corpus natural: fixture **linea-aleph** (historial Wikipedia SolveCoagula) en
 el start pack; fuente viva `network-engine/linea-aleph`. Originales en
-`scriptorium-network-games/SOLVE_ET_COAGULA` no se modifican.
+`scriptorium-network-games/SOLVE_ET_COAGULA` quedan como referencia histórica.
+
+Ids de WP: [estado del swarm](/guide/estado).

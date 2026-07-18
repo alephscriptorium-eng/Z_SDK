@@ -20,12 +20,12 @@ hero:
       link: /games/
 features:
   - title: Guía
-    details: Arranque, mapa del monorepo y la regla de los dos juegos (D-8).
+    details: Arranque, mapa del monorepo y la regla de juegos de referencia.
     link: /guide/getting-started
   - title: Contratos
     details: AsyncAPI del envelope, OpenAPI/Redoc de rutas, resources MCP.
     link: /contracts/asyncapi
   - title: Juegos
-    details: delta (ARG) y pozo como consumidores del engine — cero dialectos en el kit.
+    details: delta (ARG) y pozo como consumidores del engine — un kit, varios títulos.
     link: /games/
 ---

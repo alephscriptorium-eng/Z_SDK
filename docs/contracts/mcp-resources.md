@@ -1,7 +1,7 @@
 # Resources MCP
 
 Toda capacidad REST se proyecta como resource / resource-template MCP desde
-la misma **RouteEntry** (ola 4 / WP-U40).
+la misma **RouteEntry** (`@zeus/http-contract`).
 
 ## Proyección automática (`projectRoutesToMcp`)
 
