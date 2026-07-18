@@ -11,7 +11,7 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 ---
 
-## Remate — estado swarm (2026-07-18 · lote-ola9-b · U87 🔶)
+## Remate — estado swarm (2026-07-18 · Ola 9 cerrada)
 
 > Diseño drenado: **0 DA abiertas** post D-21; frentes D-22 cerrados en
 > código (U104/U60/U106/U105 ✅). Línea de producto en rama **`main`**.
@@ -19,8 +19,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 > (merge `a8608ab`). Residual **A-14** → ~~**U107**~~ ✅ (merge zeus
 > `c0a35d6`; library `dfd6f06`; remoto `games.z-sdk` ⏳ Custom domain).
 > Residual **publish real** ⏳ ops (`NPM_TOKEN`) → U55 — **no 🔶**.
-> **Ola 9 lote-ola9-a cerrado**: **U70 ✅** · **U86 ✅**.
-> **lote-ola9-b** (orquestador / 2026-07-18): **U87 🔶** (sigue; U107 ✅).
+> **Ola 9 cerrada**: **U70 ✅** · **U86 ✅** · **U87 ✅** (merge zeus
+> `bd5f46c`; library `1f85294`; revisión `f2cdc2a`).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -41,7 +41,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | A-15 — candado VOLUMES / gitignore fixtures | **U108** | ✅ |
 | Ola 9 — editor gamemaps / releases | **U70** | ✅ |
 | Ola 9 — CARPETA DRAMATURGO | **U86** | ✅ |
-| Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | 🔶 lote-ola9-b+catalog |
+| Ola 9 — SOLVE ET COAGULA (3.er juego) | **U87** | ✅ |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
@@ -49,11 +49,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - **U55** — demoler `file:` (dep **publish real**; no prep; **no 🔶** aún)
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 
-**En curso:**
-- **WP-U87** 🔶 — SOLVE ET COAGULA (lote-ola9-b+catalog / orquestador /
-  2026-07-18) · `wp/u87-solve-coagula` ·
-  `.worktrees/wp-u87-solve-coagula` · brief
-  `plan/REPORTES/briefs/WP-U87-solve-coagula.md`
+**En curso:** _(ninguno)_
 
 **Next steps:**
 1. ~~Housekeeping / push main / triaje CI / U102 / U103 / Pages~~ — **hecho**
@@ -68,12 +64,14 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 7. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
 8. ~~WP-U61~~ ✅ — migración delta/pozo → games-library
 9. ~~Ola 6 / WP-U62~~ ✅ — pipeline startpack; ola 6 cerrada
-10. ~~**Ola 9 / lote-ola9-a**~~ ✅ — U70 ✅ · U86 ✅
+10. ~~**Ola 9**~~ ✅ — U70 ✅ · U86 ✅ · U87 ✅ (lote-ola9-a +
+    lote-ola9-b)
 11. ~~**WP-U107**~~ ✅ (A-14) — catálogo; merge zeus `c0a35d6` · library
     `dfd6f06`; remoto `games.z-sdk` ⏳ Custom domain Settings
 12. ~~**WP-U108**~~ ✅ (A-15) — candado VOLUMES/gitignore; merge
     `a8608ab`
-13. **WP-U87** 🔶 — SOLVE ET COAGULA (deps U70+U86 ✅); lote-ola9-b+catalog
+13. ~~**WP-U87**~~ ✅ — SOLVE ET COAGULA; merge zeus `bd5f46c` ·
+    library `1f85294`; revisión `f2cdc2a`
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -650,8 +648,8 @@ Hallazgos diferidos U56 (no bloquean):
 
 > **Cerrada** (orquestador / 2026-07-18h): **U60 ✅** · **U61 ✅**
 > (merge zeus `6d38287`; library `9baf67a`) · **U62 ✅** (merge zeus
-> `2ad8c36`; library `688be30`). Ola 9 → **lote-ola9-a cerrado**: U70 ✅ ·
-> U86 ✅. Residual **A-14** (2026-07-18): catálogo público →
+> `2ad8c36`; library `688be30`). **Ola 9 cerrada**: U70 ✅ · U86 ✅ ·
+> U87 ✅. Residual **A-14** (2026-07-18): catálogo público →
 > ~~**WP-U107**~~ ✅ (merge zeus `c0a35d6`; library `dfd6f06`; remoto
 > `games.z-sdk` ⏳ Custom domain Settings). Residual **A-15**
 > (2026-07-18): candado VOLUMES → ~~**WP-U108**~~ ✅ (merge `a8608ab`).
@@ -935,11 +933,13 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
 - Nota: `KNOWN_ZEUS_PORTS` aún no lista `4114` (SSB) — preexistente U84.
 
 ## Ola 9 — El mundo del dramaturgo (dep olas 6–8)
+— **cerrada** (orquestador / 2026-07-18; U70 · U86 · U87 ✅)
 
-> **lote-ola9-a cerrado** (orquestador / 2026-07-18): **U70 ✅** ·
-> **U86 ✅**. **lote-ola9-b+catalog** (orquestador / 2026-07-18):
-> **U87 🔶** (sigue) · ~~**U107**~~ ✅ (A-14; merge zeus `c0a35d6`;
-> library `dfd6f06`). U55 **no** (gated publish real).
+> **Cerrada** (orquestador / 2026-07-18): **U70 ✅** · **U86 ✅** ·
+> **U87 ✅** (merge zeus `bd5f46c`; library `1f85294`; revisión
+> `f2cdc2a`). ~~**U107**~~ ✅ (A-14; fuera de ola 9; merge zeus
+> `c0a35d6`; library `dfd6f06`). U55 **no** (gated publish real).
+> Hallazgos U87 §1–8 → backlog mundo A (no WPs nuevos en este cierre).
 
 - ✅ **WP-U70 · Editor de gamemaps y releases** — aceptado
   (orquestador / 2026-07-18; merge zeus `54f08d6`; library `cdddf59`
@@ -971,21 +971,21 @@ Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
   Reporte: `plan/REPORTES/WP-U86-carpeta-dramaturgo.md`.
   Brief: `plan/REPORTES/briefs/WP-U86-carpeta-dramaturgo.md`.
 
-- 🔶 **WP-U87 · SOLVE ET COAGULA, el tercer juego** *(dep U70 ✅, U86 ✅)* —
-  en curso (lote-ola9-b+catalog / orquestador / 2026-07-18) — la
-  prueba de fuego del mundo A: recrear SOLVE_ET_COAGULA **con el editor y
-  los dos kits**, conectado a su corpus natural (linea-aleph ES el historial
-  de SolveCoagula en Wikipedia). Entra al mesh como juego de la
-  games-library con su CASOS.md y su acta. Lo que no se pueda hacer sin
-  tocar engine/editor es el backlog de mejoras del mundo A (mismo patrón que
-  WP-U23).
+- ✅ **WP-U87 · SOLVE ET COAGULA, el tercer juego** *(dep U70 ✅, U86 ✅)* —
+  aceptado (orquestador / 2026-07-18; merge zeus `bd5f46c`; library
+  `1f85294`; revisión `f2cdc2a`) — la prueba de fuego del mundo A:
+  recrear SOLVE_ET_COAGULA **con el editor y los dos kits**, conectado a
+  su corpus natural (linea-aleph ES el historial de SolveCoagula en
+  Wikipedia). Entra al mesh como juego de la games-library con su
+  CASOS.md y su acta. Lo que no se pudo hacer sin tocar engine/editor
+  quedó en §hallazgos del reporte (backlog mundo A; no WPs en este
+  cierre).
   **CA:** el juego corre en el mesh desde release de la games-library; acta
-  de validación en verde; informe «qué faltó al editor/kits».
+  de validación en verde; informe «qué faltó al editor/kits» — ✅.
   **Demolición:** n/a. delta+pozo siguen siendo el mínimo de la regla de los
   dos juegos.
+  Reporte: `plan/REPORTES/WP-U87-solve-coagula.md`.
   Brief: `plan/REPORTES/briefs/WP-U87-solve-coagula.md`.
-  Rama: `wp/u87-solve-coagula` · worktree
-  `.worktrees/wp-u87-solve-coagula`.
 
 ## Ola 10 — Peers WebRTC (dep U10; paralelizable con olas 7–9; recursos
 clonados en [recursos/](recursos/README.md), decisión D-17) — **cerrada**
@@ -1347,6 +1347,6 @@ cerrado):
   multi-bloque de `ENGINE-XZZX/Juego-spec-plan.md` (una force emite unidad
   semántica → la contra-force responde → una tercera absorbe; la exclusión
   del par pasa de rúbrica de prompt a regla del reducer) como experiencia
-  de dramaturgo sobre U86 + U91/U92. Mismo estatus que WP-U87: valida kits
-  y forces, no toca la regla de los dos juegos. No se toma hasta que U87
-  entregue su informe «qué faltó al editor/kits».
+  de dramaturgo sobre U86 + U91/U92. Valida kits y forces, no toca la
+  regla de los dos juegos. U87 ✅ entregó informe «qué faltó» (§hallazgos
+  reporte); candidata horizonte (no asignada).
