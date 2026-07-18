@@ -112,4 +112,33 @@ Ninguno. Listo para revisión orquestador (merge library + zeus reporte).
 
 ## Revisión del orquestador
 
-_(pendiente)_
+**Aceptado ✅** (orquestador / 2026-07-18)
+
+### Verificado
+- Diff zeus `f39a965...e450f6b` acotado al reporte. Sin BACKLOG.
+- Diff library `22c7d0d`: `packages/startpack-kit` nuevo + thin wrappers ×4
+  + docs/lock/`test:startpack`. Sin U111–U114.
+- CA: grep cero cuerpos `loadStartPack` en los cuatro packs; una sola
+  impl en kit; los cuatro importan `createStartPackLoader` desde
+  `@zeus/startpack-kit`; `publishConfig` alineado; changeset N/A
+  documentado (library sin `.changeset/`).
+- Re-smoke orquestador: `npm run test:startpack` EXIT 0 (kit 5 + delta 2
+  + pozo 1 + sketch 1 + solve 1); Notario dry sketch + solve-coagula
+  EXIT 0 (`loadStartPack` ✅ · volumes ✅ · acta ✅ · gamemap ✅).
+- Demolición helpers (`readJson*` / `missing manifest`) solo en kit.
+- PRACTICAS §1.4 (extract, no copy) · §1.5 (sin legacy/v2) · §1.11 (kit
+  genérico; enrich por pack) · §6 (commits convencionales).
+- Demo UI ⏳ (aceptable: CA pide packs + Notario dry).
+
+### Notas (no bloquean)
+- Hallazgo acta con paths absolutos del worktree en Notario dry → higiene
+  futura (no WP aquí).
+- Tras dry-run: restaurar `acta/ACTA.md` sketch/solve (ruido local).
+
+### Merge (cuando usuario autorice)
+1. library `wp/u110-startpack-kit` → `main` (`22c7d0d`)
+2. zeus `wp/u110-startpack-kit` → `main` (reporte + esta revisión)
+3. Orquestador: ✅ BACKLOG en `main` + `git worktree remove` (zeus + library)
+4. Luego frente editor U111–U114 ⬜ (no 🔶 hasta abrir frente)
+
+**Push:** no intentado en esta revisión.
