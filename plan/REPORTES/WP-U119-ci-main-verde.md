@@ -5,7 +5,7 @@
 | agente | worker (wp-u119-ci-main-verde) |
 | fecha | 2026-07-18 |
 | rama | `wp/u119-ci-main-verde` |
-| commit(s) | _(tras commit local)_ |
+| commit(s) | `11f1f2f` |
 | estado propuesto | listo para revisión |
 | push | sí |
 
