@@ -5,7 +5,7 @@
 | agente | worker (lote-ola9-a / Cursor) |
 | fecha | 2026-07-18 |
 | rama | `wp/u86-carpeta-dramaturgo` (zeus) · `wp/u86-carpeta-dramaturgo` (library) |
-| commit(s) | library: `a28b9ad`; zeus: `385d97f` |
+| commit(s) | library: `a28b9ad`; zeus: `385d97f`..`8f0c88e` (tip) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
