@@ -1,0 +1,21 @@
+{
+  "name": "@zeus/blob-sync-harness",
+  "version": "0.0.0",
+  "description": "WP-U100 validation harness: content-addressed 2-node blob sync + peer-card LAN gate (not the Oasis sidecar)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs",
+    "spike": "node src/run-spike.mjs"
+  },
+  "license": "AIPLv1",
+  "private": true,
+  "dependencies": {
+    "@zeus/authority-kit": "*",
+    "@zeus/protocol": "*",
+    "@zeus/webrtc-signaling": "*"
+  }
+}
