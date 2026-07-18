@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u89-webrtc-viewer` |
-| commit(s) | _(tras commits de este WP)_ |
+| commit(s) | `2997d16`, `223fc5a`, `9e47b27`, `f0a9b2a`, `761c046`, `23a1d94` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
