@@ -27,8 +27,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 2. Push **solo** `main` (~343 commits refundación) → dispara CI U03 real — **hecho**
 3. Triaje CI rojo parcial — **hecho** (run
    [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
-   27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos) → **WP-U102** 🔶
-4. **WP-U103** 🔶 — docs públicas Pages + piel fanzine (A-12; paralelo a U102)
+   27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos) → **WP-U102** ✅
+4. **WP-U103** 🔶 — docs públicas Pages + piel fanzine (A-12)
 5. Usuario: **activar GitHub Pages** (Settings → Pages → fuente GitHub Actions)
    — ops custodio; no CA de código U103
 6. Usuario: **publish** → desbloquea U55
@@ -39,8 +39,8 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
 **Cola residuales (sin WP grande nuevo; higiene / candidatos):**
-- ~~Triaje CI U03 (4 WS no herméticos)~~ → **WP-U102** 🔶 (lote-ci-hermetic;
-  revisión aceptada; ✅ + merge pendientes)
+- ~~Triaje CI U03 (4 WS no herméticos)~~ → **WP-U102** ✅ (merge
+  `ddefdcf`; cierra CA remoto U03 pendiente cuando CI `main` verde)
 - ~~Docs públicas Pages + piel zine (cierre U41)~~ → **WP-U103** 🔶 (A-12)
 - Viewer fabrica peer-card local (cara ciega §3 / cola U93)
 - Harness U100 cid hex → formato SSB `&…sha256` (cola U101)
@@ -125,14 +125,14 @@ Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente f
 - ~~9/31 workspaces fallan `npm test -w`~~ — triaje 2026-07-18 run
   [29634248585](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29634248585):
   27/31 verde; lint+gates ✅; 4 rojos = tests no herméticos (no bugs
-  producto) → **WP-U102** 🔶 (cierra CA remoto U03 cuando CI main verde)
+  producto) → **WP-U102** ✅ (merge `ddefdcf`; cierra CA remoto U03
+  pendiente cuando CI `main` verde)
 - mismatch credencial git/gh (nota operativa)
 
-- 🔶 **WP-U102 · Tests herméticos para CI** *(dep U03 ✅; cierra CA remoto U03)*
-  — en curso (lote-ci-hermetic / orquestador / 2026-07-18) — Micro WP: los
-  4 workspaces rojos del run CI 29634248585 fallan por tests no herméticos
-  en el runner (paths VOLUMES / env / puertos / room), no por bugs de
-  producto. Alcance estricto:
+- ✅ **WP-U102 · Tests herméticos para CI** — aceptado (orquestador /
+  2026-07-18) — Micro WP: los 4 workspaces rojos del run CI 29634248585
+  fallaban por tests no herméticos en el runner (paths VOLUMES / env /
+  puertos / room), no por bugs de producto. Alcance estricto:
   | WS | Causa |
   | --- | --- |
   | linea-system | ENOENT `VOLUMES/DISK_02/LINEAS/registry.yaml` |
@@ -146,6 +146,8 @@ Diferidos del reporte WP-U03 (no bloquean cierre de ola 0; CA remoto pendiente f
   gates). Cierra CA remoto U03 pendiente.
   **Demolición:** asunciones de paths/env del host en esos 4 suites (o
   skip documentado si el dato no puede vivir en repo).
+  **Nota cierre:** CA remoto U03 queda pendiente de verificación en el
+  run CI post-push de este merge (no bloquea ✅ de plan).
 
 ## Ola 1 — El contrato único (engine nace)
 
