@@ -26,7 +26,8 @@
   "dependencies": {
     "@zeus/firehose-core": "*",
     "@zeus/linea-kit": "*",
-    "@zeus/presets-sdk": "*"
+    "@zeus/presets-sdk": "*",
+    "@zeus/volumes-ops": "*"
   },
   "publishConfig": {
     "registry": "https://npm.scriptorium.escrivivir.co"
