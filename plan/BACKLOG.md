@@ -791,8 +791,8 @@ Diferidos del reporte/revisión WP-U88 (no bloquean; U89/U90 → lote-10b):
   **Demolición:** lo que se adapte de la lib A entra por import/port con su
   procedencia anotada, no como copia muerta.
 
-- 🔶 **WP-U90 · El pub como mediador (señalización SSB)** *(dep U88)* —
-  (lote-10b / orquestador / 2026-07-18) — segunda implementación de la
+- ✅ **WP-U90 · El pub como mediador (señalización SSB)** *(dep U88)* —
+  (aceptado 2026-07-18 / merge `191550f`) — segunda implementación de la
   `SignalingService`: mensajes SSB privados (`type: 'webrtc-signal'`,
   cifrado `ssb-box`, DM al feedId del peer) para que **nuestro pub haga de
   mediador** entre dos usuarios OASIS — el módulo `/webrtc` del repo B deja
@@ -804,6 +804,21 @@ Diferidos del reporte/revisión WP-U88 (no bloquean; U89/U90 → lote-10b):
   candidato upstream al fork.
   **Demolición:** el flujo copy-paste del módulo en nuestra adaptación (el
   fork original queda intacto en recursos/).
+
+### Cola hallazgos ola 10 (WP-U90)
+
+Diferidos del reporte/revisión WP-U90 (no bloquean; U89 sigue 🔶 y rebaseará):
+- Colisión puerto default **3022**: `oasisWebrtc` / `ZEUS_PORT_OASIS_WEBRTC`
+  (U90) vs `webrtcViewer` / `ZEUS_PORT_WEBRTC_VIEWER` (U89 WIP). Resolver al
+  rebase/merge de U89 (slots distintos + defaults distintos).
+- Solape de archivos U89↔U90: `presets-sdk/src/env`, `webrtc-signaling`
+  (package.json / peer-session / exports), `.env.example`, root
+  `package.json`. Serializar: U90 ya en master; U89 rebasea y reconcilia
+  subpaths (`./peer-session`, `./messages`) si aplica.
+- Bridge sbot real: `createSbotPrivateTransport(sbot)` + HTTP oasis-webrtc
+  están listos; integración contra sbot OASIS en vivo queda ops/PR upstream
+  (`@zeus/ssb-system` es files-first, no demonio).
+- Coturn VPS: prueba real sigue ⏳ (ops); ya en cola U88.
 
 ## Horizonte (post-refundación, no tomar aún)
 
