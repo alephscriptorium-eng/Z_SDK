@@ -27,9 +27,6 @@
     "devapp": "ng serve dev-app"
   },
   "dependencies": {
-    "@zeus/operator-bridge": "0.1.0",
-    "@zeus/room-client-browser": "0.1.2",
-    "@zeus/ui-3d-kit": "0.1.1",
     "@angular-devkit/build-angular": "^20.2.1",
     "@angular/animations": "^20.2.3",
     "@angular/cli": "^20.2.1",
@@ -42,6 +39,9 @@
     "@angular/platform-server": "^20.2.3",
     "@angular/router": "^20.2.3",
     "@angular/ssr": "^20.2.1",
+    "@zeus/operator-bridge": "^0.1.0",
+    "@zeus/room-client-browser": "^0.1.2",
+    "@zeus/ui-3d-kit": "^0.1.1",
     "express": "^5.1.0",
     "rxjs": "^7.8.2",
     "socket.io-client": "^4.8.1",
