@@ -5,7 +5,7 @@
 | agente | worker (Cursor Grok) |
 | fecha | 2026-07-18 |
 | rama | `wp/u120-prosa-zeus-docs` |
-| commit(s) |  (+ este tip) |
+| commit(s) |  |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
