@@ -110,6 +110,7 @@
     "e2e:domain:firehose": "node e2e/domain-firehose.mjs",
     "e2e:domain:selection": "node e2e/domain-selection.mjs",
     "e2e:webrtc-signaling": "node e2e/webrtc-signaling.mjs",
+    "e2e:peer-card-chain": "node e2e/peer-card-chain.mjs",
     "e2e:webrtc-viewer": "node e2e/webrtc-viewer.mjs",
     "e2e:ssb-webrtc-signaling": "node e2e/ssb-webrtc-signaling.mjs",
     "e2e:arg": "node e2e/arg-demo.mjs",

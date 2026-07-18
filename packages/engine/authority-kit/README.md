@@ -41,11 +41,27 @@ await startAuthority({
 La cascada SIGINT del launcher del juego (p. ej. `arg-demos/launch.mjs`) se
 hereda: el kit solo escucha `SIGINT`/`SIGTERM` en el proceso de autoridad.
 
-## Peer Card
+## Peer Card (WP-U93 / D-20)
 
-El kit **no** exige Peer Card en el handshake de room ni en cada intent.
-Basta el `role` validado por el dominio (vía `@zeus/protocol` / catálogo).
-Helpers `makePeerCard` / `peerCardGrantsRole` quedan listos para mesh/WebRTC.
+Al aceptar un intent de join (default: `join`), la autoridad **emite** un
+peer-card (`issuePeerCard` → `makePeerCard`) con rol y caducidad. El carril
+WebRTC (`@zeus/webrtc-signaling`) **exige** esa card antes de offer/answer/ICE.
+
+```js
+await startAuthority({
+  // …
+  peerCardEndpoint: process.env.ZEUS_SCRIPTORIUM_URL, // o se toma de @zeus/rooms
+  onPeerCard: (card, intent) => {
+    // entregar card al actor (mesh / cliente WebRTC)
+  }
+});
+
+// emisión explícita (misma fábrica):
+const { issuePeerCard } = await startAuthority({ /* … */ });
+const card = issuePeerCard({ role: 'player', sessionId: 'alice' });
+```
+
+También: `import { issuePeerCard } from '@zeus/authority-kit'`.
 
 ## Tests
 

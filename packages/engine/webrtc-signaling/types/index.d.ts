@@ -23,6 +23,16 @@ export function createWireMessage(opts: {
   extra?: Record<string, unknown>;
 }): Record<string, unknown>;
 
+export interface PeerCard {
+  roomId: string;
+  endpoint: string;
+  token: string;
+  scopes: string[];
+  expiresAt: string;
+  displayName?: string;
+  sessionId?: string;
+}
+
 export interface SignalingMessage {
   type: string;
   from: string;
@@ -34,15 +44,17 @@ export interface SignalingMessage {
   answer?: RTCSessionDescriptionInit;
   candidate?: RTCIceCandidateInit;
   data?: unknown;
-  displayName?: string;
+  peerCard?: PeerCard;
 }
 
 export declare class SignalingService extends EventEmitter {
   userId: string;
   roomId: string;
+  setPeerCard(peerCard: PeerCard, opts?: { role?: string; now?: number }): void;
+  getPeerCard(): PeerCard | null;
   connect(userId: string, config?: unknown): Promise<void>;
   disconnect(): Promise<void>;
-  joinRoom(roomId: string, displayName?: string): Promise<void>;
+  joinRoom(roomId: string, peerCard: PeerCard): Promise<void>;
   leaveRoom(): Promise<void>;
   sendMessage(message: SignalingMessage): Promise<void>;
   sendOffer(targetPeerId: string, offer: RTCSessionDescriptionInit): Promise<void>;
@@ -65,6 +77,7 @@ export interface SocketRoomSignalingOptions {
   room?: string;
   connectTimeoutMs?: number;
   client?: unknown;
+  requiredRole?: string;
 }
 
 export declare class SocketRoomSignalingService extends SignalingService {
@@ -108,6 +121,14 @@ export declare class SsbPrivateSignalingService extends SignalingService {
   constructor(options?: SsbPrivateSignalingOptions);
   getTransport(): SsbPrivateTransport | null;
 }
+
+export const PEER_CARD_GATED_TYPES: readonly string[];
+export function isPeerCardGatedType(abstractType: string): boolean;
+export function assertSignalingPeerCard(
+  card: unknown,
+  opts?: { role?: string; now?: number }
+): { ok: true; role: string } | { ok: false; error: string };
+export function peerCardFromMessage(messageOrPayload?: object): unknown;
 
 export function loadRtcPeerConnection(): Promise<typeof RTCPeerConnection>;
 export function waitForIceComplete(

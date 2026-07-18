@@ -9,6 +9,7 @@
 import { WebRTCEngine } from '../core/webrtc-engine.mjs';
 import { BrowserSocketSignalingService } from './browser-signaling.mjs';
 import { createBrowserRoomClient } from '@zeus/room-client-browser';
+import { makePeerCard, roleScope } from '@zeus/protocol';
 
 function $(sel, root = document) {
   return root.querySelector(sel);
@@ -101,7 +102,16 @@ export async function bootWebRtcViewer(root) {
     token: cfg.token,
     room: cfg.room
   });
-  await engine.joinRoom(cfg.room, cfg.user);
+  const peerCard = makePeerCard({
+    roomId: cfg.room,
+    endpoint: cfg.scriptoriumUrl || 'browser',
+    token: `viewer-${cfg.user}-${Date.now()}`,
+    scopes: [roleScope('player'), 'presence:join', 'webrtc:signal'],
+    expiresAt: Date.now() + 60 * 60 * 1000,
+    sessionId: cfg.user,
+    displayName: cfg.user
+  });
+  await engine.joinRoom(cfg.room, peerCard);
   setStatus(`signaling · ${cfg.user} @ ${cfg.room}`);
 
   // Game room client — authority state survives WebRTC hangup (D-17).

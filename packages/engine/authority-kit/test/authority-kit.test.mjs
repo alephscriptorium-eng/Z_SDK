@@ -8,7 +8,8 @@ import {
   startAuthority,
   normalizeEvents,
   resolveContentRevSnapshotOpts,
-  PROTOCOL_EVENTS
+  PROTOCOL_EVENTS,
+  issuePeerCard
 } from '../src/index.mjs';
 
 const GAME = 'kit-test';
@@ -343,5 +344,48 @@ describe('startAuthority', () => {
     assert.ok(state);
     assert.equal(state.payload.game, GAME);
     await auth.stop(null);
+  });
+
+  it('emite peer-card al join (WP-U93)', async () => {
+    const fake = createFakeClient();
+    const domain = createDomain();
+    const cards = [];
+
+    const auth = await startAuthority(
+      baseOpts({
+        domain,
+        peerCardEndpoint: 'http://test.local/runtime',
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T' }),
+        onPeerCard: (card, intent) => cards.push({ card, intent })
+      })
+    );
+
+    fake.io.emit('intent', { actorId: 'uno', intent: 'join', role: 'player' });
+    assert.equal(cards.length, 1);
+    assert.equal(cards[0].card.roomId, 'ROOM_T');
+    assert.equal(cards[0].card.endpoint, 'http://test.local/runtime');
+    assert.ok(cards[0].card.scopes.includes('role:player'));
+    assert.equal(cards[0].card.sessionId, 'uno');
+    assert.equal(auth.peerCards.get('uno'), cards[0].card);
+
+    const explicit = auth.issuePeerCard({ role: 'dj', sessionId: 'dos' });
+    assert.ok(explicit.scopes.includes('role:dj'));
+
+    await auth.stop(null);
+  });
+});
+
+describe('issuePeerCard', () => {
+  it('construye card fresca con rol', () => {
+    const card = issuePeerCard({
+      roomId: 'R',
+      endpoint: 'http://ep',
+      role: 'operator',
+      sessionId: 'op-1'
+    });
+    assert.equal(card.roomId, 'R');
+    assert.ok(card.scopes.includes('role:operator'));
+    assert.ok(card.scopes.includes('webrtc:signal'));
   });
 });

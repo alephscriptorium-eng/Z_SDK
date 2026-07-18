@@ -11,3 +11,9 @@ export {
   resolveContentRevSnapshotOpts,
   normalizeEvents
 } from './create-authority.mjs';
+
+export {
+  issuePeerCard,
+  DEFAULT_PEER_CARD_TTL_MS,
+  DEFAULT_JOIN_INTENTS
+} from './issue-peer-card.mjs';

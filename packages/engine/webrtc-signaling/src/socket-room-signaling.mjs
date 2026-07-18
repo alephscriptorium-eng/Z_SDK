@@ -6,6 +6,9 @@
  * Listeners bind to the unwrapped event names the relay emits (not a stripped
  * prefix — avoids the A quirk that emitted `offer` while listening on
  * `webrtc-offer`).
+ *
+ * WP-U93: join / offer / answer / ICE exigen peer-card (identidad ad-hoc
+ * peerId/displayName demolida del handshake).
  */
 
 import {
@@ -17,6 +20,7 @@ import {
 } from '@zeus/rooms';
 import { SIGNALING_WIRE_EVENTS, WIRE_TO_ABSTRACT, createWireMessage } from './messages.mjs';
 import { SignalingService, abstractMessageToWire } from './signaling-service.mjs';
+import { peerCardFromMessage } from './peer-card-gate.mjs';
 
 /**
  * @typedef {object} SocketRoomSignalingOptions
@@ -26,6 +30,7 @@ import { SignalingService, abstractMessageToWire } from './signaling-service.mjs
  * @property {string} [room] — default room before joinRoom
  * @property {number} [connectTimeoutMs]
  * @property {import('@alephscript/mcp-core-sdk/client').SocketClient} [client] — inject for tests
+ * @property {string} [requiredRole] — rol concreto exigido por el torno
  */
 
 export class SocketRoomSignalingService extends SignalingService {
@@ -39,6 +44,7 @@ export class SocketRoomSignalingService extends SignalingService {
     this._unsubs = [];
     /** @type {boolean} */
     this._ownsClient = !options.client;
+    if (options.requiredRole) this._requiredRole = options.requiredRole;
   }
 
   getClient() {
@@ -52,6 +58,7 @@ export class SocketRoomSignalingService extends SignalingService {
   async connect(userId, config = {}) {
     this.userId = userId;
     const opts = { ...this._options, ...config };
+    if (opts.requiredRole) this._requiredRole = opts.requiredRole;
 
     if (!this._client) {
       this._client = createClient(userId, {
@@ -81,26 +88,28 @@ export class SocketRoomSignalingService extends SignalingService {
       this._client.io.disconnect();
     }
     if (this._ownsClient) this._client = null;
+    this._peerCard = null;
     this.handleConnectionChange(false);
   }
 
   /**
-   * Join (or switch) signaling room and announce peer via join-room.
+   * Join (or switch) signaling room presenting peer-card (WP-U93).
    * @param {string} roomId
-   * @param {string} [displayName]
+   * @param {object} peerCard — issued by authority (`issuePeerCard` / join)
    */
-  async joinRoom(roomId, displayName = this.userId) {
+  async joinRoom(roomId, peerCard) {
     if (!this._client || !this._connected) {
       throw new Error('Not connected to signaling transport');
     }
+    this.setPeerCard(peerCard);
     this.roomId = roomId;
     this._client.io.emit('CLIENT_SUSCRIBE', { room: roomId });
     const payload = createWireMessage({
       type: 'join-room',
       from: this.userId,
       room: roomId,
-      data: { peerId: this.userId, displayName, roomId },
-      extra: { displayName, peerId: this.userId }
+      data: { peerCard, roomId },
+      extra: { peerCard }
     });
     emitRoomEvent(this._client, 'join-room', payload, roomId);
   }
@@ -112,7 +121,7 @@ export class SocketRoomSignalingService extends SignalingService {
       type: 'leave-room',
       from: this.userId,
       room: roomId,
-      data: { peerId: this.userId, roomId }
+      data: { roomId, sessionId: this._peerCard?.sessionId ?? this.userId }
     });
     emitRoomEvent(this._client, 'leave-room', payload, roomId);
     this.roomId = '';
@@ -123,11 +132,12 @@ export class SocketRoomSignalingService extends SignalingService {
     if (!this._client || !this._connected) {
       throw new Error('Not connected to signaling transport');
     }
-    const room = message.roomId || this.roomId || roomsConfig.room;
-    const { wireType, payload } = abstractMessageToWire({
+    const gated = this._gatedOutbound({
       ...message,
-      roomId: room
+      roomId: message.roomId || this.roomId || roomsConfig.room
     });
+    const room = gated.roomId;
+    const { wireType, payload } = abstractMessageToWire(gated);
     emitRoomEvent(this._client, wireType, payload, room);
   }
 
@@ -166,6 +176,8 @@ export class SocketRoomSignalingService extends SignalingService {
     if (to && to !== this.userId) return;
 
     const abstractType = WIRE_TO_ABSTRACT[wireType] || wireType;
+    const peerCard = peerCardFromMessage(payload);
+
     /** @type {import('./signaling-service.mjs').SignalingMessage} */
     const message = {
       type: abstractType,
@@ -174,7 +186,8 @@ export class SocketRoomSignalingService extends SignalingService {
       roomId: payload.room || payload.roomId || this.roomId,
       timestamp: payload.timestamp ?? Date.now(),
       messageId: payload.messageId || createWireMessage({ type: wireType, from: from || 'unknown' }).messageId,
-      data: payload.data
+      data: payload.data,
+      ...(peerCard != null ? { peerCard } : {})
     };
 
     if (abstractType === 'offer') message.offer = payload.data ?? payload.offer;
@@ -182,7 +195,6 @@ export class SocketRoomSignalingService extends SignalingService {
     if (abstractType === 'ice-candidate') {
       message.candidate = payload.data ?? payload.candidate;
     }
-    if (payload.displayName != null) message.displayName = payload.displayName;
 
     this.handleMessage(message);
   }

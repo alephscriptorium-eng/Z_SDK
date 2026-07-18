@@ -5,6 +5,7 @@
 
 import { createScriptoriumServer } from '@zeus/socket-server';
 import { resolveIceServers } from '@zeus/presets-sdk/env';
+import { issuePeerCard } from '@zeus/authority-kit';
 import {
   SocketRoomSignalingService,
   negotiateDataChannel,
@@ -75,8 +76,22 @@ async function main() {
 
     await alice.connect('alice', { url: RUNTIME_BASE, room: ROOM });
     await bob.connect('bob', { url: RUNTIME_BASE, room: ROOM });
-    await alice.joinRoom(ROOM, 'Alice');
-    await bob.joinRoom(ROOM, 'Bob');
+    const cardAlice = issuePeerCard({
+      roomId: ROOM,
+      endpoint: RUNTIME_BASE,
+      role: 'player',
+      sessionId: 'alice',
+      displayName: 'Alice'
+    });
+    const cardBob = issuePeerCard({
+      roomId: ROOM,
+      endpoint: RUNTIME_BASE,
+      role: 'player',
+      sessionId: 'bob',
+      displayName: 'Bob'
+    });
+    await alice.joinRoom(ROOM, cardAlice);
+    await bob.joinRoom(ROOM, cardBob);
 
     // Brief settle so both are subscribed before offer
     await new Promise((r) => setTimeout(r, 200));

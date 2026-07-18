@@ -13,6 +13,10 @@ import {
   checkSnapshotBudget,
   SNAPSHOT_BUDGET_BYTES
 } from '@zeus/protocol';
+import {
+  issuePeerCard,
+  DEFAULT_JOIN_INTENTS
+} from './issue-peer-card.mjs';
 
 /**
  * @param {string|string[]} value
@@ -108,6 +112,9 @@ async function resolveRoomFns(options) {
  * @param {(entry: object) => void} [options.onLedger]
  * @param {(payload: object) => void} [options.onIntentAccepted]
  * @param {(payload: object, error: string) => void} [options.onIntentRejected]
+ * @param {string} [options.peerCardEndpoint] — endpoint del peer-card (scriptorium URL)
+ * @param {string[]} [options.joinIntents] — intents que emiten peer-card al aceptar (default: `join`)
+ * @param {(card: object, intent: object) => void} [options.onPeerCard] — callback al emitir
  * @param {(msg: string, ...args: unknown[]) => void} [options.log]
  * @param {(msg: string, ...args: unknown[]) => void} [options.warn]
  * @param {Function} [options.createClient]
@@ -115,7 +122,7 @@ async function resolveRoomFns(options) {
  * @param {boolean} [options.installSignalHandlers=true]
  * @param {number|null} [options.exitOnSignal=0]
  * @param {() => number} [options.now]
- * @returns {Promise<{ client: object, stop: (exitCode?: number|null) => Promise<void>, publishState: (reason: string) => object, publishOutbox: () => number, events: object, game: string }>}
+ * @returns {Promise<{ client: object, stop: (exitCode?: number|null) => Promise<void>, publishState: (reason: string) => object, publishOutbox: () => number, events: object, game: string, issuePeerCard: Function, peerCards: Map<string, object> }>}
  */
 export async function startAuthority(options) {
   const {
@@ -133,6 +140,9 @@ export async function startAuthority(options) {
     onLedger = null,
     onIntentAccepted = null,
     onIntentRejected = null,
+    peerCardEndpoint: peerCardEndpointOpt = null,
+    joinIntents: joinIntentsOpt = null,
+    onPeerCard = null,
     log = console.log.bind(console),
     warn = console.warn.bind(console),
     installSignalHandlers = true,
@@ -170,6 +180,37 @@ export async function startAuthority(options) {
       : typeof snapshotBudget === 'function'
         ? snapshotBudget
         : null;
+
+  const joinIntentSet = new Set(joinIntentsOpt ?? DEFAULT_JOIN_INTENTS);
+  /** @type {Map<string, object>} */
+  const peerCards = new Map();
+  let peerCardEndpoint = peerCardEndpointOpt;
+
+  if (!peerCardEndpoint) {
+    try {
+      const rooms = await import('@zeus/rooms');
+      peerCardEndpoint = rooms.config?.url ?? null;
+    } catch {
+      peerCardEndpoint = null;
+    }
+  }
+
+  /**
+   * Emite peer-card acotado a esta sala (WP-U93).
+   * @param {object} opts
+   */
+  function issueRoomPeerCard(opts = {}) {
+    if (!peerCardEndpoint) {
+      throw new TypeError(
+        'startAuthority: peerCardEndpoint requerido para emitir peer-card (pásalo o configura ZEUS_SCRIPTORIUM_URL)'
+      );
+    }
+    return issuePeerCard({
+      roomId: room,
+      endpoint: peerCardEndpoint,
+      ...opts
+    });
+  }
 
   const client = createClient(user, { room });
   let lastFullAt = 0;
@@ -256,6 +297,26 @@ export async function startAuthority(options) {
     }
     if (onIntentAccepted) onIntentAccepted(data);
     else log(`[${user}] ← ${data.intent} · ${data.actorId}`);
+
+    // WP-U93: autoridad emite peer-card al join (ambos extremos: emite + signaling exige)
+    if (joinIntentSet.has(data.intent)) {
+      try {
+        const card = issueRoomPeerCard({
+          role: data.role ?? 'player',
+          displayName: data.displayName ?? data.actorId,
+          sessionId: data.actorId,
+          now: now()
+        });
+        if (data.actorId) peerCards.set(data.actorId, card);
+        if (onPeerCard) onPeerCard(card, data);
+      } catch (err) {
+        warn(
+          `[${user}] peer-card no emitido en join:`,
+          err instanceof Error ? err.message : err
+        );
+      }
+    }
+
     publishOutbox();
     publishState('change');
   }
@@ -313,6 +374,8 @@ export async function startAuthority(options) {
     publishState,
     publishOutbox,
     events,
-    game
+    game,
+    issuePeerCard: issueRoomPeerCard,
+    peerCards
   };
 }
