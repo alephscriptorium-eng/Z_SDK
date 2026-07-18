@@ -9,6 +9,8 @@
 > externo. No toca ops de registry/DNS/U55.
 
 Fecha: 2026-07-18 · rama de referencia: `main` post-merge U87 (`bd5f46c`).
+Addenda vigilante: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
+(triaje orquestador → BACKLOG/RE-PLAN; sin importar protocolo externo).
 
 ---
 
@@ -16,13 +18,14 @@ Fecha: 2026-07-18 · rama de referencia: `main` post-merge U87 (`bd5f46c`).
 
 La **refundación del SDK** (olas 0–10 + higiene vigilante + remate D-22 /
 A-14–A-15) está **drenada en diseño y en código de producto**: 0 DA
-abiertas post D-21/D-23; frentes D-22 en código ✅; Ola 6 y Ola 9 cerradas;
-swarm sin 🔶.
+abiertas post D-21/D-23; frentes D-22 en código ✅; Ola 6 y Ola 9 cerradas.
 
-Lo que queda no es «terminar la refundación», sino **abrir el siguiente
-holón**: el mundo A deja de ser scaffold y pasa a **producir juegos
-reales** (sensor = U87). Ese frente se especifica en BACKLOG (lote
-post-U87); este documento solo explica *por qué* y *qué aprendimos*.
+**Estado holón 2 (post-triaje registro):** micro ~~U109~~/~~U110~~ ✅;
+frente editor **U111 🔶** · U112–U114 ⬜; residual kit schema → **U115** ⬜
+(ver BACKLOG). Lo que queda no es «terminar la refundación», sino que el
+mundo A **produzca juegos reales** (sensor = U87). IDs/CAs solo en
+[BACKLOG.md](BACKLOG.md); este documento explica *por qué* y *qué
+aprendimos*.
 
 Ops residuales (publish real → U55; DNS custom U106/U107; sidecar blob)
 siguen fuera del swarm — no son deuda de diseño.
@@ -57,7 +60,10 @@ con CA a medias, el coste es **deuda invisible** que el siguiente lote
 hereda como «ya hecho». PRACTICAS §3 (evidencia literal / `⏳ sin
 verificar`) y la revisión orquestador existen para eso: el patrón bueno
 es aceptar con CA de código verde y anotar ops remoto como ⏳ explícito,
-no como verde implícito.
+no como verde implícito. **Modelo U61:** «Devuelto» por bug real
+(Windows symlink/realpath) → worker corrige → orquestador **re-verifica**
+con smoke propio — ciclo de aceptación en su mejor forma (registro
+vigilante 2026-07-18).
 
 ### 3.2 CA-sin-curl / evidencia
 
@@ -76,7 +82,9 @@ workflow, piel, cards). El **CA remoto** (Custom domain + HTTPS en
 usuario. Eso es correcto *si* el remate del BACKLOG lo dice en voz alta.
 Anti-patrón a no repetir: leer un ✅ de plan como «la URL pública ya
 vive». El orquestador debe seguir separando **aceptado de código** vs
-**tick remoto** en el remate.
+**tick remoto** en el remate. Registro vigilante: el patrón
+temp-✅-sin-curl apareció **una** vez en ~50 WPs (tasa excelente) y se
+corrigió con verificación de facto (curl / Settings); no bajar el listón.
 
 ### 3.4 El tercer juego es un sensor, no un trofeo
 
@@ -90,26 +98,41 @@ nosotros a mano») sigue abierto — candidatura natural del holón 2.
 
 ### 3.5 Swarm drenado ≠ producto terminado
 
-0 🔶 y olas cerradas significan: **no hay más WPs de refundación
-pendientes de ejecutar bajo el plan original**. No significan que el
-editor produzca juegos narrativos, ni que linea-aleph vivo esté montado,
-ni que las skills de network-engine vivan en zeus. Esas piezas se
-priorizan ahora como post-refundación (capa B), no como «ola 11 fantasma»
-sin dueño.
+Olas de refundación cerradas significan: **no hay más WPs del plan
+original pendientes**. No significan que el editor produzca juegos
+narrativos, ni que linea-aleph vivo esté montado, ni que las skills de
+network-engine vivan en zeus. Esas piezas se priorizan como
+post-refundación (capa B / holón 2), no como «ola 11 fantasma» sin dueño.
+(El swarm holón 2 ya tiene 🔶 — U111 — sin reabrir refundación.)
 
 ### 3.6 Holón 2 candidato = editor produce juegos
 
 Tras U87, el siguiente arco de producto coherente es:
 
 1. Higiene inmediata que PRACTICAS ya exige (puertos en presets-sdk;
-   no copiar `loadStartPack`).
+   no copiar `loadStartPack`) — ~~U109~~/~~U110~~ ✅.
 2. Frente editor / carpeta / story-board / widgets — para que un
-   dramaturgo produzca un juego real sin armar a mano en la library.
+   dramaturgo produzca un juego real sin armar a mano en la library
+   (U111–U114; residual schema kit → U115).
 3. Diferidos conscientes (linea-aleph vivo; skills stub) sin convertirlos
    en WPs ejecutables hasta que el usuario los active.
 
 Los IDs y CAs concretos están **solo** en BACKLOG (lote higiene
 post-U87 + lote editor produce juegos + notas de horizonte/DECISIONES).
+
+### 3.7 CI limpio = «segundo consumidor» barato
+
+U102 demostró que un runner hermético destapa bugs de producto
+(`webrtc-viewer` ausente en stop:services; `ZEUS_SCRIPTORIUM_ROOM` que
+nunca se aplicaba) sin inventar un segundo juego. Mantener la matriz CI
+verde y honesta es sensor continuo — no solo gate de merge.
+
+### 3.8 Anti-patrones se propagan si no se cortan
+
+Registro vigilante: A-08 (doble validación) se replicó en U83; `loadStartPack`
+llegó a ×4 antes del kit (U110). Cortar en el primer hallazgo (WP o cola
+con dueño) sale más barato que rematar tras N copias. PRACTICAS §1.4 +
+§hallazgos → WP nuevo, no «ya lo arreglamos luego».
 
 ---
 
@@ -123,16 +146,17 @@ post-U87 + lote editor produce juegos + notas de horizonte/DECISIONES).
 | Confundir CA código con CA remoto | Remate BACKLOG + DECISIONES ops |
 | Canonizar el ejemplo en engine | Regla de los dos juegos + gate U00.d |
 | Abrir frentes sin priorización | Usuario autoriza lotes; orquestador no 🔶 solo |
+| Dejar duplicación «por ahora» | Cortar en el 1.er hallazgo (§3.8); kit antes de ×N |
 
 ---
 
 ## 5. Relación con BACKLOG / DECISIONES
 
-- **Este archivo no enumera WPs nuevos.** Tras GO capa B (2026-07-18),
-  los micro WPs (hallazgos U87 §7 + vigilante startpack), el frente
-  editor (U87 §1–4+8) y los diferidos (§5–6) viven en
-  [BACKLOG.md](BACKLOG.md) y, para diferidos, en
-  [DECISIONES.md](DECISIONES.md) §abiertas / horizonte.
+- **Este archivo no enumera WPs nuevos** (salvo citar IDs ya en BACKLOG).
+  Tras GO capa B + triaje registro vigilante 2026-07-18: micro U109–U110
+  ✅; frente editor U111–U114; residual schema kit **U115**; diferidos
+  §5–6 en [DECISIONES.md](DECISIONES.md). Detalle solo en
+  [BACKLOG.md](BACKLOG.md).
 - Horizontes previos (U71–U74) siguen en BACKLOG §Horizonte; no se
   reabren aquí.
 - U55 permanece gated a publish real (ops); no forma parte del holón 2.
@@ -142,6 +166,6 @@ post-U87 + lote editor produce juegos + notas de horizonte/DECISIONES).
 ## 6. Cierre
 
 Refundación: **cerrada como programa**. Producto mundo A: **abierto como
-holón**. El swarm puede volver a llenarse cuando el usuario autorice el
-primer micro WP (higiene post-U87) — brief + worktree bajo PRACTICAS /
-roles; no antes.
+holón** (U111 🔶 en curso; U112–U115 ⬜). Siguiente llenado del swarm =
+tras U111 o lote que el usuario autorice — brief + worktree bajo
+PRACTICAS / roles.

@@ -14,15 +14,18 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 ## Remate — estado swarm (2026-07-18 · post-U87 · micro 7+9 ✅)
 
 > **Refundación drenada** (olas 0–10 + higiene + remate D-22 / A-14–A-15).
-> **0 DA** abiertas; **0 🔶**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
-> (no inventa WPs). Línea de producto en **`main`**.
-> **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus `bd5f46c`).
-> Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107 ⏳ ops.
+> **0 DA** abiertas; **U111 🔶**. Balance propio: [RE-PLAN.md](RE-PLAN.md)
+> (addenda triaje registro vigilante 2026-07-18). Línea de producto en
+> **`main`**. **Ola 6** ✅ · **Ola 9** ✅ (U70 · U86 · U87 merge zeus
+> `bd5f46c`). Publish real ⏳ ops → U55 — **no 🔶**. DNS custom U106/U107
+> ⏳ ops.
 >
 > **Priorización usuario (GO capa B):** (1) micro higiene ~~U109~~ ✅ ·
 > ~~U110~~ ✅ (lote 7+9 cerrado) · (2) frente editor **U111–U114** —
 > **GO** 2026-07-18 · **U111 🔶** (lote 1–4+8; U112–U114 aún ⬜) ·
-> (3) diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable).
+> (3) diferidos U87 §5–6 → DECISIONES / horizonte (sin WP ejecutable) ·
+> (4) triaje vigilante → **U115** ⬜ (schema story-board real; no 🔶
+> mientras U111 vuele).
 
 **Orden frentes (D-22 residual + ola 6):** ~~(1) U104~~ → ~~(3) U60~~ →
 ~~(5) U106~~ → ~~(2) U105~~ → ~~**U61**~~ → ~~**U62**~~ →
@@ -50,6 +53,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 | Post-U87 — carpeta: importar obra | **U112** | ⬜ (lote; tras U111) |
 | Post-U87 — widgets SOLVE en view-kit | **U113** | ⬜ (lote; tras U111) |
 | Post-U87 — dialectos story-board en editor | **U114** | ⬜ (lote; tras U111) |
+| Vigilante — schema story-board real (kit) | **U115** | ⬜ (tras U111 o c/U114) |
 | Publish real → demoler `file:` | ops + **U55** | gated registry+token |
 | Sidecar blob live U100/U101 | — | diferido sin plazo |
 
@@ -58,6 +62,7 @@ Post-U62 (A-15): ~~**U108**~~ ✅ (candado gitignore VOLUMES).
 - Sidecar / live `ZEUS_BLOB_*` — diferido D-22; harness listo
 - **U112–U114** — definidos; encadenar tras U111 (padre/lote); **no 🔶**
   aún en esta sesión
+- **U115** — schema story-board real; **no 🔶** mientras U111 vuele
 
 **En curso:** **WP-U111** 🔶 (orquestador / 2026-07-18) — frente editor
 lote 1–4+8 · brief `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo.md`
@@ -72,7 +77,8 @@ lote 1–4+8 · brief `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo
 5. Usuario/ops (U106 ✅ código; CA remoto ⏳): DNS
    `CNAME · z-sdk → alephscriptorium-eng.github.io` + Custom domain /
    Enforce HTTPS en Pages Settings
-6. Residual **viewer peer-card** (cola U93) antes de mesh abierto
+6. Residual **viewer peer-card** (cola U93) antes de mesh abierto —
+   **pregunta usuario** (firma SSB vs WP micro «visor pide card»)
 7. ~~Sidecar `ZEUS_BLOB_*`~~ — **no esperar** (D-22 diferido)
 8. ~~WP-U61~~ ✅ — migración delta/pozo → games-library
 9. ~~Ola 6 / WP-U62~~ ✅ — pipeline startpack; ola 6 cerrada
@@ -90,6 +96,8 @@ lote 1–4+8 · brief `plan/REPORTES/briefs/WP-U111-editor-materialize-narrativo
     library `294c97c`; revisión `8b91a84` · **micro lote 7+9 cerrado**
 16. **Frente editor** — **U111 🔶** (esta sesión) → luego U112–U114
 17. Diferidos U87 §5–6 — ver DECISIONES §abiertas / horizonte (sin WP)
+18. ~~Triaje registro vigilante 2026-07-18~~ → **U115** ⬜ + addenda
+    RE-PLAN; residual STOP_SERVICES pozo/solve en cola (sin WP)
 
 **NO subir:** ramas `wp/*` (ya mergeadas) · `claude/*`.
 
@@ -1347,11 +1355,13 @@ cerrado):
 ## Post-U87 — higiene + frente editor (GO capa B · 2026-07-18)
 
 > Fuente: §hallazgos WP-U87 + residual pozo (cola U23) + vigilante
-> `loadStartPack` ×4. Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar**
-> con `packages/arg/spec/BACKLOG.md`. ~~**U109**~~ ✅ · ~~**U110**~~ ✅
+> `loadStartPack` ×4 + triaje
+> `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`.
+> Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar** con
+> `packages/arg/spec/BACKLOG.md`. ~~**U109**~~ ✅ · ~~**U110**~~ ✅
 > (merge zeus `4bcd045` · library `294c97c`; revisión `8b91a84`) —
 > **micro lote 7+9 cerrado**; frente editor **GO** · **U111 🔶**
-> (2026-07-18); U112–U114 aún ⬜.
+> (2026-07-18); U112–U114 aún ⬜; **U115** ⬜ (schema kit).
 
 ### Lote «higiene post-U87» — micro YA (cerrado)
 
@@ -1369,6 +1379,10 @@ cerrado):
   `8b91a84` · reporte `plan/REPORTES/WP-U110-startpack-kit.md`.
   Paquete `@zeus/startpack-kit` en library; los cuatro
   `@zeus/startpack-*` consumen una sola `loadStartPack`.
+  **Residual U109 (cola, sin WP):** `ZEUS_STOP_SERVICES` /
+  `resolveStopServicePorts` aún sin ids `pozo*`/`solve*` (slots de
+  puerto sí existen; `stop:services all` no los para — no revienta;
+  micro futuro).
 
 ### Lote «editor produce juegos» — frente ABIERTO (GO 2026-07-18)
 
@@ -1441,6 +1455,40 @@ cerrado):
   aplica.
   **Deps:** U70 ✅ · U86 ✅. Ideal **antes o con** U111 (materialize
   narrativo).
+
+- ⬜ **WP-U115 · Schema story-board real (no solo existsSync)**
+  *(vigilante registro 2026-07-18 · H1 U70/U86; dep U86 ✅)* — en
+  `kits/carpeta-dramaturgo/scripts/validate-story-board.mjs` el JSON
+  Schema se **cita** (`existsSync(SCHEMA_PATH)`) pero la validación
+  real es a mano (`validateStoryBoard`); riesgo de drift schema↔código.
+  Cablear validador al schema (AJV u equivalente ya en monorepo/library)
+  como fuente de verdad; dialectos/fixtures SOLVE+ALEPH+juguete siguen
+  pasando; test que un board inválido contra schema falle con error
+  explicable. **No 🔶** mientras U111 vuele (solape posible con
+  validate/materialize); preferible tras U111 ✅ o en lote con U114.
+  **CA:** `validate-story-board` carga y aplica el schema (no solo
+  exists); fixtures/dialectos verdes; board sintético inválido → rechazo
+  claro; README kit veraz (schema = contrato, no decoración).
+  **Demolición:** comentario/camino «touch schema so CA can cite it
+  exists» como único uso del schema; reglas a mano que el schema ya
+  cubra (sin duplicar — PRACTICAS §1.4).
+  **Deps:** U86 ✅. Coordina con U114 (dialectos editor).
+
+### Cola triaje vigilante registro 2026-07-18 (sin WP propio)
+
+Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
+(orquestador; no reabre addendas A-02…A-15 ya cerradas).
+
+- ~~U109/U110 cumplidos~~ — ya ✅; residual STOP_SERVICES pozo/solve →
+  nota bajo U110 arriba.
+- U86 H1 schema decorativo → **WP-U115** ⬜ (arriba).
+- U86 H2 one-liner paths en editor-ui — **ignorado** (mitigado en review).
+- U93 grieta viewer auto-fabrica peer-card — ya cola U93; **no WP** hasta
+  GO usuario (firma SSB vs «visor pide card»); no abrir mesh a
+  desconocidos antes.
+- Histórico olas 0–10 / A-02…A-15 / U87 §1–8 — **ya cubierto** (WPs o
+  colas existentes). Meta-lecciones → addenda [RE-PLAN.md](RE-PLAN.md)
+  §3.1/3.3/3.7/3.8.
 
 ### Diferidos U87 §5–6 — sin WP ejecutable
 
