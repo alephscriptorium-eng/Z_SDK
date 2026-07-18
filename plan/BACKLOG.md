@@ -653,7 +653,8 @@ Diferidos del reporte/revisión WP-U92 (no bloquean cierre):
 - Higiene: worktrees necesitan `npm install` local para exports nuevos del
   kit (no WP).
 
-## Ola 8 — Feeds federados (dep U80)
+## Ola 8 — Feeds federados (dep U80) — **cerrada** (orquestador / 2026-07-18;
+último WP: U85; U84–U85 ✅)
 
 - ✅ **WP-U84 · Conector SSB → VOLUMES (Tribes y Parliament)** — aceptado
   (orquestador / 2026-07-18) — exportador del log del pub OASIS (mensajes
@@ -679,17 +680,28 @@ Diferidos del reporte/revisión WP-U84 (no bloquean cierre):
 - Nota: `ZEUS_VOLUMES_ROOT` / worktrees — mismo hilo U80/U91 (DISK gitignored
   no heredado; runbook o symlink).
 
-- 🔶 **WP-U85 · Familias de feed unificadas en el engine** *(dep U84)* —
-  (lote-8b / orquestador / 2026-07-18) — la interfaz de feeds (hoy en el
-  juego delta, patrón arg-feeds §4) se generaliza a las tres naturalezas de
-  DATOS.md §3 (estática/stream/gossip) con la cadena de curación unificada
-  de U80; conexión ATProto directa (jetstream → DISK_01) como
-  implementación de referencia del stream, con degradación a sintético
-  intacta.
+- ✅ **WP-U85 · Familias de feed unificadas en el engine** *(dep U84)* —
+  aceptado (orquestador / 2026-07-18; merge `1064cc8`) — la interfaz de
+  feeds (hoy en el juego delta, patrón arg-feeds §4) se generaliza a las
+  tres naturalezas de DATOS.md §3 (estática/stream/gossip) con la cadena de
+  curación unificada de U80; conexión ATProto directa (jetstream → DISK_01)
+  como implementación de referencia del stream, con degradación a sintético
+  intacta. Nace `@zeus/feed-kit`; delta/pozo consumen la interfaz común.
   **CA:** delta y pozo consumen feeds por la interfaz común (dos juegos =
   regla cumplida); e2e de degradación auto→sintético; un feed SSB y uno
   ATProto navegables desde un juego en demo.
   **Demolición:** lo genérico de feeds que quede duplicado en el juego delta.
+
+### Cola hallazgos ola 8 (WP-U85)
+
+Diferidos del reporte/revisión WP-U85 (no bloquean cierre; **cierra ola 8**):
+- Nota: `release:changeset-dry` ensucia tree si paquete nuevo untracked —
+  reconfirmado U85; ya en cola U82.
+- Nota: tras `bag.close()` en e2e, warn `stream prefetch failed: Not
+  connected` (prefetch async tardío; no falla gates).
+- Nota: visores firehose/cache aún no resuelven `ssb://` en browser (track
+  hint `ssb-browser` es contrato; UI dedicada pendiente).
+- Nota: `KNOWN_ZEUS_PORTS` aún no lista `4114` (SSB) — preexistente U84.
 
 ## Ola 9 — El mundo del dramaturgo (dep olas 6–8)
 
