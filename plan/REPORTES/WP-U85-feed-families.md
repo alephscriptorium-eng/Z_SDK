@@ -5,7 +5,7 @@
 | agente | worker (swarm) |
 | fecha | 2026-07-18 |
 | rama | `wp/u85-feed-families` |
-| commit(s) | `783827f`, `46d3e08`, `1b24d35` |
+| commit(s) | `783827f`, `46d3e08`, `1b24d35`, `71c0d2a` (+ hash-fix si aplica) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
