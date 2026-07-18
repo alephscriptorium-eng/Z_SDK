@@ -1,6 +1,10 @@
 /**
- * Minimal RTCPeerConnection helper with trickle ICE over SignalingService.
+ * Minimal RTCPeerConnection helper over SignalingService.
  * iceServers always from caller (resolveIceServers) — never hardcoded Google.
+ *
+ * Modes:
+ * - trickle: true (default, WP-U88) — send ICE candidates as they arrive
+ * - trickle: false (WP-U90 SSB) — waitForIceComplete; full offer/answer only
  */
 
 /**
@@ -22,7 +26,48 @@ export async function loadRtcPeerConnection() {
 }
 
 /**
- * Negotiate a DataChannel between local and remote peer via trickle ICE.
+ * Wait until ICE gathering completes so SDP embeds all candidates (no trickle).
+ * @param {RTCPeerConnection} pc
+ * @param {number} [timeoutMs]
+ * @returns {Promise<RTCSessionDescriptionInit>}
+ */
+export function waitForIceComplete(pc, timeoutMs = 15_000) {
+  return new Promise((resolve, reject) => {
+    if (pc.iceGatheringState === 'complete') {
+      resolve(pc.localDescription);
+      return;
+    }
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`waitForIceComplete timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    const onChange = () => {
+      if (pc.iceGatheringState === 'complete') {
+        cleanup();
+        resolve(pc.localDescription);
+      }
+    };
+
+    function cleanup() {
+      clearTimeout(timer);
+      if (typeof pc.removeEventListener === 'function') {
+        pc.removeEventListener('icegatheringstatechange', onChange);
+      }
+      if (pc.onicegatheringstatechange === onChange) {
+        pc.onicegatheringstatechange = null;
+      }
+    }
+
+    if (typeof pc.addEventListener === 'function') {
+      pc.addEventListener('icegatheringstatechange', onChange);
+    }
+    pc.onicegatheringstatechange = onChange;
+  });
+}
+
+/**
+ * Negotiate a DataChannel between local and remote peer.
  *
  * @param {object} opts
  * @param {import('./signaling-service.mjs').SignalingService} opts.signaling
@@ -32,6 +77,7 @@ export async function loadRtcPeerConnection() {
  * @param {string} [opts.label]
  * @param {typeof RTCPeerConnection} [opts.RTCPeerConnection]
  * @param {number} [opts.timeoutMs]
+ * @param {boolean} [opts.trickle=true] — false → complete SDP (SSB / gossip)
  * @returns {Promise<{ pc: RTCPeerConnection, channel: RTCDataChannel }>}
  */
 export async function negotiateDataChannel(opts) {
@@ -41,7 +87,8 @@ export async function negotiateDataChannel(opts) {
     polite,
     iceServers = [],
     label = 'zeus-data',
-    timeoutMs = 20_000
+    timeoutMs = 20_000,
+    trickle = true
   } = opts;
 
   const RTCPeerConnectionCtor =
@@ -56,11 +103,12 @@ export async function negotiateDataChannel(opts) {
     resolveChannel = resolve;
   });
 
-  const onIce = (ev) => {
-    if (!ev.candidate) return;
-    signaling.sendIceCandidate(remotePeerId, ev.candidate.toJSON?.() ?? ev.candidate);
-  };
-  pc.onicecandidate = onIce;
+  if (trickle) {
+    pc.onicecandidate = (ev) => {
+      if (!ev.candidate) return;
+      signaling.sendIceCandidate(remotePeerId, ev.candidate.toJSON?.() ?? ev.candidate);
+    };
+  }
 
   pc.ondatachannel = (ev) => {
     channel = ev.channel;
@@ -74,10 +122,13 @@ export async function negotiateDataChannel(opts) {
         await pc.setRemoteDescription(message.offer);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        await signaling.sendAnswer(remotePeerId, pc.localDescription);
+        const desc = trickle
+          ? pc.localDescription
+          : await waitForIceComplete(pc, timeoutMs);
+        await signaling.sendAnswer(remotePeerId, desc);
       } else if (message.type === 'answer' && message.answer) {
         await pc.setRemoteDescription(message.answer);
-      } else if (message.type === 'ice-candidate' && message.candidate) {
+      } else if (trickle && message.type === 'ice-candidate' && message.candidate) {
         await pc.addIceCandidate(message.candidate);
       }
     } catch (err) {
@@ -92,7 +143,10 @@ export async function negotiateDataChannel(opts) {
       resolveChannel?.(channel);
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      await signaling.sendOffer(remotePeerId, pc.localDescription);
+      const desc = trickle
+        ? pc.localDescription
+        : await waitForIceComplete(pc, timeoutMs);
+      await signaling.sendOffer(remotePeerId, desc);
     }
 
     const openChannel = await Promise.race([
@@ -126,4 +180,12 @@ export async function negotiateDataChannel(opts) {
   } finally {
     signaling.off('message', onMessage);
   }
+}
+
+/**
+ * Convenience: negotiate with complete offer/answer (no trickle) — WP-U90 SSB.
+ * @param {Parameters<typeof negotiateDataChannel>[0]} opts
+ */
+export function negotiateDataChannelComplete(opts) {
+  return negotiateDataChannel({ ...opts, trickle: false });
 }

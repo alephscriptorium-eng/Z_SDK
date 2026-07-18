@@ -1,7 +1,7 @@
 {
   "name": "@zeus/webrtc-signaling",
   "version": "0.1.0",
-  "description": "WebRTC SignalingService over Zeus socket-server rooms + trickle ICE (WP-U88)",
+  "description": "WebRTC SignalingService: socket rooms (trickle) + SSB private DMs via OASIS pub (WP-U88/U90)",
   "type": "module",
   "main": "src/index.mjs",
   "types": "./types/index.d.ts",
