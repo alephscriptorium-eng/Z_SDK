@@ -5,7 +5,7 @@
 | agente | worker (chat WP-U98) |
 | fecha | 2026-07-18 |
 | rama | `wp/u98-contract-form` |
-| commit(s) | `4b09212` feat(protocol); docs(plan) este archivo |
+| commit(s) | `4b09212` feat(protocol); `3958f62` docs(plan) |
 | estado propuesto | listo para revisión |
 | push | no intentado |
 
