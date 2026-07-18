@@ -19,7 +19,7 @@
 export const EXCEPTIONS = [
   // --- (a) puertos/URLs hardcodeados fuera de presets-sdk/env ---
   // Fallbacks preexistentes que duplican DEFAULT_ZEUS_* hasta que un WP
-  // posterior los retire (no es demolición de U00).
+  // posterior los retire (no es demolición de U00).
   {
     path: 'packages/mesh/linea-firehose/src/config.mjs',
     rule: 'ports',
@@ -119,7 +119,7 @@ export const EXCEPTIONS = [
     path: 'packages/engine/http-contract/src/endpoint.mjs',
     rule: 'ports',
     reason: 'fallback genérico 3000 si appId desconocido; pre-U00'
-  },
+  },
   {
     path: 'packages/engine/presets-sdk/src/mcp/runtime.mjs',
     rule: 'ports',
@@ -171,4 +171,14 @@ export const EXCEPTIONS = [
   },
 
   // (c) arg-import: post-U61 sin imports estáticos @zeus/arg-* en monorepo
+
+  // (d) two-games: catálogo canónico de puertos de juego en presets-sdk/env
+  // (BACKLOG WP-U109; precedente argPlayer). No meter conceptos de juego
+  // fuera de este catálogo.
+  {
+    path: 'packages/engine/presets-sdk/src/env/index.mjs',
+    rule: 'two-games',
+    reason:
+      'WP-U109: slots pozoPlayer/pozoView en catálogo env (BACKLOG); espejo de argPlayer'
+  }
 ];
