@@ -494,6 +494,8 @@ export function resolveStopServicePorts(serviceId) {
       return Object.values(mcp.argPlayer);
     case 'operator-ui':
       return [ui.operator.port];
+    case 'webrtc-viewer':
+      return [ui.webrtcViewer.port];
     case 'socket-server':
       return [ui.scriptorium.port];
     case 'asyncapi-studio':
