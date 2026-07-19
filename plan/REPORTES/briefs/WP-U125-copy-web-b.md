@@ -36,9 +36,9 @@ Paths:
 - Zeus (reporte): c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk
 
 Fuente de verdad (leer ENTERO):
-- plan/ENTREGA-2026-07-19-sprint2/00-INDICE.md
-- plan/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md (bloque A)
-- plan/ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md §W-B + §Verificación
+- plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-INDICE.md
+- plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md (bloque A)
+- plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md §W-B + §Verificación
 
 Alcance (CAPA W-B):
 1. docs/index.md — hero + features

@@ -263,7 +263,7 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   modelo **(a)** basic-auth no caducable (`_password` base64) — no JWT
   `_authToken` de 7d. Frontera: swarm ajusta `release.yml` (U122); ops
   carga el secret cuando U119 deje CI verde. Fuente:
-  [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md).
+  [ENTREGA-2026-07-18d-sprint1.md](REPORTES/entregas/ENTREGA-2026-07-18d-sprint1.md).
 
 - **D-25 · 2026-07-19 · Sprint 2 ADDENDA + CAPA** (GO usuario · ruta
   canónica `ADDENDA/ENTREGA-2026-07-19-sprint2.md`). Lote:
@@ -282,10 +282,10 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   CAPA **cambia** lemas (A → `Z_SDK` / Ventana de Contexto; B → Juegos
   Z_SDK) — prioriza ADDENDA sobre exención D-24 y sobre el paquete
   marketing WEBS/ENTREGA-SPRINT2 (archivado
-  [SUPERADA-…](ENTREGA-2026-07-19-sprint2/SUPERADA-marketing-webs-sprint2/)).
+  [SUPERADA-…](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/SUPERADA-marketing-webs-sprint2/)).
   Sustituye micro pendiente «hero en positivo». Fuente:
-  [00-ADDENDA.md](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) ·
-  [01-PAQUETE-CAPA.md](ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md).
+  [00-ADDENDA.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) ·
+  [01-PAQUETE-CAPA.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md).
   **Pendiente aparte (no bloquea Sprint 2):** si WEBS/ENTREGA-CAPA recibe
   otra iteración de backtracking, GO explícito del usuario. → **cumplida
   en D-26** (AMEND CAPA rev2).

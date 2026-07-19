@@ -11,10 +11,10 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 **Historia de olas 0–10 + colas cerradas:** [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md)
 (archivado WP-U118). Balance: [RE-PLAN.md](RE-PLAN.md). Acta cierre:
-[ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md). Sprint 1 bug-fixing:
-[ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md) · **D-24**.
+[ENTREGA-2026-07-18c.md](REPORTES/entregas/ENTREGA-2026-07-18c.md). Sprint 1 bug-fixing:
+[ENTREGA-2026-07-18d-sprint1.md](REPORTES/entregas/ENTREGA-2026-07-18d-sprint1.md) · **D-24**.
 Sprint 2 (ADDENDA + CAPA):
-[ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/) · **D-25**.
+[ENTREGA-2026-07-19-sprint2/](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/) · **D-25**.
 **AMEND Sprint 2** (CAPA rev2 · verdad de canales): **D-26** · fuentes
 canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
@@ -111,11 +111,11 @@ operativo = tarball del GitHub Release.
 ## Sprint 2 — ADDENDA + CAPA (GO · 2026-07-19 · D-25) — ✅
 
 Fuente canónica:
-[00-ADDENDA.md](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) +
-[01-PAQUETE-CAPA.md](ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md)
-([00-INDICE.md](ENTREGA-2026-07-19-sprint2/00-INDICE.md)).
+[00-ADDENDA.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) +
+[01-PAQUETE-CAPA.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md)
+([00-INDICE.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-INDICE.md)).
 Paquete marketing WEBS/ENTREGA-SPRINT2 →
-[SUPERADA-marketing-webs-sprint2/](ENTREGA-2026-07-19-sprint2/SUPERADA-marketing-webs-sprint2/)
+[SUPERADA-marketing-webs-sprint2/](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/SUPERADA-marketing-webs-sprint2/)
 (no aplicar). **Heros/lemas: CAPA los cambia** (prioridad ADDENDA sobre
 exención D-24 / marketing SUPERADO).
 
@@ -191,7 +191,7 @@ exención D-24 / marketing SUPERADO).
   Reporte:
   [REPORTES/WP-U130-plantilla-sprint.md](REPORTES/WP-U130-plantilla-sprint.md).
   PRACTICAS §7 + punteros roles; acta
-  [02-ACTA-CIERRE.md](ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md) estrena
+  [02-ACTA-CIERRE.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md) estrena
   fórmula. **CA:** cumplido. **Demolición:** N/A (gobernanza).
 
 ### (D) Docs — regeneración web («pipeline» documental)
@@ -213,7 +213,7 @@ exención D-24 / marketing SUPERADO).
 
 ## Sprint 1 — bug-fixing (GO · ENTREGA-18d · D-24) — ✅
 
-Fuente: [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md).
+Fuente: [ENTREGA-2026-07-18d-sprint1.md](REPORTES/entregas/ENTREGA-2026-07-18d-sprint1.md).
 Heros/lemas de marca **EXENTOS** (D-24). Cerrado en código.
 
 ### WP-U119 · CI main verde (4 workspaces) — ✅

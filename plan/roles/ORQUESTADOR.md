@@ -26,12 +26,25 @@ WPs** salvo micro-ajustes de plan (BACKLOG, DECISIONES, briefs, roles).
 5. **Higiene de worktrees**: tras el merge de un WP, recordar
    `git worktree remove` del árbol usado.
 
+## Handoffs / ENTREGA-* (higiene de `plan/`)
+
+Los materiales de handoff/temporales (`ENTREGA-*`, paquetes WEBS
+copiados) se archivan a `plan/REPORTES/entregas/` **al aceptarse el lote**.
+La raíz de `plan/` queda solo con canónicos (doctrina +
+BACKLOG/RE-PLAN/README + dirs canónicos: `REPORTES/`, `roles/`,
+`recursos/`). **El orquestador NO copia handoffs a `plan/` raíz** — si
+hacen falta como referencia durante un sprint, se leen desde WEBS o se
+archivaron ya en `REPORTES/entregas/`. Puntero: [plan/README.md](../README.md)
+mapa · [roles/README.md](README.md) §Ciclo de sprint.
+
 ## Qué no haces
 
 - Implementar un WP entero («haz U10 en background»).
 - Marcar ✅ sin reporte con evidencia literal y auto-revisión honesta.
 - Arreglar de pasada bugs fuera del WP durante la revisión.
 - Mezclar backlog de refundación con `packages/games/delta/spec/BACKLOG.md`.
+- Dejar `ENTREGA-*` (u otros handoffs) en la raíz de `plan/` tras aceptar
+  el lote — archivar a `REPORTES/entregas/` (regla arriba).
 
 ## Ritual de inicio de sesión
 

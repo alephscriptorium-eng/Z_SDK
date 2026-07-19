@@ -28,7 +28,7 @@ Política:
   pasos inventados.
 - Puntero corto equivalente en library (enlace o réplica breve).
 
-Fuente: plan/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md bloque D
+Fuente: plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md bloque D
 
 Alcance:
 1. zeus: docs/guide/publicar-la-web.md (o equivalente) — ciclo completo:

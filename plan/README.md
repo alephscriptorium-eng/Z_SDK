@@ -24,10 +24,10 @@ agente de sesión del usuario). La regla de reparto:
 | [BACKLOG.md](BACKLOG.md) | tablero vivo: remate, residuales, ops, horizonte | orquestador (estado); swarm propone |
 | [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) | olas 0–10 + colas archivadas (consulta; no operativo) | orquestador |
 | [RE-PLAN.md](RE-PLAN.md) | balance de cierre de la refundación (lecciones; **no** inventa WPs) | orquestador |
-| [ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md) | acta orquestador: cierre post-18b / capa B drenada + U118 | orquestador |
 | [PRACTICAS.md](PRACTICAS.md) | **lectura obligatoria antes de tocar código** — anti-monkey-code, auto-revisión, formato de reporte | orquestador |
 | [DECISIONES.md](DECISIONES.md) | decisiones tomadas (con fecha) y decisiones abiertas | orquestador |
-| [REPORTES/](REPORTES/) | un acta por WP ejecutado, según [REPORTES/PLANTILLA.md](REPORTES/PLANTILLA.md) | swarm |
+| [REPORTES/](REPORTES/) | actas por WP (`WP-*.md`) + handoffs archivados en [REPORTES/entregas/](REPORTES/entregas/) | swarm; orquestador archiva |
+| [REPORTES/entregas/](REPORTES/entregas/) | ENTREGA-* / paquetes WEBS copiados (archivo tras aceptar el lote; no viven en raíz) | orquestador |
 | [recursos/](recursos/README.md) | clones externos de referencia (gitignorados salvo su README, con procedencia y hallazgos) | orquestador |
 
 Relación con otros backlogs: `packages/games/delta/spec/BACKLOG.md` sigue vivo y manda

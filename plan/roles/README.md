@@ -62,8 +62,10 @@ Formalizado en [PRACTICAS.md §7](../PRACTICAS.md):
    `IDLE sin pendientes` **o** `esperando: <tick> de <quién>` — nunca silencio.
 4. **Retro** — hallazgos → cola residual viva; no colas por WP en el tablero.
 
-El remate de `BACKLOG.md` y el acta del sprint (si hay carpeta `ENTREGA-…`)
-usan esa fórmula al cerrar o pausar.
+El remate de `BACKLOG.md` y el acta del sprint (si hay carpeta `ENTREGA-…`
+bajo `REPORTES/entregas/`) usan esa fórmula al cerrar o pausar. Tras
+aceptar el lote, los handoffs se archivan ahí — no en la raíz de `plan/`
+(regla en [ORQUESTADOR.md](ORQUESTADOR.md) §Handoffs).
 
 ## Reglas de oro
 

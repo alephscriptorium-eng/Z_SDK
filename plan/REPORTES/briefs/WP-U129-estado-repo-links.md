@@ -23,7 +23,7 @@ Política:
 - Solo docs/guide/estado.md (salvo descubrimiento mínimo documentado).
 - Estilo post-U120: sin meter refs WP/D-## nuevas en prosa de producto.
 
-Fuente: plan/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md B.4
+Fuente: plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md B.4
 Repo real: github.com/alephscriptorium-eng/Z_SDK (no path zeus-sdk).
 
 CA:

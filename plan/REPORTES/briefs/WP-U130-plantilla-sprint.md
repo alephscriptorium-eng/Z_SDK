@@ -31,7 +31,7 @@ Contenido mínimo a formalizar:
 
 Estreno (CA):
 - Acta / evidencia de cierre Sprint 2 usando la fórmula de estado
-  (reporte + fichero de acta en ENTREGA-2026-07-19-sprint2/ si cabe)
+  (reporte + fichero de acta en REPORTES/entregas/ENTREGA-2026-07-19-sprint2/ si cabe)
 - NO tocar BACKLOG (remate lo actualiza el orquestador al ✅)
 
 CA:

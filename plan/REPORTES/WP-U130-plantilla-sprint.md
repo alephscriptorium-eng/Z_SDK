@@ -14,7 +14,7 @@ Se formalizó el ciclo de sprint ya probado en `plan/PRACTICAS.md` §7
 (entrada con GO, ejecución con CA/Devuelto, cierre con estado declarado,
 retro a residuales). Se enlazó desde `plan/roles/README.md` y el ritual de
 `ORQUESTADOR.md`. Se estrenó el cierre de Sprint 2 con acta
-`ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md` usando la fórmula
+`REPORTES/entregas/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md` usando la fórmula
 `esperando: revisión+merge U130 de orquestador`. No se editó
 `plan/BACKLOG.md`.
 
@@ -23,8 +23,8 @@ retro a residuales). Se enlazó desde `plan/roles/README.md` y el ritual de
 - modificado `plan/PRACTICAS.md` — §7 Ciclo de sprint (gobernanza)
 - modificado `plan/roles/README.md` — sección Ciclo de sprint + puntero §7
 - modificado `plan/roles/ORQUESTADOR.md` — ritual: estado declarado
-- creado `plan/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md` — estreno cierre
-- modificado `plan/ENTREGA-2026-07-19-sprint2/00-INDICE.md` — fila acta
+- creado `plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md` — estreno cierre
+- modificado `plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-INDICE.md` — fila acta
 - creado `plan/REPORTES/WP-U130-plantilla-sprint.md` — este reporte
 
 ## Evidencia
@@ -36,11 +36,11 @@ retro a residuales). Se enlazó desde `plan/roles/README.md` y el ritual de
 ```
 $ rg -n "Ciclo de sprint|IDLE sin pendientes|esperando:" \
     plan/PRACTICAS.md plan/roles/README.md plan/roles/ORQUESTADOR.md \
-    plan/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md
+    plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md
 
 plan/roles/ORQUESTADOR.md:43:   (`IDLE sin pendientes` o `esperando: <tick> de <quién>`; PRACTICAS §7).
-plan/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md:19:> **esperando: revisión+merge U130 de orquestador**
-plan/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md:22:pasar a **`IDLE sin pendientes`** …
+plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md:19:> **esperando: revisión+merge U130 de orquestador**
+plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md:22:pasar a **`IDLE sin pendientes`** …
 plan/PRACTICAS.md:141:## 7. Ciclo de sprint (gobernanza)
 plan/PRACTICAS.md:171:| `IDLE sin pendientes` | …
 plan/PRACTICAS.md:172:| `esperando: <tick> de <quién>` | …

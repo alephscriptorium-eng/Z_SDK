@@ -3,7 +3,7 @@
 > **Archivo** (orquestador / 2026-07-18 · WP-U118). Snapshot del BACKLOG
 > vivo previo a la estabilización (~1552 líneas / ~33 colas de hallazgos).
 > **No es el tablero operativo.** Tablero vivo: [BACKLOG.md](BACKLOG.md).
-> Balance: [RE-PLAN.md](RE-PLAN.md). Acta: [ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md).
+> Balance: [RE-PLAN.md](RE-PLAN.md). Acta: [ENTREGA-2026-07-18c.md](REPORTES/entregas/ENTREGA-2026-07-18c.md).
 >
 > Conserva WPs ✅, CAs, demoliciones y colas residuales por ola para
 > consulta. Git también guarda la historia; este archivo es índice legible.
