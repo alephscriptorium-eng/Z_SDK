@@ -13,19 +13,19 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 (archivado WP-U118). Balance: [RE-PLAN.md](RE-PLAN.md). Acta cierre:
 [ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md). Sprint 1 bug-fixing:
 [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md) · **D-24**.
-Sprint 2 marketing copy:
+Sprint 2 (ADDENDA + CAPA):
 [ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/) · **D-25**.
 
 ---
 
-## Remate — estado swarm (2026-07-19 · Sprint 2)
+## Remate — estado swarm (2026-07-19 · Sprint 2 · ADDENDA)
 
 > **Refundación + capa B drenadas** (U00–U118 ✅). **Sprint 1 cerrado**
 > ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**): U119–U122 ✅ +
 > publish real ✅ + **U55 ✅** + **U123 ✅**. **0 DA** abiertas.
-> **Sprint 2 GO** ([ENTREGA-19-sprint2](ENTREGA-2026-07-19-sprint2/) ·
-> **D-25**): copy final marketing — **U124** ∥ **U125**. DNS U106/U107 ⏳.
-> Diferidos U87 §5–6 / residuales → **sin GO**.
+> **Sprint 2 GO** ([ADDENDA](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) ·
+> CAPA · **D-25**): **A** U124∥U125 · **B** U126–U129 · **D** U131 ·
+> **C** U130 al cierre. DNS U106/U107 ⏳. Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -34,49 +34,124 @@ Sprint 2 marketing copy:
 | Estabilización mesa plan | **U118** | ✅ |
 | **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
 | Publish real → demoler `file:` | **U55** ∥ **U123** | ✅ |
-| **Sprint 2** — copy portales (marketing) | **U124** ∥ **U125** | 🔶 |
+| **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | 🔶 |
+| **Sprint 2 B** — higiene (4 micros) | **U126–U129** | 🔶 |
+| **Sprint 2 D** — docs regeneración web | **U131** | 🔶 |
+| **Sprint 2 C** — plantilla sprint | **U130** | ⬜ cierre |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Orden Sprint 2:** **U124** ∥ **U125** (repos distintos; sin dependencia).
+**Orden Sprint 2:** **A ∥ B**; **D** cabe con A; **C** = acta de cierre.
 
-**En curso:** **U124** · **U125** (orquestador asignó / 2026-07-19).
+**En curso:** **U124–U129** · **U131** (orquestador / 2026-07-19 · ADDENDA).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 2 — copy final portales (GO · ENTREGA-19 · D-25)
+## Sprint 2 — ADDENDA + CAPA (GO · 2026-07-19 · D-25)
 
-Fuente: [ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/)
-(`00-PAQUETE` · `01-COPY-WEB-A` · `02-COPY-WEB-B` · `03-VERIFICACION`).
-**Reglas duras:** verbatim; anclas ANTES; conflicto = reporte sin improvisar;
-cero copy de cosecha; slugs intactos. Heros/lemas A («Crear juegos, no
-dialectos») **se conservan**.
+Fuente canónica:
+[00-ADDENDA.md](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) +
+[01-PAQUETE-CAPA.md](ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md)
+([00-INDICE.md](ENTREGA-2026-07-19-sprint2/00-INDICE.md)).
+Paquete marketing WEBS/ENTREGA-SPRINT2 →
+[SUPERADA-marketing-webs-sprint2/](ENTREGA-2026-07-19-sprint2/SUPERADA-marketing-webs-sprint2/)
+(no aplicar). **Heros/lemas: CAPA los cambia** (prioridad ADDENDA sobre
+exención D-24 / marketing SUPERADO).
 
-### WP-U124 · Copy portal Zeus SDK (W1) — 🔶
+### (A) Capa editorial — CAPA verbatim
 
-- 🔶 **WP-U124 · Aplicar copy final `zeus-sdk/docs` (01-COPY-WEB-A)** —
+#### WP-U124 · Capa editorial W-A (hero zeus) — 🔶
+
+- 🔶 **WP-U124 · Aplicar CAPA W-A en `zeus-sdk/docs/index.md`** —
   en curso (worker / 2026-07-19). Rama `wp/u124-copy-web-a`. Brief:
   [REPORTES/briefs/WP-U124-copy-web-a.md](REPORTES/briefs/WP-U124-copy-web-a.md).
-  Solo markdown enumerado en `01`; `config.mjs` / `guide/estado.md` /
-  `contracts/*` = **cero diff**.
-  **CA:** [03-VERIFICACION.md](ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md)
-  §comunes + §W1 (`docs:build`; diff identidad con paquete; lema intacto).
-  **Demolición:** N/A (reemplazo editorial verbatim; no borrar páginas).
+  Solo hero frontmatter (name/text/tagline); `actions`/`features` intocados.
+  **CA:** [01-PAQUETE-CAPA.md](ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md)
+  §Verificación + `docs:build`; hero FOSS 1 línea; categoría Ventana de
+  Contexto; lema antiguo **no** se conserva.
+  **Demolición:** N/A (reemplazo verbatim del bloque hero).
 
-### WP-U125 · Copy catálogo + ficha SOLVE (W2) — 🔶
+#### WP-U125 · Capa editorial W-B (library docs) — 🔶
 
-- 🔶 **WP-U125 · Aplicar copy final library docs (02-COPY-WEB-B)** —
+- 🔶 **WP-U125 · Aplicar CAPA W-B en library/docs (5 ficheros)** —
   en curso (worker / 2026-07-19). Rama `wp/u125-copy-web-b` (zeus reporte +
   library). Brief:
   [REPORTES/briefs/WP-U125-copy-web-b.md](REPORTES/briefs/WP-U125-copy-web-b.md).
-  Portada, fichas delta/pozo, **nueva** `games/solve-coagula.md`, marco
-  futuros + filas, startpacks, `config.mjs` nav/sidebar/description.
-  `releases.md` = **cero diff**.
-  **CA:** [03-VERIFICACION.md](ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md)
-  §comunes + §W2; `demo:solve-coagula` existe; títulos obra solo en docs.
-  **Demolición:** N/A (capa editorial; slugs `delta`/`pozo`/`solve-coagula`
-  intactos).
+  `index.md` hero+features; ficha nueva `solve-coagula.md`; `futuros.md` →
+  call4makers; capa en `delta.md`/`pozo.md`.
+  **CA:** paquete CAPA §Verificación; `docs:build`; diff = ficheros del
+  paquete; `demo:solve-coagula` existe.
+  **Demolición:** entrada SOLVE como «futuro» en `futuros.md` (ya released).
+
+### (B) Higiene — 4 micros (∥ A)
+
+#### WP-U126 · YAML `release-startpack.yml` — 🔶
+
+- 🔶 **WP-U126 · Arreglar o demoler `release-startpack.yml` (library)** —
+  en curso (worker / 2026-07-19). Rama library `wp/u126-release-startpack-yml`.
+  Brief:
+  [REPORTES/briefs/WP-U126-release-startpack-yml.md](REPORTES/briefs/WP-U126-release-startpack-yml.md).
+  Prosa sin `#` en cabecera → YAML inválido desde creación; releases reales
+  vía script Notario.
+  **CA:** parser YAML pasa **o** fichero demolido con nota en reporte.
+  **Demolición:** el workflow si la vía canónica es el script.
+
+#### WP-U127 · Higiene worktrees library — 🔶
+
+- 🔶 **WP-U127 · Retirar worktrees/dirs huérfanos library** —
+  en curso (worker / 2026-07-19). Rama library `wp/u127-higiene-worktrees`.
+  Brief:
+  [REPORTES/briefs/WP-U127-higiene-worktrees.md](REPORTES/briefs/WP-U127-higiene-worktrees.md).
+  Retirar `u107-review` (detached) + dirs huérfanos `wp-u121-*`,
+  `wp-u123-*`. **No** tocar worktrees activos Sprint 2.
+  **CA:** los tres nombrados fuera; listado documenta solo activos legítimos
+  (ideal fin de sprint: solo main).
+  **Demolición:** worktree/dirs obsoletos nombrados.
+
+#### WP-U128 · Deps `@zeus/*` caret semver — 🔶
+
+- 🔶 **WP-U128 · Fijar `"*"` → caret de versiones publicadas (library)** —
+  en curso (worker / 2026-07-19). Rama library `wp/u128-zeus-deps-semver`.
+  Brief:
+  [REPORTES/briefs/WP-U128-zeus-deps-semver.md](REPORTES/briefs/WP-U128-zeus-deps-semver.md).
+  **CA:** cero `"*"` en deps `@zeus` de `packages/` de la library.
+  **Demolición:** rangos `"*"` en esos package.json.
+
+#### WP-U129 · Links portal `zeus-sdk` → `Z_SDK` — 🔶
+
+- 🔶 **WP-U129 · URL repo en `docs/guide/estado.md` (cola U120)** —
+  en curso (worker / 2026-07-19). Rama `wp/u129-estado-repo-links`.
+  Brief:
+  [REPORTES/briefs/WP-U129-estado-repo-links.md](REPORTES/briefs/WP-U129-estado-repo-links.md).
+  **CA:** links del portal apuntan al repo real (`Z_SDK`).
+  **Demolición:** URLs/`zeus-sdk` incorrectas en ese fichero.
+
+### (C) Gobernanza — al cierre
+
+#### WP-U130 · Plantilla de sprint (PRACTICAS/roles) — ⬜
+
+- ⬜ **WP-U130 · Formalizar ciclo de sprint en `plan/PRACTICAS.md` o roles/**
+  — pendiente de cierre del propio Sprint 2. Brief:
+  [REPORTES/briefs/WP-U130-plantilla-sprint.md](REPORTES/briefs/WP-U130-plantilla-sprint.md).
+  Entrada = lote con GO; ejecución = WPs con CA; cierre = estado declarado
+  siempre; retro → residuales, no colas por WP.
+  **CA:** el texto existe y el cierre de este sprint lo estrena.
+  **Demolición:** N/A (gobernanza).
+
+### (D) Docs — regeneración web («pipeline» documental)
+
+#### WP-U131 · Documentar publicar la web — 🔶
+
+- 🔶 **WP-U131 · Página `docs/guide/publicar-la-web.md` (+ puntero library)** —
+  en curso (worker / 2026-07-19). Rama `wp/u131-publicar-la-web`. Brief:
+  [REPORTES/briefs/WP-U131-publicar-la-web.md](REPORTES/briefs/WP-U131-publicar-la-web.md).
+  Ciclo: editar → `docs:dev` → `docs:build` → push `docs/**` / dispatch →
+  Pages + dominio HTTPS; catálogo library ← Releases. Estilo post-U120
+  (sin refs WP/D-##).
+  **CA:** página en portal; comandos corren; calza con `docs.yml` real;
+  library enlaza o replica en corto.
+  **Demolición:** N/A (docs nuevas).
 
 ---
 
@@ -163,8 +238,8 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U114) env sibling library sin link `@zeus/startpack-kit` (ops/link)
 - (U121) scrub `README.md` raíz library (WP-U/D-#/file: temporal) — fuera
   del portal VitePress; coherencia repo↔portal
-- (U120) links blob en `docs/guide/estado.md` → repo público `Z_SDK` (hoy
-  citan path `zeus-sdk`); scrub README raíz zeus (misma clase)
+- (U120) links blob en `docs/guide/estado.md` → **WP-U129** (Sprint 2 B4);
+  scrub README raíz zeus (misma clase) queda residual
 - (U122) `plan/ARQUITECTURA.md` §5 aún cita `NPM_TOKEN` (gate publish ya
   es `_password` en `release.yml`)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas

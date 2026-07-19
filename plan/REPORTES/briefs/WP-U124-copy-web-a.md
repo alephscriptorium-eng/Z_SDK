@@ -1,16 +1,16 @@
-# Brief — WP-U124 · Copy portal Zeus SDK (W1)
+# Brief — WP-U124 · Capa editorial W-A (hero zeus)
 
 _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WORKER.md`._
 
-Origen: Sprint 2 · ENTREGA-19-sprint2 · **D-25**. **Paralelo con U125.**
-Repo: `zeus-sdk` solo. Marketing copy — **verbatim**, no redactar.
+Origen: Sprint 2 · **ADDENDA** + **CAPA** · **D-25**. **Paralelo con U125.**
+Repo: `zeus-sdk` solo. **REDEFINIDO** (no usar paquete marketing SUPERADO).
 
 ---
 
 ```text
 (rol) plan/roles/WORKER.md
 
-WP: WP-U124 · Aplicar copy final zeus-sdk/docs (01-COPY-WEB-A)
+WP: WP-U124 · Aplicar CAPA W-A en zeus-sdk/docs/index.md (hero)
 Rama: wp/u124-copy-web-a
 Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u124-copy-web-a
 Reporte: plan/REPORTES/WP-U124-copy-web-a.md
@@ -19,38 +19,33 @@ Reporte: plan/REPORTES/WP-U124-copy-web-a.md
 Leer plan/PRACTICAS.md entero antes de implementar.
 Reporte desde plan/REPORTES/PLANTILLA.md → plan/REPORTES/WP-U124-copy-web-a.md.
 Commits convencionales: tipo(alcance): resumen (PRACTICAS §6).
-NO mezclar con packages/games/delta/spec/BACKLOG.md ni con U125.
+NO mezclar con U125 ni con SUPERADA-marketing-webs-sprint2/.
 
 Política:
 - Commits + push OK en rama WP.
-- NO merge a main. NO U125 / residuales / DNS.
-- NO re-redactar, parafrasear ni «mejorar» copy. Verbatim o reporte.
-- NO tocar .vitepress/config.mjs, guide/estado.md, contracts/*, api/, dist/.
+- NO merge a main. NO U125 / higiene B / U131.
+- NO re-redactar. Verbatim CAPA o reporte (conflicto = ancla).
+- actions y features del index: INTÓCADOS.
+- Lema antiguo «Crear juegos, no dialectos» SE REEMPLAZA (CAPA / D-25).
 
-Fuente de verdad del copy (leer ENTERO antes de tocar):
-- plan/ENTREGA-2026-07-19-sprint2/00-PAQUETE.md (reglas 1–6)
-- plan/ENTREGA-2026-07-19-sprint2/01-COPY-WEB-A.md (17 entradas)
-- plan/ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md §comunes + §W1
+Fuente de verdad (leer ENTERO):
+- plan/ENTREGA-2026-07-19-sprint2/00-INDICE.md
+- plan/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md (bloque A)
+- plan/ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md §W-A + §Verificación
 
-Alcance (solo lo enumerado en 01):
-1. docs/index.md — frontmatter (tagline + features.details; name/text/actions intactos)
-2–5. guide: getting-started, layout, two-games, external-handshake (marcos)
-6–13. engine: index, protocol, authority-kit, player-mcp-kit, playbook-kit,
-    view-kit, http-contract, rooms-presets (frases-marco)
-14–17. editor/index, mesh/index, games/index, playbook/index (marcos)
+Alcance (1 fichero):
+1. docs/index.md — solo bloque hero (name / text / tagline) ANTES→DESPUÉS CAPA
 
-CA (03-VERIFICACION):
-- Cada DESPUÉS aparece carácter a carácter; cuerpos técnicos byte-idénticos
-- git diff --stat = exactamente ficheros de 01 (ni uno más)
-- npm run docs:build OK
-- hero.name Zeus SDK + hero.text «Crear juegos, no dialectos» idénticos
-- config.mjs cero diff; guide/estado.md + contracts/* cero diff
-- Sin copy de cosecha propia
+CA (paquete CAPA §Verificación, lado A):
+- DESPUÉS literal; name Z_SDK; text «Juegos de Ventana de Contexto»
+- tagline FOSS de UNA línea
+- docs:build OK
+- git diff --stat = solo docs/index.md (o solo el bloque hero si hay ruido)
+- actions/features cero cambio de contenido
 
-Conflicto (regla 4): ancla ausente / link rompe build → dejar campo, anotar
-en reporte, NO improvisar.
+Conflicto: ancla ausente → dejar, anotar reporte, NO improvisar.
 
 Demolición: N/A.
 
-Empieza: sitúate en el worktree, lee PRACTICAS + paquete, aplica 01, verifica, reporta.
+Empieza: sitúate en el worktree, lee PRACTICAS + CAPA §W-A, aplica, verifica, reporta.
 ```

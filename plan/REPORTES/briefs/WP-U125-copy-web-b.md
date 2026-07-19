@@ -1,16 +1,16 @@
-# Brief — WP-U125 · Copy catálogo + ficha SOLVE (W2)
+# Brief — WP-U125 · Capa editorial W-B (library docs)
 
 _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WORKER.md`._
 
-Origen: Sprint 2 · ENTREGA-19-sprint2 · **D-25**. **Paralelo con U124.**
-Repo principal: `Z_SDK-games-library`. Marketing copy — **verbatim**.
+Origen: Sprint 2 · **ADDENDA** + **CAPA** · **D-25**. **Paralelo con U124.**
+Repo principal: `Z_SDK-games-library`. **REDEFINIDO** (no marketing SUPERADO).
 
 ---
 
 ```text
 (rol) plan/roles/WORKER.md
 
-WP: WP-U125 · Aplicar copy final library docs (02-COPY-WEB-B)
+WP: WP-U125 · Aplicar CAPA W-B en library/docs (5 ficheros)
 Rama zeus: wp/u125-copy-web-b
 Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u125-copy-web-b
 Rama library: wp/u125-copy-web-b
@@ -21,46 +21,43 @@ Reporte: plan/REPORTES/WP-U125-copy-web-b.md (en zeus)
 Leer plan/PRACTICAS.md entero (zeus).
 Reporte desde plan/REPORTES/PLANTILLA.md (zeus).
 Commits convencionales en ambos repos según toque.
-NO mezclar con U124 ni con packages/* de la library.
+NO mezclar con U124 ni con SUPERADA-marketing-webs-sprint2/.
+NO tocar packages/* de producto salvo lo que CAPA no pide.
 
 Política:
 - Commits + push OK en ramas WP (library docs + zeus reporte).
-- NO merge a main. NO U124 / residuales / DNS.
-- NO re-redactar. Verbatim o reporte (regla 4).
-- NO tocar docs/releases.md, packages/*, package.json scripts, workflows.
-- Títulos de obra (El Común / El Aljibe / SOLVE ET COAGULA) SOLO en docs;
-  slugs delta / pozo / solve-coagula intactos.
+- NO merge a main. NO U124 / B-higiene / U131.
+- Verbatim CAPA o reporte. Slugs delta/pozo/solve-coagula intactos.
+- actions de index: intocadas. Cuerpos técnicos de fichas: intocados
+  salvo las 2 inserciones CAPA en delta/pozo.
 
 Paths:
 - Library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library
 - Zeus (reporte): c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk
 
-Fuente de verdad del copy (leer ENTERO antes de tocar):
-- plan/ENTREGA-2026-07-19-sprint2/00-PAQUETE.md (reglas 1–6)
-- plan/ENTREGA-2026-07-19-sprint2/02-COPY-WEB-B.md (7 secciones)
-- plan/ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md §comunes + §W2
+Fuente de verdad (leer ENTERO):
+- plan/ENTREGA-2026-07-19-sprint2/00-INDICE.md
+- plan/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md (bloque A)
+- plan/ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md §W-B + §Verificación
 
-Alcance (solo lo enumerado en 02):
-1. docs/index.md — fichero completo
-2–3. docs/games/delta.md + pozo.md — ficha nueva hasta tabla Pieza (cuerpo técnico intacto)
-4. docs/games/solve-coagula.md — PÁGINA NUEVA
-5. docs/games/futuros.md — marco + fila SOLVE + filas Fundación/Periódico
-6. docs/startpacks.md — línea de marco
-7. docs/.vitepress/config.mjs — description + nav Juegos + sidebar Juegos
+Alcance (CAPA W-B):
+1. docs/index.md — hero + features
+2. docs/games/solve-coagula.md — PÁGINA NUEVA (ficha)
+3. docs/games/futuros.md — retirar SOLVE como futuro; añadir §call4makers
+4–5. docs/games/delta.md + pozo.md — línea de obra tras H1 + cierre «Llévatela»
 
-CA (03-VERIFICACION):
-- DESPUÉS literal; cuerpos técnicos delta/pozo desde tabla Pieza byte-idénticos
-- git diff --stat = ficheros de 02 (+ solve-coagula.md nuevo)
-- npm run docs:build OK (library)
-- solve-coagula enlazada (portada, nav, sidebar, futuros)
-- grep demo:solve-coagula en package.json raíz → existe
-- releases.md cero diff; config solo §7
-- grep «El Común|El Aljibe» en packages/ → 0
+CA (paquete CAPA §Verificación):
+- docs:build OK (library)
+- heros FOSS 1 línea; Ventana de Contexto en hero B
+- git diff --stat acotado a ficheros del paquete
+- demo:solve-coagula / installs de startpacks existen
+- greps C1/C2/contadores/C6 = 0 en ficheros tocados (si el worker tiene
+  la lista BASE-3; si no, documentar greps razonables del paquete)
 
-Conflicto: celda Estado de SOLVE en futuros ajustable a verdad viva (nota §5b);
-resto sin improvisar.
+Nota editorial (no bloquear): voseo call4makers vs tuteo «Llévatela» —
+aplicar verbatim; no armonizar.
 
-Demolición: N/A.
+Demolición: entrada SOLVE-como-futuro en futuros.md.
 
-Empieza: sitúate en worktrees (zeus + library), lee PRACTICAS + paquete, aplica 02, verifica, reporta.
+Empieza: sitúate en worktrees, lee PRACTICAS + CAPA §W-B, aplica, verifica, reporta.
 ```

@@ -265,21 +265,29 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   carga el secret cuando U119 deje CI verde. Fuente:
   [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md).
 
-- **D-25 · 2026-07-19 · Sprint 2 copy final portales (ENTREGA-19-sprint2)**
-  (GO usuario · marketing vía usuario). Dos WP en paralelo (repos
-  distintos):
+- **D-25 · 2026-07-19 · Sprint 2 ADDENDA + CAPA** (GO usuario · ruta
+  canónica `ADDENDA/ENTREGA-2026-07-19-sprint2.md`). Lote:
   | # | Bloque | Destino |
   |---|--------|---------|
-  | W1 | Copy portal Zeus SDK (`zeus-sdk/docs`) | **WP-U124** |
-  | W2 | Copy catálogo + ficha SOLVE (`Z_SDK-games-library`) | **WP-U125** |
-  **Reglas duras (paquete):** aplicación **verbatim** (carácter a carácter);
-  anclas por bloque `ANTES` literal; conflicto texto↔repo = reporte sin
-  re-redactar; cero copy de cosecha del worker; slugs (`delta` / `pozo` /
-  `solve-coagula`) e infra intactos. Títulos de obra públicos (**El Común**,
-  **El Aljibe**, **SOLVE ET COAGULA**) = capa editorial encima del slug.
-  Lema portal A «Crear juegos, no dialectos» **se conserva**. CA:
-  [ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md](ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md).
-  Fuente: [ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/).
+  | A W-A | Capa editorial hero zeus (`01-PAQUETE-CAPA`) | **WP-U124** |
+  | A W-B | Capa editorial library docs (5 ficheros CAPA) | **WP-U125** |
+  | B1 | YAML `release-startpack.yml` (library) | **WP-U126** |
+  | B2 | Higiene worktrees library (huérfanos) | **WP-U127** |
+  | B3 | Deps `@zeus/*: "*"` → caret semver | **WP-U128** |
+  | B4 | Links `estado.md` → repo `Z_SDK` | **WP-U129** |
+  | C | Plantilla de sprint (PRACTICAS/roles) | **WP-U130** (cierre) |
+  | D | Docs regeneración web (`publicar-la-web.md`) | **WP-U131** |
+  **Orden:** A ∥ B; D cabe con A; C = acta de cierre. **Reglas CAPA:**
+  verbatim; anclas ANTES; conflicto = reporte; slugs intactos. **Heros:**
+  CAPA **cambia** lemas (A → `Z_SDK` / Ventana de Contexto; B → Juegos
+  Z_SDK) — prioriza ADDENDA sobre exención D-24 y sobre el paquete
+  marketing WEBS/ENTREGA-SPRINT2 (archivado
+  [SUPERADA-…](ENTREGA-2026-07-19-sprint2/SUPERADA-marketing-webs-sprint2/)).
+  Sustituye micro pendiente «hero en positivo». Fuente:
+  [00-ADDENDA.md](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) ·
+  [01-PAQUETE-CAPA.md](ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md).
+  **Pendiente aparte (no bloquea Sprint 2):** si WEBS/ENTREGA-CAPA recibe
+  otra iteración de backtracking, GO explícito del usuario.
 
 ## Abiertas (bloquean lo indicado)
 
