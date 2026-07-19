@@ -2,7 +2,7 @@
 
 _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WORKER.md`._
 
-Origen: Sprint 1 · [ENTREGA-2026-07-18d-sprint1.md](../../ENTREGA-2026-07-18d-sprint1.md) · **D-24**.
+Origen: Sprint 1 · [ENTREGA-2026-07-18d-sprint1.md](../entregas/ENTREGA-2026-07-18d-sprint1.md) · **D-24**.
 **Solo U119** — no prosa (U120/U121), no auth registry (U122), no U55.
 
 ---
@@ -65,7 +65,7 @@ Regla de los dos juegos (PRACTICAS §1.11):
 - No meter nombres exclusivos de un juego en engine.
 
 Lecturas extra (además de PRACTICAS + WP en BACKLOG):
-- plan/ENTREGA-2026-07-18d-sprint1.md (bloque A)
+- plan/REPORTES/entregas/ENTREGA-2026-07-18d-sprint1.md (bloque A)
 - plan/DECISIONES.md D-24
 - plan/REPORTES/WP-U102-ci-hermetic.md (patrón tests herméticos)
 - plan/REPORTES/WP-U117-story-board-schema.md (candidato integración)

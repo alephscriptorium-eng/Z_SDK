@@ -29,7 +29,7 @@ post-U114 → ~~**U116**~~ ✅ (**GO A** · alias `cast-table` +
 ~~**U118**~~ ✅ (BACKLOG vivo + histórico). Swarm **0 🔶**. Lo que queda
 no es «terminar la refundación», sino ops (publish/DNS) y residuales
 **sin GO**. IDs/CAs solo en [BACKLOG.md](BACKLOG.md); cierre narrativo:
-[ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md). Historia de olas:
+[ENTREGA-2026-07-18c.md](REPORTES/entregas/ENTREGA-2026-07-18c.md). Historia de olas:
 [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md).
 
 Ops residuales (publish real → U55; DNS custom U106/U107; sidecar blob)
@@ -168,7 +168,7 @@ WP nuevo, no «ya lo arreglamos luego».
   [DECISIONES.md](DECISIONES.md) (**sin GO** → sin WP). Detalle vivo en
   [BACKLOG.md](BACKLOG.md); historia en
   [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md); entrega:
-  [ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md).
+  [ENTREGA-2026-07-18c.md](REPORTES/entregas/ENTREGA-2026-07-18c.md).
 - Horizontes previos (U71–U74) siguen en BACKLOG §Horizonte; no se
   reabren aquí.
 - U55 permanece gated a publish real (ops); no forma parte de la capa B.
@@ -210,7 +210,7 @@ residuales sin GO.
 
 ## 5quinquies. Addenda Sprint 1 bug-fixing (ENTREGA-18d)
 
-GO usuario (2026-07-18): [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md)
+GO usuario (2026-07-18): [ENTREGA-2026-07-18d-sprint1.md](REPORTES/entregas/ENTREGA-2026-07-18d-sprint1.md)
 · **D-24**. No es «ola 11»: es bug-fixing post-idle. Orden **U119 →
 U120∥U121 → U122** → GO U55 natural. IDs/CAs solo en
 [BACKLOG.md](BACKLOG.md). Heros/lemas exentos; auth registry = basic

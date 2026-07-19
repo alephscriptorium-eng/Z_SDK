@@ -42,7 +42,7 @@ CA:
 
 Demolición: prosa swarm/estado en doctrinales; números muertos en producto.
 
-Lecturas: plan/ENTREGA-2026-07-18d-sprint1.md bloque B; D-24; docs/.
+Lecturas: plan/REPORTES/entregas/ENTREGA-2026-07-18d-sprint1.md bloque B; D-24; docs/.
 
 Empieza: sitúate en el worktree, lee PRACTICAS, implementa.
 ```

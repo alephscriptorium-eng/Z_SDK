@@ -2,7 +2,7 @@
 
 Fecha: **2026-07-19**. Fuente del lote:
 [00-ADDENDA.md](00-ADDENDA.md) · **D-25**. Ciclo formalizado en
-[PRACTICAS.md §7](../PRACTICAS.md) (WP-U130).
+[PRACTICAS.md §7](../../../PRACTICAS.md) (WP-U130).
 
 ## Resultado del lote
 
@@ -25,7 +25,7 @@ el cierre del sprint.
 ## Retro → residuales (no colas por WP)
 
 Hallazgos del sprint en
-[`BACKLOG.md` §Cola residual viva](../BACKLOG.md) — **sin GO → sin 🔶**:
+[`BACKLOG.md` §Cola residual viva](../../../BACKLOG.md) — **sin GO → sin 🔶**:
 
 - (U124/U125) VitePress + Windows: case drive / `preserveSymlinks` /
   `docs:build` — candidate config; no aplicar sin GO

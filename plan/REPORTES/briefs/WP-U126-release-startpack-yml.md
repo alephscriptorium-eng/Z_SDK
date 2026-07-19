@@ -25,7 +25,7 @@ Política:
 - Decidir con evidencia: (a) corregir YAML válido usable, o (b) demoler
   el workflow si el script Notario es la vía canónica — documentar en reporte.
 
-Fuente: plan/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md bloque B.1
+Fuente: plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-ADDENDA.md bloque B.1
 Fichero: Z_SDK-games-library/.github/workflows/release-startpack.yml
 
 CA:
