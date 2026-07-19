@@ -22,12 +22,18 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ## Remate — estado swarm (2026-07-19 · micros post-AMEND)
 
-> **esperando: entrega U136 · U137 de workers** (GO vigilante micros ·
-> **D-28**).
-> **U136** 🔶 · **U137** 🔶 · **U135** ✅ (**D-27**) · AMEND Sprint 2 ✅ (**D-26**).
-> Sprint 2 base cerrado ✅ (**D-25**). **0 DA** abiertas.
+> **esperando: entrega U136 de worker** (GO usuario **D-28** · lote AMEND
+> D-26–D-28; vigilante = hallazgos, **no** GO).
+> **U136** 🔶 · **U137** N/A · **U135** ✅ (**D-27**) · AMEND Sprint 2 ✅
+> (**D-26**). Sprint 2 base cerrado ✅ (**D-25**). **0 DA** abiertas.
 > Ops: publish npm startpacks = residual (NO WP).
 > Diferidos U87 §5–6 → **sin GO**.
+>
+> **Evidencia U132 Pages (2026-07-19):** library `git push origin main`
+> `ffffb27..c55955b`; Docs run `29689050539` success (deploy Pages
+> success); curl `https://games.z-sdk.escrivivir.co/games/solve-coagula`
+> → HTTP 200 + marcador tip «tomá el asset `.tgz`». Causa del «falso
+> verde» previo = **push faltante**, no deploy saltado.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -45,12 +51,13 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **AMEND Sprint 2 C** — archivar ENTREGA-* | **U134** | ✅ |
 | **Micro** — protocolo GitHub Actions | **U135** | ✅ |
 | **Micro** — C8 residual startpacks | **U136** | 🔶 |
-| **Micro** — Docs deploy saltado ≠ verde | **U137** | 🔶 |
+| **Micro** — Docs deploy saltado ≠ verde | **U137** | N/A |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U136** 🔶 ∥ **U137** 🔶 (D-28).
+**En curso:** **U136** 🔶 (D-28).
+**Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
 **Aceptado:** **U135** ✅ (protocolo Actions · D-27) · AMEND A+B+C:
 **U132** ✅ · **U133** ✅ · **U134** ✅ · Sprint 2 base:
 **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ · **U130** ✅ · **U131** ✅.
@@ -132,10 +139,12 @@ Automations obligatorios en este WP.
 
 ---
 
-## Micros post-AMEND — C8 residual + Docs falso verde (GO · 2026-07-19 · D-28)
+## Micros post-AMEND — C8 residual + Docs (GO usuario · 2026-07-19 · D-28)
 
-GO implícito vía vigilante (post-AMEND). **U136 ∥ U137** (ambos library;
-reporte en zeus). **No pisar U135.** Fuentes CAPA: leer
+Amparados por **GO usuario** del lote AMEND (**D-26–D-28**). El
+**vigilante** aporta hallazgos/devoluciones — **nunca** GO. **U136** sigue
+(library + reporte zeus). **U137** cerrado N/A (premisa incorrecta).
+**No pisar U135.** Fuentes CAPA: leer
 `WEBS/ENTREGA-CAPA/01-PAQUETE-CAPA.md` § startpacks (no copiar a `plan/`).
 
 #### WP-U136 · Fix C8 residual `docs/startpacks.md` — 🔶
@@ -154,21 +163,19 @@ reporte en zeus). **No pisar U135.** Fuentes CAPA: leer
   copiables operativos; mención doctrinal en futures/releases OK; `docs:build`
   verde. **Demolición:** fence Registry operativo con npm-por-nombre.
 
-#### WP-U137 · Docs deploy saltado = fallo visible — 🔶
+#### WP-U137 · Docs deploy saltado = fallo visible — N/A
 
-- 🔶 **WP-U137 · Deploy saltado en main+docs/** no puede ser verde** —
-  en curso (worker / 2026-07-19). Rama zeus `wp/u137-docs-deploy-gate`.
-  Worktree zeus: `.worktrees/wp-u137-docs-deploy-gate`. Rama library
-  `wp/u137-docs-deploy-gate`. Worktree library:
-  `Z_SDK-games-library/.worktrees/wp-u137-docs-deploy-gate`. Brief:
+- **N/A · WP-U137** — cerrado (orquestador / 2026-07-19). Premisa del
+  hallazgo vigilante era incorrecta: deploy saltado con run verde en
+  **rama** es correcto (build-only; deploy solo-`main`). Causa real del
+  tip no servido = **`main` local ahead sin `git push`** (U132
+  `c55955b`). **No** implementar gate genérico «skip=rojo» (rompería
+  builds de rama). Sin código útil en ramas/worktrees → N/A (no
+  re-scope). Brief archivado con STOP:
   [REPORTES/briefs/WP-U137-docs-deploy-gate.md](REPORTES/briefs/WP-U137-docs-deploy-gate.md).
-  Problema: workflow Docs library `success` con job deploy saltado → AMEND
-  en main sin Pages servido (falso verde). Alcance: condición deploy en
-  `.github/workflows/docs.yml` (library); si zeus tiene el mismo
-  anti-patrón, anotar o fix simétrico **solo con evidencia** (no ampliar).
-  **CA:** push a `main` con `docs/**` → deploy corre **o** el workflow falla
-  de forma visible (rojo); documentar en reporte. **Demolición:** verde
-  silencioso cuando deploy no corre en main+docs.
+  Nota:
+  [REPORTES/WP-U137-docs-deploy-gate.md](REPORTES/WP-U137-docs-deploy-gate.md).
+  Worker `f92b3a9b`: **no reanudar** con premisa vieja.
 
 ---
 

@@ -312,13 +312,14 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   Alcance = editar solo `plan/` (no workflows, no Cursor-in-CI, no MCP/
   Automations obligatorios). Destino: **WP-U135**.
 
-- **D-28 · 2026-07-19 · GO micros post-AMEND (vigilante)** (GO implícito
-  vía mensaje vigilante). Dos micros library + reporte zeus, en paralelo
-  con U135 (no lo pisan):
-  | # | Micro | Destino |
-  |---|-------|---------|
-  | 1 | C8 residual fence Registry en `docs/startpacks.md` | **WP-U136** |
-  | 2 | Docs deploy saltado en main+docs/** = fallo visible (no falso verde) | **WP-U137** |
+- **D-28 · 2026-07-19 · GO micros post-AMEND** (GO **usuario** · lote
+  AMEND D-26–D-28). El vigilante entregó hallazgos; **no** es fuente de
+  GO (no sentar precedente «GO implícito vía vigilante»). Micros
+  library + reporte zeus, en paralelo con U135 (no lo pisan):
+  | # | Micro | Destino | Estado |
+  |---|-------|---------|--------|
+  | 1 | C8 residual fence Registry en `docs/startpacks.md` | **WP-U136** | 🔶 |
+  | 2 | Docs deploy saltado ≠ verde (premisa) | **WP-U137** | **N/A** (causa real = push faltante; no gate skip=rojo) |
   Espíritu CAPA / PRACTICAS §8 C8. Fuentes CAPA en WEBS (no copiar a
   `plan/`). Publish npm startpacks sigue residual ops (NO WP).
 

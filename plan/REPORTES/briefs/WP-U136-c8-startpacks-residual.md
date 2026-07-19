@@ -2,9 +2,9 @@
 
 _Plantilla: `plan/roles/BRIEF.md`. Pegar con `plan/roles/WORKER.md`._
 
-Origen: **D-28** · GO vigilante post-AMEND · residual C8 de U132 (cola).
-Repo principal: `Z_SDK-games-library`. **Paralelo con U137** (no con U135
-en mismos paths).
+Origen: **D-28** · GO **usuario** (lote AMEND D-26–D-28). Hallazgo C8
+del vigilante (hallazgo ≠ GO). Residual C8 de U132 (cola).
+Repo principal: `Z_SDK-games-library`. **U137 cerrado N/A** — no paralelo.
 
 ---
 

@@ -127,7 +127,9 @@ sobre cada rama `wp/*`: lo que aquí es criterio de devolución, allí es rojo.
 tests) **no** sustituye el gate remoto cuando el runner aplica. Evidencia:
 `gh run list --branch <rama>` → run_id + conclusion, o **N/A** si el ignore
 aplica. Docs (`docs/**`) tiene workflow propio; ver roles ORQUESTADOR /
-REVISION / WORKER.
+REVISION / WORKER. **Tip de `main` sin run asociado = push faltante =
+rojo** (no asumir Pages/CI del tip local; fallo 2026-07-19 U132 library
+ahead sin `git push`).
 
 ## 6. Commits
 
