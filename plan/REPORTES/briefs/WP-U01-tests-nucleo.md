@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U01 · Tests que faltan en el núcleo
 Rama: wp/u01-tests-nucleo
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u01-tests-nucleo
+Worktree: .worktrees/wp-u01-tests-nucleo
 Reporte: plan/REPORTES/WP-U01-tests-nucleo.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

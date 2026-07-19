@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U84 · Conector SSB → VOLUMES (Tribes y Parliament)
 Rama: wp/u84-ssb-volumes
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u84-ssb-volumes
+Worktree: .worktrees/wp-u84-ssb-volumes
 Reporte: plan/REPORTES/WP-U84-ssb-volumes.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

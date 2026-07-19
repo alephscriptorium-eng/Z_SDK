@@ -11,7 +11,7 @@ Origen: **AMEND Sprint 2** · bloque **C** · **D-26**. **Paralelo con U132 ∥ 
 
 WP: WP-U134 · Mover ENTREGA-* de raíz plan/ + regla de archivo
 Rama: wp/u134-archivar-entregas
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u134-archivar-entregas
+Worktree: .worktrees/wp-u134-archivar-entregas
 Reporte: plan/REPORTES/WP-U134-archivar-entregas.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md estados 🔶/✅ (sí actualizar

@@ -12,9 +12,9 @@ Repo principal: `Z_SDK-games-library`. **Paralelo con U133 ∥ U134.**
 
 WP: WP-U132 · Aplicar CAPA rev2 verbatim (6 ficheros library/docs)
 Rama zeus: wp/u132-wb-prime-canales
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u132-wb-prime-canales
+Worktree zeus: .worktrees/wp-u132-wb-prime-canales
 Rama library: wp/u132-wb-prime-canales
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u132-wb-prime-canales
+Worktree library: (library)/.worktrees/wp-u132-wb-prime-canales
 Reporte: plan/REPORTES/WP-U132-wb-prime-canales.md (en zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
@@ -31,12 +31,12 @@ Política:
 - Anclas ANTES literales del paquete.
 
 Paths:
-- Library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library
-- Zeus (reporte): c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk
+- Library: (library)
+- Zeus (reporte): (zeus-sdk)
 
 Fuente de verdad (leer ENTERO — rutas ABSOLUTAS; NO están en plan/):
-- C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\00-NOTA.md
-- C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\01-PAQUETE-CAPA.md  (rev2)
+- `nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/00-NOTA)
+- `nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/01-PAQUETE-CAPA)  (rev2)
 
 Hecho de canal: @zeus/startpack-* NO existen en registry npm (404).
 Canal operativo = tarball del GitHub Release.

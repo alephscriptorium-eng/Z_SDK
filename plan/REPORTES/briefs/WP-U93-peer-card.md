@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U93 · Peer-card como torno del carril WebRTC
 Rama: wp/u93-peer-card
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u93-peer-card
+Worktree: .worktrees/wp-u93-peer-card
 Reporte: plan/REPORTES/WP-U93-peer-card.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

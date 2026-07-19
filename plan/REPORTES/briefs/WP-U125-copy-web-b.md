@@ -12,9 +12,9 @@ Repo principal: `Z_SDK-games-library`. **REDEFINIDO** (no marketing SUPERADO).
 
 WP: WP-U125 · Aplicar CAPA W-B en library/docs (5 ficheros)
 Rama zeus: wp/u125-copy-web-b
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u125-copy-web-b
+Worktree zeus: .worktrees/wp-u125-copy-web-b
 Rama library: wp/u125-copy-web-b
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u125-copy-web-b
+Worktree library: (library)/.worktrees/wp-u125-copy-web-b
 Reporte: plan/REPORTES/WP-U125-copy-web-b.md (en zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
@@ -32,8 +32,8 @@ Política:
   salvo las 2 inserciones CAPA en delta/pozo.
 
 Paths:
-- Library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library
-- Zeus (reporte): c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk
+- Library: (library)
+- Zeus (reporte): (zeus-sdk)
 
 Fuente de verdad (leer ENTERO):
 - plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-INDICE.md

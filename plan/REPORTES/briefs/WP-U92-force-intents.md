@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U92 · Intents de force: el sistema inyecta entropía
 Rama: wp/u92-force-intents
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u92-force-intents
+Worktree: .worktrees/wp-u92-force-intents
 Reporte: plan/REPORTES/WP-U92-force-intents.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

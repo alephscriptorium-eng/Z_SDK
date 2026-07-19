@@ -12,9 +12,9 @@ Origen: Sprint 1 · ENTREGA-18d · **D-24**. Dep **U119 ✅**. **Paralelo con U1
 
 WP: WP-U121 · Refactor prosa Z_SDK-games-library/docs/ (~6 md)
 Rama zeus: wp/u121-prosa-library-docs
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u121-prosa-library-docs
+Worktree zeus: .worktrees/wp-u121-prosa-library-docs
 Rama library: wp/u121-prosa-library-docs
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u121-prosa-library-docs
+Worktree library: (library)/.worktrees/wp-u121-prosa-library-docs
 Reporte: plan/REPORTES/WP-U121-prosa-library-docs.md (en zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

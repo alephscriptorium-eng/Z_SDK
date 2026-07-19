@@ -12,7 +12,7 @@ Origen: U87 §3 · frente editor GO · U111 ✅.
 
 WP: WP-U112 · Carpeta dramaturgo: instantiate desde obra
 Rama: wp/u112-carpeta-instantiate-from-obra
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u112-carpeta-instantiate-from-obra
+Worktree: .worktrees/wp-u112-carpeta-instantiate-from-obra
 Reporte: plan/REPORTES/WP-U112-carpeta-instantiate-from-obra.md
 
 Library (alcance principal): sibling ../Z_SDK-games-library

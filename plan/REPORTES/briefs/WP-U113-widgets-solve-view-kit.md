@@ -12,7 +12,7 @@ Origen: U87 §4 · frente editor GO · U112 ✅.
 
 WP: WP-U113 · Widgets SOLVE con runtime en view-kit
 Rama: wp/u113-widgets-solve-view-kit
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u113-widgets-solve-view-kit
+Worktree: .worktrees/wp-u113-widgets-solve-view-kit
 Reporte: plan/REPORTES/WP-U113-widgets-solve-view-kit.md
 
 Library (consumo vista solve): sibling ../Z_SDK-games-library

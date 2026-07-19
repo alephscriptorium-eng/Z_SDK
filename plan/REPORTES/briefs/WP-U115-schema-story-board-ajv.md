@@ -13,12 +13,12 @@ Origen: triaje vigilante registro 2026-07-18 · H1 U86 · U114 ✅.
 
 WP: WP-U115 · Schema story-board real (no solo existsSync)
 Rama: wp/u115-schema-story-board-ajv
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u115-schema-story-board-ajv
+Worktree: .worktrees/wp-u115-schema-story-board-ajv
 Reporte: plan/REPORTES/WP-U115-schema-story-board-ajv.md
 
 Library (alcance principal): sibling ../Z_SDK-games-library
   Rama: wp/u115-schema-story-board-ajv
-  Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u115-schema-story-board-ajv
+  Worktree: (library)/.worktrees/wp-u115-schema-story-board-ajv
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).
 Leer plan/PRACTICAS.md entero antes de implementar.

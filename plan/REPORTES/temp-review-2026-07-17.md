@@ -1,6 +1,6 @@
 Review de U11+U12 entregada:
 
-**Addendas actualizadas en `SCRIPT_SDK/ADDENDA/`:**
+**Addendas actualizadas (nota externa recibida / ADDENDA):**
 
 -   `A-02` --- **reescrita, es el hallazgo de peso.** Sigue abierta: dos olas después, `makeEnvelope` no lo usa nadie; U11 (`authority-kit`) importa las constantes del protocolo pero no la función que fuerza `game`. El contrato único cumple en 1 de 4 eventos. Lo bueno: el anclaje se desplazó al kit → el fix es en **un solo sitio** (`startAuthority` exige `game` y envuelve), y todos los dominios heredan. Desembargada.
 -   `A-05` --- nueva. El transporte "acepta evento desnudo o envuelto + dedup" está reinventado **3 veces** (arg-console, 3d-monitor, y ahora player-mcp-kit en Node, bespoke). + un WP menor de simetría dual-wire jugador/autoridad.

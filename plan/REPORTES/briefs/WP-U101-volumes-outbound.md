@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U101 · Carril saliente VOLUMES/blobs (hermano U84)
 Rama: wp/u101-volumes-outbound
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u101-volumes-outbound
+Worktree: .worktrees/wp-u101-volumes-outbound
 Reporte: plan/REPORTES/WP-U101-volumes-outbound.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

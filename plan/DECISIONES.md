@@ -301,8 +301,8 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   | B | Port C8/C9 (+ valorar auditoría) → PRACTICAS | **WP-U133** |
   | C | Archivar ENTREGA-* raíz + regla handoffs | **WP-U134** |
   **Fuentes (absolutas; orquestador NO copia a `plan/`):**
-  `C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\00-NOTA.md` ·
-  `C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\01-PAQUETE-CAPA.md`
+  `nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/00-NOTA) ·
+  `nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/01-PAQUETE-CAPA)
   (rev2). **Fuera de lote:** publish npm startpacks = residual ops (NO
   WP). Al ocurrir: `futuros.md` + fichas re-anuncian canal por nombre
   previa C8.
@@ -328,7 +328,7 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   SPA vs assets `docs/public/api/*.html`). Destino: **WP-U138** (zeus
   `docs/.vitepress/config.mjs` + ampliación C8 en PRACTICAS: canal de
   verificación = canal de uso; no `curl` para bugs de router). Fuente:
-  `C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19b-bug-api-nav.md`
+  nota externa recibida (temp-review, 2026-07-19) (`ENTREGA-2026-07-19b-bug-api-nav.md`)
   (no copiar a `plan/`). Library: N/A código si no enlaza `/api/`.
   Vigilante puede haber reportado el bug — **GO = usuario**.
 
@@ -337,7 +337,7 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   enlazados desde el **cuerpo** markdown sin `target` → clic SPA → 404.
   Destino: **WP-U139**. CA por **clase** (no solo síntoma de 3 páginas):
   cero `href="/api/` sin `target` en `docs/**`. Fuente:
-  `C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md`
+  nota externa recibida (temp-review, 2026-07-19) (`ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md`)
   (no copiar a `plan/`). Vigilante = hallazgo/devolución CA; **GO =
   usuario**.
 

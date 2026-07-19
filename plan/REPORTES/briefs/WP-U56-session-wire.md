@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U56 · Retirar wire vivo `session:*` del stack DJ
 Rama: wp/u56-session-wire
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u56-session-wire
+Worktree: .worktrees/wp-u56-session-wire
 Reporte: plan/REPORTES/WP-U56-session-wire.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

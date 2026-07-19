@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U107 · Catálogo público de la games-library
 Rama: wp/u107-games-catalog-pages
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u107-games-catalog-pages
+Worktree: .worktrees/wp-u107-games-catalog-pages
 Reporte: plan/REPORTES/WP-U107-games-catalog-pages.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

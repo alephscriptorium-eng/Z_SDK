@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U90 · El pub como mediador (señalización SSB)
 Rama: wp/u90-ssb-webrtc-signaling
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u90-ssb-webrtc-signaling
+Worktree: .worktrees/wp-u90-ssb-webrtc-signaling
 Reporte: plan/REPORTES/WP-U90-ssb-webrtc-signaling.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

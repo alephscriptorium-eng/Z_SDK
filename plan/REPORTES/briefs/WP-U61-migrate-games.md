@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U61 · Migración de los juegos
 Rama: wp/u61-migrate-games
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u61-migrate-games
+Worktree: .worktrees/wp-u61-migrate-games
 Reporte: plan/REPORTES/WP-U61-migrate-games.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

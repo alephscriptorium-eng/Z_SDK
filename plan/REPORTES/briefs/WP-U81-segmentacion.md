@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U81 · Herramientas de segmentación del dramaturgo
 Rama: wp/u81-segmentacion
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u81-segmentacion
+Worktree: .worktrees/wp-u81-segmentacion
 Reporte: plan/REPORTES/WP-U81-segmentacion.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

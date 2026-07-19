@@ -42,8 +42,8 @@ real = ops post-merge.
 ### Canónico localizado
 
 ```
-$ ls /c/Users/aleph/OASIS/aleph-scriptorium/ScriptoriumVps/.npmrc.example
-/c/Users/aleph/OASIS/aleph-scriptorium/ScriptoriumVps/.npmrc.example
+$ ls <ruta-local-redactada>/ScriptoriumVps/.npmrc.example
+<ruta-local-redactada>/ScriptoriumVps/.npmrc.example
 
 # campos (sin valores secretos):
 //npm.scriptorium.escrivivir.co/:username=…

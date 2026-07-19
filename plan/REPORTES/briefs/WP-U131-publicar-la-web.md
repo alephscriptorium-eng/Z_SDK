@@ -12,9 +12,9 @@ Este es el WP de **pipeline documental** (VitePress/Pages), no release npm.
 
 WP: WP-U131 · docs/guide/publicar-la-web.md (+ puntero library)
 Rama zeus: wp/u131-publicar-la-web
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u131-publicar-la-web
+Worktree zeus: .worktrees/wp-u131-publicar-la-web
 Rama library: wp/u131-publicar-la-web
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u131-publicar-la-web
+Worktree library: (library)/.worktrees/wp-u131-publicar-la-web
 Reporte: plan/REPORTES/WP-U131-publicar-la-web.md (zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

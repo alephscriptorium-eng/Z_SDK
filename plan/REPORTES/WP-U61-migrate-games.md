@@ -278,7 +278,7 @@ README library: documenta que el default `.deps` basta sin
 
 ```
 ZEUS_SDK_ROOT=(unset)
-resolveZeusSdkRoot → C:\Users\…\zeus-sdk\.worktrees\wp-u61-migrate-games
+resolveZeusSdkRoot → .worktrees/wp-u61-migrate-games
 (path .deps NO aparece; realpath del junction)
 SOCKET_OK_DEFAULT_DEPS  # smoke socket vía e2e/roots.mjs
 ```

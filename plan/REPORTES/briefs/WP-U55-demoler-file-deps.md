@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U55 · Demoler deps `file:` operator-ui/threejs-ui-lib
 Rama: wp/u55-demoler-file-deps
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u55-demoler-file-deps
+Worktree: .worktrees/wp-u55-demoler-file-deps
 Reporte: plan/REPORTES/WP-U55-demoler-file-deps.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

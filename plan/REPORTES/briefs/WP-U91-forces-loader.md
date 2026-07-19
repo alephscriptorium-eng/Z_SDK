@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U91 · Loader MCP del volumen FORCES
 Rama: wp/u91-forces-loader
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u91-forces-loader
+Worktree: .worktrees/wp-u91-forces-loader
 Reporte: plan/REPORTES/WP-U91-forces-loader.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).
@@ -51,7 +51,7 @@ Alcance orientativo:
 - NO tocar tools de segmentación (U81) ni CRUD medir/vaciar (U82).
 - VOLUMES / worktrees (duro):
   · Worktrees NO heredan DISK gitignored del árbol principal.
-  · Usar `ZEUS_VOLUMES_ROOT=c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/VOLUMES`
+  · Usar `ZEUS_VOLUMES_ROOT=VOLUMES`
     (o symlink local no commiteado) para apuntar a DISK_03 del master.
   · Hallazgo U80: `.gitignore` ignora `VOLUMES/*` sin
     `!VOLUMES/DISK_03/**` pese a D-19 — no es CA de este WP arreglar

@@ -12,7 +12,7 @@ Repo: `zeus-sdk` solo. **REDEFINIDO** (no usar paquete marketing SUPERADO).
 
 WP: WP-U124 · Aplicar CAPA W-A en zeus-sdk/docs/index.md (hero)
 Rama: wp/u124-copy-web-a
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u124-copy-web-a
+Worktree: .worktrees/wp-u124-copy-web-a
 Reporte: plan/REPORTES/WP-U124-copy-web-a.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

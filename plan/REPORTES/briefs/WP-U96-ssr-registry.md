@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U96 · Un solo registro SSR
 Rama: wp/u96-ssr-registry
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u96-ssr-registry
+Worktree: .worktrees/wp-u96-ssr-registry
 Reporte: plan/REPORTES/WP-U96-ssr-registry.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

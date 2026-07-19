@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U105 · Publish prep `engine/*`
 Rama: wp/u105-publish-prep
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u105-publish-prep
+Worktree: .worktrees/wp-u105-publish-prep
 Reporte: plan/REPORTES/WP-U105-publish-prep.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

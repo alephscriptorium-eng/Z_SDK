@@ -12,12 +12,12 @@ Origen: vigilante post-U115 · deps U115 ✅ · U114 ✅.
 
 WP: WP-U117 · Schema story-board único en zeus (post-U115)
 Rama: wp/u117-story-board-schema
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u117-story-board-schema
+Worktree: .worktrees/wp-u117-story-board-schema
 Reporte: plan/REPORTES/WP-U117-story-board-schema.md
 
 Library (alcance): sibling ../Z_SDK-games-library
   Rama: wp/u117-story-board-schema
-  Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u117-story-board-schema
+  Worktree: (library)/.worktrees/wp-u117-story-board-schema
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).
 Leer plan/PRACTICAS.md entero antes de implementar.

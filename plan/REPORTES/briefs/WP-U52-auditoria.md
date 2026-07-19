@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U52 · Auditoría de vías muertas
 Rama: wp/u52-auditoria
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u52-auditoria
+Worktree: .worktrees/wp-u52-auditoria
 Reporte: plan/REPORTES/WP-U52-auditoria.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

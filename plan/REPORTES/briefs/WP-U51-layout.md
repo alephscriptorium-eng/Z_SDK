@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U51 · Layout final
 Rama: wp/u51-layout
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u51-layout
+Worktree: .worktrees/wp-u51-layout
 Reporte: plan/REPORTES/WP-U51-layout.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

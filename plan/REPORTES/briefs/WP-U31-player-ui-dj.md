@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U31 · player-ui = vista manipuladora
 Rama: wp/u31-player-ui-dj
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u31-player-ui-dj
+Worktree: .worktrees/wp-u31-player-ui-dj
 Reporte: plan/REPORTES/WP-U31-player-ui-dj.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

@@ -13,7 +13,7 @@ custodio; **GO ≠ vigilante**. Repo: **zeus-sdk**.
 
 WP: WP-U139 · Cuerpo md → enlaces /api/ externos al router SPA
 Rama: wp/u139-api-nav-cuerpo
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u139-api-nav-cuerpo
+Worktree: .worktrees/wp-u139-api-nav-cuerpo
 Reporte: plan/REPORTES/WP-U139-api-nav-cuerpo.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
@@ -22,7 +22,7 @@ Reporte desde plan/REPORTES/PLANTILLA.md.
 Commits convencionales. NO merge a main. NO ✅ BACKLOG.
 
 Fuente (leer; NO copiar a plan/):
-C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md
+nota externa recibida (temp-review, 2026-07-19) (`ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md`)
 
 Problema:
 - U138 puso target=_blank en los 6 items del NAV → OK.

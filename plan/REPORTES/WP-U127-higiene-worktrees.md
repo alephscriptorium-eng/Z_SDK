@@ -47,11 +47,11 @@ PID 20184 node  test\server.test.mjs        cwd=.../arg-console/
 ### Después — `git worktree list` (library)
 
 ```
-C:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library                                           [main]
-C:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u126-release-startpack-yml  [wp/u126-release-startpack-yml]
-C:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u127-higiene-worktrees      [wp/u127-higiene-worktrees]
-C:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u128-zeus-deps-semver       [wp/u128-zeus-deps-semver]
-C:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u131-publicar-la-web        [wp/u131-publicar-la-web]
+(library)                                           [main]
+(library)/.worktrees/wp-u126-release-startpack-yml  [wp/u126-release-startpack-yml]
+(library)/.worktrees/wp-u127-higiene-worktrees      [wp/u127-higiene-worktrees]
+(library)/.worktrees/wp-u128-zeus-deps-semver       [wp/u128-zeus-deps-semver]
+(library)/.worktrees/wp-u131-publicar-la-web        [wp/u131-publicar-la-web]
 ```
 
 ### Después — dirs en `.worktrees/`

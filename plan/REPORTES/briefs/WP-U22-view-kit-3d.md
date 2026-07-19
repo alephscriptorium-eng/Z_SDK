@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U22 · 3d-monitor y player-3d-ui sobre view-kit
 Rama: wp/u22-view-kit-3d
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u22-view-kit-3d
+Worktree: .worktrees/wp-u22-view-kit-3d
 Reporte: plan/REPORTES/WP-U22-view-kit-3d.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

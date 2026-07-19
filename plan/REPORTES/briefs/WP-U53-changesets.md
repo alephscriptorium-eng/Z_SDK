@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U53 · Semver + release desde CI
 Rama: wp/u53-changesets
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u53-changesets
+Worktree: .worktrees/wp-u53-changesets
 Reporte: plan/REPORTES/WP-U53-changesets.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

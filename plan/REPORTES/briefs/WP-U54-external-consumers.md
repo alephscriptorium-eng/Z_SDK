@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U54 · Consumidores externos anónimos
 Rama: wp/u54-external-consumers
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u54-external-consumers
+Worktree: .worktrees/wp-u54-external-consumers
 Reporte: plan/REPORTES/WP-U54-external-consumers.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

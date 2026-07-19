@@ -12,7 +12,7 @@ Origen: hallazgo U87 §7 + residual pozo (cola U23 / README pozo).
 
 WP: WP-U109 · Slots puertos solve* (+ residual pozo*) en presets-sdk
 Rama: wp/u109-solve-ports
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u109-solve-ports
+Worktree: .worktrees/wp-u109-solve-ports
 Reporte: plan/REPORTES/WP-U109-solve-ports.md
 
 Library (consumidores): sibling ../Z_SDK-games-library

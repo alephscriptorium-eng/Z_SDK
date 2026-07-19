@@ -13,7 +13,7 @@ Repo: **zeus-sdk**. Library: verificar sin `/api/` en nav → N/A código.
 
 WP: WP-U138 · Nav API HTML → enlaces externos al router SPA
 Rama: wp/u138-api-nav-spa
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u138-api-nav-spa
+Worktree: .worktrees/wp-u138-api-nav-spa
 Reporte: plan/REPORTES/WP-U138-api-nav-spa.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
@@ -22,7 +22,7 @@ Reporte desde plan/REPORTES/PLANTILLA.md.
 Commits convencionales. NO merge a main. NO ✅ BACKLOG.
 
 Fuente (leer; NO copiar a plan/):
-C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19b-bug-api-nav.md
+nota externa recibida (temp-review, 2026-07-19) (`ENTREGA-2026-07-19b-bug-api-nav.md`)
 
 Problema:
 - Clic en menú «API HTML» (6 items: protocol/, editor-ui.html,

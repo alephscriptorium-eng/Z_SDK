@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U102 · Tests herméticos para CI
 Rama: wp/u102-ci-hermetic-tests
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u102-ci-hermetic-tests
+Worktree: .worktrees/wp-u102-ci-hermetic-tests
 Reporte: plan/REPORTES/WP-U102-ci-hermetic-tests.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

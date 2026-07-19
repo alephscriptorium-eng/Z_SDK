@@ -12,7 +12,7 @@ Origen: U87 §hallazgos 1+2 · frente editor GO usuario 2026-07-18.
 
 WP: WP-U111 · Editor materializa juegos reales (no solo sketch)
 Rama: wp/u111-editor-materialize-narrativo
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u111-editor-materialize-narrativo
+Worktree: .worktrees/wp-u111-editor-materialize-narrativo
 Reporte: plan/REPORTES/WP-U111-editor-materialize-narrativo.md
 
 Library (si Notario / startpack nuevo): sibling ../Z_SDK-games-library

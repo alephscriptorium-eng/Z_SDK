@@ -1234,7 +1234,7 @@ cerrado):
 
 > Fuente: §hallazgos WP-U87 + residual pozo (cola U23) + vigilante
 > `loadStartPack` ×4 + triaje
-> `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`.
+> `nota externa recibida (temp-review, 2026-07-18)` (`registro-codereviews-2026-07-18.md`).
 > Balance: [RE-PLAN.md](RE-PLAN.md). **No mezclar** con
 > `packages/arg/spec/BACKLOG.md`. ~~**U109**~~ ✅ · ~~**U110**~~ ✅
 > (merge zeus `4bcd045` · library `294c97c`; revisión `8b91a84`) —
@@ -1350,7 +1350,7 @@ cerrado):
 
 ### Cola triaje vigilante registro 2026-07-18 (sin WP propio)
 
-Fuente: `SCRIPT_SDK/VIGILANCIA/revisiones/registro-codereviews-2026-07-18.md`
+Fuente: `nota externa recibida (temp-review, 2026-07-18)` (`registro-codereviews-2026-07-18.md`)
 (orquestador; no reabre addendas A-02…A-15 ya cerradas).
 
 - ~~U109/U110 cumplidos~~ — ya ✅; residual STOP_SERVICES pozo/solve →

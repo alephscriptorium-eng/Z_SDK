@@ -12,7 +12,7 @@ Origen: U87 §8 · frente editor GO · U113 ✅.
 
 WP: WP-U114 · Dialectos story-board en el editor
 Rama: wp/u114-dialectos-story-board-editor
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u114-dialectos-story-board-editor
+Worktree: .worktrees/wp-u114-dialectos-story-board-editor
 Reporte: plan/REPORTES/WP-U114-dialectos-story-board-editor.md
 
 Library: NO obligatorio (fixtures herméticos en editor-ui/test).

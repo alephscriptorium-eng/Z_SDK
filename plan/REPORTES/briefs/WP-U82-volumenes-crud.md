@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U82 · CRUD de volúmenes: medir y vaciar
 Rama: wp/u82-volumenes-crud
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u82-volumenes-crud
+Worktree: .worktrees/wp-u82-volumenes-crud
 Reporte: plan/REPORTES/WP-U82-volumenes-crud.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

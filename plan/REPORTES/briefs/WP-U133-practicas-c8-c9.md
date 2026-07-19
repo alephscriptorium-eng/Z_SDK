@@ -11,7 +11,7 @@ Origen: **AMEND Sprint 2** · bloque **B** · **D-26**. **Paralelo con U132 ∥ 
 
 WP: WP-U133 · C8 + C9 como criterio estándar de WPs de docs
 Rama: wp/u133-practicas-c8-c9
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u133-practicas-c8-c9
+Worktree: .worktrees/wp-u133-practicas-c8-c9
 Reporte: plan/REPORTES/WP-U133-practicas-c8-c9.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
@@ -24,8 +24,8 @@ Política:
 - Commits + push OK. NO merge a main.
 
 Fuente (leer ENTERO — rutas ABSOLUTAS; NO copiar a plan/):
-- C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\00-NOTA.md  §(B)
-- C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\01-PAQUETE-CAPA.md
+- `nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/00-NOTA)  §(B)
+- `nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/01-PAQUETE-CAPA)
   (CA que citan C8/C9 — contexto)
 
 Portar a PRACTICAS (criterio de aceptación estándar WPs de docs):

@@ -12,7 +12,7 @@ Origen: Sprint 1 · ENTREGA-18d · **D-24**. Dep **U119 ✅**. **Paralelo con U1
 
 WP: WP-U120 · Refactor prosa docs/ (zeus, ~23 md)
 Rama: wp/u120-prosa-zeus-docs
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u120-prosa-zeus-docs
+Worktree: .worktrees/wp-u120-prosa-zeus-docs
 Reporte: plan/REPORTES/WP-U120-prosa-zeus-docs.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
