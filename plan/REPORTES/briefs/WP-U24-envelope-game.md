@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U24 · authority-kit fuerza envelope `game`
 Rama: wp/u24-envelope-game
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u24-envelope-game
+Worktree: .worktrees/wp-u24-envelope-game
 Reporte: plan/REPORTES/WP-U24-envelope-game.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

@@ -40,7 +40,7 @@ catálogo regenerado. Fixture kit alineado al layout `forces/<id>/`.
 
 ## Evidencia
 
-Volúmenes: `ZEUS_VOLUMES_ROOT=c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/VOLUMES`
+Volúmenes: `ZEUS_VOLUMES_ROOT=VOLUMES`
 (DISK_03 symlink/local del árbol principal; worktree no hereda DISK
 gitignored — mismo hallazgo U80).
 

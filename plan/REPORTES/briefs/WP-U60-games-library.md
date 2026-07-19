@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U60 · Repo Z_SDK-games-library
 Rama: wp/u60-games-library
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u60-games-library
+Worktree: .worktrees/wp-u60-games-library
 Reporte: plan/REPORTES/WP-U60-games-library.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

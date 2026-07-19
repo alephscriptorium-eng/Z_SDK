@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U62 · Pipeline de releases de datos
 Rama: wp/u62-release-pipeline
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u62-release-pipeline
+Worktree: .worktrees/wp-u62-release-pipeline
 Reporte: plan/REPORTES/WP-U62-release-pipeline.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U83 · Las tramas integran crecer/vaciar
 Rama: wp/u83-crecer-vaciar
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u83-crecer-vaciar
+Worktree: .worktrees/wp-u83-crecer-vaciar
 Reporte: plan/REPORTES/WP-U83-crecer-vaciar.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

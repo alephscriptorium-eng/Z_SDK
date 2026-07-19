@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U100 · Spike blob-sync Oasis 2-nodos
 Rama: wp/u100-blob-sync-spike
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u100-blob-sync-spike
+Worktree: .worktrees/wp-u100-blob-sync-spike
 Reporte: plan/REPORTES/WP-U100-blob-sync-spike.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

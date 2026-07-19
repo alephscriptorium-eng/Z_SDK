@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U98 · Una sola fuente de forma en el contrato
 Rama: wp/u98-contract-form
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u98-contract-form
+Worktree: .worktrees/wp-u98-contract-form
 Reporte: plan/REPORTES/WP-U98-contract-form.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U00 · Gates de prácticas
 Rama: wp/u00-gates
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u00-gates
+Worktree: .worktrees/wp-u00-gates
 Reporte: plan/REPORTES/WP-U00-gates.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

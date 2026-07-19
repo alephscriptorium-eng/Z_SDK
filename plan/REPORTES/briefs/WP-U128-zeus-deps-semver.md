@@ -11,9 +11,9 @@ Origen: Sprint 2 · ADDENDA bloque **B3** · **D-25**.
 
 WP: WP-U128 · Fijar deps @zeus/* de "*" a caret semver (library)
 Rama zeus: wp/u128-zeus-deps-semver
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u128-zeus-deps-semver
+Worktree zeus: .worktrees/wp-u128-zeus-deps-semver
 Rama library: wp/u128-zeus-deps-semver
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u128-zeus-deps-semver
+Worktree library: (library)/.worktrees/wp-u128-zeus-deps-semver
 Reporte: plan/REPORTES/WP-U128-zeus-deps-semver.md (zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

@@ -12,7 +12,7 @@ Origen: Sprint 1 · [ENTREGA-2026-07-18d-sprint1.md](../entregas/ENTREGA-2026-07
 
 WP: WP-U119 · Diagnosticar y dejar CI de main verde
 Rama: wp/u119-ci-main-verde
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u119-ci-main-verde
+Worktree: .worktrees/wp-u119-ci-main-verde
 Reporte: plan/REPORTES/WP-U119-ci-main-verde.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

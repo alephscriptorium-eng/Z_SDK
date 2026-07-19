@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U30 · Intents del manipulador de líneas
 Rama: wp/u30-dj-intents
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u30-dj-intents
+Worktree: .worktrees/wp-u30-dj-intents
 Reporte: plan/REPORTES/WP-U30-dj-intents.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

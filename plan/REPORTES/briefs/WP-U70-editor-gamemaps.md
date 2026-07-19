@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U70 · Editor de gamemaps y releases
 Rama: wp/u70-editor-gamemaps
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u70-editor-gamemaps
+Worktree: .worktrees/wp-u70-editor-gamemaps
 Reporte: plan/REPORTES/WP-U70-editor-gamemaps.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

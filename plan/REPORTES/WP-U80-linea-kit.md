@@ -57,7 +57,7 @@ $ npm run lint
 ```
 
 Worktree sin DISK_* en git: validación viva apuntó a
-`C:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/VOLUMES` (symlinks locales
+`VOLUMES` (symlinks locales
 `VOLUMES/DISK_*` solo en el worktree, gitignored). Fixtures del paquete
 cubren el caso sin VOLUMES.
 

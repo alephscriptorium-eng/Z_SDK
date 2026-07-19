@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U116 · view-kit: id neutro del cast-table (post-U113)
 Rama: wp/u116-cast-table-alias
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u116-cast-table-alias
+Worktree: .worktrees/wp-u116-cast-table-alias
 Reporte: plan/REPORTES/WP-U116-cast-table-alias.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

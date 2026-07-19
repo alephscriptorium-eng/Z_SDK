@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U94 · Una sola fuente por transición del dominio
 Rama: wp/u94-domain-source
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u94-domain-source
+Worktree: .worktrees/wp-u94-domain-source
 Reporte: plan/REPORTES/WP-U94-domain-source.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

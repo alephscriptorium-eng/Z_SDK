@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U97 · feed-kit cuenta volúmenes por volumes-ops
 Rama: wp/u97-feed-volumes-ops
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u97-feed-volumes-ops
+Worktree: .worktrees/wp-u97-feed-volumes-ops
 Reporte: plan/REPORTES/WP-U97-feed-volumes-ops.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

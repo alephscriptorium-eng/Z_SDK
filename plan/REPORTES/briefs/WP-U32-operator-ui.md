@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U32 · operator-ui = visor de operador
 Rama: wp/u32-operator-ui
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u32-operator-ui
+Worktree: .worktrees/wp-u32-operator-ui
 Reporte: plan/REPORTES/WP-U32-operator-ui.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

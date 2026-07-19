@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U85 · Familias de feed unificadas en el engine
 Rama: wp/u85-feed-families
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u85-feed-families
+Worktree: .worktrees/wp-u85-feed-families
 Reporte: plan/REPORTES/WP-U85-feed-families.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

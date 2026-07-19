@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U104 · Economía de builds (paths CI)
 Rama: wp/u104-ci-path-filters
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u104-ci-path-filters
+Worktree: .worktrees/wp-u104-ci-path-filters
 Reporte: plan/REPORTES/WP-U104-ci-path-filters.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

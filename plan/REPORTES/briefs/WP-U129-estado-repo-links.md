@@ -11,7 +11,7 @@ Origen: Sprint 2 · ADDENDA bloque **B4** · **D-25** (cola residual U120).
 
 WP: WP-U129 · Corregir URLs repo en docs/guide/estado.md
 Rama: wp/u129-estado-repo-links
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u129-estado-repo-links
+Worktree: .worktrees/wp-u129-estado-repo-links
 Reporte: plan/REPORTES/WP-U129-estado-repo-links.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

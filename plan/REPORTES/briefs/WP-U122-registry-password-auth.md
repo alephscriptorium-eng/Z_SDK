@@ -12,7 +12,7 @@ Ops carga secret tras merge — **no inventar tokens**.
 
 WP: WP-U122 · release.yml → patrón _password (basic-auth durable)
 Rama: wp/u122-registry-password-auth
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u122-registry-password-auth
+Worktree: .worktrees/wp-u122-registry-password-auth
 Reporte: plan/REPORTES/WP-U122-registry-password-auth.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

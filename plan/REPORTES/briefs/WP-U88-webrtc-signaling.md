@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U88 · Señalización WebRTC vía nuestro mesh + ICE propio
 Rama: wp/u88-webrtc-signaling
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u88-webrtc-signaling
+Worktree: .worktrees/wp-u88-webrtc-signaling
 Reporte: plan/REPORTES/WP-U88-webrtc-signaling.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

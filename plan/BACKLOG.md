@@ -63,8 +63,8 @@ AMEND A+B+C · Sprint 2 base (ver histórico).
 ## AMEND Sprint 2 — CAPA rev2 / verdad de canales (GO · 2026-07-19 · D-26)
 
 Fuente canónica (**leer en WEBS; no copiar a `plan/`**):
-`C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\00-NOTA.md` +
-`C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\01-PAQUETE-CAPA.md`
+`nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/00-NOTA) +
+`nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/01-PAQUETE-CAPA)
 (rev2). Tip claim `main` ~`cb5f675`. Nada reabre U124/U125 ✅ — WPs nuevos.
 **Hecho de canal:** `@zeus/startpack-*` → 404 en registry npm; canal
 operativo = tarball del GitHub Release.
@@ -173,7 +173,7 @@ Amparados por **GO usuario** del lote AMEND (**D-26–D-28**). El
 ## Micro — bug nav API HTML / SPA (GO usuario · 2026-07-19 · D-29)
 
 Fuente (**leer; no copiar a `plan/`**):
-`C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19b-bug-api-nav.md`.
+nota externa recibida (temp-review, 2026-07-19) (`ENTREGA-2026-07-19b-bug-api-nav.md`).
 Repo: **zeus-sdk** (`docs/.vitepress/config.mjs` + PRACTICAS §8 C8).
 Library: verificar (hoy **no** enlaza `/api/` — N/A código). Tip claim
 `~5a0079c`. **No** desactivar `cleanUrls` global.
@@ -195,7 +195,7 @@ Library: verificar (hoy **no** enlaza `/api/` — N/A código). Tip claim
 ## Micro — bug API links cuerpo md / SPA (GO usuario · 2026-07-19 · D-30)
 
 Fuente (**leer; no copiar a `plan/`**):
-`C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md`.
+nota externa recibida (temp-review, 2026-07-19) (`ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md`).
 Seguimiento de U138 ✅ (nav arreglado; **no reabrir**). Misma raíz SPA vs
 assets; superficie = **cuerpo** markdown. Tip claim `~acbb7ed`.
 **GO = usuario** (pase custodio); vigilante = hallazgo/CA, no GO.

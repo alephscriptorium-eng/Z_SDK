@@ -2,7 +2,7 @@
 
 _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WORKER.md`._
 
-Origen: addenda A-15 (`SCRIPT_SDK/ADDENDA/A-15-gitignore-volumes-desprotegido.md`).
+Origen: addenda A-15 (`nota externa recibida (temp-review, 2026-07-19)` (`A-15-gitignore-volumes-desprotegido.md`)).
 **Prioridad ALTA / urgente** (repo público + datos reales trackeables).
 
 ---
@@ -12,7 +12,7 @@ Origen: addenda A-15 (`SCRIPT_SDK/ADDENDA/A-15-gitignore-volumes-desprotegido.md
 
 WP: WP-U108 · Candado VOLUMES / gitignore fixtures
 Rama: wp/u108-volumes-gitignore
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u108-volumes-gitignore
+Worktree: .worktrees/wp-u108-volumes-gitignore
 Reporte: plan/REPORTES/WP-U108-volumes-gitignore.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

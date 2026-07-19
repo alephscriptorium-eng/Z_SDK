@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U40 · RouteEntry → MCP resources
 Rama: wp/u40-route-mcp
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u40-route-mcp
+Worktree: .worktrees/wp-u40-route-mcp
 Reporte: plan/REPORTES/WP-U40-route-mcp.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

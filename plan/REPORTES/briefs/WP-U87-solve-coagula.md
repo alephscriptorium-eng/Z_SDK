@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U87 · SOLVE ET COAGULA, el tercer juego
 Rama: wp/u87-solve-coagula
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u87-solve-coagula
+Worktree: .worktrees/wp-u87-solve-coagula
 Reporte: plan/REPORTES/WP-U87-solve-coagula.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

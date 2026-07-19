@@ -11,7 +11,7 @@ Origen: Sprint 2 · ADDENDA bloque **C** · **D-25**. A/B/D ✅ → **GO cierre*
 
 WP: WP-U130 · Formalizar ciclo de sprint en PRACTICAS.md o roles/
 Rama: wp/u130-plantilla-sprint
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u130-plantilla-sprint
+Worktree: .worktrees/wp-u130-plantilla-sprint
 Reporte: plan/REPORTES/WP-U130-plantilla-sprint.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

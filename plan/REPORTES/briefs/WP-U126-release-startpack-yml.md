@@ -11,9 +11,9 @@ Origen: Sprint 2 · ADDENDA bloque **B1** · **D-25**. ∥ A y resto de B.
 
 WP: WP-U126 · Arreglar o demoler release-startpack.yml (library)
 Rama zeus: wp/u126-release-startpack-yml
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u126-release-startpack-yml
+Worktree zeus: .worktrees/wp-u126-release-startpack-yml
 Rama library: wp/u126-release-startpack-yml
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u126-release-startpack-yml
+Worktree library: (library)/.worktrees/wp-u126-release-startpack-yml
 Reporte: plan/REPORTES/WP-U126-release-startpack-yml.md (zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

@@ -1,7 +1,7 @@
 # Sprint 2 — índice (canónico · 2026-07-19)
 
 > **Fuente de verdad del GO:** ADDENDA
-> `SCRIPT_SDK/ADDENDA/ENTREGA-2026-07-19-sprint2.md` (sincronizada aquí).
+> `nota externa recibida (temp-review, 2026-07-19)` (`ENTREGA-2026-07-19-sprint2.md`) (sincronizada aquí).
 > Bloque **(A)** = paquete CAPA (`WEBS/ENTREGA-CAPA/`, VIGENTE).
 > El paquete marketing `WEBS/ENTREGA-SPRINT2/` (lema conservado) quedó
 > **SUPERADO** — evidencia en `SUPERADA-marketing-webs-sprint2/`.

@@ -12,7 +12,7 @@ Origen: vigilante post-U87 (`loadStartPack` ×4) · PRACTICAS §1.4.
 
 WP: WP-U110 · @zeus/startpack-kit — una sola loadStartPack
 Rama: wp/u110-startpack-kit
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u110-startpack-kit
+Worktree: .worktrees/wp-u110-startpack-kit
 Reporte: plan/REPORTES/WP-U110-startpack-kit.md
 
 Library (alcance principal): sibling ../Z_SDK-games-library

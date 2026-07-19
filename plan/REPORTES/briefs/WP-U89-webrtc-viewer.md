@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U89 · Visor WebRTC del mesh (salas y privados)
 Rama: wp/u89-webrtc-viewer
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u89-webrtc-viewer
+Worktree: .worktrees/wp-u89-webrtc-viewer
 Reporte: plan/REPORTES/WP-U89-webrtc-viewer.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

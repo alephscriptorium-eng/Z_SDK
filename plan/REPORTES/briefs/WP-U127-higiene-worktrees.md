@@ -11,9 +11,9 @@ Origen: Sprint 2 · ADDENDA bloque **B2** · **D-25**.
 
 WP: WP-U127 · Retirar worktrees/dirs huérfanos en library
 Rama zeus: wp/u127-higiene-worktrees
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u127-higiene-worktrees
+Worktree zeus: .worktrees/wp-u127-higiene-worktrees
 Rama library: wp/u127-higiene-worktrees
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u127-higiene-worktrees
+Worktree library: (library)/.worktrees/wp-u127-higiene-worktrees
 Reporte: plan/REPORTES/WP-U127-higiene-worktrees.md (zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

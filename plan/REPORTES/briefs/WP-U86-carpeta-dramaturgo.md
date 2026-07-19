@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U86 · CARPETA DRAMATURGO (kit de experiencia)
 Rama: wp/u86-carpeta-dramaturgo
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u86-carpeta-dramaturgo
+Worktree: .worktrees/wp-u86-carpeta-dramaturgo
 Reporte: plan/REPORTES/WP-U86-carpeta-dramaturgo.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en main).

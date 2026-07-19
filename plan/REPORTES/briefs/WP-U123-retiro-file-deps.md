@@ -9,8 +9,8 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U123 · Retiro puente file:/.deps en Z_SDK-games-library
 Rama: wp/u123-retiro-file-deps (zeus + library)
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u123-retiro-file-deps
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u123-retiro-file-deps
+Worktree zeus: .worktrees/wp-u123-retiro-file-deps
+Worktree library: (library)/.worktrees/wp-u123-retiro-file-deps
 Reporte: plan/REPORTES/WP-U123-retiro-file-deps.md (en zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.

@@ -13,9 +13,9 @@ Repo principal: `Z_SDK-games-library`. **U137 cerrado N/A** — no paralelo.
 
 WP: WP-U136 · Alinear fence Registry startpacks con patrón 2c / C8
 Rama zeus: wp/u136-c8-startpacks-residual
-Worktree zeus: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u136-c8-startpacks-residual
+Worktree zeus: .worktrees/wp-u136-c8-startpacks-residual
 Rama library: wp/u136-c8-startpacks-residual
-Worktree library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library/.worktrees/wp-u136-c8-startpacks-residual
+Worktree library: (library)/.worktrees/wp-u136-c8-startpacks-residual
 Reporte: plan/REPORTES/WP-U136-c8-startpacks-residual.md (en zeus)
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
@@ -31,11 +31,11 @@ Política:
 - Espíritu CAPA §2c / C8 PRACTICAS §8 — no inventar canal operativo.
 
 Paths:
-- Library: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/Z_SDK-games-library
-- Zeus (reporte): c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk
+- Library: (library)
+- Zeus (reporte): (zeus-sdk)
 
 Contexto (leer; NO copiar a plan/):
-- C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\01-PAQUETE-CAPA.md
+- `nota externa recibida (temp-review, 2026-07-19)` (WEBS/ENTREGA-CAPA/01-PAQUETE-CAPA)
   §2c Registry + §3 startpacks + Verificación C8
 - Hecho de canal: @zeus/startpack-* → 404 en npm; operativo = tarball Release
 

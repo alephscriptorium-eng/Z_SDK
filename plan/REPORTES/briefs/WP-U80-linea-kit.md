@@ -9,7 +9,7 @@ _Plantilla: `plan/roles/BRIEF.md`. Pegar en chat nuevo junto con `plan/roles/WOR
 
 WP: WP-U80 · `@zeus/linea-kit`
 Rama: wp/u80-linea-kit
-Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u80-linea-kit
+Worktree: .worktrees/wp-u80-linea-kit
 Reporte: plan/REPORTES/WP-U80-linea-kit.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md (solo orquestador, en master).

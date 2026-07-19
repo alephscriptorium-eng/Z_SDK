@@ -71,8 +71,8 @@ TypeError: Cannot read properties of undefined (reading 'imports')
 ```
 
 Diagnóstico (parche temporal de log, revertido): `pageChunk` undefined por
-mismatch de case en drive letter — `srcPath` = `c:/Users/...` vs
-`facadeModuleId` = `C:/Users/...`. **Reproducido también en main** con el
+mismatch de case en drive letter — `srcPath` = `c:` + `/Users/...` vs
+`facadeModuleId` = `C:` + `/Users/...`. **Reproducido también en main** con el
 hero ANTES (no es regresión de CAPA).
 
 **Verificación con workaround local no committed**
