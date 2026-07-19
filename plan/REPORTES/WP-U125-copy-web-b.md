@@ -140,4 +140,25 @@ solve-coagula + preserveSymlinks/docs:build Windows?
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19.
+
+Verificado:
+- Diff library `main...wp/u125-copy-web-b` = exactamente 5 ficheros CAPA W-B
+  (`index.md`, `solve-coagula.md` nueva, `futuros.md`, `delta.md`, `pozo.md`).
+- Contenido verbatim vs `01-PAQUETE-CAPA.md` §W-B (hero FOSS 1 línea +
+  «Ventana de Contexto»; features; ficha; call4makers; capas Llévatela).
+- `config.mjs` cero diff (CAPA/ADDENDA no lo exigen; marketing SUPERADA
+  ignorada).
+- `actions` de index e cuerpos técnicos delta/pozo intocados salvo 2
+  inserciones.
+- Demolición: fila SOLVE-como-futuro retirada.
+- CA: `docs:build` OK; `demo:solve-coagula` existe; alcance acotado;
+  reporte + auto-revisión honestos.
+
+**Residual OK (no bloquea):** nav/sidebar sin `solve-coagula` — CAPA no lo
+pide; card/portada enlaza `/games/solve-coagula` (página reachable, huérfana
+de nav). Hallazgos Windows cwd `c:` vs `C:` y `npm view` 404 local → fuera
+de alcance; no abrir micro desde esta aceptación.
+
+**Merge:** library `wp/u125-copy-web-b` → `main` primero; luego zeus reporte
++ BACKLOG ✅. No tocar U124 / U126+ / U131.
