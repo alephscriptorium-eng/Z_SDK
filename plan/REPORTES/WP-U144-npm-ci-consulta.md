@@ -7,7 +7,7 @@
 | rama zeus | `wp/u144-npm-ci-consulta` |
 | rama library | `wp/u144-npm-ci-consulta` |
 | commit(s) library | `ad9627c` |
-| commit(s) zeus | _(este reporte)_ |
+| commit(s) zeus | `bcf0e30` |
 | opción CA | **A** (`npm ci` + build Docs verde) |
 | estado propuesto | listo para revisión |
 
