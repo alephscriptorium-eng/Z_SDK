@@ -52,6 +52,7 @@ export default defineConfig({
           { text: 'Mapa del monorepo', link: '/guide/layout' },
           { text: 'Juegos de referencia', link: '/guide/two-games' },
           { text: 'Handshake externo', link: '/guide/external-handshake' },
+          { text: 'Publicar la web', link: '/guide/publicar-la-web' },
           { text: 'Estado del swarm', link: '/guide/estado' }
         ]
       },
