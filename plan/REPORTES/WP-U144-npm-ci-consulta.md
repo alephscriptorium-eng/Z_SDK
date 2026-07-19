@@ -141,4 +141,13 @@ Ninguno. Opción A cumplida. NO merge / NO ✅ (orquestador).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-19).
+
+Verificado:
+- Diff library acotado a `.github/workflows/docs.yml` (`npm install` → `npm ci` + prosa alineada).
+- Tip library `ad9627c` · tip zeus reporte `62302d6`.
+- CA opción A: `npm ci` + Docs Actions `29704186751` success (`headSha` = tip).
+- Zeus solo reporte `plan/**` → CI N/A (U104). U143 no tocado.
+- PRACTICAS §1–3 / §6 OK; demolición prosa step OK.
+
+Merge: library `main` ← `wp/u144-npm-ci-consulta` (FF) · zeus `main` ← misma rama (FF) · BACKLOG U144 ✅ · U143 sigue 🔶.

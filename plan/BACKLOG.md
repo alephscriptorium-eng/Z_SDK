@@ -24,13 +24,12 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ## Remate — estado swarm (2026-07-19 · GO D-34 · U143 ∥ U144)
 
-> **esperando: entrega workers** U143 ∥ U144 (GO **D-34** · briefs
-> listos · padre lanza chats). Remate Sprint 3 en curso paralelo.
-> **U142** ✅ intacto (D-33). **U141** ✅ · **U140** ✅. **0 DA**
-> abiertas. Oferta registry `@alephscript/skills-scriptorium@0.2.0` =
-> recurso opcional (no WP). Ops: publish npm startpacks = residual
-> (NO WP). Diferidos U87 §5–6 → **sin GO**. I51 (cierre) espera ✅
-> de U143+U144.
+> **esperando: entrega/revisión** **U143** 🔶 (U144 ✅ mergeado). Remate
+> Sprint 3: paralelo D-34; queda CNAME. **U142** ✅ intacto (D-33).
+> **U141** ✅ · **U140** ✅. **0 DA** abiertas. Oferta registry
+> `@alephscript/skills-scriptorium@0.2.0` = recurso opcional (no WP).
+> Ops: publish npm startpacks = residual (NO WP). Diferidos U87 §5–6 →
+> **sin GO**. I51 (cierre) espera ✅ de U143 (U144 ya ✅).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -55,16 +54,17 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — ceguera token en reporte U140 | **U141** | ✅ |
 | **Sprint 3** — recepción / triage GO I50 | **U142** | ✅ |
 | **Sprint 3** — CNAME `docs/public/` (ambos repos) | **U143** | 🔶 |
-| **Sprint 3** — consulta `npm ci` vs `npm install` (catálogo) | **U144** | 🔶 |
+| **Sprint 3** — consulta `npm ci` vs `npm install` (catálogo) | **U144** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U143** 🔶 ∥ **U144** 🔶 (D-34 · paralelo).
+**En curso:** **U143** 🔶 (D-34 · CNAME).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U142** ✅ (recepción/triage Sprint 3 · D-33) ·
+**Aceptado:** **U144** ✅ (npm ci catálogo · D-34 · library
+`ad9627c`) · **U142** ✅ (recepción/triage Sprint 3 · D-33) ·
 **U141** ✅ (ceguera · D-32 · merge `dcd7892`) ·
 **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) · **U139** ✅ ·
 **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
@@ -303,7 +303,7 @@ enmascara siempre.
 | # §Nota | Ítem | Destino | Estado |
 | ------- | ---- | ------- | ------ |
 | 1 | CNAME en `docs/public/` (portal + catálogo) | **WP-U143** | 🔶 en curso · **D-34** |
-| 2 | `npm ci` vs `npm install` en docs.yml del catálogo (consulta) | **WP-U144** | 🔶 en curso · **D-34** |
+| 2 | `npm ci` vs `npm install` en docs.yml del catálogo (consulta) | **WP-U144** | ✅ · **D-34** |
 | — | Guard de `base` (MSYS) | N/A | ya en `config.mjs` |
 | — | `dist/` en índice (library) | N/A | 0 ficheros |
 | — | Gap `paths: docs/**` | N/A | documentado (WP-U104 / D-22 + dispatch) |
@@ -322,17 +322,16 @@ enmascara siempre.
   en ambos; tras deploy Pages, dominio persiste. **No** DNS/Settings.
   **Demolición:** n/a.
 
-### WP-U144 · Consulta `npm ci` en docs.yml del catálogo — 🔶
+### WP-U144 · Consulta `npm ci` en docs.yml del catálogo — ✅
 
-- 🔶 **WP-U144 · Alinear o documentar `npm install` vs `npm ci` en
-  docs.yml del catálogo** — en curso (orquestador / 2026-07-19 ·
-  **D-34** · agente worker). Brief:
+- ✅ **WP-U144 · Alinear o documentar `npm install` vs `npm ci` en
+  docs.yml del catálogo** — aceptado (orquestador / 2026-07-19 ·
+  **D-34** · opción A). Brief:
   [REPORTES/briefs/WP-U144-npm-ci-consulta.md](REPORTES/briefs/WP-U144-npm-ci-consulta.md).
-  Rama: `wp/u144-npm-ci-consulta`. Consulta, no imposición: o `npm ci`
-  (lockfile + `.npmrc`) con build verde, o comentario en el yml.
-  Preferencia orquestador: intentar `npm ci` primero (hay lock +
-  `.npmrc`); si falla, documentar por qué no. **CA:** una de las dos.
-  **Demolición:** n/a.
+  Reporte:
+  [REPORTES/WP-U144-npm-ci-consulta.md](REPORTES/WP-U144-npm-ci-consulta.md).
+  Library tip merge `ad9627c` (`npm ci` en `docs.yml`) · Docs Actions
+  `29704186751` success. Zeus solo reporte. **U143** no tocado.
 
 ---
 
