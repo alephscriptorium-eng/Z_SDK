@@ -5,7 +5,7 @@
 | agente | worker-u134 (Cursor Grok) |
 | fecha | 2026-07-19 |
 | rama | `wp/u134-archivar-entregas` |
-| commit(s) | `316fbaf` |
+| commit(s) | `316fbaf` · `261c52b` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
