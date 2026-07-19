@@ -20,10 +20,11 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · U140 🔶)
+## Remate — estado swarm (2026-07-19 · post U140 ✅)
 
-> **En curso:** **U140** 🔶 (higiene rutas absolutas locales · **D-31** ·
-> GO I5 externo). Frente micro API SPA cerrado: **U139** ✅ · **U138** ✅.
+> **IDLE sin pendientes** (higiene rutas locales cerrada). **U140** ✅
+> (scrub rutas absolutas · **D-31** · tip merge `32e5124` / WP tip
+> `465ba99`). Frente micro API SPA cerrado: **U139** ✅ · **U138** ✅.
 > Micros post-AMEND D-28 cerrados. **0 DA** abiertas. Ops: publish npm
 > startpacks = residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
 
@@ -46,15 +47,16 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — Docs deploy saltado ≠ verde | **U137** | N/A |
 | **Micro** — bug nav API HTML (SPA) | **U138** | ✅ |
 | **Micro** — bug API links cuerpo md | **U139** | ✅ |
-| **Micro** — higiene rutas absolutas locales | **U140** | 🔶 |
+| **Micro** — higiene rutas absolutas locales | **U140** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U140** 🔶 (orquestador · 2026-07-19 · D-31).
+**En curso:** ninguno.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
-**Aceptado:** **U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ ·
-AMEND A+B+C · Sprint 2 base (ver histórico).
+**Aceptado:** **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) ·
+**U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
+Sprint 2 base (ver histórico).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -222,11 +224,11 @@ Fuente (**archivada en repo; citar ruta interna**):
 rutas de máquina local en `plan/` = deuda de portabilidad/privacidad.
 **Prioridad:** antes del próximo push a `main`.
 
-#### WP-U140 · Scrub rutas absolutas locales en plan/ — 🔶
+#### WP-U140 · Scrub rutas absolutas locales en plan/ — ✅
 
-- 🔶 **WP-U140 · Sustituir rutas absolutas de máquina local por cita
-  neutral** — asignado (orquestador / 2026-07-19). Rama
-  `wp/u140-scrub-rutas-locales`. Brief:
+- ✅ **WP-U140 · Sustituir rutas absolutas de máquina local por cita
+  neutral** — aceptado (orquestador / 2026-07-19). Merge tip `32e5124`
+  (WP tip `465ba99`). Rama `wp/u140-scrub-rutas-locales`. Brief:
   [REPORTES/briefs/WP-U140-scrub-rutas-locales.md](REPORTES/briefs/WP-U140-scrub-rutas-locales.md).
   Alcance: cada cita de ruta local → «nota externa recibida
   (temp-review, &lt;fecha&gt;)», conservando texto pegado. CA **por
