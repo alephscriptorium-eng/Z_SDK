@@ -116,4 +116,14 @@ Worker no marca ✅ ni mergea.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (2026-07-19) — tip WP `2fd869b` · merge `dcd7892`.
+
+Verificado en tip: CA1 grep token (nombre-repo-externo) = 0 en todo el
+repo; CA2 diff solo `plan/REPORTES/` (U140 + este); CA3 patrones rutas
+U140 (1)/(2) = 0 (sin regresión). Adenda: U140 ya no cita el token;
+este reporte tampoco lo reintroduce (máscara `<externo>` /
+«nombre-repo-externo»). Worker no tocó BACKLOG. CI N/A (paths-ignore
+U104). PRACTICAS §3 OK.
+
+Merge autorizado → main. Canal externo (I52): U141 mergeado; I52 sigue
+🔶 hasta re-verif vigía (no ✅ en este acto).
