@@ -20,10 +20,11 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · micro protocolo Actions)
+## Remate — estado swarm (2026-07-19 · micros post-AMEND + U135)
 
-> **esperando: entrega U135 de worker** (GO protocolo Actions · **D-27**).
-> **U135** 🔶 · AMEND Sprint 2 ✅ (**D-26**): **U132** ✅ · **U133** ✅ · **U134** ✅.
+> **esperando: entrega U135 · U136 · U137 de workers** (GO vigilante micros ·
+> **D-28** + protocolo Actions **D-27**).
+> **U135** 🔶 · **U136** 🔶 · **U137** 🔶 · AMEND Sprint 2 ✅ (**D-26**).
 > Sprint 2 base cerrado ✅ (**D-25**). **0 DA** abiertas.
 > Ops: publish npm startpacks = residual (NO WP).
 > Diferidos U87 §5–6 → **sin GO**.
@@ -43,11 +44,13 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **AMEND Sprint 2 B** — C8/C9 → PRACTICAS | **U133** | ✅ |
 | **AMEND Sprint 2 C** — archivar ENTREGA-* | **U134** | ✅ |
 | **Micro** — protocolo GitHub Actions | **U135** | 🔶 |
+| **Micro** — C8 residual startpacks | **U136** | 🔶 |
+| **Micro** — Docs deploy saltado ≠ verde | **U137** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U135** 🔶 (protocolo Actions · D-27).
+**En curso:** **U135** 🔶 (D-27) · **U136** 🔶 ∥ **U137** 🔶 (D-28).
 **Aceptado AMEND A+B+C:** **U132** ✅ · **U133** ✅ · **U134** ✅ · Sprint 2 base:
 **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ · **U130** ✅ · **U131** ✅.
 
@@ -126,6 +129,46 @@ Automations obligatorios en este WP.
   `plan/` gobernanza; texto accionable; `gh run*` canónico; N/A si
   paths-ignore U104; prohibido secrets/dispatch publish al worker.
   **Demolición:** N/A (gobernanza).
+
+---
+
+## Micros post-AMEND — C8 residual + Docs falso verde (GO · 2026-07-19 · D-28)
+
+GO implícito vía vigilante (post-AMEND). **U136 ∥ U137** (ambos library;
+reporte en zeus). **No pisar U135.** Fuentes CAPA: leer
+`WEBS/ENTREGA-CAPA/01-PAQUETE-CAPA.md` § startpacks (no copiar a `plan/`).
+
+#### WP-U136 · Fix C8 residual `docs/startpacks.md` — 🔶
+
+- 🔶 **WP-U136 · Alinear fence Registry startpacks con patrón 2c / C8** —
+  en curso (worker / 2026-07-19). Rama zeus `wp/u136-c8-startpacks-residual`.
+  Worktree zeus: `.worktrees/wp-u136-c8-startpacks-residual`. Rama library
+  `wp/u136-c8-startpacks-residual`. Worktree library:
+  `Z_SDK-games-library/.worktrees/wp-u136-c8-startpacks-residual`. Brief:
+  [REPORTES/briefs/WP-U136-c8-startpacks-residual.md](REPORTES/briefs/WP-U136-c8-startpacks-residual.md).
+  Problema: `docs/startpacks.md:41` fence copiable
+  `npm install @zeus/startpack-delta` (canal 404); U132 corrigió prosa de
+  canales pero no ese fence. Fix: espíritu CAPA §2c / PRACTICAS §8 C8 —
+  tarball operativo + estado npm → Futuros; sin comando copiable 404.
+  **CA:** grep `npm install @zeus/startpack` en `docs/` → 0 en bloques
+  copiables operativos; mención doctrinal en futures/releases OK; `docs:build`
+  verde. **Demolición:** fence Registry operativo con npm-por-nombre.
+
+#### WP-U137 · Docs deploy saltado = fallo visible — 🔶
+
+- 🔶 **WP-U137 · Deploy saltado en main+docs/** no puede ser verde** —
+  en curso (worker / 2026-07-19). Rama zeus `wp/u137-docs-deploy-gate`.
+  Worktree zeus: `.worktrees/wp-u137-docs-deploy-gate`. Rama library
+  `wp/u137-docs-deploy-gate`. Worktree library:
+  `Z_SDK-games-library/.worktrees/wp-u137-docs-deploy-gate`. Brief:
+  [REPORTES/briefs/WP-U137-docs-deploy-gate.md](REPORTES/briefs/WP-U137-docs-deploy-gate.md).
+  Problema: workflow Docs library `success` con job deploy saltado → AMEND
+  en main sin Pages servido (falso verde). Alcance: condición deploy en
+  `.github/workflows/docs.yml` (library); si zeus tiene el mismo
+  anti-patrón, anotar o fix simétrico **solo con evidencia** (no ampliar).
+  **CA:** push a `main` con `docs/**` → deploy corre **o** el workflow falla
+  de forma visible (rojo); documentar en reporte. **Demolición:** verde
+  silencioso cuando deploy no corre en main+docs.
 
 ---
 
@@ -328,9 +371,7 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U125) nav/sidebar `solve-coagula` — **cerrado por U132 ✅**
 - (U131) VitePress en worktree Windows: path largo falla dead-links; library
   no gitignorea `docs/.vitepress/cache/` (zeus sí) — candidato higiene
-- (U132) C8 residual: fence `### Registry` en `docs/startpacks.md:41`
-  (`npm install @zeus/startpack-delta` copiable · canal 404). Paquete §3
-  no lo incluía; amend paquete o micro GO futuro — sin 🔶 sin GO
+- (U132) C8 residual `startpacks.md:41` → **WP-U136** 🔶 (D-28)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
