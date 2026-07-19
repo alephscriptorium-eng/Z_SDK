@@ -133,4 +133,15 @@ Worker no marca ✅ ni mergea.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (2026-07-19) — tip `465ba99`.
+
+Verificado: CA (1)/(2) = 0 en tip; SCRIPT_SDK solo meta en este reporte;
+entrega `ENTREGA-2026-07-19-higiene-rutas-locales.md` sin exención, ejemplo
+partido/neutro, 0 hits; diff 99 ficheros solo `plan/**`; BACKLOG sin cambio
+de estados 🔶/✅ por el worker; CI N/A (paths-ignore U104). Auto-revisión
+PRACTICAS §3 OK.
+
+Residual menor: lista de commits del reporte no incluye el tip `465ba99`.
+
+Merge autorizado → main. Aviso canal externo: higiene rutas locales cerrada
+en Z_SDK (cierra CA de entrega I52 en el otro plan).
