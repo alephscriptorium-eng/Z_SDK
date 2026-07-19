@@ -364,6 +364,16 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   `plan/REPORTES/WP-U140-scrub-rutas-locales.md`; CA: grep del token = 0
   en todo el repo (incluido ese reporte). No reabre U140.
 
+- **D-33 · 2026-07-19 · GO ENTREGA Sprint 3 / I50** (GO **usuario**,
+  aparte; paralelo a U141). Autoriza recepción del anuncio Sprint 3:
+  frágiles restantes (#1 CNAME, #2 guard base, #5 dist/ library, #4 npm
+  ci, economía CI, #7 gap paths) + oferta paquete público skills v0.2
+  como recurso registry (blind-safe). **§Nota ciega aún no recibida** —
+  no archivar cuerpo inventado. Destino inmediato: **WP-U142**
+  (recepción/triage ⬜). WPs U143+ por ítem solo tras nota + triage;
+  sin GO de implementación por ítem en este acto. No mezcla con U141
+  (I52 residual). No marca Sprint 3 ✅.
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son

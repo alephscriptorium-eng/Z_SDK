@@ -17,12 +17,15 @@ Sprint 2 (ADDENDA + CAPA):
 [ENTREGA-2026-07-19-sprint2/](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/) · **D-25**.
 **AMEND Sprint 2** (CAPA rev2 · verdad de canales): **D-26** · fuentes
 canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
+**GO Sprint 3 / I50:** **D-33** · §Nota ciega pendiente · recepción
+**U142** ⬜ (paralelo a **U141** 🔶).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · post U140 ✅ · U141 🔶)
+## Remate — estado swarm (2026-07-19 · U141 🔶 · GO I50)
 
-> **esperando: worker U141** (ceguera del reporte U140 · **D-32**).
+> **esperando: worker U141** (ceguera del reporte U140 · **D-32**) **∥**
+> **§Nota ciega Sprint 3** (GO I50 · **D-33** — recepción **U142** ⬜).
 > **U140** ✅ (scrub rutas absolutas · **D-31** · tip merge `32e5124` /
 > WP tip `465ba99`) — residual: el propio reporte cita el token
 > (nombre-repo-externo) en evidencia de grep. Frente micro API SPA
@@ -51,11 +54,13 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — bug API links cuerpo md | **U139** | ✅ |
 | **Micro** — higiene rutas absolutas locales | **U140** | ✅ |
 | **Micro** — ceguera token en reporte U140 | **U141** | 🔶 |
+| **Sprint 3** — recepción / triage GO I50 | **U142** | ⬜ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
 **En curso:** **U141** 🔶 (orquestador / 2026-07-19 · D-32).
+**Propuesto (sin nota aún):** **U142** ⬜ (GO I50 · D-33).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
 **Aceptado:** **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) ·
 **U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
@@ -269,6 +274,44 @@ enmascara siempre.
   token). CA: grep del token = 0 en **todo** el repo, incluido el
   reporte U140. **Demolición:** token literal en evidencia/prosa del
   reporte U140. No reabre scrub de rutas (U140 ✅).
+
+---
+
+## ENTREGA Sprint 3 / GO I50 (GO · 2026-07-19 · D-33)
+
+> **GO usuario recibido.** Canal externo anuncia Sprint 3 =
+> frágiles restantes + oferta paquete público skills v0.2 (registry,
+> blind-safe). **§Nota ciega aún no entregada** — no hay ADDENDA/ENTREGA
+> archivable con cuerpo técnico verificable. **No inventar alcance ni
+> CA de implementación** hasta archivar la §Nota.
+> **Paralelo a U141** (I52 residual) — no mezclar briefs/colas.
+
+### WP-U142 · Recepción / triage Sprint 3 — ⬜
+
+- ⬜ **WP-U142 · Recibir §Nota ciega Sprint 3, archivar y proponer
+  WPs por ítem** — propuesto (orquestador / 2026-07-19 · **D-33**).
+  Dep: llegada de la §Nota vía canal ENTREGA (prueba de ceguera grep =
+  0). Alcance de **este** WP (cuando haya nota):
+  1) Archivar solo §Nota en `plan/REPORTES/entregas/`.
+  2) Triage: mapa ítem → WP **U143+** (o N/A si ya cubierto / ops).
+  3) No abrir workers de implementación sin GO por ítem.
+  **CA:** nota archivada (ruta interna); mapa triage en BACKLOG; ceguera
+  intacta; U141 no tocado. **Demolición:** n/a (recepción).
+
+### Ítems anunciados (propuestos · sin GO de implementación)
+
+Anuncio externo (sin §Nota aún). **No son WPs abiertos** — IDs U143+
+se asignan en el triage U142:
+
+| Tema anunciado | Estado |
+| -------------- | ------ |
+| Frágil #1 · CNAME | propuesto · espera §Nota |
+| Frágil #2 · guard de `base` | propuesto · espera §Nota |
+| Frágil #5 · `dist/` gitignoreado (library) | propuesto · espera §Nota |
+| Frágil #4 · coherencia `npm ci` | propuesto · espera §Nota |
+| Economía CI (paths-ignore / concurrency) | propuesto · espera §Nota |
+| Frágil #7 · gap de paths | propuesto · espera §Nota |
+| Oferta paquete público skills v0.2 (registry) | propuesto · espera §Nota |
 
 ---
 
