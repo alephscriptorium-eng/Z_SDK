@@ -104,4 +104,20 @@ Ninguno. Listo para revisión orquestador (✅ + merge usuario).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-19). Tip `d665173`.
+
+### Verificado
+
+- Diff `main...HEAD`: solo `plan/` gobernanza (8 ficheros; sin BACKLOG, sin
+  `.github/`, sin producto). Commits convencionales `docs(plan):`.
+- CA: `gh run*` canónico en ORQUESTADOR / REVISION / WORKER / BRIEF /
+  README / PRACTICAS § evidencia+§5+§7+§8 C8 Pages; PLANTILLA «Evidencia CI».
+- Gate CI: **N/A** paths-ignore U104 — `gh run list` vacío en la rama;
+  reporte lo declara. Prohibidos secrets + `workflow_dispatch` publish en
+  ORQUESTADOR/WORKER. Sin MCP/Automations/Cursor-in-CI como gate.
+- Worker no tocó BACKLOG. Demolición N/A. Auto-revisión honesta.
+
+### Merge
+
+Inmediato a `main`. Remate: conservar **U136**/**U137** 🔶 (D-28) si ya
+asignados; U135 → ✅.
