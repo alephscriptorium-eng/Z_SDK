@@ -5,7 +5,7 @@
 | agente | worker · chat WP-U133 |
 | fecha | 2026-07-19 |
 | rama | `wp/u133-practicas-c8-c9` |
-| commit(s) | `1a45bf79d0a9066da57d37f8591f6de20c738599` (+ este reporte) |
+| commit(s) | `1a45bf79d0a9066da57d37f8591f6de20c738599`, `4988fb089b6b053c487592bb7706ecec7ca04031` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
