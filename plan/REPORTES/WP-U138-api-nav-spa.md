@@ -108,3 +108,34 @@ Ninguno.
 ## Pedido al orquestador
 
 Revisar y ✅ / merge cuando Actions de la rama esté verde.
+
+---
+
+## Revisión del orquestador
+
+**Aceptado ✅** (orquestador / 2026-07-19).
+
+### Verificado
+
+- Diff `main...3d82691`: `docs/.vitepress/config.mjs` + `plan/PRACTICAS.md` +
+  reporte — alcance acotado; `cleanUrls: true` intacto; BACKLOG no tocado
+  por worker.
+- CA-1: Playwright ×6 (preview :5179) — popup, títulos Redoc/AsyncAPI,
+  cero 404 (tabla en §Evidencia). Canal = clic SPA (ADDENDA / C8).
+- CA-2: `docs:build` local EXIT 0 + Actions Docs `29690453464` success
+  (tip fix `cb55c3d`).
+- CA-3: diff solo config + PRACTICAS C8 + reporte.
+- CA-4: library sin `/api/` en nav — N/A código (evidencia worker).
+- PRACTICAS §8 C8: párrafo «Nav / SPA vs assets» añadido; lección canal
+  de uso = canal de verificación.
+- Actions (U135): Docs `29690453464` · CI `29690453486` — ambos
+  `success` en `wp/u138-api-nav-spa` @ `cb55c3d`. Se confía en runner +
+  Playwright (sin re-smoke local orquestador).
+
+### Merge
+
+1. Merge `wp/u138-api-nav-spa` → `main` + push (dispara Docs/Pages).
+2. BACKLOG U138 🔶 → ✅; residual inline `/api/*.html` en md → cola viva
+   (sin WP nuevo).
+3. `git worktree remove` del árbol U138.
+4. Ritual post-merge: `gh run list --branch main` (Docs/CI).
