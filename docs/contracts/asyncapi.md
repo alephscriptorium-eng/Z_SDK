@@ -12,6 +12,6 @@ Salida: `packages/engine/protocol/spec/asyncapi.yaml` y
 
 - Guía del contrato: [engine/protocol](/engine/protocol)
 - Render HTML (tras `docs:build` o `spec:asyncapi:html`):
-  **[Abrir AsyncAPI HTML](/api/protocol/)**
+  **<a href="/api/protocol/" target="_blank" rel="noreferrer">Abrir AsyncAPI HTML</a>**
 
 El portal enlaza ese HTML generado (`scripts/spec-asyncapi-html.mjs`).

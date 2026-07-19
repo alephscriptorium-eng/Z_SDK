@@ -23,10 +23,10 @@ npm run start:3d-monitor
 npm run start:oasis-webrtc
 ```
 
-Specs Redoc: [player-ui](/api/player-ui.html) ·
-[cache-browser](/api/cache-browser.html) ·
-[firehose-browser](/api/firehose-browser.html) ·
-[MCP HTTP](/api/mcp-http.html).
+Specs Redoc: <a href="/api/player-ui.html" target="_blank" rel="noreferrer">player-ui</a> ·
+<a href="/api/cache-browser.html" target="_blank" rel="noreferrer">cache-browser</a> ·
+<a href="/api/firehose-browser.html" target="_blank" rel="noreferrer">firehose-browser</a> ·
+<a href="/api/mcp-http.html" target="_blank" rel="noreferrer">MCP HTTP</a>.
 
 La **autoridad del juego** vive en el paquete del juego (p. ej.
 `arg-demos` / pozo); player-ui proyecta y emite intents.
