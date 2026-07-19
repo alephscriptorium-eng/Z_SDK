@@ -75,4 +75,18 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19.
+
+Verificado:
+- Diff `main...wp/u129-estado-repo-links` = `docs/guide/estado.md` + este
+  reporte (commits `42ddb93` + `1d865e2`). Alcance cerrado; no tocó hero
+  (U124) ni inventó `publicar-la-web` (U131).
+- CA: los 2 links del portal apuntan a
+  `github.com/alephscriptorium-eng/Z_SDK/blob/main/plan/{BACKLOG,DECISIONES}.md`.
+- Demolición: URLs `…/zeus-sdk/…` en ese fichero ausentes; mención textual
+  `Z_SDK-games-library` en tabla histórica correcta.
+- Reporte + auto-revisión honestos; worker no tocó BACKLOG.
+- Specs regenerados por `docs:build` no staged (bien).
+
+**Merge:** `wp/u129-estado-repo-links` → `main` (zeus) primero en la serie
+B (docs, sin solape con library). Orden ejecutado: U129 → U126 → U128.

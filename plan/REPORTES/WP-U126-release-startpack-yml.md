@@ -89,4 +89,18 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19.
+
+Verificado:
+- Diff library `main...wp/u126-release-startpack-yml` = solo
+  `.github/workflows/release-startpack.yml` (commit `6c5241a`). Zeus = solo
+  este reporte (`97089cf`). No tocó CAPA ni `package.json` (U128).
+- Opción **(a)** correcta: workflow invoca Notario; no demoler.
+- CA: `yaml.safe_load` → `YAML OK` / `name= Release startpack` (reproducido
+  en revisión). Prosa de cabecera comentada + nota vía canónica.
+- PRACTICAS §1–3/§6 OK (micro CI; evidencia literal; commit convencional).
+- Hallazgo catálogo `delta|pozo` vs sketch/solve/plaza → cola residual, no
+  bloquea.
+
+**Merge:** library `wp/u126-release-startpack-yml` + reporte zeus → `main`.
+Orden: tras U129, antes de U128.

@@ -35,15 +35,17 @@ Sprint 2 (ADDENDA + CAPA):
 | **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
 | Publish real → demoler `file:` | **U55** ∥ **U123** | ✅ |
 | **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | ✅ |
-| **Sprint 2 B** — higiene (4 micros) | **U126–U129** | 🔶 |
+| **Sprint 2 B** — higiene (4 micros) | **U126–U129** | ✅ / 🔶 U127 |
 | **Sprint 2 D** — docs regeneración web | **U131** | 🔶 |
 | **Sprint 2 C** — plantilla sprint | **U130** | ⬜ cierre |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **Orden Sprint 2:** **A ∥ B**; **D** cabe con A; **C** = acta de cierre.
 
-**En curso:** **U126–U129** · **U131** (orquestador / 2026-07-19 · ADDENDA).
+**En curso:** **U127** · **U131** (orquestador / 2026-07-19 · ADDENDA).
 **Aceptado Sprint 2 A:** **U124** ✅ ∥ **U125** ✅.
+**Aceptado Sprint 2 B (parcial):** **U126** ✅ · **U128** ✅ · **U129** ✅
+(U127 bloqueado aparte).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -84,16 +86,15 @@ exención D-24 / marketing SUPERADO).
 
 ### (B) Higiene — 4 micros (∥ A)
 
-#### WP-U126 · YAML `release-startpack.yml` — 🔶
+#### WP-U126 · YAML `release-startpack.yml` — ✅
 
-- 🔶 **WP-U126 · Arreglar o demoler `release-startpack.yml` (library)** —
-  en curso (worker / 2026-07-19). Rama library `wp/u126-release-startpack-yml`.
-  Brief:
-  [REPORTES/briefs/WP-U126-release-startpack-yml.md](REPORTES/briefs/WP-U126-release-startpack-yml.md).
-  Prosa sin `#` en cabecera → YAML inválido desde creación; releases reales
-  vía script Notario.
-  **CA:** parser YAML pasa **o** fichero demolido con nota en reporte.
-  **Demolición:** el workflow si la vía canónica es el script.
+- ✅ **WP-U126 · Arreglar o demoler `release-startpack.yml` (library)** —
+  aceptado (orquestador / 2026-07-19). Rama library
+  `wp/u126-release-startpack-yml` merge `542b2ad` + reporte zeus
+  `cb683f7`. Reporte:
+  [REPORTES/WP-U126-release-startpack-yml.md](REPORTES/WP-U126-release-startpack-yml.md).
+  Opción (a): prosa cabecera comentada; parser YAML OK; Notario vía canónica.
+  **CA:** cumplido. **Demolición:** N/A (opción a).
 
 #### WP-U127 · Higiene worktrees library — 🔶
 
@@ -107,23 +108,23 @@ exención D-24 / marketing SUPERADO).
   (ideal fin de sprint: solo main).
   **Demolición:** worktree/dirs obsoletos nombrados.
 
-#### WP-U128 · Deps `@zeus/*` caret semver — 🔶
+#### WP-U128 · Deps `@zeus/*` caret semver — ✅
 
-- 🔶 **WP-U128 · Fijar `"*"` → caret de versiones publicadas (library)** —
-  en curso (worker / 2026-07-19). Rama library `wp/u128-zeus-deps-semver`.
-  Brief:
-  [REPORTES/briefs/WP-U128-zeus-deps-semver.md](REPORTES/briefs/WP-U128-zeus-deps-semver.md).
-  **CA:** cero `"*"` en deps `@zeus` de `packages/` de la library.
-  **Demolición:** rangos `"*"` en esos package.json.
+- ✅ **WP-U128 · Fijar `"*"` → caret de versiones publicadas (library)** —
+  aceptado (orquestador / 2026-07-19). Rama library `wp/u128-zeus-deps-semver`
+  merge `0d99e89` + reporte zeus `7c432a8`. Reporte:
+  [REPORTES/WP-U128-zeus-deps-semver.md](REPORTES/WP-U128-zeus-deps-semver.md).
+  7 package.json + lock; cero `"*"` en deps `@zeus` de `packages/`.
+  **CA:** cumplido. **Demolición:** rangos `"*"` en esos package.json.
 
-#### WP-U129 · Links portal `zeus-sdk` → `Z_SDK` — 🔶
+#### WP-U129 · Links portal `zeus-sdk` → `Z_SDK` — ✅
 
-- 🔶 **WP-U129 · URL repo en `docs/guide/estado.md` (cola U120)** —
-  en curso (worker / 2026-07-19). Rama `wp/u129-estado-repo-links`.
-  Brief:
-  [REPORTES/briefs/WP-U129-estado-repo-links.md](REPORTES/briefs/WP-U129-estado-repo-links.md).
-  **CA:** links del portal apuntan al repo real (`Z_SDK`).
-  **Demolición:** URLs/`zeus-sdk` incorrectas en ese fichero.
+- ✅ **WP-U129 · URL repo en `docs/guide/estado.md` (cola U120)** —
+  aceptado (orquestador / 2026-07-19). Rama `wp/u129-estado-repo-links`
+  merge `cf6699d`. Reporte:
+  [REPORTES/WP-U129-estado-repo-links.md](REPORTES/WP-U129-estado-repo-links.md).
+  2 links portal → `Z_SDK`; `docs:build` OK en reporte.
+  **CA:** cumplido. **Demolición:** URLs `zeus-sdk` incorrectas en ese fichero.
 
 ### (C) Gobernanza — al cierre
 
@@ -236,8 +237,10 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U114) env sibling library sin link `@zeus/startpack-kit` (ops/link)
 - (U121) scrub `README.md` raíz library (WP-U/D-#/file: temporal) — fuera
   del portal VitePress; coherencia repo↔portal
-- (U120) links blob en `docs/guide/estado.md` → **WP-U129** (Sprint 2 B4);
-  scrub README raíz zeus (misma clase) queda residual
+- (U120) links blob en `docs/guide/estado.md` → **WP-U129 ✅**; scrub README
+  raíz zeus (misma clase) queda residual
+- (U126) workflow `release-startpack` solo `delta|pozo` en dispatch; Notario
+  también sketch/solve-coagula/plaza — candidato micro si hace falta
 - (U122) `plan/ARQUITECTURA.md` §5 aún cita `NPM_TOKEN` (gate publish ya
   es `_password` en `release.yml`)
 - (U124) VitePress 1.6.4 + Windows: `docs:build` falla por case `C:`/`c:`

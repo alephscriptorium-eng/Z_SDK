@@ -84,4 +84,18 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19.
+
+Verificado:
+- Diff library `main...wp/u128-zeus-deps-semver` = 7 `package.json` bajo
+  `packages/` + `package-lock.json` (commit `43b6f9b`). Zeus = solo este
+  reporte (`03031ff`). No tocó workflows (U126) ni docs CAPA (U125).
+- CA: `rg '"@zeus/[^"]+"\s*:\s*"\*"' packages --glob 'package.json'` → cero
+  (reproducido). Carets alineados con lock/registry (`^0.2.0` protocol,
+  `^0.1.2` presets-sdk, etc.; workspace locales `^0.1.0`).
+- Nota: `*` residuales en lock bajo `node_modules/@zeus/feed-kit` vienen del
+  tarball publicado (deps del paquete registry), fuera de alcance del CA.
+- Evidencia install + tests arg-domain/arg-feeds en reporte; PRACTICAS OK.
+
+**Merge:** library `wp/u128-zeus-deps-semver` + reporte zeus → `main` (último
+de la serie B aceptada; U127 sigue bloqueado aparte).
