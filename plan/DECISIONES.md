@@ -366,13 +366,15 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
 
 - **D-33 · 2026-07-19 · GO ENTREGA Sprint 3 / I50** (GO **usuario**,
   aparte; paralelo a U141). Autoriza recepción del anuncio Sprint 3:
-  frágiles restantes (#1 CNAME, #2 guard base, #5 dist/ library, #4 npm
-  ci, economía CI, #7 gap paths) + oferta paquete público skills v0.2
-  como recurso registry (blind-safe). **§Nota ciega aún no recibida** —
-  no archivar cuerpo inventado. Destino inmediato: **WP-U142**
-  (recepción/triage ⬜). WPs U143+ por ítem solo tras nota + triage;
-  sin GO de implementación por ítem en este acto. No mezcla con U141
-  (I52 residual). No marca Sprint 3 ✅.
+  frágiles restantes + oferta paquete público skills v0.2 como recurso
+  registry (blind-safe). **§Nota recibida** (2026-07-19) —
+  [REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md).
+  **WP-U142** ✅ (recepción/triage orquestador). Triage: 4 ítems del
+  anuncio previo ya resueltos en main → N/A; quedan **U143** (CNAME) y
+  **U144** (`npm ci` consulta) ⬜ **sin GO de implementación** (nota =
+  propuesta, no decreto; prioridad baja). Oferta
+  `@alephscript/skills-scriptorium@0.2.0` = recurso opcional (no WP).
+  No mezcla con U141. No marca Sprint 3 ✅ ni abre workers/briefs.
 
 ## Abiertas (bloquean lo indicado)
 

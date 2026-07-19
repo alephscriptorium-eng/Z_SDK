@@ -17,20 +17,21 @@ Sprint 2 (ADDENDA + CAPA):
 [ENTREGA-2026-07-19-sprint2/](REPORTES/entregas/ENTREGA-2026-07-19-sprint2/) · **D-25**.
 **AMEND Sprint 2** (CAPA rev2 · verdad de canales): **D-26** · fuentes
 canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
-**GO Sprint 3 / I50:** **D-33** · §Nota ciega pendiente · recepción
-**U142** ⬜.
+**GO Sprint 3 / I50:** **D-33** · §Nota recibida · recepción **U142** ✅
+· WPs propuestos **U143**/**U144** ⬜ (sin GO de implementación).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · post-U141 ✅ · GO I50)
+## Remate — estado swarm (2026-07-19 · post-U142 ✅ · Sprint 3 triage)
 
-> **esperando: §Nota ciega Sprint 3** (GO I50 · **D-33** — recepción
-> **U142** ⬜). **U141** ✅ (ceguera token reporte U140 · **D-32** ·
-> merge `dcd7892` / WP tip `2fd869b`). **U140** ✅ (scrub rutas ·
-> **D-31** · tip merge `32e5124` / WP tip `465ba99`). Frente micro API
-> SPA cerrado: **U139** ✅ · **U138** ✅. Micros post-AMEND D-28
-> cerrados. **0 DA** abiertas. Ops: publish npm startpacks = residual
-> (NO WP). Diferidos U87 §5–6 → **sin GO**.
+> **esperando: GO por ítem** (usuario) para **U143** / **U144** —
+> §Nota Sprint 3 archivada · triage orquestador hecho · **sin briefs /
+> workers** (nota = propuesta, no decreto; prioridad baja). **U142** ✅
+> (recepción/triage · **D-33**). **U141** ✅ (ceguera · **D-32** · merge
+> `dcd7892`). **U140** ✅. **0 DA** abiertas. Oferta registry
+> `@alephscript/skills-scriptorium@0.2.0` = recurso opcional (no WP).
+> Ops: publish npm startpacks = residual (NO WP). Diferidos U87 §5–6 →
+> **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -53,15 +54,21 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — bug API links cuerpo md | **U139** | ✅ |
 | **Micro** — higiene rutas absolutas locales | **U140** | ✅ |
 | **Micro** — ceguera token en reporte U140 | **U141** | ✅ |
-| **Sprint 3** — recepción / triage GO I50 | **U142** | ⬜ |
+| **Sprint 3** — recepción / triage GO I50 | **U142** | ✅ |
+| **Sprint 3** — CNAME `docs/public/` (ambos repos) | **U143** | ⬜ |
+| **Sprint 3** — consulta `npm ci` vs `npm install` (catálogo) | **U144** | ⬜ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (IDLE salvo recepción U142).
-**Propuesto (sin nota aún):** **U142** ⬜ (GO I50 · D-33).
-**Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
-**Aceptado:** **U141** ✅ (ceguera · D-32 · merge `dcd7892`) ·
+**En curso:** ninguno.
+**Propuesto (sin GO implementación):** **U143** ⬜ · **U144** ⬜
+(D-33 · §Nota recibida).
+**Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
+Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
+economía CI) — ver triage U142.
+**Aceptado:** **U142** ✅ (recepción/triage Sprint 3 · D-33) ·
+**U141** ✅ (ceguera · D-32 · merge `dcd7892`) ·
 **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) · **U139** ✅ ·
 **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
 (ver histórico).
@@ -279,39 +286,52 @@ enmascara siempre.
 
 ## ENTREGA Sprint 3 / GO I50 (GO · 2026-07-19 · D-33)
 
-> **GO usuario recibido.** Canal externo anuncia Sprint 3 =
-> frágiles restantes + oferta paquete público skills v0.2 (registry,
-> blind-safe). **§Nota ciega aún no entregada** — no hay ADDENDA/ENTREGA
-> archivable con cuerpo técnico verificable. **No inventar alcance ni
-> CA de implementación** hasta archivar la §Nota.
-> **U141** ✅ (I52 residual → re-verif vigía en canal externo).
+> **§Nota recibida** (2026-07-19). Archivada:
+> [REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md).
+> Nota = **propuesta, no decreto**; prioridad baja. Triage orquestador:
+> 4 ítems del anuncio previo ya resueltos en main → N/A; quedan **2**
+> WPs propuestos (**U143** · **U144**) ⬜ **sin GO de implementación**
+> ni briefs. Recurso registry opcional (no WP). **U141** ✅ intacto.
 
-### WP-U142 · Recepción / triage Sprint 3 — ⬜
+### WP-U142 · Recepción / triage Sprint 3 — ✅
 
-- ⬜ **WP-U142 · Recibir §Nota ciega Sprint 3, archivar y proponer
-  WPs por ítem** — propuesto (orquestador / 2026-07-19 · **D-33**).
-  Dep: llegada de la §Nota vía canal ENTREGA (prueba de ceguera grep =
-  0). Alcance de **este** WP (cuando haya nota):
-  1) Archivar solo §Nota en `plan/REPORTES/entregas/`.
-  2) Triage: mapa ítem → WP **U143+** (o N/A si ya cubierto / ops).
-  3) No abrir workers de implementación sin GO por ítem.
-  **CA:** nota archivada (ruta interna); mapa triage en BACKLOG; ceguera
+- ✅ **WP-U142 · Recibir §Nota ciega Sprint 3, archivar y proponer
+  WPs por ítem** — aceptado (orquestador / 2026-07-19 · **D-33**).
+  Nota:
+  [REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md).
+  **CA:** nota archivada (ruta interna); mapa triage abajo; ceguera
   intacta; U141 no tocado. **Demolición:** n/a (recepción).
 
-### Ítems anunciados (propuestos · sin GO de implementación)
+### Triage (mapa ítem → WP / N/A)
 
-Anuncio externo (sin §Nota aún). **No son WPs abiertos** — IDs U143+
-se asignan en el triage U142:
+| # §Nota | Ítem | Destino | Estado |
+| ------- | ---- | ------- | ------ |
+| 1 | CNAME en `docs/public/` (portal + catálogo) | **WP-U143** | ⬜ propuesto · **espera GO** |
+| 2 | `npm ci` vs `npm install` en docs.yml del catálogo (consulta) | **WP-U144** | ⬜ propuesto · **espera GO** |
+| — | Guard de `base` (MSYS) | N/A | ya en `config.mjs` |
+| — | `dist/` en índice (library) | N/A | 0 ficheros |
+| — | Gap `paths: docs/**` | N/A | documentado (WP-U104 / D-22 + dispatch) |
+| — | Economía CI (paths-ignore / concurrency) | N/A | ya en ci.yml |
+| — | Oferta `@alephscript/skills-scriptorium@0.2.0` | recurso · no WP | opcional; cero compromiso |
 
-| Tema anunciado | Estado |
-| -------------- | ------ |
-| Frágil #1 · CNAME | propuesto · espera §Nota |
-| Frágil #2 · guard de `base` | propuesto · espera §Nota |
-| Frágil #5 · `dist/` gitignoreado (library) | propuesto · espera §Nota |
-| Frágil #4 · coherencia `npm ci` | propuesto · espera §Nota |
-| Economía CI (paths-ignore / concurrency) | propuesto · espera §Nota |
-| Frágil #7 · gap de paths | propuesto · espera §Nota |
-| Oferta paquete público skills v0.2 (registry) | propuesto · espera §Nota |
+### WP-U143 · CNAME `docs/public/` (ambos repos) — ⬜
+
+- ⬜ **WP-U143 · Commitear `docs/public/CNAME` con el dominio de cada
+  portal** — propuesto (orquestador / 2026-07-19 · triage U142 ·
+  **sin GO**). Dep: GO usuario por ítem. Alcance: repo portal + repo
+  catálogo; el build de Pages recoge el fichero del artifact.
+  **CA:** `git ls-files docs/public/CNAME` en ambos; tras siguiente
+  deploy, custom domain persiste en Settings. **Demolición:** n/a.
+  **No brief / no worker** hasta GO.
+
+### WP-U144 · Consulta `npm ci` en docs.yml del catálogo — ⬜
+
+- ⬜ **WP-U144 · Alinear o documentar `npm install` vs `npm ci` en
+  docs.yml del catálogo** — propuesto (orquestador / 2026-07-19 ·
+  triage U142 · **sin GO**). Dep: GO usuario por ítem. Consulta, no
+  imposición: o `npm ci` (lockfile + `.npmrc`) con build verde, o
+  comentario en el yml explicando por qué no. **CA:** una de las dos.
+  **Demolición:** n/a. **No brief / no worker** hasta GO.
 
 ---
 
