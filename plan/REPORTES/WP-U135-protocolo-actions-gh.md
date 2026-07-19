@@ -5,7 +5,7 @@
 | agente | swarm-worker (orquestador→worker mismo chat · GO D-27) |
 | fecha | 2026-07-19 |
 | rama | `wp/u135-protocolo-actions-gh` |
-| commit(s) | _(tras commit)_ |
+| commit(s) | `b720307` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -38,7 +38,15 @@ Automations/Cursor-in-CI.
 ```
 # WP solo plan/ gobernanza — sin lint/gates de producto
 git diff --stat main...HEAD
-# (salida tras commit en §Evidencia CI / commits)
+ plan/PRACTICAS.md                             | 24 ++++++-
+ plan/REPORTES/PLANTILLA.md                    | 16 +++++
+ plan/REPORTES/WP-U135-protocolo-actions-gh.md | 99 +++++++++++++++++++++++++++
+ plan/roles/BRIEF.md                           |  2 +
+ plan/roles/ORQUESTADOR.md                     | 26 ++++++-
+ plan/roles/README.md                          |  4 ++
+ plan/roles/REVISION.md                        | 13 +++-
+ plan/roles/WORKER.md                          | 14 +++-
+ 8 files changed, 188 insertions(+), 10 deletions(-)
 ```
 
 - Efecto visible: N/A (gobernanza texto).
@@ -56,9 +64,9 @@ git diff --stat main...HEAD
 | conclusion | **N/A** |
 
 ```
-# Diff solo plan/ → CI no debe dispararse (ci.yml paths-ignore plan/** + **.md)
+# Diff solo plan/ → CI no dispara (ci.yml paths-ignore plan/** + **.md)
 gh run list --branch wp/u135-protocolo-actions-gh --limit 5
-# (pegar tras push)
+# (salida vacía = ningún run en la rama → N/A confirmado)
 ```
 
 ## Demolición
