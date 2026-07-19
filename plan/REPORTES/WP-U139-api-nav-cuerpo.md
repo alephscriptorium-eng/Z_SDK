@@ -133,4 +133,13 @@ desde este chat worker.
 
 ## Revisión del orquestador
 
-_(pendiente)_
+**Aceptado ✅** — 2026-07-19 · orquestador (REVISION + PRACTICAS §8 C8 clase · Actions U135).
+
+Verificado:
+- Diff `main...bc0b2ac` acotado: 5 `.md` cuerpo + `PRACTICAS` C8 + reporte (7 files). Sin BACKLOG.
+- CA clase grep: `](/api/` = 0; `href="/api/` sin `target` = 0; 12 `<a … target="_blank">` en docs md. Nav U138 intacto (`config.mjs` `target: '_blank'` ×6).
+- Superficies ADDENDA + residual U138 (mesh + protocol) cubiertas.
+- C8: Playwright 12/12 en reporte (preview :5180) — confiado; no re-smoke.
+- Actions rama: Docs `29691867603` success (head `6813c2e`; tip `bc0b2ac` = evidencia reporte). CI **N/A** U104 (`**.md` / `plan/**`).
+
+Merge: inmediato a `main` (cierra residual U138 cola). Post-merge: Docs en `main` + `git worktree remove`.
