@@ -94,4 +94,19 @@ Ninguno. Residual u123 liberado; WP desbloqueado.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19 · tip claim `0f9b53f`.
+
+Verificado:
+- Library: `u107` / `u121` / `u123` **ausentes** de `git worktree list` y de
+  `.worktrees/` (re-smoke orquestador tras desbloqueo cáscara u123).
+- Worktrees Sprint 2 legítimos presentes (u127 self / u128 / u131); no tocados
+  por este WP. u126 ya no está (merge previo — esperado).
+- Diff zeus `main...wp/u127-higiene-worktrees` = solo este reporte (2 commits
+  docs). Cero código producto library; worker no tocó BACKLOG.
+- CA ADDENDA B2 cumplido; demolición de los tres nombrados completa; evidencia
+  del unlock (PIDs npm huérfanos) literal y acotada.
+- PRACTICAS §2 alcance OK; §3 auto-revisión honesta; §6 N/A producto.
+
+**Merge:** `wp/u127-higiene-worktrees` → `main` (zeus, reporte). Tras merge:
+`git worktree remove` zeus + library U127. Cierra Sprint 2 B (U126–U129 ✅).
+NO tocar U130/U131.
