@@ -19,16 +19,18 @@ Sprint 2 (ADDENDA + CAPA):
 canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 **GO Sprint 3 / I50:** **D-33** · §Nota recibida · recepción **U142** ✅.
 **GO implementación U143 ∥ U144:** **D-34**.
+**Skills referencia versionada:** **D-35** (adoptar
+`@alephscript/skills-scriptorium@0.3.0`; `plan/roles/` copia operativa).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · GO D-34 · U143 ∥ U144)
+## Remate — estado swarm (2026-07-20 · D-35 · post D-34)
 
-> **IDLE remate D-34** — **U143** ✅ · **U144** ✅. Listo para **I51**
-> (cierre Sprint 3). **U142** ✅ intacto (D-33). **U141** ✅ ·
-> **U140** ✅. **0 DA** abiertas. Oferta registry
-> `@alephscript/skills-scriptorium@0.2.0` = recurso opcional (no WP).
-> Ops: publish npm startpacks = residual (NO WP). Diferidos U87 §5–6 →
+> **IDLE** — **U143** ✅ · **U144** ✅ · Sprint 3 cerrado en zeus.
+> **D-35:** `@alephscript/skills-scriptorium@0.3.0` = referencia
+> versionada canónica del protocolo; `plan/roles/` permanece copia
+> operativa (sin migración en este paso). **0 DA** abiertas. Ops:
+> publish npm startpacks = residual (NO WP). Diferidos U87 §5–6 →
 > **sin GO**. Persistencia custom domain Pages (Settings): ⏳ post-deploy
 > U143 (no bloquea).
 
@@ -60,7 +62,7 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (D-34 cerrado). **Listo para I51.**
+**En curso:** ninguno (D-34 + D-35 registrados; sin WP).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -70,7 +72,8 @@ library `ad9627c`) · **U142** ✅ (recepción/triage Sprint 3 · D-33) ·
 **U141** ✅ (ceguera · D-32 · merge `dcd7892`) ·
 **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) · **U139** ✅ ·
 **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
-(ver histórico).
+(ver histórico). **D-35** (skills `@0.3.0` referencia versionada ·
+sin WP).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -310,7 +313,7 @@ enmascara siempre.
 | — | `dist/` en índice (library) | N/A | 0 ficheros |
 | — | Gap `paths: docs/**` | N/A | documentado (WP-U104 / D-22 + dispatch) |
 | — | Economía CI (paths-ignore / concurrency) | N/A | ya en ci.yml |
-| — | Oferta `@alephscript/skills-scriptorium@0.2.0` | recurso · no WP | opcional; cero compromiso |
+| — | Oferta `@alephscript/skills-scriptorium` | recurso · no WP | **D-35** adoptó `@0.3.0` como referencia versionada; `plan/roles/` copia operativa |
 
 ### WP-U143 · CNAME `docs/public/` (ambos repos) — ✅
 

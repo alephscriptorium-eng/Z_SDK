@@ -386,6 +386,19 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   **U142** ✅ intacto. Briefs + 🔶 al asignar. I51 (cierre Sprint 3)
   espera aceptación de ambos.
 
+- **D-35 · 2026-07-20 · Adoptar skills-scriptorium@0.3.0 como referencia
+  versionada** (GO **usuario** · opción **(a)** de la oferta externa).
+  Nota archivada:
+  [REPORTES/entregas/ENTREGA-2026-07-20-skills-0.3.0-decision.md](REPORTES/entregas/ENTREGA-2026-07-20-skills-0.3.0-decision.md).
+  **Decisión:** adoptar `@alephscript/skills-scriptorium@0.3.0` (registry)
+  como **referencia versionada canónica** del protocolo de swarm.
+  **Consecuencia para `plan/roles/`:** en este paso **no se borra ni se
+  migra**; permanece como **copia operativa** del repo (ancestro local que
+  funciona). La procedencia apunta al paquete 0.3.0; una eventual
+  sustitución gradual (`roles/` → README-referencia con versión fijada)
+  queda fuera de esta decisión — requiere GO + WP aparte. **CA:**
+  decisión registrada; nada más cambia (sin worker, sin migración).
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son
