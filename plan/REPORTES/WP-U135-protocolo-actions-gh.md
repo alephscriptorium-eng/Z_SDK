@@ -5,7 +5,7 @@
 | agente | swarm-worker (orquestador→worker mismo chat · GO D-27) |
 | fecha | 2026-07-19 |
 | rama | `wp/u135-protocolo-actions-gh` |
-| commit(s) | `b720307` |
+| commit(s) | `b720307` · `e2bb84a` (tip) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
