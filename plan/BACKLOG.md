@@ -34,7 +34,7 @@ Sprint 2 (ADDENDA + CAPA):
 | Estabilización mesa plan | **U118** | ✅ |
 | **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
 | Publish real → demoler `file:` | **U55** ∥ **U123** | ✅ |
-| **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | 🔶 |
+| **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | 🔶 / ✅ U125 |
 | **Sprint 2 B** — higiene (4 micros) | **U126–U129** | 🔶 |
 | **Sprint 2 D** — docs regeneración web | **U131** | 🔶 |
 | **Sprint 2 C** — plantilla sprint | **U130** | ⬜ cierre |
@@ -42,7 +42,8 @@ Sprint 2 (ADDENDA + CAPA):
 
 **Orden Sprint 2:** **A ∥ B**; **D** cabe con A; **C** = acta de cierre.
 
-**En curso:** **U124–U129** · **U131** (orquestador / 2026-07-19 · ADDENDA).
+**En curso:** **U124** · **U126–U129** · **U131** (orquestador / 2026-07-19 · ADDENDA).
+**Aceptado Sprint 2 A (parcial):** **U125** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -72,16 +73,13 @@ exención D-24 / marketing SUPERADO).
   Contexto; lema antiguo **no** se conserva.
   **Demolición:** N/A (reemplazo verbatim del bloque hero).
 
-#### WP-U125 · Capa editorial W-B (library docs) — 🔶
+#### WP-U125 · Capa editorial W-B (library docs) — ✅
 
-- 🔶 **WP-U125 · Aplicar CAPA W-B en library/docs (5 ficheros)** —
-  en curso (worker / 2026-07-19). Rama `wp/u125-copy-web-b` (zeus reporte +
-  library). Brief:
-  [REPORTES/briefs/WP-U125-copy-web-b.md](REPORTES/briefs/WP-U125-copy-web-b.md).
-  `index.md` hero+features; ficha nueva `solve-coagula.md`; `futuros.md` →
-  call4makers; capa en `delta.md`/`pozo.md`.
-  **CA:** paquete CAPA §Verificación; `docs:build`; diff = ficheros del
-  paquete; `demo:solve-coagula` existe.
+- ✅ **WP-U125 · Aplicar CAPA W-B en library/docs (5 ficheros)** —
+  aceptado (orquestador / 2026-07-19). Rama `wp/u125-copy-web-b` (zeus
+  reporte + library). Reporte:
+  [REPORTES/WP-U125-copy-web-b.md](REPORTES/WP-U125-copy-web-b.md).
+  Verbatim CAPA W-B; `config.mjs` intocado; residual nav/sidebar OK.
   **Demolición:** entrada SOLVE como «futuro» en `futuros.md` (ya released).
 
 ### (B) Higiene — 4 micros (∥ A)
