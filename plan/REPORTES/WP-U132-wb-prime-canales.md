@@ -5,7 +5,7 @@
 | agente | worker · WP-U132 |
 | fecha | 2026-07-19 |
 | rama | `wp/u132-wb-prime-canales` (library + zeus) |
-| commit(s) | library `c55955bb840a35e12f40eae6057027c0923d93e4` · zeus `4ffc5e6cdff5b3aa7da1cfb38fa3b87446fbb2fd` |
+| commit(s) | library `c55955bb840a35e12f40eae6057027c0923d93e4` · zeus rama `wp/u132-wb-prime-canales` (este reporte) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
