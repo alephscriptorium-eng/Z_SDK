@@ -5,7 +5,7 @@
 | agente | worker · chat WP-U125 |
 | fecha | 2026-07-19 |
 | rama | `wp/u125-copy-web-b` (library + zeus) |
-| commit(s) | library `eb0619909408e184ce8415fb85be65b7adc25738` · zeus (este reporte) |
+| commit(s) | library `eb0619909408e184ce8415fb85be65b7adc25738` · zeus `4244c60a84b314e66f18beb45e31eb5eeae9403e` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
