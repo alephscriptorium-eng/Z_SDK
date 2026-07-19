@@ -15,19 +15,18 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md) · **D-24**.
 Sprint 2 (ADDENDA + CAPA):
 [ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/) · **D-25**.
+**AMEND Sprint 2** (CAPA rev2 · verdad de canales): **D-26** · fuentes
+canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · Sprint 2 cerrado)
+## Remate — estado swarm (2026-07-19 · AMEND Sprint 2 🔶)
 
-> **IDLE sin pendientes** (lote Sprint 2 ✅ · 0 🔶).
-> **Refundación + capa B drenadas** (U00–U118 ✅). **Sprint 1 cerrado**
-> ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**). **0 DA**
-> abiertas. **Sprint 2 cerrado** ([ADDENDA](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md)
-> · acta [02-ACTA-CIERRE.md](ENTREGA-2026-07-19-sprint2/02-ACTA-CIERRE.md) ·
-> **D-25**): **A** U124∥U125 · **B** U126–U129 · **C** U130 · **D** U131 —
-> todos ✅. Ops DNS U106/U107 ⏳ (ajeno al lote). Diferidos U87 §5–6 →
-> **sin GO**. Residuales en cola viva — sin GO → sin 🔶.
+> **esperando: workers U132∥U133∥U134** (AMEND Sprint 2 · **D-26**).
+> Sprint 2 base cerrado ✅ (**D-25**). **0 DA** abiertas. Lote AMEND:
+> **A** U132 (W-B′ canales) · **B** U133 (C8/C9 PRACTICAS) · **C** U134
+> (archivar ENTREGA-*) — **A ∥ B ∥ C**. Ops: publish npm startpacks =
+> residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -40,19 +39,76 @@ Sprint 2 (ADDENDA + CAPA):
 | **Sprint 2 B** — higiene (4 micros) | **U126–U129** | ✅ |
 | **Sprint 2 C** — plantilla sprint | **U130** | ✅ |
 | **Sprint 2 D** — docs regeneración web | **U131** | ✅ |
+| **AMEND Sprint 2 A** — W-B′ verdad canales | **U132** | 🔶 |
+| **AMEND Sprint 2 B** — C8/C9 → PRACTICAS | **U133** | 🔶 |
+| **AMEND Sprint 2 C** — archivar ENTREGA-* | **U134** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Sprint 2:** **A ∥ B**; **D** con A; **C** = acta de cierre — **cerrado**.
+**AMEND Sprint 2:** **A ∥ B ∥ C** (no se pisan: library docs / PRACTICAS /
+plan higiene).
 
-**En curso:** ninguno (0 🔶).
-**Aceptado Sprint 2:** **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ ·
+**En curso:** **U132** 🔶 · **U133** 🔶 · **U134** 🔶.
+**Aceptado Sprint 2 base:** **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ ·
 **U130** ✅ · **U131** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 2 — ADDENDA + CAPA (GO · 2026-07-19 · D-25)
+## AMEND Sprint 2 — CAPA rev2 / verdad de canales (GO · 2026-07-19 · D-26)
+
+Fuente canónica (**leer en WEBS; no copiar a `plan/`**):
+`C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\00-NOTA.md` +
+`C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\01-PAQUETE-CAPA.md`
+(rev2). Tip claim `main` ~`cb5f675`. Nada reabre U124/U125 ✅ — WPs nuevos.
+**Hecho de canal:** `@zeus/startpack-*` → 404 en registry npm; canal
+operativo = tarball del GitHub Release.
+
+### (A) Correctivo W-B′ — verdad de canales
+
+#### WP-U132 · Correctivo W-B′ (library docs · CAPA rev2) — 🔶
+
+- 🔶 **WP-U132 · Aplicar CAPA rev2 verbatim (6 ficheros library/docs)** —
+  en curso (orquestador / 2026-07-19). Brief:
+  [REPORTES/briefs/WP-U132-wb-prime-canales.md](REPORTES/briefs/WP-U132-wb-prime-canales.md).
+  Rama zeus `wp/u132-wb-prime-canales` · library `wp/u132-wb-prime-canales`.
+  Alcance: fichas delta/pozo/solve → tarball Release; `releases.md` sin
+  tabla manual + registry doctrinal; `startpacks.md` dos canales;
+  `config.mjs` nav/sidebar solve-coagula. **CA:** paquete §Verificación
+  (docs:build; C8/C9 greps; 6 ficheros). **Demolición:** comandos
+  `npm install @zeus/startpack-*` operativos + tabla manual releases.
+
+### (B) Método WEBS → PRACTICAS
+
+#### WP-U133 · Portar C8/C9 a PRACTICAS — 🔶
+
+- 🔶 **WP-U133 · C8 + C9 como criterio estándar de WPs de docs** —
+  en curso (orquestador / 2026-07-19). Brief:
+  [REPORTES/briefs/WP-U133-practicas-c8-c9.md](REPORTES/briefs/WP-U133-practicas-c8-c9.md).
+  Rama `wp/u133-practicas-c8-c9`. Portar de `00-NOTA` §(B): C8 (comando
+  copiable = canal verificado) + C9 (listas manuales = rot; generar /
+  link / caducidad); valorar auditoría CANTERA/01 como práctica o gate.
+  **CA:** texto en PRACTICAS; greps/criterio citables por workers futuros.
+  **Demolición:** N/A (gobernanza).
+
+### (C) Higiene plan/ — archivar handoffs
+
+#### WP-U134 · Archivar ENTREGA-* + regla handoffs — 🔶
+
+- 🔶 **WP-U134 · Mover ENTREGA-* de raíz plan/ + regla de archivo** —
+  en curso (orquestador / 2026-07-19). Brief:
+  [REPORTES/briefs/WP-U134-archivar-entregas.md](REPORTES/briefs/WP-U134-archivar-entregas.md).
+  Rama `wp/u134-archivar-entregas`. Mover
+  `ENTREGA-2026-07-18c.md`, `ENTREGA-2026-07-18d-sprint1.md`,
+  `ENTREGA-2026-07-19-sprint2/` → `plan/REPORTES/entregas/` (patrón
+  HISTORICO); actualizar links BACKLOG/DECISIONES; regla en
+  `plan/roles/ORQUESTADOR.md` (no tocar PRACTICAS — U133). **CA:**
+  `ls plan/` = solo canónicos; cero links rotos a ENTREGA. **Demolición:**
+  ENTREGA-* en raíz de `plan/`.
+
+---
+
+## Sprint 2 — ADDENDA + CAPA (GO · 2026-07-19 · D-25) — ✅
 
 Fuente canónica:
 [00-ADDENDA.md](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) +

@@ -287,7 +287,25 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   [00-ADDENDA.md](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) ·
   [01-PAQUETE-CAPA.md](ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md).
   **Pendiente aparte (no bloquea Sprint 2):** si WEBS/ENTREGA-CAPA recibe
-  otra iteración de backtracking, GO explícito del usuario.
+  otra iteración de backtracking, GO explícito del usuario. → **cumplida
+  en D-26** (AMEND CAPA rev2).
+
+- **D-26 · 2026-07-19 · AMEND Sprint 2 — CAPA rev2 / verdad de canales**
+  (GO usuario · ampara D-25). Auditoría WEBS (CANTERA/01 rev1) halló
+  Web B con afirmaciones falsas de canal: `@zeus/startpack-*` **no**
+  están en registry npm (404); canal operativo = tarball del Release.
+  Nada reabre U124/U125 ✅ — WPs nuevos. Lote **A ∥ B ∥ C**:
+  | # | Bloque | Destino |
+  |---|--------|---------|
+  | A | Correctivo W-B′ — CAPA rev2 verbatim (6 ficheros library) | **WP-U132** |
+  | B | Port C8/C9 (+ valorar auditoría) → PRACTICAS | **WP-U133** |
+  | C | Archivar ENTREGA-* raíz + regla handoffs | **WP-U134** |
+  **Fuentes (absolutas; orquestador NO copia a `plan/`):**
+  `C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\00-NOTA.md` ·
+  `C:\Users\aleph\OASIS\SCRIPTORIUM_V0\WEBS\ENTREGA-CAPA\01-PAQUETE-CAPA.md`
+  (rev2). **Fuera de lote:** publish npm startpacks = residual ops (NO
+  WP). Al ocurrir: `futuros.md` + fichas re-anuncian canal por nombre
+  previa C8.
 
 ## Abiertas (bloquean lo indicado)
 
