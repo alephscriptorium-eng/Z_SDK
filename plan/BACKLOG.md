@@ -35,17 +35,16 @@ Sprint 2 (ADDENDA + CAPA):
 | **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
 | Publish real → demoler `file:` | **U55** ∥ **U123** | ✅ |
 | **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | ✅ |
-| **Sprint 2 B** — higiene (4 micros) | **U126–U129** | ✅ / 🔶 U127 |
+| **Sprint 2 B** — higiene (4 micros) | **U126–U129** | ✅ |
 | **Sprint 2 D** — docs regeneración web | **U131** | 🔶 |
 | **Sprint 2 C** — plantilla sprint | **U130** | ⬜ cierre |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **Orden Sprint 2:** **A ∥ B**; **D** cabe con A; **C** = acta de cierre.
 
-**En curso:** **U127** · **U131** (orquestador / 2026-07-19 · ADDENDA).
+**En curso:** **U131** (orquestador / 2026-07-19 · ADDENDA).
 **Aceptado Sprint 2 A:** **U124** ✅ ∥ **U125** ✅.
-**Aceptado Sprint 2 B (parcial):** **U126** ✅ · **U128** ✅ · **U129** ✅
-(U127 bloqueado aparte).
+**Aceptado Sprint 2 B:** **U126** ✅ · **U127** ✅ · **U128** ✅ · **U129** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -96,16 +95,14 @@ exención D-24 / marketing SUPERADO).
   Opción (a): prosa cabecera comentada; parser YAML OK; Notario vía canónica.
   **CA:** cumplido. **Demolición:** N/A (opción a).
 
-#### WP-U127 · Higiene worktrees library — 🔶
+#### WP-U127 · Higiene worktrees library — ✅
 
-- 🔶 **WP-U127 · Retirar worktrees/dirs huérfanos library** —
-  en curso (worker / 2026-07-19). Rama library `wp/u127-higiene-worktrees`.
-  Brief:
-  [REPORTES/briefs/WP-U127-higiene-worktrees.md](REPORTES/briefs/WP-U127-higiene-worktrees.md).
-  Retirar `u107-review` (detached) + dirs huérfanos `wp-u121-*`,
-  `wp-u123-*`. **No** tocar worktrees activos Sprint 2.
-  **CA:** los tres nombrados fuera; listado documenta solo activos legítimos
-  (ideal fin de sprint: solo main).
+- ✅ **WP-U127 · Retirar worktrees/dirs huérfanos library** —
+  aceptado (orquestador / 2026-07-19). Tip claim `0f9b53f` + revisión;
+  higiene FS library (sin merge producto). Reporte:
+  [REPORTES/WP-U127-higiene-worktrees.md](REPORTES/WP-U127-higiene-worktrees.md).
+  `u107-review` + `wp-u121-*` + `wp-u123-*` fuera de `git worktree list` y
+  `.worktrees/`. Sprint 2 activos intactos. **CA:** cumplido.
   **Demolición:** worktree/dirs obsoletos nombrados.
 
 #### WP-U128 · Deps `@zeus/*` caret semver — ✅
