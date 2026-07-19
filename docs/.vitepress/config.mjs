@@ -34,13 +34,46 @@ export default defineConfig({
       { text: 'Playbook', link: '/playbook/' },
       {
         text: 'API HTML',
+        // Assets estáticos en public/api (Redoc/OpenAPI) — no páginas
+        // VitePress. target/_blank evita que el router SPA + cleanUrls
+        // reescriban .html y 404een (U138 / D-29).
         items: [
-          { text: 'AsyncAPI (protocol)', link: '/api/protocol/' },
-          { text: 'OpenAPI · Editor UI', link: '/api/editor-ui.html' },
-          { text: 'OpenAPI · Player UI', link: '/api/player-ui.html' },
-          { text: 'OpenAPI · Cache Browser', link: '/api/cache-browser.html' },
-          { text: 'OpenAPI · Firehose Browser', link: '/api/firehose-browser.html' },
-          { text: 'OpenAPI · MCP HTTP', link: '/api/mcp-http.html' }
+          {
+            text: 'AsyncAPI (protocol)',
+            link: '/api/protocol/',
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          },
+          {
+            text: 'OpenAPI · Editor UI',
+            link: '/api/editor-ui.html',
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          },
+          {
+            text: 'OpenAPI · Player UI',
+            link: '/api/player-ui.html',
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          },
+          {
+            text: 'OpenAPI · Cache Browser',
+            link: '/api/cache-browser.html',
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          },
+          {
+            text: 'OpenAPI · Firehose Browser',
+            link: '/api/firehose-browser.html',
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          },
+          {
+            text: 'OpenAPI · MCP HTTP',
+            link: '/api/mcp-http.html',
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          }
         ]
       }
     ],

@@ -227,6 +227,12 @@ en GitHub Pages. Si el WP afirma o depende del sitio desplegado, cotejar
 Actions Docs (`gh run`) o la URL pública — no sustituir con solo build
 local. (No añade gate nuevo; acota C8 al canal real.)
 
+**Nav / SPA vs assets estáticos:** un enlace de menú a un asset estático
+(p. ej. Redoc/OpenAPI en `public/api/*.html`) se verifica **navegándolo**
+(clic in-app o e2e del router), no solo con `curl`. `curl` prueba el
+servidor; el bug puede vivir en el router del cliente (`cleanUrls`, SPA).
+Canal de verificación = canal de uso.
+
 ### C9 — Listas manuales dependientes de eventos futuros
 
 Una lista o tabla **manual** que depende de eventos futuros (nuevos
