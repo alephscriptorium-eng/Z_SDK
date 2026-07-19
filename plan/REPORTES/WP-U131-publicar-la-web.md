@@ -6,7 +6,7 @@
 | fecha | 2026-07-19 |
 | rama zeus | `wp/u131-publicar-la-web` |
 | rama library | `wp/u131-publicar-la-web` |
-| commit(s) | _(hashes tras commit)_ |
+| commit(s) | zeus `fa13729` · library `2014816` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
