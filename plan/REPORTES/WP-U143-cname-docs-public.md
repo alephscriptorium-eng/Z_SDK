@@ -5,7 +5,7 @@
 | agente | worker (WP-U143) |
 | fecha | 2026-07-19 |
 | rama | `wp/u143-cname-docs-public` (zeus + library) |
-| commit(s) | zeus `bbad244` (CNAME) · `32aa266` `00b5c3b` + tip reporte · library `963841f` |
+| commit(s) | zeus CNAME `bbad244`; library `963841f`; reporte tip rama zeus |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
