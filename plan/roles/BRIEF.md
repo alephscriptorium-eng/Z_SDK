@@ -20,6 +20,8 @@ Lecturas extra (además de PRACTICAS + WP en BACKLOG):
 
 Notas del orquestador:
 - (conflictos esperados con otros WPs en vuelo, orden de merge, excepciones…)
+- Evidencia CI: tras push, `gh run list --branch <rama>` → run_id/conclusion
+  o N/A (paths-ignore U104). Adaptador canónico = `gh` (no MCP obligatorio).
 
 Empieza: sitúate en la rama/worktree, lee PRACTICAS entero, luego implementa.
 ```

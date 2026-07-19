@@ -30,9 +30,15 @@ orquestador).
 2. Implementa **solo** el WP + demolición listada + tests del CA.
 3. Commits convencionales (PRACTICAS §6): `tipo(alcance): resumen`.
 4. Verde local: `npm run lint` + tests que exija el CA del WP.
-5. **Para.** Auto-revisión: relee `git diff main...HEAD` contra PRACTICAS §3.
-6. Crea el reporte desde `plan/REPORTES/PLANTILLA.md` (en tu rama).
-7. **Para aquí.** No edites BACKLOG ni pidas merge: el orquestador revisa.
+   **Verde local ≠ gate CI** (PRACTICAS §5).
+5. Push de la rama. Luego evidencia Actions en el reporte:
+   `gh run list --branch <rama> --limit 5` → citar **run_id** +
+   **conclusion**, o **N/A** si paths-ignore U104 (solo `plan/**` /
+   `**.md` → CI no corre).
+6. **Para.** Auto-revisión: relee `git diff main...HEAD` contra PRACTICAS §3.
+7. Crea el reporte desde `plan/REPORTES/PLANTILLA.md` (en tu rama; incluye
+   subsección Evidencia CI).
+8. **Para aquí.** No edites BACKLOG ni pidas merge: el orquestador revisa.
 
 ## Reglas duras
 
@@ -41,6 +47,8 @@ orquestador).
 - Evidencia literal en el reporte. Si no ejecutaste algo: `⏳ sin verificar`.
 - No mezclar este backlog con `packages/games/delta/spec/BACKLOG.md`.
 - Si el WP está mal especificado: **para**, reporta §dudas/bloqueos, no reinterpretes.
+- **No** `workflow_dispatch` de publish/release; **no** volcar secrets en
+  reporte ni chat. Canónico remoto: `gh run list` / `gh run view`.
 
 ## Al terminar
 

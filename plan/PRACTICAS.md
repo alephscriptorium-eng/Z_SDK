@@ -98,12 +98,16 @@ mecánico:
 
 Regla de evidencia (heredada de CASOS.md y va en serio): **no inventes
 observaciones**. Pega la salida real. Si no lo ejecutaste, escribe
-`⏳ sin verificar` y por qué.
+`⏳ sin verificar` y por qué. Incluye **Actions** cuando el WP dispara
+runner: salida de `gh run list` / `gh run view` (run_id + conclusion) —
+misma literalidad que tests/lint. Si paths-ignore U104: **N/A** (no inventes
+un verde).
 
 ## 4. Formato de reporte
 
 Copia [REPORTES/PLANTILLA.md](REPORTES/PLANTILLA.md) a
-`REPORTES/WP-<id>-<slug>.md` y rellénala entera. Reportes que no se aceptan:
+`REPORTES/WP-<id>-<slug>.md` y rellénala entera (incluye subsección
+**Evidencia CI**). Reportes que no se aceptan:
 sin evidencia literal, sin auto-revisión, sin sección de demolición, o que
 describen intenciones («se debería…») en vez de hechos.
 
@@ -117,6 +121,13 @@ corren con `npm run gates` y en los e2e. Si tu WP necesita una excepción
 legítima, se anota en el archivo de excepciones del gate CON comentario de por
 qué — nunca desactivando el gate. Desde WP-U03, los gates corren también en CI
 sobre cada rama `wp/*`: lo que aquí es criterio de devolución, allí es rojo.
+
+**CI en `wp/*` (Actions):** tras push, el workflow CI corre en la rama salvo
+`paths-ignore` U104 (`plan/**`, `**.md`). Verde local (`lint` / `gates` /
+tests) **no** sustituye el gate remoto cuando el runner aplica. Evidencia:
+`gh run list --branch <rama>` → run_id + conclusion, o **N/A** si el ignore
+aplica. Docs (`docs/**`) tiene workflow propio; ver roles ORQUESTADOR /
+REVISION / WORKER.
 
 ## 6. Commits
 
@@ -175,7 +186,11 @@ en un acta de cierre. Fórmula — **nunca silencio**:
 | `esperando: <tick> de <quién>` | Falta revisión/merge, GO de otro lote, tick ops/usuario, DNS, secrets, etc. |
 
 Ejemplos: `esperando: revisión U130 de orquestador` ·
+`esperando: CI verde de runner` ·
 `esperando: DNS custom domain de ops` · `IDLE sin pendientes`.
+
+Si el remate espera pipeline: usar `esperando: CI|Docs de <rama/WP>` hasta
+`gh run` en conclusion `success` (o N/A paths-ignore).
 
 ### Retro
 
@@ -204,6 +219,11 @@ fallar.
 Evidencia mínima en el reporte: salida literal del comando (o del grep CA
 del WP) contra el canal que la página afirma. Si el canal no está
 operativo hoy, el texto no lo presenta como tal.
+
+**Pages vs local:** un `docs:build` / preview local **no** prueba el portal
+en GitHub Pages. Si el WP afirma o depende del sitio desplegado, cotejar
+Actions Docs (`gh run`) o la URL pública — no sustituir con solo build
+local. (No añade gate nuevo; acota C8 al canal real.)
 
 ### C9 — Listas manuales dependientes de eventos futuros
 

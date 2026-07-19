@@ -20,10 +20,17 @@ Si falta el reporte, pídelo antes de revisar código.
 5. Comprueba PRACTICAS §1–3 y §6: grep de demolición, puertos, nombres de
    transición, formato de commits. Si el WP toca docs públicas: también
    §8 (C8/C9).
-6. Rellena **`§ Revisión del orquestador`** en el reporte:
+6. **Actions del tip** (`gh run list --branch <rama> --limit 5`):
+   - Si el diff dispara CI (código / workflows; no solo `plan/**` /
+     `**.md`): exigir conclusion `success` (o run en curso + nota) —
+     run_id en el reporte. Verde local **no** sustituye este check.
+   - Si paths-ignore U104 (solo `plan/**` / `**.md`): CI = **N/A** —
+     no bloquear por ausencia de run.
+   - Si toca `docs/**`: mirar workflow Docs además de CI.
+7. Rellena **`§ Revisión del orquestador`** en el reporte:
    - **Aceptado ✅** — qué se verificó + orden de merge sugerido
    - **Devuelto** — lista numerada de correcciones obligatorias (archivo/línea)
-7. Si aceptado: BACKLOG 🔶 → ✅ en master (solo tú), y el WP queda autorizado
+8. Si aceptado: BACKLOG 🔶 → ✅ en master (solo tú), y el WP queda autorizado
    a merge. Tras el merge: `git worktree remove` si usó worktree.
 
 ## Criterios de devolución automática
@@ -35,6 +42,8 @@ Si falta el reporte, pídelo antes de revisar código.
 - CA incumplido
 - Violación clara de PRACTICAS §1 (monkey-code, copy-paste, legacy/v2…)
 - El worker editó BACKLOG
+- Solo evidencia local cuando el CA / PRACTICAS §5 implica runner (salvo N/A
+  paths-ignore U104)
 
 ## Formato de respuesta
 

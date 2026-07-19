@@ -30,6 +30,22 @@ _(lista con una línea por archivo: creado/modificado/borrado + para qué)_
 - Si el WP tiene efecto visible (vistas, demo): qué se levantó y qué se vio
   (captura o descripción honesta; `⏳ sin verificar` si nadie lo miró).
 
+### Evidencia CI
+
+> Tras push de la rama. Canónico: `gh run list --branch <rama>`. Verde local
+> ≠ gate CI (PRACTICAS §5).
+
+| campo | valor |
+| ----- | ----- |
+| branch | `wp/…` |
+| run_id | _(o **N/A** si paths-ignore U104: solo `plan/**` / `**.md`)_ |
+| workflow | CI / Docs / … |
+| conclusion | `success` / `failure` / `cancelled` / en curso / **N/A** |
+
+```
+(pegar salida de gh run list / gh run view)
+```
+
 ## Demolición
 
 _(qué se borró; para cada símbolo/paquete borrado, el grep que demuestra cero

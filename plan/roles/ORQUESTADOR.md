@@ -51,10 +51,29 @@ mapa · [roles/README.md](README.md) §Ciclo de sprint.
 1. Escanear BACKLOG y reportes pendientes de revisión.
 2. Listar ramas `wp/*`, worktrees (`git worktree list`) y PRs (`gh pr list`
    cuando el repo esté en Z_SDK).
-3. Resumir al usuario: ola/sprint actual, paralelizable ahora, bloqueos,
-   revisiones en cola — y el **estado declarado** del sprint
+3. **Actions del tip:** `gh run list --branch main --limit 5` (y de ramas
+   `wp/*` en revisión). Resumir CI / Docs: conclusion + run_id. Si el tip
+   solo tocó `plan/**` / `**.md` (paths-ignore U104): CI = **N/A**.
+4. Resumir al usuario: ola/sprint actual, paralelizable ahora, bloqueos,
+   revisiones en cola, estado Actions — y el **estado declarado** del sprint
    (`IDLE sin pendientes` o `esperando: <tick> de <quién>`; PRACTICAS §7).
-4. Si pide arrancar workers: marcar 🔶 y generar briefs (solo con GO de lote).
+5. Si pide arrancar workers: marcar 🔶 y generar briefs (solo con GO de lote).
+
+## Post-merge
+
+Tras merge a `main`: mirar `gh run list --branch main --limit 3`. Si Docs/
+Pages falló y el WP tocaba `docs/**`, anotar residual o devolver follow-up —
+no asumir verde local = portal desplegado.
+
+## Actions — límites del swarm
+
+| Prohibido (worker / orquestador-como-worker) | Quién |
+| -------------------------------------------- | ----- |
+| Volcar secrets (`NPM_*`, tokens) en reportes o chat | nadie del swarm |
+| `workflow_dispatch` de publish / release | ops / usuario |
+| Inventar MCP / Automations / Cursor-in-CI como gate | nadie (no son canónicos) |
+
+Canónico de evidencia remota: **`gh run list` / `gh run view`** (PRACTICAS §5).
 
 ## Señales de anti-patrón
 
@@ -64,6 +83,7 @@ mapa · [roles/README.md](README.md) §Ciclo de sprint.
 | Conviven camino viejo y nuevo | Devolver; demolición incompleta |
 | Orquestador (tú) escribiendo código de producto | Parar; devolver al worker |
 | Worker editó BACKLOG | Revertir esa parte; el estado es tuyo |
+| Solo verde local cuando CA implica runner | Devolver; pedir run_id (REVISION) |
 
 ## Comando del usuario
 
