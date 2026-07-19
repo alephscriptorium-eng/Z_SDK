@@ -14,6 +14,7 @@
 | `00-ADDENDA.md` | Nota canónica del lote Sprint 2 (A∥B + C cierre + D docs-pipeline). |
 | `00-NOTA-CAPA.md` | Nota custodio→orquestador del paquete CAPA. |
 | `01-PAQUETE-CAPA.md` | Capa editorial W-A ∥ W-B — aplicación **verbatim**. |
+| `02-ACTA-CIERRE.md` | Acta de cierre (estado declarado PRACTICAS §7 · U130). |
 | `SUPERADA-marketing-webs-sprint2/` | Copia del paquete marketing previo (W1/W2, lema intacto). No aplicar. |
 
 ## Mapa WP (IDs zeus)

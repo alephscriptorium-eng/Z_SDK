@@ -137,3 +137,47 @@ que changesets + el workflow de release consumen:
   `_password`, D-24). Verificación local sin publish:
   `npm run release:changeset-dry`. Los juegos y el mesh/editor siguen
   privados y no se publican desde aquí.
+
+## 7. Ciclo de sprint (gobernanza)
+
+El swarm trabaja por **sprints** (lotes con GO del usuario). El ciclo ya
+probado — formalizado aquí — es obligatorio para orquestador y workers.
+Detalle operativo de roles en [roles/README.md](roles/README.md).
+
+### Entrada
+
+- Un sprint arranca solo con **lote + GO explícito** del usuario
+  (entrega/`ENTREGA-…`, decisión en `DECISIONES.md`, o mensaje claro).
+- Sin GO: no hay 🔶 nuevos ni briefs de lote. Candidatos viven en
+  «Cola residual viva» u horizonte — no se inventan frentes.
+
+### Ejecución
+
+- El orquestador parte el lote en WPs con **CA verificables**, marca 🔶 en
+  `main`, rellena briefs y (si hay paralelo) worktrees.
+- Un WP = un chat worker = una rama. El worker entrega reporte + evidencia;
+  **Devuelto es legítimo** (REVISION → CORRECCION en la misma rama).
+- No se cierra un sprint «en silencio» mientras queden WPs ⬜/🔶 del lote
+  o reportes sin revisión.
+
+### Cierre — estado declarado siempre
+
+Al terminar (o al pausar) un sprint, el orquestador **declara el estado**
+en el remate de `BACKLOG.md` y, si el sprint tiene carpeta `ENTREGA-…`,
+en un acta de cierre. Fórmula — **nunca silencio**:
+
+| Fórmula | Cuándo |
+| ------- | ------ |
+| `IDLE sin pendientes` | Lote del sprint ✅; 0 🔶; sin tick externo bloqueando el cierre |
+| `esperando: <tick> de <quién>` | Falta revisión/merge, GO de otro lote, tick ops/usuario, DNS, secrets, etc. |
+
+Ejemplos: `esperando: revisión U130 de orquestador` ·
+`esperando: DNS custom domain de ops` · `IDLE sin pendientes`.
+
+### Retro
+
+- Hallazgos de reportes del sprint → **registro de residuales**
+  (`BACKLOG.md` §Cola residual viva), no colas nuevas «por WP» en el
+  tablero vivo.
+- Residuales **sin GO** no abren 🔶. El siguiente sprint los toma solo si
+  el usuario los incluye en un lote con GO.
