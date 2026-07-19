@@ -20,15 +20,12 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · post U139 ✅)
+## Remate — estado swarm (2026-07-19 · U140 🔶)
 
-> **IDLE sin pendientes** (frente micro API SPA cerrado). **U139** ✅
-> (cuerpo md · D-30) · **U138** ✅ (nav · D-29). Micros post-AMEND D-28
-> cerrados. **U136** ✅ · **U137** N/A · **U135** ✅ (**D-27**). **0 DA**
-> abiertas. Ops: publish npm startpacks = residual (NO WP). Diferidos
-> U87 §5–6 → **sin GO**.
->
-> Cola residual U138 (inline cuerpo) → **cerrada por U139**.
+> **En curso:** **U140** 🔶 (higiene rutas absolutas locales · **D-31** ·
+> GO I5 externo). Frente micro API SPA cerrado: **U139** ✅ · **U138** ✅.
+> Micros post-AMEND D-28 cerrados. **0 DA** abiertas. Ops: publish npm
+> startpacks = residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -49,17 +46,15 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — Docs deploy saltado ≠ verde | **U137** | N/A |
 | **Micro** — bug nav API HTML (SPA) | **U138** | ✅ |
 | **Micro** — bug API links cuerpo md | **U139** | ✅ |
+| **Micro** — higiene rutas absolutas locales | **U140** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno.
+**En curso:** **U140** 🔶 (orquestador · 2026-07-19 · D-31).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
-**Aceptado:** **U139** ✅ (cuerpo API SPA · D-30) · **U138** ✅ (nav ·
-D-29) · **U136** ✅ (C8 startpacks · D-28) · **U135** ✅ (protocolo
-Actions · D-27) · AMEND A+B+C: **U132** ✅ · **U133** ✅ · **U134** ✅ ·
-Sprint 2 base: **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ · **U130** ✅
-· **U131** ✅.
+**Aceptado:** **U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ ·
+AMEND A+B+C · Sprint 2 base (ver histórico).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -216,6 +211,34 @@ assets; superficie = **cuerpo** markdown. Tip claim `~acbb7ed`.
   5 md cuerpo (ADDENDA + mesh + protocol) → `target="_blank"`; PRACTICAS
   C8 clase; Playwright 12/12; Docs rama `29691867603` success · CI N/A
   U104. Grep clase: 0 `href="/api/` sin `target`. Residual U138 cerrado.
+
+---
+
+## Micro — higiene rutas absolutas locales (GO · 2026-07-19 · D-31)
+
+Fuente (**archivada en repo; citar ruta interna**):
+[REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md](REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md)
+(§Nota «Higiene · rutas absolutas…»; GO I5 externo). Repo público:
+rutas de máquina local en `plan/` = deuda de portabilidad/privacidad.
+**Prioridad:** antes del próximo push a `main`.
+
+#### WP-U140 · Scrub rutas absolutas locales en plan/ — 🔶
+
+- 🔶 **WP-U140 · Sustituir rutas absolutas de máquina local por cita
+  neutral** — asignado (orquestador / 2026-07-19). Rama
+  `wp/u140-scrub-rutas-locales`. Brief:
+  [REPORTES/briefs/WP-U140-scrub-rutas-locales.md](REPORTES/briefs/WP-U140-scrub-rutas-locales.md).
+  Alcance: cada cita de ruta local → «nota externa recibida
+  (temp-review, &lt;fecha&gt;)», conservando texto pegado. CA **por
+  clase** (no solo lista): grep repo patrones (1)/(2) de la §Nota = 0
+  — incluye hit `WP-U122`. Guía futura: notas externas pegadas en
+  `plan/REPORTES/` y citadas por ruta interna. **Demolición:** rutas
+  absolutas de máquina local como procedencia en el árbol público.
+  **Adenda vigía (pre-✅):** el alcance incluye la propia entrega
+  archivada
+  (`REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md`);
+  ejemplo de patrón = forma redactada sin nombre de repo (`C:` +
+  `\Users\...\<externo>\...`, partido); CA **sin eximir** ese fichero.
 
 ---
 

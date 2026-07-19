@@ -341,6 +341,19 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   (no copiar a `plan/`). Vigilante = hallazgo/devolución CA; **GO =
   usuario**.
 
+- **D-31 · 2026-07-19 · GO micro higiene rutas absolutas (U140)** (GO
+  **usuario** / GO I5 externo). Nota externa recibida (temp-review,
+  2026-07-19) — «Higiene · rutas absolutas de máquina local en el plan
+  público»; archivada en
+  `plan/REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md`.
+  Destino: **WP-U140**. Sustituir cada ruta local por «nota externa
+  recibida (temp-review, &lt;fecha&gt;)»; CA por clase: grep patrones
+  (1)/(2) de esa §Nota = 0 en todo el repo (incl. hit WP-U122).
+  Prioridad: antes del próximo push (`main` público).
+  **Adenda vigía (misma fecha, pre-✅):** alcance incluye la entrega
+  archivada; ejemplo de patrón neutro sin nombre de repo; CA **sin
+  eximir** ese fichero.
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son
