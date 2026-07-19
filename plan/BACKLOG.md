@@ -36,15 +36,17 @@ Sprint 2 (ADDENDA + CAPA):
 | Publish real → demoler `file:` | **U55** ∥ **U123** | ✅ |
 | **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | ✅ |
 | **Sprint 2 B** — higiene (4 micros) | **U126–U129** | ✅ |
-| **Sprint 2 D** — docs regeneración web | **U131** | 🔶 |
+| **Sprint 2 D** — docs regeneración web | **U131** | ✅ |
 | **Sprint 2 C** — plantilla sprint | **U130** | ⬜ cierre |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **Orden Sprint 2:** **A ∥ B**; **D** cabe con A; **C** = acta de cierre.
 
-**En curso:** **U131** (orquestador / 2026-07-19 · ADDENDA).
+**En curso:** — (IDLE de implementación; **U130** = cierre gobernanza).
 **Aceptado Sprint 2 A:** **U124** ✅ ∥ **U125** ✅.
 **Aceptado Sprint 2 B:** **U126** ✅ · **U127** ✅ · **U128** ✅ · **U129** ✅.
+**Aceptado Sprint 2 D:** **U131** ✅.
+**Pendiente Sprint 2 C:** **U130** ⬜ (plantilla / acta de cierre).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -137,16 +139,17 @@ exención D-24 / marketing SUPERADO).
 
 ### (D) Docs — regeneración web («pipeline» documental)
 
-#### WP-U131 · Documentar publicar la web — 🔶
+#### WP-U131 · Documentar publicar la web — ✅
 
-- 🔶 **WP-U131 · Página `docs/guide/publicar-la-web.md` (+ puntero library)** —
-  en curso (worker / 2026-07-19). Rama `wp/u131-publicar-la-web`. Brief:
+- ✅ **WP-U131 · Página `docs/guide/publicar-la-web.md` (+ puntero library)** —
+  aceptado (orquestador / 2026-07-19). Tip claim zeus `2a41a0c` · library
+  `2014816`. Brief:
   [REPORTES/briefs/WP-U131-publicar-la-web.md](REPORTES/briefs/WP-U131-publicar-la-web.md).
-  Ciclo: editar → `docs:dev` → `docs:build` → push `docs/**` / dispatch →
-  Pages + dominio HTTPS; catálogo library ← Releases. Estilo post-U120
-  (sin refs WP/D-##).
+  Reporte:
+  [REPORTES/WP-U131-publicar-la-web.md](REPORTES/WP-U131-publicar-la-web.md).
+  Ciclo VitePress → Actions `docs.yml` → Pages + catálogo ← Releases.
   **CA:** página en portal; comandos corren; calza con `docs.yml` real;
-  library enlaza o replica en corto.
+  library enlaza o replica en corto — cumplido.
   **Demolición:** N/A (docs nuevas).
 
 ---
