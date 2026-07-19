@@ -112,4 +112,16 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — 2026-07-19 · tip `e25fd71`
+
+Verificado:
+- Diff `main...wp/u133-practicas-c8-c9` = solo gobernanza `plan/` (PRACTICAS,
+  PLANTILLA, WORKER, REVISION, reporte). Cero library/docs, ENTREGA-*, BACKLOG.
+- CA: C8/C9 citables en PRACTICAS §8; checklist §3 + plantilla + punteros
+  roles. Texto alineado con `00-NOTA` §(B) / CAPA rev2 (sin reglas nuevas).
+  Candidata CANTERA/01 en prosa, no gate.
+- PRACTICAS §1–3 / §6: N/A demolición; commits `docs(plan|reportes):…`.
+- Worker no tocó BACKLOG ni U132/U134.
+
+**Merge:** ahora (independiente de U132∥U134). Tras merge: BACKLOG U133 ✅ +
+`git worktree remove` de este árbol.
