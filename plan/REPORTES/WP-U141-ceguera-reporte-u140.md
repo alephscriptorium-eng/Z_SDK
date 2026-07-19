@@ -5,7 +5,7 @@
 | agente | worker swarm (chat U141) |
 | fecha | 2026-07-19 |
 | rama | `wp/u141-ceguera-reporte-u140` |
-| commit(s) | `132d1a1` (enmascarado + reporte) |
+| commit(s) | `132d1a1` (enmascarado) · `06f0b0f` (reporte tip) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
