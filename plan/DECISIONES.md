@@ -332,6 +332,15 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   (no copiar a `plan/`). Library: N/A código si no enlaza `/api/`.
   Vigilante puede haber reportado el bug — **GO = usuario**.
 
+- **D-30 · 2026-07-19 · GO bug API links cuerpo md / SPA** (GO **usuario**).
+  Seguimiento de U138 ✅ (**no reabrir**): mismos assets `/api/*.html`
+  enlazados desde el **cuerpo** markdown sin `target` → clic SPA → 404.
+  Destino: **WP-U139**. CA por **clase** (no solo síntoma de 3 páginas):
+  cero `href="/api/` sin `target` en `docs/**`. Fuente:
+  `C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md`
+  (no copiar a `plan/`). Vigilante = hallazgo/devolución CA; **GO =
+  usuario**.
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son

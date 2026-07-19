@@ -20,15 +20,14 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · post U138)
+## Remate — estado swarm (2026-07-19 · post U138 · U139 🔶)
 
-> **IDLE sin pendientes.** **U138** ✅ (nav API HTML / SPA · **D-29**).
-> Micros post-AMEND D-28 cerrados. **U136** ✅ · **U137** N/A ·
-> **U135** ✅ (**D-27**). **0 DA** abiertas. Ops: publish npm startpacks =
-> residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
+> **En curso:** **U139** 🔶 (links `/api/` en cuerpo md · **D-30**).
+> **U138** ✅ (nav · D-29). Micros post-AMEND D-28 cerrados. **U136** ✅ ·
+> **U137** N/A · **U135** ✅ (**D-27**). **0 DA** abiertas. Ops: publish
+> npm startpacks = residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
 >
-> Residual U138: enlaces inline md a `/api/*.html` (mismo patrón SPA
-> posible) → cola viva, **sin WP nuevo**.
+> Residual U138 (inline cuerpo) → **WP-U139** (este micro; cierra cola).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -48,11 +47,12 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — C8 residual startpacks | **U136** | ✅ |
 | **Micro** — Docs deploy saltado ≠ verde | **U137** | N/A |
 | **Micro** — bug nav API HTML (SPA) | **U138** | ✅ |
+| **Micro** — bug API links cuerpo md | **U139** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno.
+**En curso:** **U139** 🔶 (orquestador-implementa / 2026-07-19 · D-30).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
 **Aceptado:** **U138** ✅ (nav API SPA · D-29) · **U136** ✅ (C8
 startpacks · D-28) · **U135** ✅ (protocolo Actions · D-27) · AMEND
@@ -191,7 +191,32 @@ Library: verificar (hoy **no** enlaza `/api/` — N/A código). Tip claim
   [REPORTES/briefs/WP-U138-api-nav-spa.md](REPORTES/briefs/WP-U138-api-nav-spa.md).
   `target: '_blank'` + `rel` ×6 en nav «API HTML»; PRACTICAS C8 nav/SPA;
   Playwright 6/6; Docs `29690453464` · CI `29690453486` success.
-  Residual: links inline md → cola viva (sin WP nuevo).
+  Residual: links inline md → **WP-U139** (D-30).
+
+---
+
+## Micro — bug API links cuerpo md / SPA (GO usuario · 2026-07-19 · D-30)
+
+Fuente (**leer; no copiar a `plan/`**):
+`C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19c-bug-api-nav-cuerpo.md`.
+Seguimiento de U138 ✅ (nav arreglado; **no reabrir**). Misma raíz SPA vs
+assets; superficie = **cuerpo** markdown. Tip claim `~acbb7ed`.
+**GO = usuario** (pase custodio); vigilante = hallazgo/CA, no GO.
+
+#### WP-U139 · Links `/api/*.html` en cuerpo md 404ean — 🔶
+
+- 🔶 **WP-U139 · Cuerpo md → enlaces externos al router SPA** —
+  orquestador-implementa / 2026-07-19. Rama `wp/u139-api-nav-cuerpo`.
+  Worktree:
+  `c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u139-api-nav-cuerpo`.
+  Brief:
+  [REPORTES/briefs/WP-U139-api-nav-cuerpo.md](REPORTES/briefs/WP-U139-api-nav-cuerpo.md).
+  Superficies ADDENDA: `contracts/openapi.md`, `contracts/asyncapi.md`,
+  `editor/index.md`. CA **clase** (residual U138): también
+  `mesh/index.md`, `engine/protocol.md` — grep control
+  `href="/api/` sin `target` en `docs/**` = 0. Fix: HTML inline
+  `<a … target="_blank" rel="noreferrer">` (o equiv. VitePress).
+  Verificación: clic real / Playwright, no solo curl (C8 · U135).
 
 ---
 
@@ -395,11 +420,8 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U131) VitePress en worktree Windows: path largo falla dead-links; library
   no gitignorea `docs/.vitepress/cache/` (zeus sí) — candidato higiene
 - (U132) C8 residual `startpacks.md:41` → **WP-U136** ✅ (D-28)
-- (U138) nav API HTML SPA 404 → **WP-U138** ✅ (D-29); residual: enlaces
-  inline md a `/api/*.html` (`contracts/openapi.md`, `editor/index.md`,
-  `mesh/index.md`, `contracts/asyncapi.md`, `engine/protocol.md`) sin
-  `target="_blank"` — mismo patrón SPA posible al clic in-app (sin WP
-  nuevo hasta GO)
+- (U138) nav API HTML SPA 404 → **WP-U138** ✅ (D-29); residual inline
+  cuerpo → **WP-U139** 🔶 (D-30 · cierra cola)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
