@@ -2,8 +2,7 @@
 
 _Plantilla: `plan/roles/BRIEF.md`. Pegar con `plan/roles/WORKER.md`._
 
-Origen: Sprint 2 · ADDENDA bloque **C** · **D-25**. **NO lanzar hasta cierre**
-del resto del sprint (A/B/D aceptados o estado declarado).
+Origen: Sprint 2 · ADDENDA bloque **C** · **D-25**. A/B/D ✅ → **GO cierre**.
 
 ---
 
@@ -12,15 +11,16 @@ del resto del sprint (A/B/D aceptados o estado declarado).
 
 WP: WP-U130 · Formalizar ciclo de sprint en PRACTICAS.md o roles/
 Rama: wp/u130-plantilla-sprint
-Worktree: (crear al asignar 🔶 real; hoy ⬜)
+Worktree: c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u130-plantilla-sprint
 Reporte: plan/REPORTES/WP-U130-plantilla-sprint.md
 
 1 WP = este chat. NO editar plan/BACKLOG.md.
-Leer plan/PRACTICAS.md entero + plan/roles/ORQUESTADOR.md.
+Leer plan/PRACTICAS.md entero + plan/roles/ORQUESTADOR.md + roles/README.md.
 
 Política:
 - Solo gobernanza en plan/ (PRACTICAS y/o roles). Sin código de producto.
 - El cierre de ESTE Sprint 2 debe estrenar el texto (estado declarado).
+- Commits + push OK. NO merge a main.
 
 Contenido mínimo a formalizar:
 - entrada = lote con GO explícito
@@ -29,11 +29,16 @@ Contenido mínimo a formalizar:
   «esperando: <tick> de <quién>» — nunca silencio)
 - retro = hallazgos → registro de residuales, no colas por WP
 
+Estreno (CA):
+- Acta / evidencia de cierre Sprint 2 usando la fórmula de estado
+  (reporte + fichero de acta en ENTREGA-2026-07-19-sprint2/ si cabe)
+- NO tocar BACKLOG (remate lo actualiza el orquestador al ✅)
+
 CA:
 - El texto existe en plan/
-- El cierre de Sprint 2 lo usa (evidencia en reporte / remate BACKLOG)
+- El cierre de Sprint 2 lo usa (evidencia en reporte / acta)
 
 Demolición: N/A.
 
-Empieza: SOLO cuando orquestador marque 🔶 de cierre.
+Empieza: sitúate en el worktree, lee PRACTICAS + ADDENDA §C, formaliza, estrena cierre, reporta.
 ```

@@ -24,8 +24,8 @@ Sprint 2 (ADDENDA + CAPA):
 > ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**): U119–U122 ✅ +
 > publish real ✅ + **U55 ✅** + **U123 ✅**. **0 DA** abiertas.
 > **Sprint 2 GO** ([ADDENDA](ENTREGA-2026-07-19-sprint2/00-ADDENDA.md) ·
-> CAPA · **D-25**): **A** U124∥U125 · **B** U126–U129 · **D** U131 ·
-> **C** U130 al cierre. DNS U106/U107 ⏳. Diferidos U87 §5–6 → **sin GO**.
+> CAPA · **D-25**): **A** U124∥U125 · **B** U126–U129 · **D** U131 ✅ ·
+> **C** U130 🔶 cierre. DNS U106/U107 ⏳. Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -37,16 +37,18 @@ Sprint 2 (ADDENDA + CAPA):
 | **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | ✅ |
 | **Sprint 2 B** — higiene (4 micros) | **U126–U129** | ✅ |
 | **Sprint 2 D** — docs regeneración web | **U131** | ✅ |
-| **Sprint 2 C** — plantilla sprint | **U130** | ⬜ cierre |
+| **Sprint 2 C** — plantilla sprint | **U130** | 🔶 cierre |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **Orden Sprint 2:** **A ∥ B**; **D** cabe con A; **C** = acta de cierre.
 
-**En curso:** — (IDLE de implementación; **U130** = cierre gobernanza).
+**En curso:** **U130** 🔶 (agente cursor-swarm / 2026-07-19) — plantilla
+sprint / acta de cierre · rama `wp/u130-plantilla-sprint` · worktree
+`.worktrees/wp-u130-plantilla-sprint`.
 **Aceptado Sprint 2 A:** **U124** ✅ ∥ **U125** ✅.
 **Aceptado Sprint 2 B:** **U126** ✅ · **U127** ✅ · **U128** ✅ · **U129** ✅.
 **Aceptado Sprint 2 D:** **U131** ✅.
-**Pendiente Sprint 2 C:** **U130** ⬜ (plantilla / acta de cierre).
+**Pendiente Sprint 2 C:** **U130** 🔶 (cierre gobernanza en vuelo).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -127,13 +129,16 @@ exención D-24 / marketing SUPERADO).
 
 ### (C) Gobernanza — al cierre
 
-#### WP-U130 · Plantilla de sprint (PRACTICAS/roles) — ⬜
+#### WP-U130 · Plantilla de sprint (PRACTICAS/roles) — 🔶
 
-- ⬜ **WP-U130 · Formalizar ciclo de sprint en `plan/PRACTICAS.md` o roles/**
-  — pendiente de cierre del propio Sprint 2. Brief:
+- 🔶 **WP-U130 · Formalizar ciclo de sprint en `plan/PRACTICAS.md` o roles/**
+  — en curso (agente cursor-swarm / 2026-07-19). Cierre del propio
+  Sprint 2. Brief:
   [REPORTES/briefs/WP-U130-plantilla-sprint.md](REPORTES/briefs/WP-U130-plantilla-sprint.md).
-  Entrada = lote con GO; ejecución = WPs con CA; cierre = estado declarado
-  siempre; retro → residuales, no colas por WP.
+  Rama `wp/u130-plantilla-sprint` · worktree
+  `.worktrees/wp-u130-plantilla-sprint`. Entrada = lote con GO; ejecución =
+  WPs con CA; cierre = estado declarado siempre; retro → residuales, no
+  colas por WP.
   **CA:** el texto existe y el cierre de este sprint lo estrena.
   **Demolición:** N/A (gobernanza).
 
