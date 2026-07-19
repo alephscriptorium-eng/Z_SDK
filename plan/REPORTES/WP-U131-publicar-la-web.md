@@ -143,4 +143,25 @@ siendo tick usuario (ya documentados como ops, no CA de código).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19 · tip claim zeus `2a41a0c` ·
+library `2014816`.
+
+Verificado:
+- Diff zeus `main...wp/u131-publicar-la-web` = 3 archivos (página + sidebar +
+  reporte). Diff library = 2 archivos (puntero + sidebar). Cero CI nueva;
+  worker no tocó BACKLOG.
+- Spot-check guía vs `.github/workflows/docs.yml` (zeus + library): triggers
+  `docs/**` / `wp/**` / PR / `workflow_dispatch`, `npm ci` vs `npm install`,
+  artefacto `docs/.vitepress/dist`, deploy solo `main` ∧ ¬PR — calza.
+- Cero refs `WP-U` / `D-##` en páginas nuevas (post-U120).
+- Re-smoke orquestador: library `docs:build` → `LIB_PAGE_OK`; zeus overlay
+  de la página+config sobre checkout `main` → `ZEUS_PAGE_OK` (junction
+  Windows sigue fallando dead-link falso en mesh; hallazgo worker #1,
+  no bloquea CI ubuntu).
+- CA ADDENDA D / brief cumplidos; ops DNS/HTTPS = tick usuario (documentado).
+- PRACTICAS §2 alcance OK; §3 auto-revisión honesta; §6 commits
+  `docs(guide|report)`.
+
+**Merge:** `wp/u131-publicar-la-web` → `main` (zeus + library). Tras merge:
+`git worktree remove` ambos. Sprint 2 D cerrado; siguiente = **U130**
+(plantilla cierre · ⬜ — no asignar aquí salvo GO explícito).
