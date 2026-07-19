@@ -5,7 +5,7 @@
 | agente | orquestador-implementa (GO D-30 · 1 WP micro) |
 | fecha | 2026-07-19 |
 | rama | `wp/u139-api-nav-cuerpo` |
-| commit(s) | `19545d2` |
+| commit(s) | `19545d2` (fix) · `6813c2e`+ (reporte/CI) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -76,13 +76,19 @@ TOTAL=12 FAIL=0
 | campo | valor |
 | ----- | ----- |
 | branch | `wp/u139-api-nav-cuerpo` |
-| run_id | _(rellenar tras push)_ |
-| workflow | Docs + CI |
-| conclusion | _(rellenar)_ |
+| run_id | Docs `29691867603` · CI **N/A** (U104 paths-ignore `**.md`) |
+| workflow | Docs (CI no disparado: solo `.md` + `plan/`) |
+| conclusion | Docs `success` · CI N/A |
 
 ```
-(pegar gh run list tras push)
+completed	success	docs(reportes): tip commit en WP-U139	Docs	wp/u139-api-nav-cuerpo	push	29691867603	1m33s
 ```
+
+URL: https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29691867603
+
+CI matriz no corre (`.github/workflows/ci.yml` paths-ignore `plan/**` +
+`**.md` · U104/D-22). Diff = solo markdown + PRACTICAS — gate remoto
+relevante = **Docs**.
 
 ## Demolición
 
