@@ -29,8 +29,11 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 > Diferidos U87 §5–6 → **sin GO**.
 >
 > **Evidencia U136 Pages (2026-07-19):** library merge `b463a1a` +
-> `git push origin main` (`c55955b..b463a1a`); Docs tip rama
-> `29689322704` / post-merge `29689500019` (ritual U135).
+> `git push origin main` (`c55955b..b463a1a`); Docs `29689500019`
+> success (deploy Pages success); curl
+> `https://games.z-sdk.escrivivir.co/startpacks` → HTTP 200 + marcador
+> «Canal previsto» / «Registry npm» (sin fence `npm install
+> @zeus/startpack-delta`). Tip rama Docs/CI `29689322704`/`29689322686`.
 > **Evidencia U132 Pages:** Docs `29689050539` success; curl
 > `https://games.z-sdk.escrivivir.co/games/solve-coagula` → HTTP 200 +
 > marcador «tomá el asset `.tgz`».
@@ -88,7 +91,7 @@ operativo = tarball del GitHub Release.
   [REPORTES/WP-U132-wb-prime-canales.md](REPORTES/WP-U132-wb-prime-canales.md).
   Fichas → tarball Release; releases sin tabla + registry doctrinal;
   startpacks dos canales; nav/sidebar solve. Residual C8
-  `startpacks.md:41` → cola (paquete §3 no tocaba el fence). **CA:**
+  `startpacks.md:41` → **U136** ✅. **CA:**
   cumplidos acotados al verbatim. **Demolición:** npm-por-nombre operativo
   en fichas + tabla manual releases — ✅.
 
