@@ -7,5 +7,5 @@ camino hacia editor de gamemap/release).
 npm run start:editor
 ```
 
-OpenAPI del servicio: [Redoc Editor UI](/api/editor-ui.html) (generado con
+OpenAPI del servicio: <a href="/api/editor-ui.html" target="_blank" rel="noreferrer">Redoc Editor UI</a> (generado con
 `npm run spec:redoc`).
