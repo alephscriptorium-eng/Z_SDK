@@ -4,8 +4,8 @@ Esta página concentra **ids de WP**, **decisiones (D-##)**, **olas** y
 **verificaciones pendientes (⏳)**. Las demás páginas del portal describen
 producto; aquí vive el rastro de planificación.
 
-Fuente viva del tablero: [`plan/BACKLOG.md`](https://github.com/alephscriptorium-eng/zeus-sdk/blob/main/plan/BACKLOG.md)
-· decisiones: [`plan/DECISIONES.md`](https://github.com/alephscriptorium-eng/zeus-sdk/blob/main/plan/DECISIONES.md).
+Fuente viva del tablero: [`plan/BACKLOG.md`](https://github.com/alephscriptorium-eng/Z_SDK/blob/main/plan/BACKLOG.md)
+· decisiones: [`plan/DECISIONES.md`](https://github.com/alephscriptorium-eng/Z_SDK/blob/main/plan/DECISIONES.md).
 
 ## Decisiones citadas en el portal
 
