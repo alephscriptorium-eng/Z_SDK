@@ -34,7 +34,7 @@ Sprint 2 (ADDENDA + CAPA):
 | Estabilización mesa plan | **U118** | ✅ |
 | **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
 | Publish real → demoler `file:` | **U55** ∥ **U123** | ✅ |
-| **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | 🔶 / ✅ U125 |
+| **Sprint 2 A** — capa editorial CAPA | **U124** ∥ **U125** | ✅ |
 | **Sprint 2 B** — higiene (4 micros) | **U126–U129** | 🔶 |
 | **Sprint 2 D** — docs regeneración web | **U131** | 🔶 |
 | **Sprint 2 C** — plantilla sprint | **U130** | ⬜ cierre |
@@ -42,8 +42,8 @@ Sprint 2 (ADDENDA + CAPA):
 
 **Orden Sprint 2:** **A ∥ B**; **D** cabe con A; **C** = acta de cierre.
 
-**En curso:** **U124** · **U126–U129** · **U131** (orquestador / 2026-07-19 · ADDENDA).
-**Aceptado Sprint 2 A (parcial):** **U125** ✅.
+**En curso:** **U126–U129** · **U131** (orquestador / 2026-07-19 · ADDENDA).
+**Aceptado Sprint 2 A:** **U124** ✅ ∥ **U125** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -62,15 +62,15 @@ exención D-24 / marketing SUPERADO).
 
 ### (A) Capa editorial — CAPA verbatim
 
-#### WP-U124 · Capa editorial W-A (hero zeus) — 🔶
+#### WP-U124 · Capa editorial W-A (hero zeus) — ✅
 
-- 🔶 **WP-U124 · Aplicar CAPA W-A en `zeus-sdk/docs/index.md`** —
-  en curso (worker / 2026-07-19). Rama `wp/u124-copy-web-a`. Brief:
-  [REPORTES/briefs/WP-U124-copy-web-a.md](REPORTES/briefs/WP-U124-copy-web-a.md).
-  Solo hero frontmatter (name/text/tagline); `actions`/`features` intocados.
-  **CA:** [01-PAQUETE-CAPA.md](ENTREGA-2026-07-19-sprint2/01-PAQUETE-CAPA.md)
-  §Verificación + `docs:build`; hero FOSS 1 línea; categoría Ventana de
-  Contexto; lema antiguo **no** se conserva.
+- ✅ **WP-U124 · Aplicar CAPA W-A en `zeus-sdk/docs/index.md`** —
+  aceptado (orquestador / 2026-07-19). Rama `wp/u124-copy-web-a` merge
+  `53f976e`. Reporte:
+  [REPORTES/WP-U124-copy-web-a.md](REPORTES/WP-U124-copy-web-a.md).
+  Hero CAPA verbatim (`Z_SDK` / Ventana de Contexto / tagline FOSS 1 línea);
+  `actions`/`features` intocados; lema antiguo demolido en index.
+  **CA:** cumplido (docs:build Windows quirk → residual preserveSymlinks).
   **Demolición:** N/A (reemplazo verbatim del bloque hero).
 
 #### WP-U125 · Capa editorial W-B (library docs) — ✅
@@ -240,6 +240,10 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   scrub README raíz zeus (misma clase) queda residual
 - (U122) `plan/ARQUITECTURA.md` §5 aún cita `NPM_TOKEN` (gate publish ya
   es `_password` en `release.yml`)
+- (U124) VitePress 1.6.4 + Windows: `docs:build` falla por case `C:`/`c:`
+  tras `realpath` → candidate
+  `vite: { resolve: { preserveSymlinks: true } }` en
+  `docs/.vitepress/config.mjs` (no aplicar sin GO)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 

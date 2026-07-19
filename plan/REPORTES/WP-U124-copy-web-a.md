@@ -134,4 +134,27 @@ con evidencia CI / workaround, o abrir micro para `preserveSymlinks`?
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19.
+
+Verificado:
+- Diff `main...wp/u124-copy-web-a` = solo `docs/index.md` + este reporte
+  (alcance cerrado; commits `9bdd871` + `7d1d607`).
+- Hero DESPUÉS literal vs `01-PAQUETE-CAPA.md` §W-A:
+  `Z_SDK` / `Juegos de Ventana de Contexto` /
+  `FOSS Docs: framework ARG para comunidades.`
+- Diff de `docs/index.md` muta solo `name` / `text` / `tagline`;
+  `actions` y `features` sin cambio de contenido vs main.
+- Lema «Crear juegos, no dialectos» ABSENT en `docs/index.md`.
+- Reporte + auto-revisión honestos; worker no tocó BACKLOG.
+- `docs:build` bare Windows: quirk preexistente `C:` vs `c:`
+  (`resolvePageImports` / `pageChunk` undefined) — reproducido en main
+  con hero ANTES; **no es regresión CAPA**. Verde con
+  `vite.resolve.preserveSymlinks: true` temporal (no committed). CI Linux
+  no afectado. Aceptado con esa evidencia.
+
+**Hallazgo → cola residual (sin GO / sin WP nuevo):** candidate micro
+`docs/.vitepress/config.mjs` → `vite.resolve.preserveSymlinks: true`
+(VitePress 1.6.4 + Windows drive-letter case).
+
+**Merge:** `wp/u124-copy-web-a` → `main` (merge commit tras U125 ya en
+main; no FF). Orden: tras A ambos (U124∥U125) ✅. No tocar U126+ / U131.
