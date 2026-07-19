@@ -5,7 +5,7 @@
 | agente | worker swarm (chat U140) |
 | fecha | 2026-07-19 |
 | rama | `wp/u140-scrub-rutas-locales` |
-| commit(s) | _(tip tras commit; ver §abajo)_ |
+| commit(s) | `7a334f2` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -78,12 +78,13 @@ plan/REPORTES/WP-U122-registry-password-auth.md: pat1=0 pat2=0 SCRIPT_SDK=0
 | campo | valor |
 | ----- | ----- |
 | branch | `wp/u140-scrub-rutas-locales` |
-| run_id | **N/A** (esperado: paths-ignore U104 — solo `plan/**` / `**.md`) |
+| run_id | **N/A** (paths-ignore U104: solo `plan/**` / `**.md`) |
 | workflow | — |
 | conclusion | **N/A** |
 
 ```
-(se rellena tras push — ver bloque literal abajo / actualización)
+$ gh run list --branch wp/u140-scrub-rutas-locales --limit 5
+(sin runs — diff solo plan/**; CI no dispara por U104)
 ```
 
 ## Demolición
