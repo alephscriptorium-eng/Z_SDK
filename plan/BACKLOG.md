@@ -20,11 +20,11 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · micros post-AMEND + U135)
+## Remate — estado swarm (2026-07-19 · micros post-AMEND)
 
-> **esperando: entrega U135 · U136 · U137 de workers** (GO vigilante micros ·
-> **D-28** + protocolo Actions **D-27**).
-> **U135** 🔶 · **U136** 🔶 · **U137** 🔶 · AMEND Sprint 2 ✅ (**D-26**).
+> **esperando: entrega U136 · U137 de workers** (GO vigilante micros ·
+> **D-28**).
+> **U136** 🔶 · **U137** 🔶 · **U135** ✅ (**D-27**) · AMEND Sprint 2 ✅ (**D-26**).
 > Sprint 2 base cerrado ✅ (**D-25**). **0 DA** abiertas.
 > Ops: publish npm startpacks = residual (NO WP).
 > Diferidos U87 §5–6 → **sin GO**.
@@ -43,15 +43,16 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **AMEND Sprint 2 A** — W-B′ verdad canales | **U132** | ✅ |
 | **AMEND Sprint 2 B** — C8/C9 → PRACTICAS | **U133** | ✅ |
 | **AMEND Sprint 2 C** — archivar ENTREGA-* | **U134** | ✅ |
-| **Micro** — protocolo GitHub Actions | **U135** | 🔶 |
+| **Micro** — protocolo GitHub Actions | **U135** | ✅ |
 | **Micro** — C8 residual startpacks | **U136** | 🔶 |
 | **Micro** — Docs deploy saltado ≠ verde | **U137** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U135** 🔶 (D-27) · **U136** 🔶 ∥ **U137** 🔶 (D-28).
-**Aceptado AMEND A+B+C:** **U132** ✅ · **U133** ✅ · **U134** ✅ · Sprint 2 base:
+**En curso:** **U136** 🔶 ∥ **U137** 🔶 (D-28).
+**Aceptado:** **U135** ✅ (protocolo Actions · D-27) · AMEND A+B+C:
+**U132** ✅ · **U133** ✅ · **U134** ✅ · Sprint 2 base:
 **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ · **U130** ✅ · **U131** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
@@ -118,17 +119,16 @@ Fuente: investigación swarm (Fase 0 + (b) ligera). Solo gobernanza `plan/`.
 Canónico: `gh run list` / `gh run view`. **No** Cursor-in-CI · **no** MCP /
 Automations obligatorios en este WP.
 
-#### WP-U135 · Protocolo Actions (`gh`) en roles + PRACTICAS — 🔶
+#### WP-U135 · Protocolo Actions (`gh`) en roles + PRACTICAS — ✅
 
-- 🔶 **WP-U135 · Ritual / evidencia / gates CI vía Actions** — en curso
-  (worker / 2026-07-19). Rama `wp/u135-protocolo-actions-gh`. Worktree:
-  `.worktrees/wp-u135-protocolo-actions-gh`. Brief:
+- ✅ **WP-U135 · Ritual / evidencia / gates CI vía Actions** — aceptado
+  (orquestador / 2026-07-19). Tip merge `d00af86` · revisión `ed98ddf`. Brief:
   [REPORTES/briefs/WP-U135-protocolo-actions-gh.md](REPORTES/briefs/WP-U135-protocolo-actions-gh.md).
-  Editar: `ORQUESTADOR` · `REVISION` · `WORKER` · `BRIEF`/`roles/README` ·
-  `PRACTICAS` · `PLANTILLA` (subsección Evidencia CI). **CA:** diff solo
-  `plan/` gobernanza; texto accionable; `gh run*` canónico; N/A si
-  paths-ignore U104; prohibido secrets/dispatch publish al worker.
-  **Demolición:** N/A (gobernanza).
+  Reporte:
+  [REPORTES/WP-U135-protocolo-actions-gh.md](REPORTES/WP-U135-protocolo-actions-gh.md).
+  Ritual `gh run*` en roles + PRACTICAS; PLANTILLA Evidencia CI; N/A U104;
+  prohibido secrets/dispatch publish. **CA:** cumplidos. **Demolición:**
+  N/A (gobernanza).
 
 ---
 
