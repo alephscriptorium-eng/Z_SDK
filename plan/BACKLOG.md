@@ -20,14 +20,15 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · post U138 · U139 🔶)
+## Remate — estado swarm (2026-07-19 · post U139 ✅)
 
-> **En curso:** **U139** 🔶 (links `/api/` en cuerpo md · **D-30**).
-> **U138** ✅ (nav · D-29). Micros post-AMEND D-28 cerrados. **U136** ✅ ·
-> **U137** N/A · **U135** ✅ (**D-27**). **0 DA** abiertas. Ops: publish
-> npm startpacks = residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
+> **IDLE sin pendientes** (frente micro API SPA cerrado). **U139** ✅
+> (cuerpo md · D-30) · **U138** ✅ (nav · D-29). Micros post-AMEND D-28
+> cerrados. **U136** ✅ · **U137** N/A · **U135** ✅ (**D-27**). **0 DA**
+> abiertas. Ops: publish npm startpacks = residual (NO WP). Diferidos
+> U87 §5–6 → **sin GO**.
 >
-> Residual U138 (inline cuerpo) → **WP-U139** (este micro; cierra cola).
+> Cola residual U138 (inline cuerpo) → **cerrada por U139**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -47,17 +48,18 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — C8 residual startpacks | **U136** | ✅ |
 | **Micro** — Docs deploy saltado ≠ verde | **U137** | N/A |
 | **Micro** — bug nav API HTML (SPA) | **U138** | ✅ |
-| **Micro** — bug API links cuerpo md | **U139** | 🔶 |
+| **Micro** — bug API links cuerpo md | **U139** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U139** 🔶 (orquestador-implementa / 2026-07-19 · D-30).
+**En curso:** ninguno.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
-**Aceptado:** **U138** ✅ (nav API SPA · D-29) · **U136** ✅ (C8
-startpacks · D-28) · **U135** ✅ (protocolo Actions · D-27) · AMEND
-A+B+C: **U132** ✅ · **U133** ✅ · **U134** ✅ · Sprint 2 base:
-**U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ · **U130** ✅ · **U131** ✅.
+**Aceptado:** **U139** ✅ (cuerpo API SPA · D-30) · **U138** ✅ (nav ·
+D-29) · **U136** ✅ (C8 startpacks · D-28) · **U135** ✅ (protocolo
+Actions · D-27) · AMEND A+B+C: **U132** ✅ · **U133** ✅ · **U134** ✅ ·
+Sprint 2 base: **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ · **U130** ✅
+· **U131** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -203,20 +205,17 @@ Seguimiento de U138 ✅ (nav arreglado; **no reabrir**). Misma raíz SPA vs
 assets; superficie = **cuerpo** markdown. Tip claim `~acbb7ed`.
 **GO = usuario** (pase custodio); vigilante = hallazgo/CA, no GO.
 
-#### WP-U139 · Links `/api/*.html` en cuerpo md 404ean — 🔶
+#### WP-U139 · Links `/api/*.html` en cuerpo md 404ean — ✅
 
-- 🔶 **WP-U139 · Cuerpo md → enlaces externos al router SPA** —
-  orquestador-implementa / 2026-07-19. Rama `wp/u139-api-nav-cuerpo`.
-  Worktree:
-  `c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u139-api-nav-cuerpo`.
-  Brief:
+- ✅ **WP-U139 · Cuerpo md → enlaces externos al router SPA** —
+  aceptado (orquestador / 2026-07-19). Merge tip `a493214` (WP tip
+  `6fb223c` / claim `bc0b2ac`). Rama `wp/u139-api-nav-cuerpo`. Brief:
   [REPORTES/briefs/WP-U139-api-nav-cuerpo.md](REPORTES/briefs/WP-U139-api-nav-cuerpo.md).
-  Superficies ADDENDA: `contracts/openapi.md`, `contracts/asyncapi.md`,
-  `editor/index.md`. CA **clase** (residual U138): también
-  `mesh/index.md`, `engine/protocol.md` — grep control
-  `href="/api/` sin `target` en `docs/**` = 0. Fix: HTML inline
-  `<a … target="_blank" rel="noreferrer">` (o equiv. VitePress).
-  Verificación: clic real / Playwright, no solo curl (C8 · U135).
+  Reporte:
+  [REPORTES/WP-U139-api-nav-cuerpo.md](REPORTES/WP-U139-api-nav-cuerpo.md).
+  5 md cuerpo (ADDENDA + mesh + protocol) → `target="_blank"`; PRACTICAS
+  C8 clase; Playwright 12/12; Docs rama `29691867603` success · CI N/A
+  U104. Grep clase: 0 `href="/api/` sin `target`. Residual U138 cerrado.
 
 ---
 
@@ -421,7 +420,7 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   no gitignorea `docs/.vitepress/cache/` (zeus sí) — candidato higiene
 - (U132) C8 residual `startpacks.md:41` → **WP-U136** ✅ (D-28)
 - (U138) nav API HTML SPA 404 → **WP-U138** ✅ (D-29); residual inline
-  cuerpo → **WP-U139** 🔶 (D-30 · cierra cola)
+  cuerpo → **WP-U139** ✅ (D-30 · cola cerrada)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
