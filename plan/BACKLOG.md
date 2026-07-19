@@ -11,18 +11,21 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 
 **Historia de olas 0–10 + colas cerradas:** [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md)
 (archivado WP-U118). Balance: [RE-PLAN.md](RE-PLAN.md). Acta cierre:
-[ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md). Sprint bug-fixing:
+[ENTREGA-2026-07-18c.md](ENTREGA-2026-07-18c.md). Sprint 1 bug-fixing:
 [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md) · **D-24**.
+Sprint 2 marketing copy:
+[ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/) · **D-25**.
 
 ---
 
-## Remate — estado swarm (2026-07-18 · Sprint 1 bug-fixing)
+## Remate — estado swarm (2026-07-19 · Sprint 2)
 
-> **Refundación + capa B drenadas** (U00–U118 ✅). **Sprint 1 cerrado
-> en código** ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**):
-> U119–U122 ✅. **0 DA** abiertas. Publish real ✅ + **U55 ✅** + **U123 ✅**
-> (`@zeus/protocol` 0.2.0; operator-ui/library sin `file:`).
-> DNS U106/U107 ⏳. Diferidos U87 §5–6 / residuales → **sin GO**.
+> **Refundación + capa B drenadas** (U00–U118 ✅). **Sprint 1 cerrado**
+> ([ENTREGA-18d](ENTREGA-2026-07-18d-sprint1.md) · **D-24**): U119–U122 ✅ +
+> publish real ✅ + **U55 ✅** + **U123 ✅**. **0 DA** abiertas.
+> **Sprint 2 GO** ([ENTREGA-19-sprint2](ENTREGA-2026-07-19-sprint2/) ·
+> **D-25**): copy final marketing — **U124** ∥ **U125**. DNS U106/U107 ⏳.
+> Diferidos U87 §5–6 / residuales → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -31,20 +34,56 @@ la refundación está ordenada para no pisarlo (delta ya habla el patrón bueno)
 | Estabilización mesa plan | **U118** | ✅ |
 | **Sprint 1** — CI / prosa / registry | **U119–U122** | ✅ |
 | Publish real → demoler `file:` | **U55** ∥ **U123** | ✅ |
+| **Sprint 2** — copy portales (marketing) | **U124** ∥ **U125** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**Orden Sprint 1:** ~~**U119**~~ ✅ → ~~**U120**~~ ✅ ∥ ~~**U121**~~ ✅ → ~~**U122**~~ ✅ → ~~ops publish~~ ✅ → ~~**U55**~~ ✅ ∥ ~~**U123**~~ ✅.
+**Orden Sprint 2:** **U124** ∥ **U125** (repos distintos; sin dependencia).
 
-**En curso:** _(ninguno)_
+**En curso:** **U124** · **U125** (orquestador asignó / 2026-07-19).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 1 — bug-fixing (GO · ENTREGA-18d · D-24)
+## Sprint 2 — copy final portales (GO · ENTREGA-19 · D-25)
+
+Fuente: [ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/)
+(`00-PAQUETE` · `01-COPY-WEB-A` · `02-COPY-WEB-B` · `03-VERIFICACION`).
+**Reglas duras:** verbatim; anclas ANTES; conflicto = reporte sin improvisar;
+cero copy de cosecha; slugs intactos. Heros/lemas A («Crear juegos, no
+dialectos») **se conservan**.
+
+### WP-U124 · Copy portal Zeus SDK (W1) — 🔶
+
+- 🔶 **WP-U124 · Aplicar copy final `zeus-sdk/docs` (01-COPY-WEB-A)** —
+  en curso (worker / 2026-07-19). Rama `wp/u124-copy-web-a`. Brief:
+  [REPORTES/briefs/WP-U124-copy-web-a.md](REPORTES/briefs/WP-U124-copy-web-a.md).
+  Solo markdown enumerado en `01`; `config.mjs` / `guide/estado.md` /
+  `contracts/*` = **cero diff**.
+  **CA:** [03-VERIFICACION.md](ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md)
+  §comunes + §W1 (`docs:build`; diff identidad con paquete; lema intacto).
+  **Demolición:** N/A (reemplazo editorial verbatim; no borrar páginas).
+
+### WP-U125 · Copy catálogo + ficha SOLVE (W2) — 🔶
+
+- 🔶 **WP-U125 · Aplicar copy final library docs (02-COPY-WEB-B)** —
+  en curso (worker / 2026-07-19). Rama `wp/u125-copy-web-b` (zeus reporte +
+  library). Brief:
+  [REPORTES/briefs/WP-U125-copy-web-b.md](REPORTES/briefs/WP-U125-copy-web-b.md).
+  Portada, fichas delta/pozo, **nueva** `games/solve-coagula.md`, marco
+  futuros + filas, startpacks, `config.mjs` nav/sidebar/description.
+  `releases.md` = **cero diff**.
+  **CA:** [03-VERIFICACION.md](ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md)
+  §comunes + §W2; `demo:solve-coagula` existe; títulos obra solo en docs.
+  **Demolición:** N/A (capa editorial; slugs `delta`/`pozo`/`solve-coagula`
+  intactos).
+
+---
+
+## Sprint 1 — bug-fixing (GO · ENTREGA-18d · D-24) — ✅
 
 Fuente: [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md).
-Heros/lemas de marca **EXENTOS** (D-24). No mezclar residuales sin GO.
+Heros/lemas de marca **EXENTOS** (D-24). Cerrado en código.
 
 ### WP-U119 · CI main verde (4 workspaces) — ✅
 

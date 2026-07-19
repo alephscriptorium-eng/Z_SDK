@@ -265,6 +265,22 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   carga el secret cuando U119 deje CI verde. Fuente:
   [ENTREGA-2026-07-18d-sprint1.md](ENTREGA-2026-07-18d-sprint1.md).
 
+- **D-25 · 2026-07-19 · Sprint 2 copy final portales (ENTREGA-19-sprint2)**
+  (GO usuario · marketing vía usuario). Dos WP en paralelo (repos
+  distintos):
+  | # | Bloque | Destino |
+  |---|--------|---------|
+  | W1 | Copy portal Zeus SDK (`zeus-sdk/docs`) | **WP-U124** |
+  | W2 | Copy catálogo + ficha SOLVE (`Z_SDK-games-library`) | **WP-U125** |
+  **Reglas duras (paquete):** aplicación **verbatim** (carácter a carácter);
+  anclas por bloque `ANTES` literal; conflicto texto↔repo = reporte sin
+  re-redactar; cero copy de cosecha del worker; slugs (`delta` / `pozo` /
+  `solve-coagula`) e infra intactos. Títulos de obra públicos (**El Común**,
+  **El Aljibe**, **SOLVE ET COAGULA**) = capa editorial encima del slug.
+  Lema portal A «Crear juegos, no dialectos» **se conserva**. CA:
+  [ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md](ENTREGA-2026-07-19-sprint2/03-VERIFICACION.md).
+  Fuente: [ENTREGA-2026-07-19-sprint2/](ENTREGA-2026-07-19-sprint2/).
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son
