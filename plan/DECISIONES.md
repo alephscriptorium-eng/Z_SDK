@@ -371,10 +371,20 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   [REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md).
   **WP-U142** ✅ (recepción/triage orquestador). Triage: 4 ítems del
   anuncio previo ya resueltos en main → N/A; quedan **U143** (CNAME) y
-  **U144** (`npm ci` consulta) ⬜ **sin GO de implementación** (nota =
-  propuesta, no decreto; prioridad baja). Oferta
-  `@alephscript/skills-scriptorium@0.2.0` = recurso opcional (no WP).
-  No mezcla con U141. No marca Sprint 3 ✅ ni abre workers/briefs.
+  **U144** (`npm ci` consulta) — implementación amparada por **D-34**.
+  Oferta `@alephscript/skills-scriptorium@0.2.0` = recurso opcional
+  (no WP). No mezcla con U141.
+
+- **D-34 · 2026-07-19 · GO implementación U143 ∥ U144** (GO **usuario**).
+  Cierra el «espera GO por ítem» de D-33 para los dos micros Sprint 3
+  restantes. Lote paralelo:
+  | # | Micro | Destino | Notas |
+  |---|-------|---------|-------|
+  | 1 | CNAME `docs/public/` (portal + catálogo) | **WP-U143** | Contenidos: zeus `z-sdk.escrivivir.co` · library `games.z-sdk.escrivivir.co`. No tocar DNS/Settings. |
+  | 2 | Consulta `npm ci` vs `npm install` (docs.yml catálogo) | **WP-U144** | No imposición: o `npm ci` + build verde, o comentario en el yml. Orquestador/worker decide desenlace. |
+  Fuente: [ENTREGA-2026-07-19-sprint3.md](REPORTES/entregas/ENTREGA-2026-07-19-sprint3.md).
+  **U142** ✅ intacto. Briefs + 🔶 al asignar. I51 (cierre Sprint 3)
+  espera aceptación de ambos.
 
 ## Abiertas (bloquean lo indicado)
 
