@@ -18,7 +18,8 @@ Si falta el reporte, pídelo antes de revisar código.
 4. Verifica cada **CA** uno a uno con la evidencia del reporte (o reproduce
    los comandos si hace falta).
 5. Comprueba PRACTICAS §1–3 y §6: grep de demolición, puertos, nombres de
-   transición, formato de commits.
+   transición, formato de commits. Si el WP toca docs públicas: también
+   §8 (C8/C9).
 6. Rellena **`§ Revisión del orquestador`** en el reporte:
    - **Aceptado ✅** — qué se verificó + orden de merge sugerido
    - **Devuelto** — lista numerada de correcciones obligatorias (archivo/línea)
