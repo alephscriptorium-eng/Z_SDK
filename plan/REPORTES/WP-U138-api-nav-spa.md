@@ -5,7 +5,7 @@
 | agente | orquestador-implementa (GO D-29 · 1 WP micro) |
 | fecha | 2026-07-19 |
 | rama | `wp/u138-api-nav-spa` |
-| commit(s) | _(tras commit)_ |
+| commit(s) | `cb55c3d` (+ evidencia CI) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -53,18 +53,22 @@ rg -n "/api/" Z_SDK-games-library/docs/.vitepress/config.mjs
 
 ### Evidencia CI
 
-> Tras push de la rama.
+> Tras push de la rama. Canónico: `gh run list --branch wp/u138-api-nav-spa`.
 
 | campo | valor |
 | ----- | ----- |
 | branch | `wp/u138-api-nav-spa` |
-| run_id | _(rellenar post-push)_ |
-| workflow | Docs (+ CI si aplica) |
-| conclusion | _(post-push)_ |
+| run_id | Docs `29690453464` · CI `29690453486` |
+| workflow | Docs + CI |
+| conclusion | `success` / `success` |
 
 ```
-(pegar gh run list --branch wp/u138-api-nav-spa)
+completed	success	fix(docs): nav API HTML externo al router SPA (U138)	Docs	wp/u138-api-nav-spa	push	29690453464	1m25s
+completed	success	fix(docs): nav API HTML externo al router SPA (U138)	CI	wp/u138-api-nav-spa	push	29690453486	2m31s
 ```
+
+URLs: https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29690453464 ·
+https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29690453486
 
 ## Demolición
 
