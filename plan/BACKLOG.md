@@ -22,11 +22,11 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ## Remate — estado swarm (2026-07-19 · AMEND Sprint 2 🔶)
 
-> **esperando: workers U132∥U133∥U134** (AMEND Sprint 2 · **D-26**).
-> Sprint 2 base cerrado ✅ (**D-25**). **0 DA** abiertas. Lote AMEND:
-> **A** U132 (W-B′ canales) · **B** U133 (C8/C9 PRACTICAS) · **C** U134
-> (archivar ENTREGA-*) — **A ∥ B ∥ C**. Ops: publish npm startpacks =
-> residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
+> **esperando: workers U132∥U134** (AMEND Sprint 2 · **D-26**).
+> **U133** ✅ (C8/C9 → PRACTICAS). Sprint 2 base cerrado ✅ (**D-25**).
+> **0 DA** abiertas. Lote AMEND: **A** U132 · **B** U133 ✅ · **C** U134 —
+> **A ∥ C** en vuelo. Ops: publish npm startpacks = residual (NO WP).
+> Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -40,16 +40,16 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Sprint 2 C** — plantilla sprint | **U130** | ✅ |
 | **Sprint 2 D** — docs regeneración web | **U131** | ✅ |
 | **AMEND Sprint 2 A** — W-B′ verdad canales | **U132** | 🔶 |
-| **AMEND Sprint 2 B** — C8/C9 → PRACTICAS | **U133** | 🔶 |
+| **AMEND Sprint 2 B** — C8/C9 → PRACTICAS | **U133** | ✅ |
 | **AMEND Sprint 2 C** — archivar ENTREGA-* | **U134** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** (no se pisan: library docs / PRACTICAS /
 plan higiene).
 
-**En curso:** **U132** 🔶 · **U133** 🔶 · **U134** 🔶.
-**Aceptado Sprint 2 base:** **U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ ·
-**U130** ✅ · **U131** ✅.
+**En curso:** **U132** 🔶 · **U134** 🔶.
+**Aceptado AMEND B:** **U133** ✅ · Sprint 2 base: **U124** ✅ ∥ **U125** ✅ ·
+**U126–U129** ✅ · **U130** ✅ · **U131** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -80,16 +80,16 @@ operativo = tarball del GitHub Release.
 
 ### (B) Método WEBS → PRACTICAS
 
-#### WP-U133 · Portar C8/C9 a PRACTICAS — 🔶
+#### WP-U133 · Portar C8/C9 a PRACTICAS — ✅
 
-- 🔶 **WP-U133 · C8 + C9 como criterio estándar de WPs de docs** —
-  en curso (orquestador / 2026-07-19). Brief:
+- ✅ **WP-U133 · C8 + C9 como criterio estándar de WPs de docs** —
+  aceptado (orquestador / 2026-07-19). Tip `f1a71a2`. Brief:
   [REPORTES/briefs/WP-U133-practicas-c8-c9.md](REPORTES/briefs/WP-U133-practicas-c8-c9.md).
-  Rama `wp/u133-practicas-c8-c9`. Portar de `00-NOTA` §(B): C8 (comando
-  copiable = canal verificado) + C9 (listas manuales = rot; generar /
-  link / caducidad); valorar auditoría CANTERA/01 como práctica o gate.
-  **CA:** texto en PRACTICAS; greps/criterio citables por workers futuros.
-  **Demolición:** N/A (gobernanza).
+  Reporte:
+  [REPORTES/WP-U133-practicas-c8-c9.md](REPORTES/WP-U133-practicas-c8-c9.md).
+  PRACTICAS §8 C8/C9 + checklist §3 + plantilla + punteros WORKER/REVISION;
+  candidata CANTERA/01 (prosa). **CA:** citables por workers. **Demolición:**
+  N/A (gobernanza).
 
 ### (C) Higiene plan/ — archivar handoffs
 
