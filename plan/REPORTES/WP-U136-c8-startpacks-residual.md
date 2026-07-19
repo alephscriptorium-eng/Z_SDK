@@ -120,4 +120,25 @@ Ninguno. Listo para revisión orquestador (NO merge desde worker).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-19).
+
+### Verificado
+
+- Diff library `main...b3efec1`: solo `docs/startpacks.md` (+4/−4); fence
+  `npm install @zeus/startpack-delta` demolido; prosa alineada a
+  `releases.md` § Registry npm (@zeus) / CAPA §2c.
+- CA greps (re-smoke orquestador): `npm install @zeus/startpack` → 2 hits
+  doctrinales inline (`startpacks.md:40`, `releases.md:19`); fences
+  bash/sh con ese comando → **0**. Canal npm sigue 404 (`npm view` E404).
+- Actions tip `b3efec1`: Docs `29689322704` success · CI `29689322686`
+  success — protocolo U135 (b): se confía en runner (sin re-smoke
+  `docs:build` local). Zeus solo `plan/**` → CI N/A (U104).
+- Alcance: no packages/*, no workflows, no BACKLOG worker, no U132 reopen.
+- C8/C9: C8 cumplido (sin fence copiable 404); C9 N/A (sin lista manual nueva).
+
+### Merge
+
+1. **Library primero** → `main` + **`git push origin main`** (público Pages).
+2. Zeus reporte + BACKLOG U136 ✅ → `main` + push.
+3. Ritual post-merge U135: Docs run en `main` + curl marcador público.
+4. `git worktree remove` ambos árboles `wp-u136-*`.
