@@ -132,4 +132,18 @@ Ninguno. Listo para revisión orquestador (NO merge desde este chat).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (orquestador / 2026-07-19). Tip worker `aed60e7`.
+
+### CA verificados
+- [x] `ls plan/` sin `ENTREGA-*` (solo canónicos + dirs)
+- [x] Destino `plan/REPORTES/entregas/` con 18c, 18d y sprint2 (+ SUPERADA-)
+- [x] Links markdown a ENTREGA: 18 OK / 0 rotos / 0 leftovers a raíz
+- [x] Regla handoffs en `roles/ORQUESTADOR.md` + mapa README / puntero roles
+- [x] `PRACTICAS.md` no tocado (U133 paralelo ya ✅ en main)
+- [x] Diff acotado a higiene plan/ (sin producto; sin estados BACKLOG ajenos)
+
+### PRACTICAS
+§2 alcance OK · §3 auto-revisión honesta · §6 commits convencionales · N/A tests producto.
+
+### Merge
+Tras U133 ✅ en main: merge limpio resolviendo BACKLOG (paths U134 + estados U133). No tocar U132. Orden: U134 ahora; U132 sigue en vuelo.
