@@ -7,6 +7,10 @@ Cursor vive en [`.cursor/rules/`](../../.cursor/README.md) y solo *refuerza*
 esto, nunca lo contradice. Si algún día hay otro cliente (Claude Code, CI…),
 se le escribe otro adaptador; el protocolo es este.
 
+**Evidencia CI / Actions:** adaptador canónico = CLI `gh` (`gh run list` /
+`gh run view`). No es obligatorio MCP ni Automations; ver PRACTICAS §5 y
+ORQUESTADOR §Ritual.
+
 ## Roles
 
 | Prompt | Rol | Cuándo |
