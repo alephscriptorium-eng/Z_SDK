@@ -38,9 +38,10 @@ WPs** salvo micro-ajustes de plan (BACKLOG, DECISIONES, briefs, roles).
 1. Escanear BACKLOG y reportes pendientes de revisión.
 2. Listar ramas `wp/*`, worktrees (`git worktree list`) y PRs (`gh pr list`
    cuando el repo esté en Z_SDK).
-3. Resumir al usuario: ola actual, paralelizable ahora, bloqueos, revisiones
-   en cola.
-4. Si pide arrancar workers: marcar 🔶 y generar briefs.
+3. Resumir al usuario: ola/sprint actual, paralelizable ahora, bloqueos,
+   revisiones en cola — y el **estado declarado** del sprint
+   (`IDLE sin pendientes` o `esperando: <tick> de <quién>`; PRACTICAS §7).
+4. Si pide arrancar workers: marcar 🔶 y generar briefs (solo con GO de lote).
 
 ## Señales de anti-patrón
 

@@ -52,6 +52,19 @@ Si no se quiere usar worktrees, los workers van en serie, no en paralelo.
 6. Si devuelto: mismo chat worker (CORRECCION.md + comentarios del reporte)
 ```
 
+## Ciclo de sprint
+
+Formalizado en [PRACTICAS.md §7](../PRACTICAS.md):
+
+1. **Entrada** — lote con GO explícito del usuario (sin GO → sin 🔶 de lote).
+2. **Ejecución** — WPs con CA; Devuelto legítimo; 1 WP = 1 chat = 1 rama.
+3. **Cierre** — estado declarado siempre:
+   `IDLE sin pendientes` **o** `esperando: <tick> de <quién>` — nunca silencio.
+4. **Retro** — hallazgos → cola residual viva; no colas por WP en el tablero.
+
+El remate de `BACKLOG.md` y el acta del sprint (si hay carpeta `ENTREGA-…`)
+usan esa fórmula al cerrar o pausar.
+
 ## Reglas de oro
 
 1. Un WP = un chat worker = una rama = (si hay paralelo) un worktree.
