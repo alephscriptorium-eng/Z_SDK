@@ -307,6 +307,11 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   WP). Al ocurrir: `futuros.md` + fichas re-anuncian canal por nombre
   previa C8.
 
+- **D-27 · 2026-07-19 · GO protocolo Actions Fase 0+(b)** (GO usuario).
+  Micro gobernanza: ritual/`gh run*` en roles + PRACTICAS + PLANTILLA.
+  Alcance = editar solo `plan/` (no workflows, no Cursor-in-CI, no MCP/
+  Automations obligatorios). Destino: **WP-U135**.
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son
