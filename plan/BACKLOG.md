@@ -20,12 +20,12 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · AMEND Sprint 2 🔶)
+## Remate — estado swarm (2026-07-19 · AMEND Sprint 2 ✅)
 
-> **esperando: workers U132∥U134** (AMEND Sprint 2 · **D-26**).
-> **U133** ✅ (C8/C9 → PRACTICAS). Sprint 2 base cerrado ✅ (**D-25**).
-> **0 DA** abiertas. Lote AMEND: **A** U132 · **B** U133 ✅ · **C** U134 —
-> **A ∥ C** en vuelo. Ops: publish npm startpacks = residual (NO WP).
+> **IDLE sin pendientes** (AMEND Sprint 2 · **D-26** cerrado).
+> **U132** ✅ · **U133** ✅ · **U134** ✅. Sprint 2 base cerrado ✅ (**D-25**).
+> **0 DA** abiertas. Lote AMEND: **A** U132 ✅ · **B** U133 ✅ · **C** U134 ✅.
+> Ops: publish npm startpacks = residual (NO WP).
 > Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
@@ -39,17 +39,16 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Sprint 2 B** — higiene (4 micros) | **U126–U129** | ✅ |
 | **Sprint 2 C** — plantilla sprint | **U130** | ✅ |
 | **Sprint 2 D** — docs regeneración web | **U131** | ✅ |
-| **AMEND Sprint 2 A** — W-B′ verdad canales | **U132** | 🔶 |
+| **AMEND Sprint 2 A** — W-B′ verdad canales | **U132** | ✅ |
 | **AMEND Sprint 2 B** — C8/C9 → PRACTICAS | **U133** | ✅ |
-| **AMEND Sprint 2 C** — archivar ENTREGA-* | **U134** | 🔶 |
+| **AMEND Sprint 2 C** — archivar ENTREGA-* | **U134** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
-**AMEND Sprint 2:** **A ∥ B ∥ C** (no se pisan: library docs / PRACTICAS /
-plan higiene).
+**AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U132** 🔶 · **U134** 🔶.
-**Aceptado AMEND B:** **U133** ✅ · Sprint 2 base: **U124** ✅ ∥ **U125** ✅ ·
-**U126–U129** ✅ · **U130** ✅ · **U131** ✅.
+**En curso:** ninguno.
+**Aceptado AMEND A+B+C:** **U132** ✅ · **U133** ✅ · **U134** ✅ · Sprint 2 base:
+**U124** ✅ ∥ **U125** ✅ · **U126–U129** ✅ · **U130** ✅ · **U131** ✅.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -66,17 +65,19 @@ operativo = tarball del GitHub Release.
 
 ### (A) Correctivo W-B′ — verdad de canales
 
-#### WP-U132 · Correctivo W-B′ (library docs · CAPA rev2) — 🔶
+#### WP-U132 · Correctivo W-B′ (library docs · CAPA rev2) — ✅
 
-- 🔶 **WP-U132 · Aplicar CAPA rev2 verbatim (6 ficheros library/docs)** —
-  en curso (orquestador / 2026-07-19). Brief:
+- ✅ **WP-U132 · Aplicar CAPA rev2 verbatim (6 ficheros library/docs)** —
+  aceptado (orquestador / 2026-07-19). Tip library `c55955bb` · zeus merge
+  `852f8d1`. Brief:
   [REPORTES/briefs/WP-U132-wb-prime-canales.md](REPORTES/briefs/WP-U132-wb-prime-canales.md).
-  Rama zeus `wp/u132-wb-prime-canales` · library `wp/u132-wb-prime-canales`.
-  Alcance: fichas delta/pozo/solve → tarball Release; `releases.md` sin
-  tabla manual + registry doctrinal; `startpacks.md` dos canales;
-  `config.mjs` nav/sidebar solve-coagula. **CA:** paquete §Verificación
-  (docs:build; C8/C9 greps; 6 ficheros). **Demolición:** comandos
-  `npm install @zeus/startpack-*` operativos + tabla manual releases.
+  Reporte:
+  [REPORTES/WP-U132-wb-prime-canales.md](REPORTES/WP-U132-wb-prime-canales.md).
+  Fichas → tarball Release; releases sin tabla + registry doctrinal;
+  startpacks dos canales; nav/sidebar solve. Residual C8
+  `startpacks.md:41` → cola (paquete §3 no tocaba el fence). **CA:**
+  cumplidos acotados al verbatim. **Demolición:** npm-por-nombre operativo
+  en fichas + tabla manual releases — ✅.
 
 ### (B) Método WEBS → PRACTICAS
 
@@ -93,18 +94,17 @@ operativo = tarball del GitHub Release.
 
 ### (C) Higiene plan/ — archivar handoffs
 
-#### WP-U134 · Archivar ENTREGA-* + regla handoffs — 🔶
+#### WP-U134 · Archivar ENTREGA-* + regla handoffs — ✅
 
-- 🔶 **WP-U134 · Mover ENTREGA-* de raíz plan/ + regla de archivo** —
-  en curso (orquestador / 2026-07-19). Brief:
+- ✅ **WP-U134 · Mover ENTREGA-* de raíz plan/ + regla de archivo** —
+  aceptado (orquestador / 2026-07-19). Tip merge `84e43d6` · revisión
+  `4f351f8`. Brief:
   [REPORTES/briefs/WP-U134-archivar-entregas.md](REPORTES/briefs/WP-U134-archivar-entregas.md).
-  Rama `wp/u134-archivar-entregas`. Mover
-  `ENTREGA-2026-07-18c.md`, `ENTREGA-2026-07-18d-sprint1.md`,
-  `ENTREGA-2026-07-19-sprint2/` → `plan/REPORTES/entregas/` (patrón
-  HISTORICO); actualizar links BACKLOG/DECISIONES; regla en
-  `plan/roles/ORQUESTADOR.md` (no tocar PRACTICAS — U133). **CA:**
-  `ls plan/` = solo canónicos; cero links rotos a ENTREGA. **Demolición:**
-  ENTREGA-* en raíz de `plan/`.
+  Reporte:
+  [REPORTES/WP-U134-archivar-entregas.md](REPORTES/WP-U134-archivar-entregas.md).
+  ENTREGA-* → `REPORTES/entregas/`; links actualizados; regla handoffs en
+  `roles/ORQUESTADOR.md`. **CA:** `ls plan/` limpio; 0 links rotos.
+  **Demolición:** ENTREGA-* en raíz de `plan/` — ✅.
 
 ---
 
@@ -304,10 +304,12 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   tras `realpath` → candidate
   `vite: { resolve: { preserveSymlinks: true } }` en
   `docs/.vitepress/config.mjs` (no aplicar sin GO)
-- (U125) nav/sidebar library sin entrada `solve-coagula` — ficha reachable
-  por card de portada; CAPA no pedía nav (candidato micro)
+- (U125) nav/sidebar `solve-coagula` — **cerrado por U132 ✅**
 - (U131) VitePress en worktree Windows: path largo falla dead-links; library
   no gitignorea `docs/.vitepress/cache/` (zeus sí) — candidato higiene
+- (U132) C8 residual: fence `### Registry` en `docs/startpacks.md:41`
+  (`npm install @zeus/startpack-delta` copiable · canal 404). Paquete §3
+  no lo incluía; amend paquete o micro GO futuro — sin 🔶 sin GO
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
