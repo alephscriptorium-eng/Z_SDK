@@ -318,10 +318,19 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   library + reporte zeus, en paralelo con U135 (no lo pisan):
   | # | Micro | Destino | Estado |
   |---|-------|---------|--------|
-  | 1 | C8 residual fence Registry en `docs/startpacks.md` | **WP-U136** | 🔶 |
+  | 1 | C8 residual fence Registry en `docs/startpacks.md` | **WP-U136** | ✅ |
   | 2 | Docs deploy saltado ≠ verde (premisa) | **WP-U137** | **N/A** (causa real = push faltante; no gate skip=rojo) |
   Espíritu CAPA / PRACTICAS §8 C8. Fuentes CAPA en WEBS (no copiar a
   `plan/`). Publish npm startpacks sigue residual ops (NO WP).
+
+- **D-29 · 2026-07-19 · GO bug nav API HTML / SPA** (GO **usuario**).
+  Micro: menú «API HTML» 404ea en navegación in-app (`cleanUrls` + router
+  SPA vs assets `docs/public/api/*.html`). Destino: **WP-U138** (zeus
+  `docs/.vitepress/config.mjs` + ampliación C8 en PRACTICAS: canal de
+  verificación = canal de uso; no `curl` para bugs de router). Fuente:
+  `C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19b-bug-api-nav.md`
+  (no copiar a `plan/`). Library: N/A código si no enlaza `/api/`.
+  Vigilante puede haber reportado el bug — **GO = usuario**.
 
 ## Abiertas (bloquean lo indicado)
 

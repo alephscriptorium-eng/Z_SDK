@@ -20,23 +20,16 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · micros post-AMEND)
+## Remate — estado swarm (2026-07-19 · bug API nav)
 
-> **IDLE sin pendientes** (micros post-AMEND D-28 cerrados).
-> **U136** ✅ · **U137** N/A · **U135** ✅ (**D-27**) · AMEND Sprint 2 ✅
-> (**D-26**). Sprint 2 base cerrado ✅ (**D-25**). **0 DA** abiertas.
-> Ops: publish npm startpacks = residual (NO WP).
+> **En curso:** **U138** 🔶 (bug menú API HTML / SPA). Micros post-AMEND
+> D-28 cerrados. **U136** ✅ · **U137** N/A · **U135** ✅ (**D-27**).
+> **0 DA** abiertas. Ops: publish npm startpacks = residual (NO WP).
 > Diferidos U87 §5–6 → **sin GO**.
 >
-> **Evidencia U136 Pages (2026-07-19):** library merge `b463a1a` +
-> `git push origin main` (`c55955b..b463a1a`); Docs `29689500019`
-> success (deploy Pages success); curl
-> `https://games.z-sdk.escrivivir.co/startpacks` → HTTP 200 + marcador
-> «Canal previsto» / «Registry npm» (sin fence `npm install
-> @zeus/startpack-delta`). Tip rama Docs/CI `29689322704`/`29689322686`.
-> **Evidencia U132 Pages:** Docs `29689050539` success; curl
-> `https://games.z-sdk.escrivivir.co/games/solve-coagula` → HTTP 200 +
-> marcador «tomá el asset `.tgz`».
+> **Fuente GO (absoluta; no copiar a `plan/`):**
+> `C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19b-bug-api-nav.md`
+> · **D-29**. Tip claim `main` ~`5a0079c`.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -55,11 +48,12 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — protocolo GitHub Actions | **U135** | ✅ |
 | **Micro** — C8 residual startpacks | **U136** | ✅ |
 | **Micro** — Docs deploy saltado ≠ verde | **U137** | N/A |
+| **Micro** — bug nav API HTML (SPA) | **U138** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (IDLE).
+**En curso:** **WP-U138** 🔶 (orquestador-implementa / 2026-07-19).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
 **Aceptado:** **U136** ✅ (C8 startpacks · D-28) · **U135** ✅
 (protocolo Actions · D-27) · AMEND A+B+C: **U132** ✅ · **U133** ✅ ·
@@ -177,6 +171,33 @@ Amparados por **GO usuario** del lote AMEND (**D-26–D-28**). El
   Nota:
   [REPORTES/WP-U137-docs-deploy-gate.md](REPORTES/WP-U137-docs-deploy-gate.md).
   Worker `f92b3a9b`: **no reanudar** con premisa vieja.
+
+---
+
+## Micro — bug nav API HTML / SPA (GO usuario · 2026-07-19 · D-29)
+
+Fuente (**leer; no copiar a `plan/`**):
+`C:\Users\aleph\SCRIPT_SDK\ADDENDA\ENTREGA-2026-07-19b-bug-api-nav.md`.
+Repo: **zeus-sdk** (`docs/.vitepress/config.mjs` + PRACTICAS §8 C8).
+Library: verificar (hoy **no** enlaza `/api/` — N/A código). Tip claim
+`~5a0079c`. **No** desactivar `cleanUrls` global.
+
+#### WP-U138 · Menú «API HTML» 404ea (SPA vs assets) — 🔶
+
+- 🔶 **WP-U138 · Nav API HTML → enlaces externos al router SPA** —
+  orquestador-implementa / 2026-07-19. Rama `wp/u138-api-nav-spa`.
+  Worktree:
+  `c:/Users/aleph/OASIS/SCRIPTORIUM_V0/zeus-sdk/.worktrees/wp-u138-api-nav-spa`.
+  Brief:
+  [REPORTES/briefs/WP-U138-api-nav-spa.md](REPORTES/briefs/WP-U138-api-nav-spa.md).
+  **Síntoma:** clic en items «API HTML» → 404 cliente; `curl` 200 (assets
+  en `docs/public/api/*.html`). Causa: `cleanUrls: true` + router SPA
+  intercepta assets estáticos. **Fix:** `target: '_blank'` (+ `rel`) en
+  los 6 items (o mecanismo idiomático VitePress); NO tocar `cleanUrls`.
+  **CA:** navegación real (browser/e2e/manual anotado) de los 6 → documento
+  sin 404; `docs:build` verde; diff acotado a `config.mjs` (+ PRACTICAS C8
+  lección canal-de-uso; library N/A si sin `/api/`). **Demolición:**
+  nav que trata Redoc/OpenAPI como páginas VitePress.
 
 ---
 
@@ -380,6 +401,7 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U131) VitePress en worktree Windows: path largo falla dead-links; library
   no gitignorea `docs/.vitepress/cache/` (zeus sí) — candidato higiene
 - (U132) C8 residual `startpacks.md:41` → **WP-U136** ✅ (D-28)
+- (U138) nav API HTML SPA 404 — en curso D-29
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
