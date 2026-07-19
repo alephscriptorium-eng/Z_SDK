@@ -97,4 +97,19 @@ DNS ajenos al lote).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19 · tip claim `2b448be`
+(`b1d3185` · `b063842` · `2b448be`).
+
+Verificado:
+- Diff `main...wp/u130-plantilla-sprint` = 6 archivos plan/ (PRACTICAS §7,
+  roles README + ORQUESTADOR, acta + índice ENTREGA, reporte). Cero código
+  de producto; worker **no** tocó `plan/BACKLOG.md`.
+- CA brief / ADDENDA C: texto del ciclo existe (entrada GO / ejecución CA /
+  cierre estado declarado / retro residuales); acta estrena
+  `esperando: revisión+merge U130 de orquestador`.
+- PRACTICAS §2 alcance OK; §3 auto-revisión honesta; §6 commits
+  `docs(plan|reportes)`.
+
+**Merge:** `wp/u130-plantilla-sprint` → `main`. Tras merge: remate BACKLOG
+→ **IDLE sin pendientes** (0 🔶); acta a estado cerrado; `git worktree
+remove`. Residuales del sprint anotados en cola viva (sin WP nuevos sin GO).

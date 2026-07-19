@@ -12,19 +12,19 @@ Fecha: **2026-07-19**. Fuente del lote:
 | A W-B | U125 | ✅ |
 | B1–B4 | U126–U129 | ✅ |
 | D | U131 | ✅ |
-| C | U130 | entregado — pendiente revisión/merge |
+| C | U130 | ✅ |
 
 ## Estado declarado (fórmula §7)
 
-> **esperando: revisión+merge U130 de orquestador**
+> **IDLE sin pendientes**
 
-Cuando el orquestador acepte U130 y mergee: el remate de `BACKLOG.md` debe
-pasar a **`IDLE sin pendientes`** (lote Sprint 2 cerrado), salvo ticks ops
-ajenos al lote (DNS U106/U107, etc. — ya fuera del GO ADDENDA).
+Lote Sprint 2 cerrado (A/B/C/D ✅ · 0 🔶). Ticks ops ajenos al lote
+(DNS/custom domain U106/U107) siguen ⏳ fuera del GO ADDENDA — no bloquean
+el cierre del sprint.
 
 ## Retro → residuales (no colas por WP)
 
-Hallazgos del sprint ya en o candidatos a
+Hallazgos del sprint en
 [`BACKLOG.md` §Cola residual viva](../BACKLOG.md) — **sin GO → sin 🔶**:
 
 - (U124/U125) VitePress + Windows: case drive / `preserveSymlinks` /
@@ -40,5 +40,5 @@ Registro voseo/tuteo (nota ADDENDA editorial) — fuera de zeus; no WP.
 
 ## Qué no queda en silencio
 
-Este acta **declara** el cierre parcial del sprint. No hay «fin implícito»:
+Este acta **declara** el cierre del sprint. No hay «fin implícito»:
 o IDLE, o esperando un tick nombrado.
