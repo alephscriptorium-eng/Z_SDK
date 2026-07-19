@@ -5,7 +5,7 @@
 | agente | worker · WP-U136 (follow-up post-vigilante; worker e23d7a85 sin progreso) |
 | fecha | 2026-07-19 |
 | rama | `wp/u136-c8-startpacks-residual` (library + zeus) |
-| commit(s) | library `b3efec1` · zeus (este reporte) |
+| commit(s) | library `b3efec1` · zeus `c883a47`+ (evidencia CI) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
@@ -68,12 +68,16 @@ rg -n --multiline '```(?:bash|sh)\n[^`]*npm install @zeus/startpack' docs/
 | campo | valor |
 | ----- | ----- |
 | branch | `wp/u136-c8-startpacks-residual` |
-| run_id | **N/A** pendiente post-push (library: docs; zeus: solo `plan/**` → paths-ignore U104) |
-| workflow | Docs (library) / N/A (zeus md) |
-| conclusion | se rellena tras push |
+| run_id | Docs `29689322704` · CI `29689322686` (library); zeus **N/A** (solo `plan/**` → paths-ignore U104) |
+| workflow | Docs + CI (library) |
+| conclusion | `success` / `success` |
 
 ```
-(pegar gh run list tras push)
+$ gh run list --branch wp/u136-c8-startpacks-residual --limit 5
+# Z_SDK-games-library
+completed  success  docs(startpacks): Registry doctrinal C8 (sin fence npm 404)  Docs  wp/u136-c8-startpacks-residual  push  29689322704
+completed  success  docs(startpacks): Registry doctrinal C8 (sin fence npm 404)  CI    wp/u136-c8-startpacks-residual  push  29689322686
+# Z_SDK (zeus): vacío — paths-ignore U104
 ```
 
 ## Demolición
