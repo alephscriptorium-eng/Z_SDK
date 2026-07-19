@@ -19,7 +19,7 @@ orquestador).
 
 ## Lectura obligatoria (antes de tocar código)
 
-1. `plan/PRACTICAS.md` — entero
+1. `plan/PRACTICAS.md` — entero (si el WP es de docs públicas: §8 C8/C9)
 2. El WP completo en `plan/BACKLOG.md` — incluida **Demolición**
 3. El código que vas a sustituir o extender — no se sustituye lo no leído
 4. Si el WP cita secciones: `plan/ARQUITECTURA.md`, `plan/VISION.md`

@@ -92,6 +92,9 @@ mecánico:
       lo miraste, no solo unit tests)
 - [ ] ¿README/specs del paquete siguen siendo verdad?
 - [ ] ¿El diff contiene SOLO el alcance del WP?
+- [ ] Si el WP toca docs públicas con comandos o listas de canal: ¿C8 y C9
+      (§8) cumplidos? (comando ejecutado contra el canal real; sin lista
+      manual de eventos futuros sin fuente/caducidad)
 
 Regla de evidencia (heredada de CASOS.md y va en serio): **no inventes
 observaciones**. Pega la salida real. Si no lo ejecutaste, escribe
@@ -181,3 +184,46 @@ Ejemplos: `esperando: revisión U130 de orquestador` ·
   tablero vivo.
 - Residuales **sin GO** no abren 🔶. El siguiente sprint los toma solo si
   el usuario los incluye en un lote con GO.
+
+## 8. Docs — C8 / C9 (criterio de aceptación estándar)
+
+WPs que toquen **docs públicas** (portales, fichas, guías con comandos
+copiables o tablas de canal/versión) se aceptan o se **devuelven** también
+contra C8 y C9. Son citables por workers y por el orquestador en revisión
+(mismo rango que §1: incumplimiento = WP devuelto). Origen: método WEBS,
+incidente de canales 2026-07-19.
+
+### C8 — Canal real de cada comando
+
+Todo comando **copiable** se **ejecuta** contra su canal antes de entregar.
+«Publicado» es ambiguo: GitHub Release ≠ registry npm ≠ tarball. Los
+canales gated solo se anuncian en la página de estado — no como canal
+operativo en fichas ni como bloque `bash` que el lector pueda copiar y
+fallar.
+
+Evidencia mínima en el reporte: salida literal del comando (o del grep CA
+del WP) contra el canal que la página afirma. Si el canal no está
+operativo hoy, el texto no lo presenta como tal.
+
+### C9 — Listas manuales dependientes de eventos futuros
+
+Una lista o tabla **manual** que depende de eventos futuros (nuevos
+releases, nuevos juegos, estado de publish…) = **rot en potencia**. Antes
+de entregar, una de estas tres:
+
+1. se **genera** de la fuente (script / datos vivos), o
+2. se **borra** dejando link a la fuente única (p. ej. página de Releases), o
+3. lleva **caducidad** explícita (fecha o condición de invalidación).
+
+Duplicar a mano lo que ya vive en Releases, registry o una página de
+estado es C9 incumplido.
+
+### Candidata — auditoría de verdad re-ejecutable
+
+El inventario WEBS/CANTERA/01 rev1 (clases ESTABLE / VIVA-OK / ROT /
+ROT-FUTURO cotejables por comandos: `gh release list`, `npm view`,
+existencia de rutas/scripts citados) es una **auditoría de verdad
+re-ejecutable**. Queda como **candidata** a práctica periódica o a gate de
+`docs:build` — hoy no es gate instalado ni checklist obligatorio; C8 y C9
+sí lo son. El orquestador/vigilante puede usarla como contraste post-merge
+de WPs de docs. Formalizarla como gate = WP futuro con GO.
