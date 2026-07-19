@@ -155,4 +155,29 @@ Residual vivo (no demolido — paquete no lo pide): fence en
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador / 2026-07-19 · tip library `c55955bb` ·
+zeus `fe0ed58` (+ commit revisión).
+
+Verificado:
+- Diff library `main...wp/u132-wb-prime-canales` = exactamente 6 ficheros
+  del paquete CAPA rev2. Verbatim ROT §1–§4 (Llévatela tarball; releases
+  2a/2b/2c; línea canales startpacks; nav/sidebar solve). Sellos
+  `animus iocandi` / ancla solve intocados. Worker no tocó `packages/*`
+  ni `plan/BACKLOG.md` ni U133/U134.
+- Re-smoke orquestador: `npm run docs:build` → verde (~11.4s).
+- C8 spot-check: fichas `docs/games/` = 0 `npm install @zeus/startpack`;
+  `releases.md:19` doctrinal 2c OK.
+- C9: cero tabla `| delta |` / título `Futuros (SOLVE` en releases.md;
+  link Releases vivo.
+- PRACTICAS §2 alcance OK; §3 auto-revisión honesta (residual declarado);
+  §6 `docs(portal|reportes)`; §8 C8/C9 del lote del paquete cumplidos.
+
+**Decisión residual `startpacks.md:41`:** el paquete §3 solo sustituye la
+línea de canales — **no** incluye el fence `### Registry`. Worker no
+improvisó (regla 4). **No Devuelto.** Residual → cola viva (amend paquete
+o micro GO futuro). CA#2 del paquete se interpreta acotado al alcance
+verbatim §1–§4; el fence vivo queda como deuda C8 declarada.
+
+**Merge:** library `wp/u132-wb-prime-canales` → `main` (ff); zeus
+`wp/u132-wb-prime-canales` → `main` (rebase sobre U133 ✅, sin tocar U134).
+Tras merge: BACKLOG U132 ✅ + residual cola + `git worktree remove` ambos.
