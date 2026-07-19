@@ -1,13 +1,10 @@
 ---
 layout: home
 hero:
-  name: Zeus SDK
-  text: Crear juegos, no dialectos
+  name: Z_SDK
+  text: Juegos de Ventana de Contexto
   tagline: |-
-    Kit para inventar juegos con un solo contrato (AsyncAPI + authority + MCP por actor).
-    El engine no habla el dialecto de un título: habla el protocolo común.
-    delta y pozo son la prueba — dos juegos, un kit.
-    Abrí una puerta y seguí el mapa.
+    FOSS Docs: framework ARG para comunidades.
   actions:
     - theme: brand
       text: Guía
