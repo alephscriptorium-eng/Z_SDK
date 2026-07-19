@@ -5,7 +5,7 @@
 | agente | worker swarm (chat U140) |
 | fecha | 2026-07-19 |
 | rama | `wp/u140-scrub-rutas-locales` |
-| commit(s) | `7a334f2` |
+| commit(s) | `7a334f2` (scrub) · `2ac7624` (reporte tip/CI) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
