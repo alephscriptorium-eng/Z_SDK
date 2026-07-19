@@ -5,7 +5,7 @@
 | agente | orquestador-implementa (GO D-30 · 1 WP micro) |
 | fecha | 2026-07-19 |
 | rama | `wp/u139-api-nav-cuerpo` |
-| commit(s) | _(tras push)_ |
+| commit(s) | `19545d2` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
