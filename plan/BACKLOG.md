@@ -18,20 +18,19 @@ Sprint 2 (ADDENDA + CAPA):
 **AMEND Sprint 2** (CAPA rev2 · verdad de canales): **D-26** · fuentes
 canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 **GO Sprint 3 / I50:** **D-33** · §Nota ciega pendiente · recepción
-**U142** ⬜ (paralelo a **U141** 🔶).
+**U142** ⬜.
 
 ---
 
-## Remate — estado swarm (2026-07-19 · U141 🔶 · GO I50)
+## Remate — estado swarm (2026-07-19 · post-U141 ✅ · GO I50)
 
-> **esperando: worker U141** (ceguera del reporte U140 · **D-32**) **∥**
-> **§Nota ciega Sprint 3** (GO I50 · **D-33** — recepción **U142** ⬜).
-> **U140** ✅ (scrub rutas absolutas · **D-31** · tip merge `32e5124` /
-> WP tip `465ba99`) — residual: el propio reporte cita el token
-> (nombre-repo-externo) en evidencia de grep. Frente micro API SPA
-> cerrado: **U139** ✅ · **U138** ✅. Micros post-AMEND D-28 cerrados.
-> **0 DA** abiertas. Ops: publish npm startpacks = residual (NO WP).
-> Diferidos U87 §5–6 → **sin GO**.
+> **esperando: §Nota ciega Sprint 3** (GO I50 · **D-33** — recepción
+> **U142** ⬜). **U141** ✅ (ceguera token reporte U140 · **D-32** ·
+> merge `dcd7892` / WP tip `2fd869b`). **U140** ✅ (scrub rutas ·
+> **D-31** · tip merge `32e5124` / WP tip `465ba99`). Frente micro API
+> SPA cerrado: **U139** ✅ · **U138** ✅. Micros post-AMEND D-28
+> cerrados. **0 DA** abiertas. Ops: publish npm startpacks = residual
+> (NO WP). Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -53,18 +52,19 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — bug nav API HTML (SPA) | **U138** | ✅ |
 | **Micro** — bug API links cuerpo md | **U139** | ✅ |
 | **Micro** — higiene rutas absolutas locales | **U140** | ✅ |
-| **Micro** — ceguera token en reporte U140 | **U141** | 🔶 |
+| **Micro** — ceguera token en reporte U140 | **U141** | ✅ |
 | **Sprint 3** — recepción / triage GO I50 | **U142** | ⬜ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U141** 🔶 (orquestador / 2026-07-19 · D-32).
+**En curso:** ninguno (IDLE salvo recepción U142).
 **Propuesto (sin nota aún):** **U142** ⬜ (GO I50 · D-33).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
-**Aceptado:** **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) ·
-**U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
-Sprint 2 base (ver histórico).
+**Aceptado:** **U141** ✅ (ceguera · D-32 · merge `dcd7892`) ·
+**U140** ✅ (scrub rutas · D-31 · merge `32e5124`) · **U139** ✅ ·
+**U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
+(ver histórico).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -249,8 +249,8 @@ rutas de máquina local en `plan/` = deuda de portabilidad/privacidad.
   (`REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md`);
   ejemplo de patrón = forma redactada sin nombre de repo (`C:` +
   `\Users\...\<externo>\...`, partido); CA **sin eximir** ese fichero.
-  **Residual post-✅:** evidencia de grep del reporte cita el token
-  (nombre-repo-externo) en claro → **WP-U141**.
+  **Residual post-✅:** evidencia de grep del reporte citaba el token
+  (nombre-repo-externo) en claro → **WP-U141** ✅ (cerrado).
 
 ---
 
@@ -262,13 +262,13 @@ Fuente (**archivada en repo; citar ruta interna**):
 reintroduce el needle al documentar CA. Regla: evidencia de grep se
 enmascara siempre.
 
-#### WP-U141 · Enmascarar token en reporte U140 — 🔶
+#### WP-U141 · Enmascarar token en reporte U140 — ✅
 
-- 🔶 **WP-U141 · Sustituir menciones literales del token
+- ✅ **WP-U141 · Sustituir menciones literales del token
   (nombre-repo-externo) por máscara neutra en
-  `plan/REPORTES/WP-U140-scrub-rutas-locales.md`** — en curso
+  `plan/REPORTES/WP-U140-scrub-rutas-locales.md`** — aceptado
   (orquestador / 2026-07-19). Rama `wp/u141-ceguera-reporte-u140`.
-  Brief:
+  Tip WP `2fd869b` · merge `dcd7892`. Brief:
   [REPORTES/briefs/WP-U141-ceguera-reporte-u140.md](REPORTES/briefs/WP-U141-ceguera-reporte-u140.md).
   Alcance: **solo** ese reporte (+ reporte WP-U141; sin reintroducir
   token). CA: grep del token = 0 en **todo** el repo, incluido el
@@ -284,7 +284,7 @@ enmascara siempre.
 > blind-safe). **§Nota ciega aún no entregada** — no hay ADDENDA/ENTREGA
 > archivable con cuerpo técnico verificable. **No inventar alcance ni
 > CA de implementación** hasta archivar la §Nota.
-> **Paralelo a U141** (I52 residual) — no mezclar briefs/colas.
+> **U141** ✅ (I52 residual → re-verif vigía en canal externo).
 
 ### WP-U142 · Recepción / triage Sprint 3 — ⬜
 
