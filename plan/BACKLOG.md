@@ -24,12 +24,13 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ## Remate — estado swarm (2026-07-19 · GO D-34 · U143 ∥ U144)
 
-> **esperando: entrega/revisión** **U143** 🔶 (U144 ✅ mergeado). Remate
-> Sprint 3: paralelo D-34; queda CNAME. **U142** ✅ intacto (D-33).
-> **U141** ✅ · **U140** ✅. **0 DA** abiertas. Oferta registry
+> **IDLE remate D-34** — **U143** ✅ · **U144** ✅. Listo para **I51**
+> (cierre Sprint 3). **U142** ✅ intacto (D-33). **U141** ✅ ·
+> **U140** ✅. **0 DA** abiertas. Oferta registry
 > `@alephscript/skills-scriptorium@0.2.0` = recurso opcional (no WP).
 > Ops: publish npm startpacks = residual (NO WP). Diferidos U87 §5–6 →
-> **sin GO**. I51 (cierre) espera ✅ de U143 (U144 ya ✅).
+> **sin GO**. Persistencia custom domain Pages (Settings): ⏳ post-deploy
+> U143 (no bloquea).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -53,18 +54,19 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — higiene rutas absolutas locales | **U140** | ✅ |
 | **Micro** — ceguera token en reporte U140 | **U141** | ✅ |
 | **Sprint 3** — recepción / triage GO I50 | **U142** | ✅ |
-| **Sprint 3** — CNAME `docs/public/` (ambos repos) | **U143** | 🔶 |
+| **Sprint 3** — CNAME `docs/public/` (ambos repos) | **U143** | ✅ |
 | **Sprint 3** — consulta `npm ci` vs `npm install` (catálogo) | **U144** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U143** 🔶 (D-34 · CNAME).
+**En curso:** ninguno (D-34 cerrado). **Listo para I51.**
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U144** ✅ (npm ci catálogo · D-34 · library
-`ad9627c`) · **U142** ✅ (recepción/triage Sprint 3 · D-33) ·
+**Aceptado:** **U143** ✅ (CNAME `docs/public/` · D-34 · zeus merge
+`4d2d805` · library `a25ca08`) · **U144** ✅ (npm ci catálogo · D-34 ·
+library `ad9627c`) · **U142** ✅ (recepción/triage Sprint 3 · D-33) ·
 **U141** ✅ (ceguera · D-32 · merge `dcd7892`) ·
 **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) · **U139** ✅ ·
 **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
@@ -302,7 +304,7 @@ enmascara siempre.
 
 | # §Nota | Ítem | Destino | Estado |
 | ------- | ---- | ------- | ------ |
-| 1 | CNAME en `docs/public/` (portal + catálogo) | **WP-U143** | 🔶 en curso · **D-34** |
+| 1 | CNAME en `docs/public/` (portal + catálogo) | **WP-U143** | ✅ · **D-34** |
 | 2 | `npm ci` vs `npm install` en docs.yml del catálogo (consulta) | **WP-U144** | ✅ · **D-34** |
 | — | Guard de `base` (MSYS) | N/A | ya en `config.mjs` |
 | — | `dist/` en índice (library) | N/A | 0 ficheros |
@@ -310,17 +312,18 @@ enmascara siempre.
 | — | Economía CI (paths-ignore / concurrency) | N/A | ya en ci.yml |
 | — | Oferta `@alephscript/skills-scriptorium@0.2.0` | recurso · no WP | opcional; cero compromiso |
 
-### WP-U143 · CNAME `docs/public/` (ambos repos) — 🔶
+### WP-U143 · CNAME `docs/public/` (ambos repos) — ✅
 
-- 🔶 **WP-U143 · Commitear `docs/public/CNAME` con el dominio de cada
-  portal** — en curso (orquestador / 2026-07-19 · **D-34** · agente
-  worker). Brief:
+- ✅ **WP-U143 · Commitear `docs/public/CNAME` con el dominio de cada
+  portal** — aceptado (orquestador / 2026-07-19 · **D-34**). Brief:
   [REPORTES/briefs/WP-U143-cname-docs-public.md](REPORTES/briefs/WP-U143-cname-docs-public.md).
-  Rama: `wp/u143-cname-docs-public`. Contenidos: zeus
-  `z-sdk.escrivivir.co` · library `games.z-sdk.escrivivir.co` (crear
-  `docs/public/` si falta). **CA:** `git ls-files docs/public/CNAME`
-  en ambos; tras deploy Pages, dominio persiste. **No** DNS/Settings.
-  **Demolición:** n/a.
+  Reporte:
+  [REPORTES/WP-U143-cname-docs-public.md](REPORTES/WP-U143-cname-docs-public.md).
+  Zeus CNAME `bbad244` · merge `4d2d805` · library `963841f` · merge
+  `a25ca08`. Dominios: `z-sdk.escrivivir.co` /
+  `games.z-sdk.escrivivir.co`. Docs+CI success en ramas WP.
+  Persistencia Settings→Pages: ⏳ post-deploy. **CA:** ls-files +
+  contenido ✅; Settings ⏳. **Demolición:** n/a.
 
 ### WP-U144 · Consulta `npm ci` en docs.yml del catálogo — ✅
 

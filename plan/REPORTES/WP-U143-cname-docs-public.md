@@ -144,4 +144,15 @@ Ninguno. Persistencia Settings→Pages queda para verificación tras merge
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** (2026-07-19) — zeus CNAME `bbad244` · library `963841f` ·
+merge zeus `4d2d805` · merge library `a25ca08`.
+
+Verificado en tip: CA ls-files + contenido exacto
+(`z-sdk.escrivivir.co` / `games.z-sdk.escrivivir.co`, sin BOM);
+diff acotado a CNAME ×2 + reporte; Docs+CI success (zeus
+`29704100913`/`29704100883` · library `29704102494`/`29704102478`).
+Worker no tocó BACKLOG. Persistencia Settings→Pages: ⏳ post-merge
+(no bloquea ✅). PRACTICAS §3 / §6 OK.
+
+Merge autorizado → main (ambos repos). Remate D-34: U143 ✅ · U144 ✅
+→ listo para I51.
