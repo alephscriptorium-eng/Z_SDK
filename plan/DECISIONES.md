@@ -354,6 +354,16 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   archivada; ejemplo de patrón neutro sin nombre de repo; CA **sin
   eximir** ese fichero.
 
+- **D-32 · 2026-07-19 · GO residual ceguera reporte U140 (U141)** (GO
+  residual post-U140 / re-verificación externa). Tras U140 ✅ en main
+  (`0e604ae`), rutas absolutas y scrub de clase OK; el reporte U140 cita
+  en claro el token objetivo (nombre-repo-externo) en evidencia de grep.
+  Nota archivada:
+  `plan/REPORTES/entregas/ENTREGA-2026-07-19-ceguera-reporte-u140.md`.
+  Destino: **WP-U141**. Enmascarar token en
+  `plan/REPORTES/WP-U140-scrub-rutas-locales.md`; CA: grep del token = 0
+  en todo el repo (incluido ese reporte). No reabre U140.
+
 ## Abiertas (bloquean lo indicado)
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son

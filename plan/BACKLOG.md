@@ -20,13 +20,15 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 
 ---
 
-## Remate — estado swarm (2026-07-19 · post U140 ✅)
+## Remate — estado swarm (2026-07-19 · post U140 ✅ · U141 🔶)
 
-> **IDLE sin pendientes** (higiene rutas locales cerrada). **U140** ✅
-> (scrub rutas absolutas · **D-31** · tip merge `32e5124` / WP tip
-> `465ba99`). Frente micro API SPA cerrado: **U139** ✅ · **U138** ✅.
-> Micros post-AMEND D-28 cerrados. **0 DA** abiertas. Ops: publish npm
-> startpacks = residual (NO WP). Diferidos U87 §5–6 → **sin GO**.
+> **esperando: worker U141** (ceguera del reporte U140 · **D-32**).
+> **U140** ✅ (scrub rutas absolutas · **D-31** · tip merge `32e5124` /
+> WP tip `465ba99`) — residual: el propio reporte cita el token
+> (nombre-repo-externo) en evidencia de grep. Frente micro API SPA
+> cerrado: **U139** ✅ · **U138** ✅. Micros post-AMEND D-28 cerrados.
+> **0 DA** abiertas. Ops: publish npm startpacks = residual (NO WP).
+> Diferidos U87 §5–6 → **sin GO**.
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -48,11 +50,12 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Micro** — bug nav API HTML (SPA) | **U138** | ✅ |
 | **Micro** — bug API links cuerpo md | **U139** | ✅ |
 | **Micro** — higiene rutas absolutas locales | **U140** | ✅ |
+| **Micro** — ceguera token en reporte U140 | **U141** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno.
+**En curso:** **U141** 🔶 (orquestador / 2026-07-19 · D-32).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo).
 **Aceptado:** **U140** ✅ (scrub rutas · D-31 · merge `32e5124`) ·
 **U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
@@ -241,6 +244,31 @@ rutas de máquina local en `plan/` = deuda de portabilidad/privacidad.
   (`REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md`);
   ejemplo de patrón = forma redactada sin nombre de repo (`C:` +
   `\Users\...\<externo>\...`, partido); CA **sin eximir** ese fichero.
+  **Residual post-✅:** evidencia de grep del reporte cita el token
+  (nombre-repo-externo) en claro → **WP-U141**.
+
+---
+
+## Micro — ceguera token en reporte U140 (GO residual · 2026-07-19 · D-32)
+
+Fuente (**archivada en repo; citar ruta interna**):
+[REPORTES/entregas/ENTREGA-2026-07-19-ceguera-reporte-u140.md](REPORTES/entregas/ENTREGA-2026-07-19-ceguera-reporte-u140.md)
+(§Nota «Enmascarar token…»; residual post-U140). El reporte U140 ✅
+reintroduce el needle al documentar CA. Regla: evidencia de grep se
+enmascara siempre.
+
+#### WP-U141 · Enmascarar token en reporte U140 — 🔶
+
+- 🔶 **WP-U141 · Sustituir menciones literales del token
+  (nombre-repo-externo) por máscara neutra en
+  `plan/REPORTES/WP-U140-scrub-rutas-locales.md`** — en curso
+  (orquestador / 2026-07-19). Rama `wp/u141-ceguera-reporte-u140`.
+  Brief:
+  [REPORTES/briefs/WP-U141-ceguera-reporte-u140.md](REPORTES/briefs/WP-U141-ceguera-reporte-u140.md).
+  Alcance: **solo** ese reporte (+ reporte WP-U141; sin reintroducir
+  token). CA: grep del token = 0 en **todo** el repo, incluido el
+  reporte U140. **Demolición:** token literal en evidencia/prosa del
+  reporte U140. No reabre scrub de rutas (U140 ✅).
 
 ---
 
