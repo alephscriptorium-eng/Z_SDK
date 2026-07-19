@@ -5,7 +5,7 @@
 | agente | cursor-swarm (worker U130) |
 | fecha | 2026-07-19 |
 | rama | `wp/u130-plantilla-sprint` |
-| commit(s) | `b1d3185` |
+| commit(s) | `b1d3185` · `b063842` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
