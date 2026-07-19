@@ -52,18 +52,18 @@ procedencia, alcance explícito del WP). Diff acotado a `plan/**`.
 ```
 CA1 (patron 1): hits=0 files=[]
 CA2 (patron 2): hits=0 files=[]
-CA3 SCRIPT_SDK en plan/: hits=0
+CA3 <externo> en plan/: hits=0
 --- lista minima + U122 + entrega ---
-plan/BACKLOG.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/DECISIONES.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/BACKLOG-HISTORICO.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/REPORTES/briefs/WP-U108-volumes-gitignore.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/REPORTES/briefs/WP-U138-api-nav-spa.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/REPORTES/briefs/WP-U139-api-nav-cuerpo.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-INDICE.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/REPORTES/temp-review-2026-07-17.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md: pat1=0 pat2=0 SCRIPT_SDK=0
-plan/REPORTES/WP-U122-registry-password-auth.md: pat1=0 pat2=0 SCRIPT_SDK=0
+plan/BACKLOG.md: pat1=0 pat2=0 <externo>=0
+plan/DECISIONES.md: pat1=0 pat2=0 <externo>=0
+plan/BACKLOG-HISTORICO.md: pat1=0 pat2=0 <externo>=0
+plan/REPORTES/briefs/WP-U108-volumes-gitignore.md: pat1=0 pat2=0 <externo>=0
+plan/REPORTES/briefs/WP-U138-api-nav-spa.md: pat1=0 pat2=0 <externo>=0
+plan/REPORTES/briefs/WP-U139-api-nav-cuerpo.md: pat1=0 pat2=0 <externo>=0
+plan/REPORTES/entregas/ENTREGA-2026-07-19-sprint2/00-INDICE.md: pat1=0 pat2=0 <externo>=0
+plan/REPORTES/temp-review-2026-07-17.md: pat1=0 pat2=0 <externo>=0
+plan/REPORTES/entregas/ENTREGA-2026-07-19-higiene-rutas-locales.md: pat1=0 pat2=0 <externo>=0
+plan/REPORTES/WP-U122-registry-password-auth.md: pat1=0 pat2=0 <externo>=0
 ```
 
 - Alcance diff: solo `plan/**` (≈98 ficheros de prosa/reportes/briefs).
@@ -91,14 +91,14 @@ $ gh run list --branch wp/u140-scrub-rutas-locales --limit 5
 
 Rutas absolutas de máquina local como procedencia y nombres de repo
 externos usados como procedencia en el árbol público `plan/`. Grep de
-clase (patrones (1)/(2) de la §Nota) = 0 en todo el repo; `SCRIPT_SDK`
+clase (patrones (1)/(2) de la §Nota) = 0 en todo el repo; `<externo>`
 como token de procedencia en `plan/` = 0. Entrega archivada incluida en
 el barrido.
 
 ```
 CA1 (patron 1): hits=0
 CA2 (patron 2): hits=0
-CA3 SCRIPT_SDK en plan/: hits=0
+CA3 <externo> en plan/: hits=0
 ```
 
 ## Auto-revisión (PRACTICAS.md §3 — con honestidad, no mecánica)
@@ -135,7 +135,7 @@ Worker no marca ✅ ni mergea.
 
 **Aceptado ✅** (2026-07-19) — tip `465ba99`.
 
-Verificado: CA (1)/(2) = 0 en tip; SCRIPT_SDK solo meta en este reporte;
+Verificado: CA (1)/(2) = 0 en tip; <externo> solo meta en este reporte;
 entrega `ENTREGA-2026-07-19-higiene-rutas-locales.md` sin exención, ejemplo
 partido/neutro, 0 hits; diff 99 ficheros solo `plan/**`; BACKLOG sin cambio
 de estados 🔶/✅ por el worker; CI N/A (paths-ignore U104). Auto-revisión
