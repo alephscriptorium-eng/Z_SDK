@@ -74,6 +74,7 @@
     "test:gates": "node --test test/gates/*.test.mjs",
     "format": "prettier --write .",
     "seed:aleph": "node scripts/seed-aleph-presets.mjs",
+    "skills:sync": "node scripts/sync-claude-skills.mjs",
     "stop:services": "node scripts/stop-services.mjs",
     "stop:v1-zeus": "npm run stop:services -- \"V1 Zeus stopped\" socket-server console-monitor cache-browser firehose-browser",
     "stop:ports": "bash scripts/stop-ports.sh",
