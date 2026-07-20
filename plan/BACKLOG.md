@@ -34,16 +34,19 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > **dry-run local**; CA re-verificadas de facto (gate: exit 3/1/0/4;
 > `custodio` en WP-U139 atrapado; 0 issues en `Z_SDK`). **Adopción 0.3.3**
 > mecánica hecha (`c6d9ffb`, D-36). **OA-1 RESUELTA** (canal handoff =
-> entrega manual). **Dos hallazgos U154:** (1) **OA-2** abierta — el
-> backlog usa vocabulario de protocolo («custodio»/«vigía») → NO blindable
-> para tracker público sin decisión de vocabulario; **bloquea cualquier GO
-> de publicación real**. (2) formato de bullets `**WP-XX**` vs parser
-> `**WP-XX · título**` (~16 no casan) → cola residual + punto handoff.
-> CI [29748852798](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29748852798)
+> entrega manual). **OA-2 RESUELTA** (**D-38** · vía a · GO usuario):
+> roles `custodio`/`vigía`/`vigilante` publicables → fuera de
+> `CEGUERA_PATTERN`; patrón residual
+> `mediaci|marco|addenda|§interna|instancia-ejemplo` (+ locales runtime).
+> Consecuencia: proyección pública **desbloqueada en vocabulario**
+> *cuando* el texto pase el gate; **no** es GO de Issues reales
+> (DC-15 / LOCAL-ONLY hasta GO aparte). Hallazgo residual U154: formato
+> de bullets `**WP-XX**` vs parser `**WP-XX · título**` (~16 no casan) →
+> cola + punto handoff. CI
+> [29748852798](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29748852798)
 > + Docs [29748852726](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29748852726)
-> success. Estado declarado: **IDLE** — abierto solo del usuario: **OA-2**
-> (vocabulario publicable) bloquea proyección real; handoff (4 puntos) =
-> entrega manual.
+> success. Estado declarado: **IDLE** — 0 OA abiertas; handoff (puntos
+> de contenido) = entrega manual.
 >
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 CERRADO** (GO usuario ·
 > **D-37**): **U149–U153** ✅ mergeados + push `main` tip `95afc93`.

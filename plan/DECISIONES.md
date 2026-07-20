@@ -440,20 +440,35 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
     canal de envío sin definir (§abiertas OA-1). **CA:** decisión
     registrada; lote Sprint 5 abierto (U149–U153).
 
+- **D-38 · 2026-07-20 · Vocabulario publicable de método (OA-2 vía a)**
+  (GO **usuario** / custodio en chat orquestador). **Decisión:** los
+  roles de método **`custodio`**, **`vigía`/`vigilante`** son
+  **publicables** en cara proyectada; se **sacan** de
+  `CEGUERA_PATTERN`. Quedan prohibidos en el patrón de calibración
+  local: `mediaci|marco|addenda|§interna|instancia-ejemplo` (+ tokens
+  locales sensibles que el operador añada en runtime; no se
+  commitean). **Consecuencia:** el gate de ceguera deja de abortar por
+  vocabulario de roles de método; la proyección pública queda
+  **desbloqueada en vocabulario** *cuando* el texto pase el gate
+  restante. **No** es GO de proyección real a Issues (`Z_SDK` sigue
+  LOCAL-ONLY / DC-15 hasta GO explícito aparte). Calibración documentada
+  en `plan/roles/README.md` §6. Cierra **OA-2**. Evidencia preview
+  post-ajuste (2026-07-20): con patrón residual, `alcance=todos` sigue
+  en exit 1 por hit **`addenda`** en WP-U139 (literal `ADDENDA` en
+  cuerpo); `custodio|vig[íi]a` solos → 0 hits; `alcance=abiertos` →
+  exit 0. Sin scrub masivo (requiere GO aparte).
+
 ## Abiertas (bloquean lo indicado)
 
-- **OA-2 · Vocabulario publicable antes de proyectar el backlog a un
-  tracker PÚBLICO.** Hallazgo U154: el gate de ceguera de
-  `proyectar-backlog.mjs` **aborta** porque `plan/BACKLOG.md` usa
-  vocabulario de protocolo legítimo («custodio», «vigía», etc.) que la
-  cara pública no debe filtrar (probado: `custodio` en WP-U139 → exit 1).
-  **Bloquea de facto cualquier proyección real a `Z_SDK` (repo público).**
-  Decisión del usuario, dos vías: **(a)** decidir qué vocabulario es
-  publicable + scrub/reescritura de la cara proyectada (el `CEGUERA_PATTERN`
-  se ajusta a lo realmente prohibido), o **(b)** tracker **privado** para
-  la proyección. Hasta resolverla: **LOCAL-ONLY sigue siendo el único modo
-  autorizado**; ningún GO de publicación real. No bloquea nada más (la
-  herramienta funciona en dry-run).
+- ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
+  tracker PÚBLICO.**~~ **RESUELTA** (usuario · 2026-07-20 · **D-38** ·
+  vía **(a)**): roles de método `custodio` / `vigía`/`vigilante` =
+  publicables; fuera de `CEGUERA_PATTERN`. Patrón residual de marco /
+  addenda / instancia: `mediaci|marco|addenda|§interna|instancia-ejemplo`
+  (+ locales en runtime). Hallazgo U154 original: gate abortaba por
+  `custodio` en WP-U139 (exit 1). Proyección real a tracker público
+  sigue requiriendo **GO aparte** (DC-15); este cierre solo desbloquea
+  el gate de vocabulario de roles.
 
 - ~~**OA-1 · Canal de envío del handoff a skills-scriptorium.**~~
   **RESUELTA** (usuario · 2026-07-20): canal = **entrega manual del
