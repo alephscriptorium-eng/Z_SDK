@@ -69,7 +69,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | ✅ |
 | **Sprint 4** — micro demolición `.cursor/`+copilot | **U148** | ✅ |
 | **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | ✅ |
-| **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | 🔶 revisión |
+| **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | ✅ |
 | **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | 🔶 merge pend. |
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | 🔶 revisión |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | 🔶 merge pend. |
@@ -81,7 +81,8 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U149** ✅ (baseline 0.3.1 · tip `9290073` · stack U152) ·
+**Aceptado:** **U150** ✅ (gate verificar-sitio · tip `9ef2eaf`) ·
+**U149** ✅ (baseline 0.3.1 · tip `9290073` · stack U152) ·
 **U143** ✅ · **U144** ✅ · **U142** ✅ · **U141** ✅ · **U140** ✅ ·
 **U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
 Sprint 2 base (ver histórico). **D-35** / **D-37**.
@@ -384,22 +385,19 @@ Lote GO · 2026-07-20. MUNDO_RAIZ = zeus-sdk. Merge stack vía **U152**
   gates OK). **ALCANCE_DIFF** OK · ceguera OK. **Eje:** ninguno
   (gobierno). **Nota CI:** lockfile dispara CI al push.
 
-### WP-U150 · Gate `verificar-sitio.mjs` en docs CI + slug roto — 🔶
+### WP-U150 · Gate `verificar-sitio.mjs` en docs CI + slug roto — ✅
 
-- 🔶 **WP-U150** (dep U149 mergeado o su rama) — en curso
-  (orquestador+ejecutor · 2026-07-20). Rama `wp/u150-gate-sitio`. Brief:
+- ✅ **WP-U150** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u150-gate-sitio` tip `9ef2eaf` (en main vía stack U152).
+  Reporte:
+  [REPORTES/WP-U150-gate-sitio.md](REPORTES/WP-U150-gate-sitio.md).
+  Brief:
   [REPORTES/briefs/WP-U150-gate-sitio.md](REPORTES/briefs/WP-U150-gate-sitio.md).
-  **Qué:** invocar `verificar-sitio.mjs` del paquete (desde
-  `node_modules`, no copiar) como paso de `docs.yml` **tras**
-  `npm run docs:build`, sobre `docs/.vitepress/dist` (BASE=/). Arreglar
-  el **slug roto** encontrado: inconsistencia `Z_SDK` vs `zeus-sdk` en
-  `docs/guide/{estado,layout}.md` — verificar cuál resuelve y unificar.
-  **CA:** el gate corre en CI y **falla** ante enlace/ancla muerta (probar
-  con un enlace roto temporal → rojo → revertir); slug unificado y
-  resoluble; `docs:build` verde. **ALCANCE_DIFF:** `.github/workflows/docs.yml`,
-  `docs/guide/*.md` (slug), `package.json` (si npm script), reporte.
-  **Eje:** site-web (verificación C8-ampliado). **Nota:** exigir run_id
-  del workflow Docs en la revisión (toca `.github/**` → CI corre).
+  **Qué:** `verificar-sitio.mjs` post-`docs:build` en `docs.yml` + script
+  `docs:verify`; slug monorepo unificado a `Z_SDK` (remoto real;
+  `zeus-sdk` 404). **CA:** fail-probe exit 1 · build+verify verdes ·
+  ALCANCE OK. **Eje:** site-web. **Nota CI:** exigir run_id Docs tras
+  push (`.github/**`).
 
 ### WP-U151 · CHANGELOG de gobierno (grueso, por ola) — 🔶
 

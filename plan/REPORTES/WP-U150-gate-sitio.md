@@ -84,4 +84,13 @@ Ninguno. Dep U149 incluida en la base de la rama.
 
 ## Revisión del orquestador
 
-_(pendiente — no inventar ✅)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+- [x] CA1 — gate falla ante enlace muerto (probe /tmp dist → exit 1; verde tras limpio)
+- [x] CA2 — slug unificado `Z_SDK` (remoto real; `zeus-sdk` 404) en layout/estado
+- [x] CA3 — `docs:build` + `docs:verify` verdes (html=32)
+- [x] ALCANCE_DIFF OK; invoca script desde node_modules (no copia); ceguera OK
+
+### Merge
+En main vía stack U152; tip U150 `9ef2eaf`. Push → exigir `gh run` Docs success.
