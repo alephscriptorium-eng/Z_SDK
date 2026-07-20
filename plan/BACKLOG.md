@@ -39,8 +39,11 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > para tracker público sin decisión de vocabulario; **bloquea cualquier GO
 > de publicación real**. (2) formato de bullets `**WP-XX**` vs parser
 > `**WP-XX · título**` (~16 no casan) → cola residual + punto handoff.
-> Estado declarado: **esperando: verde CI del merge U154 + decisiones OA-2
-> del usuario**.
+> CI [29748852798](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29748852798)
+> + Docs [29748852726](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29748852726)
+> success. Estado declarado: **IDLE** — abierto solo del usuario: **OA-2**
+> (vocabulario publicable) bloquea proyección real; handoff (4 puntos) =
+> entrega manual.
 >
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 CERRADO** (GO usuario ·
 > **D-37**): **U149–U153** ✅ mergeados + push `main` tip `95afc93`.
