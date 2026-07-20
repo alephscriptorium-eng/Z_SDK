@@ -100,6 +100,36 @@ Los commits convencionales no son cosmética: alimentan changesets → changelog
 → `npm publish` del pipeline de release (PRACTICAS §6, ARQUITECTURA §5).
 WP que toque paquete publicable ⇒ changeset obligatorio.
 
+### 6. Proyección backlog→Issues (LOCAL-ONLY, DC-15)
+
+El método genérico vive en el paquete
+(`swarm-orquestacion/reference/proyeccion-issues.md` + el script
+`scripts/proyectar-backlog.mjs`). No se copia: se **invoca** desde
+`node_modules` vía npm script (patrón U147/U150/U153). Delta de calibración:
+
+- **Modo declarado: LOCAL-ONLY.** `Z_SDK` es repo **público**. No se proyecta
+  a GitHub sin GO explícito del usuario **por acción**. El npm script base
+  rehúsa la API sin opt-in (exit 4). La proyección real
+  (`PROYECCION_GITHUB=1` / `--habilitar-github`) queda **fuera** de todo WP de
+  montaje; requiere GO aparte (cara pública).
+- **npm scripts** (`package.json`):
+  - `backlog:project` — base: `export --alcance abiertos` contra el script del
+    paquete. Sin `--dry-run` y sin opt-in ⇒ rehúsa (exit 4). Es el candado.
+  - `backlog:project:preview` — reutiliza el base añadiéndole `--dry-run`
+    (preview sin API). Uso:
+    `CEGUERA_PATTERN='…' npm run backlog:project:preview`.
+- **`--alcance abiertos`** (DC-20): sólo `⬜`/`🔶`. Los ~140 `✅` no se
+  proyectan (proyección desechable ya cerrada; ver método).
+- **Gate de ceguera (DC-12) — obligatorio.** El patrón va **por env**
+  (`CEGUERA_PATTERN`), **nunca committeado en el skill** (para no
+  auto-contaminarse). Base de vocabulario de marco prohibido en cara pública:
+  `vig[íi]a|custodio|mediaci|marco|addenda|§interna|instancia-ejemplo`. El
+  operador **añade en runtime** los tokens locales sensibles (rutas de
+  máquina, alias privados); ésos **no** se commitean. Sin patrón ⇒ rehúsa
+  (exit 3, fail-safe); con hit ⇒ aborta sin crear nada (exit 1).
+- **Mapa:** `plan/.sync-map.json` (git-tracked, `WP-XX → nº issue`). Inicial
+  **vacío** (`{}`): aún no hay proyección real.
+
 ## Runners / IDEs
 
 Ningún IDE lleva adaptador propio en el repo (decisión usuario
