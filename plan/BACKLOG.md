@@ -30,15 +30,13 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 ## Remate — estado swarm (2026-07-20 · Sprint 5 en curso)
 
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 EN CURSO** (GO usuario ·
-> **D-37**): stack **U149** ✅ mergeado (vía U152 ff); **U150–U152**
-> código en main pendientes gobierno ✅; **U151** ∥ **U153** pendientes
-> merge. Handoff diseñador
+> **D-37**): stack **U149–U152** ✅ mergeados (ff vía U152); **U151** ∥
+> **U153** pendientes merge. Handoff diseñador
 > ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md))
-> — **OA-1** canal de envío abierta. Estado declarado: **revisión
-> orquestador en curso (aceptaciones atómicas V2)**. Previo: Sprint 3
-> cerrado · **0 DA** abiertas · publish npm startpacks = residual (NO WP)
-> · diferidos U87 §5–6 sin GO · persistencia custom domain Pages ⏳
-> post-deploy U143 (no bloquea).
+> — **OA-1** canal de envío abierta. Estado declarado: **mergeando
+> U151 ∥ U153 + push/CI**. Previo: Sprint 3 cerrado · **0 DA** abiertas ·
+> publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
+> persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -71,7 +69,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | ✅ |
 | **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | ✅ |
 | **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | 🔶 merge pend. |
-| **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | 🔶 revisión |
+| **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | 🔶 merge pend. |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
@@ -81,7 +79,8 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U150** ✅ (gate verificar-sitio · tip `9ef2eaf`) ·
+**Aceptado:** **U152** ✅ (Proyecto + SITE_BACK · tip `9c5b842`) ·
+**U150** ✅ (gate verificar-sitio · tip `9ef2eaf`) ·
 **U149** ✅ (baseline 0.3.1 · tip `9290073` · stack U152) ·
 **U143** ✅ · **U144** ✅ · **U142** ✅ · **U141** ✅ · **U140** ✅ ·
 **U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
@@ -417,24 +416,18 @@ Lote GO · 2026-07-20. MUNDO_RAIZ = zeus-sdk. Merge stack vía **U152**
   `**.md` en raíz → verificar si cae en paths-ignore U104 (probablemente
   N/A). **Demolición:** n/a.
 
-### WP-U152 · Docs: página Proyecto + back-links por tema — 🔶
+### WP-U152 · Docs: página Proyecto + back-links por tema — ✅
 
-- 🔶 **WP-U152** (dep U150 — el gate valida los enlaces nuevos) — en curso
-  (orquestador+ejecutor · 2026-07-20). Rama `wp/u152-docs-back`. Brief:
+- ✅ **WP-U152** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u152-docs-back` tip `9c5b842` (ff a main; trae U149+U150).
+  Reporte:
+  [REPORTES/WP-U152-docs-back.md](REPORTES/WP-U152-docs-back.md).
+  Brief:
   [REPORTES/briefs/WP-U152-docs-back.md](REPORTES/briefs/WP-U152-docs-back.md).
-  **Qué:** (1) página `docs/proyecto.md`
-  (repo/registry/CI/backlog); (2) back-links al back **a nivel de tema**,
-  **no** por página: declarar repo/registry/CI **una sola vez** como
-  `themeConfig` (`socialLinks`, `footer`, o componente compartido) en
-  `docs/.vitepress/config.mjs`/theme, renderizado en todas las páginas.
-  **Prohibido** hardcodear el bloque en las 25 páginas (antipatrón elevado
-  al diseñador, Punto 3 del handoff). Si alguna página tiene enlaces
-  particulares defectuosos, **regenerar por pipeline** con fuente única,
-  no parchear a mano. **CA:** página Proyecto en nav/sidebar; back-links
-  visibles en todas las páginas desde **una** fuente (grep: el dato del
-  repo/registry aparece 1 vez en config, 0 veces hardcodeado por página);
-  `verificar-sitio.mjs` (U150) verde sobre el `dist` nuevo. **ALCANCE_DIFF:**
-  `docs/.vitepress/**`, `docs/proyecto.md`, reporte. **Eje:** site-web.
+  **Qué:** `docs/proyecto.md` en nav/sidebar; back-links vía `SITE_BACK`
+  en `themeConfig` (socialLinks/footer) — una fuente, 0 hardcode por
+  página. **CA:** nav OK · grep registry solo en config · verificar-sitio
+  verde (33 html). **Eje:** site-web. **Nota CI:** Docs tras push.
 
 ### WP-U153 · Materializar estación de vigilancia — 🔶
 

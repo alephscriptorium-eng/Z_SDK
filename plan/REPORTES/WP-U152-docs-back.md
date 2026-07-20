@@ -78,4 +78,13 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(pendiente — no inventar ✅)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+- [x] CA1 — `docs/proyecto.md` en nav + sidebar
+- [x] CA2 — `SITE_BACK` fuente única en config; 0 hardcode registry en md
+- [x] CA3 — `docs:build` + `verificar-sitio` OK (html=33)
+- [x] ALCANCE_DIFF OK (commit propio); ceguera OK; Punto 3 handoff respetado
+
+### Merge
+ff stack a main tip código `9c5b842`; gobierno post-aceptación en tip main.
