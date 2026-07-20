@@ -5,7 +5,7 @@
 | origen | mundo consumidor zeus-sdk (orquestador) |
 | destino | diseñador/mantenedor de `@alephscript/skills-scriptorium` |
 | fecha | 2026-07-20 |
-| versión evaluada | `0.3.1` (registry propio) |
+| versión evaluada | `0.3.1`; **revisado de nuevo contra `0.3.3`** (los 3 puntos siguen abiertos) |
 | estado | **pendiente de validación** — esperando feedback del diseñador |
 | canal de envío | ⏳ sin definir (lo fija el custodio; esta nota queda asentada en disco) |
 
@@ -40,6 +40,15 @@ método no tiene una frontera minor donde fijarse.
 **Propuesta (a validar):** re-etiquetar como `0.4.0`, **o** fijar doctrina
 explícita en el CHANGELOG/README: «añadir o modificar una regla de método =
 minor; patch = solo correcciones sin cambio de contrato».
+
+**Evidencia reforzada en `0.3.3`.** WP-11 (0.3.2) introduce un *badge* que
+muestra «versión de método de `swarm-orquestacion` = **v0.4.0**» mientras
+el **paquete** publicado sigue en **`0.3.3`**. La divergencia
+método-vs-semver-de-paquete ya es explícita en el propio portal, pero **sin
+reconciliar**: un consumidor por rango `0.x` recibe método v0.4 dentro de
+parches 0.3.x. Refuerza la propuesta: o el paquete sube a `0.4.0`, o el
+README fija que «versión de método» y «semver de paquete» son ejes
+distintos y declara la correspondencia.
 
 ## Punto 2 — El gate de CHANGELOG asume mundo de un solo paquete
 
@@ -101,3 +110,22 @@ nuevas** (fuente única de la URL), no parchear página a página.
 
 Estos tres puntos quedan **abiertos esperando feedback**; su resolución en
 el paquete puede simplificar la calibración local de zeus más adelante.
+
+---
+
+## Revisión contra 0.3.2 / 0.3.3 (2026-07-20)
+
+Releases posteriores fueron por **otro eje** (proyección del backlog a
+GitHub Issues: WP-09/10/12) y **no tocan** los tres puntos: siguen abiertos.
+
+- **Punto 1** — reforzado (ver «Evidencia en 0.3.3» arriba: badge v0.4.0 vs
+  paquete 0.3.3).
+- **Punto 2 y 3** — sin cambios; el gate de CHANGELOG y WP-08 (back-links)
+  no se han revisado.
+- **Convergencia a favor (no es queja):** WP-11 recomienda **gitignorar**
+  la copia `.claude/skills` (fuente = `node_modules`). Es exactamente la
+  decisión que zeus tomó por su cuenta antes de esta release — señal de que
+  la dirección es correcta.
+- **Interés de adopción (aparte del feedback):** la proyección
+  backlog→Issues (opt-in, con gate de ceguera y aviso del vigía ante
+  proyección no declarada) es candidata a evaluar en zeus en un lote futuro.
