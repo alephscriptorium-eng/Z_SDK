@@ -30,13 +30,13 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 ## Remate — estado swarm (2026-07-20 · Sprint 5 en curso)
 
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 EN CURSO** (GO usuario ·
-> **D-37**): stack **U149–U152** ✅ mergeados (ff vía U152); **U151** ∥
-> **U153** pendientes merge. Handoff diseñador
+> **D-37**): **U149–U152** ✅ · **U151** ✅; **U153** pendiente merge.
+> Handoff diseñador
 > ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md))
-> — **OA-1** canal de envío abierta. Estado declarado: **mergeando
-> U151 ∥ U153 + push/CI**. Previo: Sprint 3 cerrado · **0 DA** abiertas ·
-> publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
-> persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
+> — **OA-1** canal de envío abierta. Estado declarado: **mergeando U153
+> + push/CI**. Previo: Sprint 3 cerrado · **0 DA** abiertas · publish npm
+> startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO · persistencia
+> custom domain Pages ⏳ post-deploy U143 (no bloquea).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -68,7 +68,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 4** — micro demolición `.cursor/`+copilot | **U148** | ✅ |
 | **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | ✅ |
 | **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | ✅ |
-| **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | 🔶 merge pend. |
+| **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | ✅ |
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | 🔶 merge pend. |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
@@ -79,12 +79,11 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U152** ✅ (Proyecto + SITE_BACK · tip `9c5b842`) ·
-**U150** ✅ (gate verificar-sitio · tip `9ef2eaf`) ·
-**U149** ✅ (baseline 0.3.1 · tip `9290073` · stack U152) ·
-**U143** ✅ · **U144** ✅ · **U142** ✅ · **U141** ✅ · **U140** ✅ ·
-**U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
-Sprint 2 base (ver histórico). **D-35** / **D-37**.
+**Aceptado:** **U151** ✅ (CHANGELOG gobierno · tip `7f0103f` · merge
+`d32c4a5`) · **U152** ✅ · **U150** ✅ · **U149** ✅ · **U143** ✅ ·
+**U144** ✅ · **U142** ✅ · **U141** ✅ · **U140** ✅ · **U139** ✅ ·
+**U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
+(ver histórico). **D-35** / **D-37**.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -398,23 +397,18 @@ Lote GO · 2026-07-20. MUNDO_RAIZ = zeus-sdk. Merge stack vía **U152**
   ALCANCE OK. **Eje:** site-web. **Nota CI:** exigir run_id Docs tras
   push (`.github/**`).
 
-### WP-U151 · CHANGELOG de gobierno (grueso, por ola) — 🔶
+### WP-U151 · CHANGELOG de gobierno (grueso, por ola) — ✅
 
-- 🔶 **WP-U151** (independiente) — en curso (orquestador+ejecutor ·
-  2026-07-20). Rama `wp/u151-changelog-gobierno`. Brief:
+- ✅ **WP-U151** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u151-changelog-gobierno` tip `7f0103f` · merge `d32c4a5`.
+  Reporte:
+  [REPORTES/WP-U151-changelog-gobierno.md](REPORTES/WP-U151-changelog-gobierno.md).
+  Brief:
   [REPORTES/briefs/WP-U151-changelog-gobierno.md](REPORTES/briefs/WP-U151-changelog-gobierno.md).
-  **Qué:** crear `CHANGELOG.md` de **raíz** (Keep a Changelog) **derivado
-  del `plan/BACKLOG.md`**, granularidad **gruesa por ola/sprint** (no WP a
-  WP; no es changelog de paquete — los 19 de `packages/*` son changesets y
-  **no se tocan**). Traer las olas/sprints cerrados relevantes (0–10 +
-  Sprints 1–4). **No** adoptar el gate `verificar-changelog.mjs` (asume 1
-  BACKLOG↔1 CHANGELOG con WP-ids; choca con changesets — Punto 2 del
-  handoff). **CA:** `CHANGELOG.md` raíz existe, formato estándar, secciones
-  por ola/sprint con sus WP ✅ agregados; cada sprint cerrado del BACKLOG
-  tiene su entrada; sin inventar prosa (deriva del backlog). **ALCANCE_DIFF:**
-  `CHANGELOG.md`, reporte. **Eje:** ninguno (gobierno). **Nota CI:** solo
-  `**.md` en raíz → verificar si cae en paths-ignore U104 (probablemente
-  N/A). **Demolición:** n/a.
+  **Qué:** `CHANGELOG.md` raíz Keep a Changelog, grueso por ola/sprint
+  (1–4 + olas 0–10), derivado BACKLOG; sin `verificar-changelog.mjs`.
+  **CA:** formato OK · sprints presentes · packages/* intactos. **Eje:**
+  ninguno. **Nota CI:** paths-ignore N/A probable.
 
 ### WP-U152 · Docs: página Proyecto + back-links por tema — ✅
 

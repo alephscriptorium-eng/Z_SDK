@@ -87,4 +87,14 @@ Ninguno.
 
 ## Revisión del orquestador
 
-_(pendiente — no inventar ✅)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+- [x] CA1 — `CHANGELOG.md` raíz Keep a Changelog
+- [x] CA2 — secciones Sprint 1–4 + olas relevantes
+- [x] CA3 — derivado BACKLOG; sin prosa inventada de producto
+- [x] CA4 — 0 toques a `packages/*/CHANGELOG*`; sin `verificar-changelog`
+- [x] ALCANCE_DIFF OK; ceguera OK
+
+### Merge
+merge commit `d32c4a5` (no-ff desde tip paralelo `7f0103f`).
