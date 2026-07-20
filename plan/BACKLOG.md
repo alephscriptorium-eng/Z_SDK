@@ -30,12 +30,18 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 ## Remate — estado swarm (2026-07-20 · Sprint 4 en curso)
 
 > **Sprint 4** (GO usuario · ejecución diferida **D-35**): **U145** ✅ ·
-> **U146** ✅ · **U147** ✅ — lote completo aceptado. Estado declarado:
-> **esperando: GO de merge del usuario** (orden **U145 → U147 → U146**;
-> el push de U145/U147 dispara CI → verde = condición de cierre; U146
-> N/A por U104). Elevado a usuario: token en historial `main` (hallazgo
-> U146; squash = decisión suya) · candidato **U148** (`.cursor/`
-> repuntar adaptador, conviene en el lote de merge).
+> **U146** ✅ · **U147** ✅ — lote aceptado. **Amend usuario 2026-07-20:**
+> pin `0.3.0` → rango `0.x` (solo major; 0.3.1 en preparación) —
+> aplicado en rama U145 `ff18b6e` por orden directa; deroga el «pin
+> exacto» de D-35 (formalizar como **D-36** al cerrar). **Lote de
+> limpieza pre-merge propuesto** (esperando GO único): (1) reescritura
+> local de `702f18c` para enmascarar ruta local (NO pushead; origin/main
+> = `474d06c`) + rebase de las 3 ramas wp; (2) corrección U147:
+> `.claude/` → gitignore (espejo generado, no commiteado); (3) U148
+> redefinido: demoler `.cursor/` + `copilot-instructions.md` de
+> operator-ui (markdown de agente, sin valor funcional); (4) costura
+> U146: prosa «versión fijada» → «rango 0.x». Después: merge
+> U145 → U147 → U146 + push (CI verde = cierre).
 > Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
 > publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
 > persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
