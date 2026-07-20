@@ -29,9 +29,10 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ## Remate — estado swarm (2026-07-20 · Sprint 4 en curso)
 
-> **Sprint 4** (GO usuario · ejecución diferida **D-35**): **U145** 🔶
-> ∥ **U146** 🔶 · **U147** ⬜ (dep U145). Estado declarado:
-> **esperando: reportes de workers U145/U146 (background)**.
+> **Sprint 4** (GO usuario · ejecución diferida **D-35**): **U145** ✅
+> (merge pendiente GO) · **U146** 🔶 · **U147** 🔶 (sobre rama U145).
+> Estado declarado:
+> **esperando: reportes U146/U147 (background) + GO de merge del usuario**.
 > Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
 > publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
 > persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
@@ -60,9 +61,9 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 3** — recepción / triage GO I50 | **U142** | ✅ |
 | **Sprint 3** — CNAME `docs/public/` (ambos repos) | **U143** | ✅ |
 | **Sprint 3** — consulta `npm ci` vs `npm install` (catálogo) | **U144** | ✅ |
-| **Sprint 4** — dep registry `skills-scriptorium@0.3.0` | **U145** | 🔶 |
+| **Sprint 4** — dep registry `skills-scriptorium@0.3.0` | **U145** | ✅ |
 | **Sprint 4** — `plan/roles/` → referencia versionada (I60) | **U146** | 🔶 |
-| **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | ⬜ |
+| **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -301,10 +302,15 @@ enmascara siempre.
 > Claude Code. Paralelismo: **U145 ∥ U146** (archivos disjuntos) →
 > **U147** (dep U145).
 
-### WP-U145 · Dependencia registry `@alephscript/skills-scriptorium@0.3.0` — 🔶
+### WP-U145 · Dependencia registry `@alephscript/skills-scriptorium@0.3.0` — ✅
 
-- 🔶 **WP-U145** (worker background · 2026-07-20). Rama
-  `wp/u145-dep-skills-scriptorium`. Brief:
+- ✅ **WP-U145** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u145-dep-skills-scriptorium` tip `2b4eee3` (dep `b7110ad`).
+  **Merge pendiente de GO usuario**; al pushear, `package*.json`
+  dispara CI → exigir success (condición en la revisión). Reporte (en
+  la rama):
+  `plan/REPORTES/WP-U145-dep-skills-scriptorium.md`. CA1–CA3 ✅.
+  Hallazgos → cola residual. Brief:
   [REPORTES/briefs/WP-U145-dep-skills-scriptorium.md](REPORTES/briefs/WP-U145-dep-skills-scriptorium.md).
   Añadir `@alephscript/skills-scriptorium` **versión exacta `0.3.0`**
   (devDependency, sin `^`) en `package.json` raíz + `npm install`
@@ -327,9 +333,10 @@ enmascara siempre.
   paquete · CA4 diff solo `plan/` · CA5 ceguera. **Demolición:** los 5
   prompts copiados (ORQUESTADOR, WORKER, REVISION, CORRECCION, BRIEF).
 
-### WP-U147 · `.claude/skills/` — materialización runner local — ⬜
+### WP-U147 · `.claude/skills/` — materialización runner local — 🔶
 
-- ⬜ **WP-U147** (dep **U145** mergeado o su rama). Rama
+- 🔶 **WP-U147** (worker background · 2026-07-20 · parte de la rama de
+  U145 aceptada, tip `2b4eee3`). Rama
   `wp/u147-claude-skills`. Brief:
   [REPORTES/briefs/WP-U147-claude-skills.md](REPORTES/briefs/WP-U147-claude-skills.md).
   Script `scripts/sync-claude-skills.mjs` (npm script `skills:sync`):
@@ -598,6 +605,14 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U132) C8 residual `startpacks.md:41` → **WP-U136** ✅ (D-28)
 - (U138) nav API HTML SPA 404 → **WP-U138** ✅ (D-29); residual inline
   cuerpo → **WP-U139** ✅ (D-30 · cola cerrada)
+- (U145) lockfile `main` desincronizado con versiones workspace (npm lo
+  realineó de pasada) — candidato: regenerar/verificar lockfile en CI
+- (U145) `npm audit`: 53 vulns (6 críticas) preexistentes en árbol dev —
+  candidato triage
+- (U145) EOL `bin/*.mjs` reescritos por `npm install` (ruido git) —
+  candidato `.gitattributes` con `eol` explícito
+- (U145) `engines.node >=22` del paquete skills vs `>=18` del raíz —
+  divergencia a vigilar (sin `engine-strict` no bloquea)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
