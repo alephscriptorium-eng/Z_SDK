@@ -14,7 +14,14 @@ prose.
 
 ## [Unreleased]
 
-_(vacío — siguiente lote)_
+### Changed
+
+- Baseline de skills `@alephscript/skills-scriptorium` **0.3.3 → 0.3.4**
+  (rango `0.x`, D-36; mecánico sin WP). 0.3.4 resuelve 3/4 puntos del
+  handoff de zeus (semver DC-22, gate gobierno DC-23, back-links tema
+  DC-24); Punto 4 (parser) sigue abierto en el mundo del paquete (su
+  DC-25). Disponible pero **no cableado** aún: gate `verificar-changelog
+  --role gobierno` (candidato follow-up para validar nuestro CHANGELOG).
 
 ---
 
