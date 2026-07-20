@@ -173,4 +173,34 @@ ni archivo).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+
+- [x] CA1 — `skills/vigilancia/SKILL.md` + 4 dirs en `node_modules`: ls
+      literal en reporte; coherente con el contenido 0.3.0 conocido.
+- [x] CA2 — `npm view …@0.3.0 version` → `0.3.0` exit 0 (patrón I60).
+- [x] CA3 — diff reproducido por el orquestador desde main:
+      `package.json` (+1 línea, versión exacta sin rango) ·
+      `package-lock.json` (`resolved` al registry propio, `dev: true`) ·
+      reporte. Nada más.
+
+### PRACTICAS
+
+- Pin exacto = doctrina D-35 ✓ · cero secrets ✓ · BACKLOG intocado ✓ ·
+  realineado workspace del lockfile: dentro del archivo del CA, declarado
+  con honestidad — aceptado como inevitable de `npm install`.
+- CI: N/A por «NO push» del brief. **Condición de merge:** al pushear,
+  `package*.json` dispara CI → exigir conclusion success en el run del
+  push antes de dar por cerrado el sprint (no sustituible por verde local).
+
+### Merge
+
+Orden sugerido: **U145 → U147 → U146** (U147 parte de esta rama; U146 es
+solo `plan/`, sin conflicto esperado salvo trivial en REPORTES/).
+
+### Hallazgos → cola residual
+
+Los 4 hallazgos (lockfile main desincronizado, audit 53 vulns, EOL
+`bin/*.mjs` → `.gitattributes`, `engines.node` 22 vs 18) pasan a la cola
+residual del BACKLOG — sin GO no hay WP.
