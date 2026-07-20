@@ -35,12 +35,16 @@ sobre las **features del juego delta** (fases 1.6 y 2). Este `plan/` manda
 sobre la **refundación del SDK**. Un agente trabaja en uno u otro, nunca mezcla
 ambos en un mismo WP.
 
-## Prompts de rol (el protocolo del swarm)
+## Protocolo del swarm (referencia versionada)
 
-En [roles/](roles/README.md): prompts agnósticos de herramienta para encender
-cada rol sin copiar instrucciones (ORQUESTADOR, WORKER, REVISION, CORRECCION,
-BRIEF), más las reglas de estado (BACKLOG solo lo edita el orquestador, en
-master) y de paralelismo (un worktree por worker).
+El protocolo genérico (prompts ORQUESTADOR, WORKER, REVISION, CORRECCION,
+BRIEF y plantilla de reporte) **no se copia en este árbol**: se referencia el
+paquete versionado `@alephscript/skills-scriptorium@0.3.0` (registry propio,
+resoluble por `npm view` — C8). El plan queda **autocontenido vía referencia
+versionada**: este árbol + el paquete en su versión fijada bastan. En
+[roles/](roles/README.md) viven la referencia y la **calibración local** de
+zeus (dos backlogs separados, adaptador de evidencia CI `gh`/U104, límites
+Actions, dónde vive el estado).
 
 Adaptador Cursor: [`.cursor/rules/`](../.cursor/rules/) (refuerzo automático
 de PRACTICAS al editar código o `plan/`; si contradice a `plan/`, gana `plan/`).

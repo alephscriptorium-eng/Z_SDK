@@ -1,91 +1,107 @@
-# plan/roles — el protocolo del swarm
+# plan/roles — protocolo del swarm (zeus-sdk)
 
-Prompts de rol **agnósticos de herramienta**: definen el protocolo (quién hace
-qué, dónde vive el estado, cómo se entrega). Cualquier runner de agentes los
-consume tal cual — en Cursor se `@`-mencionan; el adaptador específico de
-Cursor vive en [`.cursor/rules/`](../../.cursor/README.md) y solo *refuerza*
-esto, nunca lo contradice. Si algún día hay otro cliente (Claude Code, CI…),
-se le escribe otro adaptador; el protocolo es este.
+El protocolo de swarm (orquestador / worker / revisión / corrección / brief y
+la plantilla de reporte) **ya no se copia aquí**: es genérico, vive publicado
+y versionado, y este mundo lo **referencia**. En `plan/roles/` solo queda la
+**calibración local** de zeus: lo propio de este mundo que el protocolo
+genérico no fija. (Ejecuta la sustitución gradual diferida en D-35, con GO
+Sprint 4 — WP-U146.)
 
-**Evidencia CI / Actions:** adaptador canónico = CLI `gh` (`gh run list` /
-`gh run view`). No es obligatorio MCP ni Automations; ver PRACTICAS §5 y
-ORQUESTADOR §Ritual.
+## Protocolo canónico (referencia versionada)
 
-## Roles
+| dato | valor |
+| ---- | ----- |
+| paquete | `@alephscript/skills-scriptorium` |
+| versión | **`0.3.0`** (fijada; nunca `latest`) |
+| skills | `skills/swarm-orquestacion` (SKILL.md + `reference/roles/` + plantilla de reporte) · `skills/vigilancia` (estación read-only) |
+| registry | `https://npm.scriptorium.escrivivir.co` |
 
-| Prompt | Rol | Cuándo |
-| ------ | --- | ------ |
-| [ORQUESTADOR.md](ORQUESTADOR.md) | Orquestador | Chat principal: estado, asignación, revisión, ✅ |
-| [WORKER.md](WORKER.md) | Worker | Chat nuevo por WP: implementar + reportar |
-| [REVISION.md](REVISION.md) | Orquestador | Revisar un entregable concreto (reporte + diff) |
-| [CORRECCION.md](CORRECCION.md) | Worker | Tras devolución: corregir en la misma rama |
-| [BRIEF.md](BRIEF.md) | Orquestador → usuario | Plantilla de brief para lanzar un worker |
-
-## Dónde vive el estado (la regla que evita el caos)
-
-- **`plan/BACKLOG.md` es del orquestador y vive en master.** Marca 🔶 al
-  asignar (con agente y fecha) y ✅ al aceptar. **El worker no edita BACKLOG
-  nunca** — su 🔶 en una rama no lo vería nadie.
-- **El reporte vive en la rama del WP** (`plan/REPORTES/WP-….md`): nombre de
-  archivo único = sin conflictos; llega a master con el merge tras el ✅.
-- **`plan/DECISIONES.md` §abiertas es del usuario.** Nadie más cierra
-  decisiones.
-
-## Paralelismo real: worktrees
-
-Varios chats worker comparten máquina y repo: **una rama por chat no basta,
-hace falta un working tree por chat**. Antes de lanzar un worker paralelo:
+Consulta / instalación (resoluble por registry, sin copiar los prompts):
 
 ```bash
-git worktree add ../zeus-wp-u00 -b wp/u00-gates
-# el chat worker trabaja en ../zeus-wp-u00 (npm install allí la primera vez)
-# al aceptar y mergear: git worktree remove ../zeus-wp-u00
+# comprobar que la versión fijada existe
+npm view @alephscript/skills-scriptorium@0.3.0 \
+  --registry=https://npm.scriptorium.escrivivir.co version
+
+# traer el paquete a un runner
+npm install @alephscript/skills-scriptorium@0.3.0 \
+  --registry=https://npm.scriptorium.escrivivir.co
 ```
 
-Un solo worker activo puede trabajar en el checkout principal con su rama.
-Si no se quiere usar worktrees, los workers van en serie, no en paralelo.
+Los prompts de rol (ORQUESTADOR, WORKER, REVISION, CORRECCION, BRIEF, README)
+y la plantilla de reporte son los de `skills/swarm-orquestacion/reference/`
+del paquete en la versión fijada. Un runner los consume tal cual desde el
+paquete; este árbol no los duplica. Las reglas de oro genéricas — incluida
+«un WP = un chat worker = una rama = (si hay paralelo) un worktree», el
+BACKLOG como propiedad exclusiva del orquestador y la evidencia literal —
+las fija ya el paquete y aquí no se repiten. `skills/vigilancia` define la
+estación de vigilancia read-only (pulso, addendas dos caras, re-verificación
+post-merge de CA).
 
-## Flujo
+## Calibración local de zeus (delta sobre el canónico)
 
-```text
-1. Chat orquestador (ORQUESTADOR.md) → «Estado del swarm»
-2. Orquestador propone lote, marca 🔶 en master y rellena un BRIEF por WP
-3. Usuario abre N worktrees + N chats worker (WORKER.md + brief)
-4. Worker termina → reporte en plan/REPORTES/ (en su rama) → avisa
-5. Chat orquestador (REVISION.md + reporte + rama) → ✅ y merge, o devolución
-6. Si devuelto: mismo chat worker (CORRECCION.md + comentarios del reporte)
-```
+Lo que el protocolo genérico NO fija y este mundo sí. Queda visible aquí sin
+abrir el paquete:
 
-## Ciclo de sprint
+### 1. Dos backlogs, nunca mezclados
 
-Formalizado en [PRACTICAS.md §7](../PRACTICAS.md):
+El genérico asume «un BACKLOG = el mundo». Este repo tiene dos:
 
-1. **Entrada** — lote con GO explícito del usuario (sin GO → sin 🔶 de lote).
-2. **Ejecución** — WPs con CA; Devuelto legítimo; 1 WP = 1 chat = 1 rama.
-3. **Cierre** — estado declarado siempre:
-   `IDLE sin pendientes` **o** `esperando: <tick> de <quién>` — nunca silencio.
-4. **Retro** — hallazgos → cola residual viva; no colas por WP en el tablero.
+- `plan/BACKLOG.md` — la **refundación del SDK** (tablero del orquestador,
+  vive en `main`).
+- `packages/games/delta/spec/BACKLOG.md` — las **features del juego delta**
+  (fases 1.6 y 2).
 
-El remate de `BACKLOG.md` y el acta del sprint (si hay carpeta `ENTREGA-…`
-bajo `REPORTES/entregas/`) usan esa fórmula al cerrar o pausar. Tras
-aceptar el lote, los handoffs se archivan ahí — no en la raíz de `plan/`
-(regla en [ORQUESTADOR.md](ORQUESTADOR.md) §Handoffs).
+Un WP trabaja en uno u otro, **nunca mezcla ambos**. Mezclarlos = devolución.
 
-## Reglas de oro
+### 2. Adaptador de evidencia CI (GitHub Actions vía `gh`)
 
-1. Un WP = un chat worker = una rama = (si hay paralelo) un worktree.
-2. Solo el orquestador escribe en BACKLOG; solo el usuario cierra DECISIONES.
-3. No mezclar refundación (`plan/`) con features de delta
-   (`packages/games/delta/spec/BACKLOG.md`) en un mismo WP.
-4. El historial del chat orquestador no se asume en los workers: el brief +
-   `plan/` bastan.
-5. ✅ implica autorización de merge. Orden de merge lo sugiere la revisión;
-   mergea el usuario (o el orquestador si el usuario lo delega).
-6. Commits en formato convencional (PRACTICAS §6): alimentan el changelog y
-   el semver del pipeline de release (ARQUITECTURA §5).
+El genérico exige evidencia literal pero no fija el canal. Aquí:
 
-## Primer lote sugerido (Ola 0, paralelo)
+- Canónico de evidencia remota: **CLI `gh`** (`gh run list --branch <rama>` /
+  `gh run view`) → citar **run_id + conclusion**. No es obligatorio MCP ni
+  Automations, y no se inventan como gate (PRACTICAS §5).
+- **paths-ignore U104**: si el diff solo toca `plan/**` / `**.md`, CI **no
+  corre** → evidencia = **N/A** (no se inventa un verde ni se bloquea por
+  ausencia de run).
+- Verde local (`lint` / `gates` / tests) **no** sustituye el gate remoto
+  cuando el runner aplica. Tip de `main` sin run asociado = push faltante.
+- `docs/**` tiene workflow **Docs** propio, con despliegue en dominios
+  propios: `z-sdk.escrivivir.co` (portal zeus) y `games.z-sdk.escrivivir.co`
+  (catálogo de la library). Lo desplegado se verifica contra ese canal real
+  (C8, PRACTICAS §8), no solo con build local.
 
-WP-U00 (gates) · WP-U01 (tests núcleo) · WP-U02 (identidad delta) ·
-WP-U03 (push a Z_SDK + CI). Orden de merge si hay conflictos:
-U02 → U01 → U00 → U03.
+### 3. Límites Actions del swarm
+
+| Prohibido | Quién puede |
+| --------- | ----------- |
+| Volcar secrets (`NPM_*`, tokens) en reportes o chat | nadie del swarm |
+| `workflow_dispatch` de publish / release | solo ops / usuario |
+| Inventar MCP / Automations / Cursor-in-CI como gate | nadie (no son canónicos) |
+
+### 4. Dónde vive el estado (concreción zeus)
+
+- **`plan/BACKLOG.md` es del orquestador y vive en `main`** (🔶 al asignar,
+  ✅ al aceptar; el worker no lo edita nunca).
+- **El reporte vive en la rama del WP**, creado desde
+  [`REPORTES/PLANTILLA.md`](../REPORTES/PLANTILLA.md) — la plantilla local
+  añade la subsección **Evidencia CI** (§2 de esta calibración).
+- **`plan/DECISIONES.md` §abiertas**: el custodio es **el usuario**.
+- **Handoffs** (`ENTREGA-*`, paquetes WEBS): al aceptar el lote se archivan
+  en [`REPORTES/entregas/`](../REPORTES/entregas/); la raíz de `plan/` queda
+  solo con canónicos.
+- **Ciclo de sprint** (GO explícito de lote, estado declarado
+  `IDLE sin pendientes` / `esperando: <tick> de <quién>`, retro a cola
+  residual): [PRACTICAS §7](../PRACTICAS.md).
+
+### 5. Semver integrado en CI/CD
+
+Los commits convencionales no son cosmética: alimentan changesets → changelog
+→ `npm publish` del pipeline de release (PRACTICAS §6, ARQUITECTURA §5).
+WP que toque paquete publicable ⇒ changeset obligatorio.
+
+## Adaptador Cursor
+
+El refuerzo automático vive en [`.cursor/rules/`](../../.cursor/README.md) y
+solo *refuerza* esto, nunca lo contradice; si contradice a `plan/`, gana
+`plan/`. Otros runners consumen el protocolo directamente del paquete.
