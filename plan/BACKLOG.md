@@ -21,18 +21,20 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 **GO implementación U143 ∥ U144:** **D-34**.
 **Skills referencia versionada:** **D-35** (adoptar
 `@alephscript/skills-scriptorium@0.3.0`; `plan/roles/` copia operativa).
+**GO Sprint 4 — ejecución diferida D-35** (usuario · 2026-07-20):
+instalación + migración skills · **U145 ∥ U146 → U147**. Procedimiento
+probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-20 · D-35 · post D-34)
+## Remate — estado swarm (2026-07-20 · Sprint 4 en curso)
 
-> **IDLE** — **U143** ✅ · **U144** ✅ · Sprint 3 cerrado en zeus.
-> **D-35:** `@alephscript/skills-scriptorium@0.3.0` = referencia
-> versionada canónica del protocolo; `plan/roles/` permanece copia
-> operativa (sin migración en este paso). **0 DA** abiertas. Ops:
-> publish npm startpacks = residual (NO WP). Diferidos U87 §5–6 →
-> **sin GO**. Persistencia custom domain Pages (Settings): ⏳ post-deploy
-> U143 (no bloquea).
+> **Sprint 4** (GO usuario · ejecución diferida **D-35**): **U145** 🔶
+> ∥ **U146** 🔶 · **U147** ⬜ (dep U145). Estado declarado:
+> **esperando: reportes de workers U145/U146 (background)**.
+> Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
+> publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
+> persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -58,6 +60,9 @@ canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 | **Sprint 3** — recepción / triage GO I50 | **U142** | ✅ |
 | **Sprint 3** — CNAME `docs/public/` (ambos repos) | **U143** | ✅ |
 | **Sprint 3** — consulta `npm ci` vs `npm install` (catálogo) | **U144** | ✅ |
+| **Sprint 4** — dep registry `skills-scriptorium@0.3.0` | **U145** | 🔶 |
+| **Sprint 4** — `plan/roles/` → referencia versionada (I60) | **U146** | 🔶 |
+| **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | ⬜ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -283,6 +288,56 @@ enmascara siempre.
   token). CA: grep del token = 0 en **todo** el repo, incluido el
   reporte U140. **Demolición:** token literal en evidencia/prosa del
   reporte U140. No reabre scrub de rutas (U140 ✅).
+
+---
+
+## Sprint 4 — instalación/migración skills (GO · 2026-07-20 · ejecución diferida D-35)
+
+> GO usuario en chat orquestador. Ejecuta la parte que **D-35 dejó fuera**
+> («requiere GO + WP aparte»). Procedimiento de referencia: emmanuel
+> **WP-I60** (activación skill 0.2.0) — adaptado aquí a **0.3.0** con dos
+> deltas del usuario: dep real en `package.json` (consumo multi-IDE desde
+> `node_modules`) y materialización `.claude/skills/` para el runner
+> Claude Code. Paralelismo: **U145 ∥ U146** (archivos disjuntos) →
+> **U147** (dep U145).
+
+### WP-U145 · Dependencia registry `@alephscript/skills-scriptorium@0.3.0` — 🔶
+
+- 🔶 **WP-U145** (worker background · 2026-07-20). Rama
+  `wp/u145-dep-skills-scriptorium`. Brief:
+  [REPORTES/briefs/WP-U145-dep-skills-scriptorium.md](REPORTES/briefs/WP-U145-dep-skills-scriptorium.md).
+  Añadir `@alephscript/skills-scriptorium` **versión exacta `0.3.0`**
+  (devDependency, sin `^`) en `package.json` raíz + `npm install`
+  (registry ya en `.npmrc`). **CA:** (1)
+  `node_modules/@alephscript/skills-scriptorium/skills/vigilancia/SKILL.md`
+  existe; (2) `npm view …@0.3.0 version` exit 0; (3) diff solo
+  `package.json` + `package-lock.json` + reporte. **Demolición:** n/a.
+
+### WP-U146 · `plan/roles/` → referencia versionada + calibración zeus — 🔶
+
+- 🔶 **WP-U146** (worker background · 2026-07-20). Rama
+  `wp/u146-roles-referencia`. Brief:
+  [REPORTES/briefs/WP-U146-roles-referencia.md](REPORTES/briefs/WP-U146-roles-referencia.md).
+  Replicar I60: `git rm` de los 5 prompts genéricos; `roles/README.md` →
+  referencia versionada **0.3.0** (`skills/swarm-orquestacion` +
+  `skills/vigilancia`) + **calibración local zeus** (delta no cubierto
+  por el paquete); coser `plan/README.md` y `plan/PRACTICAS.md`.
+  **CA (I60 adaptado):** CA1 dedup (grep prompts = exit 1) · CA2
+  `npm view …@0.3.0` resoluble · CA3 calibración visible sin abrir el
+  paquete · CA4 diff solo `plan/` · CA5 ceguera. **Demolición:** los 5
+  prompts copiados (ORQUESTADOR, WORKER, REVISION, CORRECCION, BRIEF).
+
+### WP-U147 · `.claude/skills/` — materialización runner local — ⬜
+
+- ⬜ **WP-U147** (dep **U145** mergeado o su rama). Rama
+  `wp/u147-claude-skills`. Brief:
+  [REPORTES/briefs/WP-U147-claude-skills.md](REPORTES/briefs/WP-U147-claude-skills.md).
+  Script `scripts/sync-claude-skills.mjs` (npm script `skills:sync`):
+  copia `node_modules/@alephscript/skills-scriptorium/skills/*` →
+  `.claude/skills/` + README de procedencia (fuente = paquete, no
+  editar a mano). **CA:** `.claude/skills/vigilancia/SKILL.md` existe e
+  idéntico a `node_modules`; script idempotente; procedencia visible.
+  **Demolición:** n/a.
 
 ---
 
