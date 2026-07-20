@@ -107,3 +107,11 @@ Ningún IDE lleva adaptador propio en el repo (decisión usuario
 Claude Code, CI u otro — consume el protocolo desde el paquete en
 `node_modules` (más, si el runner lo soporta, un espejo local generado
 con `npm run skills:sync`, fuera de git).
+
+**Regla 15** (`reglas-metodo-v04` del paquete, contrato vigente; cita:
+regla 15): el plan trazado en git es la **única** fuente de verdad. La
+memoria interna del agente y los markdowns/notas de sesión bajo carpetas
+de IDE (`.claude/`, `.cursor/`, …) son **efímeros** — no se citan ni se
+dejan como verdad paralela. Se conserva solo la **configuración funcional**
+(json/toml, tasks, MCP). Zeus ya aplica esto de facto (U148 demolió
+residuos IDE; `.claude/` gitignorado).

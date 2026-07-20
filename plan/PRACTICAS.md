@@ -210,6 +210,16 @@ Si el remate espera pipeline: usar `esperando: CI|Docs de <rama/WP>` hasta
 - Residuales **sin GO** no abren 🔶. El siguiente sprint los toma solo si
   el usuario los incluye en un lote con GO.
 
+### Checklist de cierre de ola (v0.4 · regla 15)
+
+Antes de declarar IDLE / cierre de ola, además de la higiene habitual
+(stash vacío, `plan/` sin diff, ramas `wp/*` mergeadas o justificadas,
+worktrees huérfanos removidos, `git status` explicado):
+
+- [ ] **Carpetas de IDE** → sin markdowns/notas de info de sesión (solo
+      config funcional); memoria interna **no** citada como fuente —
+      verificado contra el plan trazado (regla 15).
+
 ## 8. Docs — C8 / C9 (criterio de aceptación estándar)
 
 WPs que toquen **docs públicas** (portales, fichas, guías con comandos
