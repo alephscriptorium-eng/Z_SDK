@@ -236,4 +236,43 @@ exit=1
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+
+- [x] CA1 — dedup reproducido por el orquestador:
+      `git ls-tree wp/u146-roles-referencia plan/roles/` → solo
+      `README.md`; grep de cabeceras genéricas exit 1.
+- [x] CA2 — `npm view …@0.3.0` → `0.3.0` exit 0 (literal en reporte).
+- [x] CA3 — calibración local inspeccionada: los 5 deltas son
+      genuinamente zeus (dos backlogs, adaptador CI gh/U104, límites
+      Actions, estado, semver CI/CD); constancia explícita de que la
+      regla 1WP=1chat=1rama la fija el paquete — dedup bien hecho, no
+      dedup ciego.
+- [x] CA4 — reproducido desde main: diff solo `plan/`; BACKLOG y
+      package.json intactos (cero solape con U145).
+- [x] CA5 — medida con filtro del token propio declarada, no ✅
+      mecánico. La máscara del brief (8da5381) es servidumbre legítima
+      de CA5, clase U141.
+
+### PRACTICAS
+
+- Demolición completa con costura de referencias vivas (PRACTICAS §5 ya
+  no cita ficheros borrados) ✓. Auto-revisión honesta ✓. CI = N/A
+  legítimo (U104, diff solo plan/**). Commits convencionales ✓.
+
+### Merge
+
+Orden sugerido: **U145 → U147 → U146** (este WP es solo plan/; conflicto
+esperado a lo sumo trivial en REPORTES/).
+
+### Hallazgos → destino
+
+1. `.cursor/` cita prompts borrados → **candidato micro-WP U148**
+   (repuntar adaptador Cursor a roles/README + paquete); sin GO no se
+   abre. Nota: tras el merge de este WP el adaptador queda
+   temporalmente incoherente — U148 conviene en el mismo lote de merge.
+2. Token en historial de `main` (clase U140/D-32) → **decisión del
+   usuario** (squash/reescritura de historial no la decide el swarm);
+   elevado en el remate del sprint.
+3. Prosa antigua de plan/README («márcalo 🔶») → cola residual.
