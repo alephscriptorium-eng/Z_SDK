@@ -18,6 +18,16 @@ function resolveDocsBase() {
   return '/';
 }
 
+/**
+ * Back-links del mundo (fuente única · WP-U152 / handoff Punto 3).
+ * No duplicar estas URLs en páginas markdown.
+ */
+const SITE_BACK = {
+  repo: 'https://github.com/alephscriptorium-eng/Z_SDK',
+  registry: 'https://npm.scriptorium.escrivivir.co',
+  ci: 'https://github.com/alephscriptorium-eng/Z_SDK/actions'
+};
+
 export default defineConfig({
   title: 'Zeus SDK',
   description:
@@ -30,6 +40,7 @@ export default defineConfig({
     nav: [
       { text: 'Inicio', link: '/' },
       { text: 'Guía', link: '/guide/getting-started' },
+      { text: 'Proyecto', link: '/proyecto' },
       { text: 'Contratos', link: '/contracts/asyncapi' },
       { text: 'Playbook', link: '/playbook/' },
       {
@@ -86,7 +97,8 @@ export default defineConfig({
           { text: 'Juegos de referencia', link: '/guide/two-games' },
           { text: 'Handshake externo', link: '/guide/external-handshake' },
           { text: 'Publicar la web', link: '/guide/publicar-la-web' },
-          { text: 'Estado del swarm', link: '/guide/estado' }
+          { text: 'Estado del swarm', link: '/guide/estado' },
+          { text: 'Proyecto (back)', link: '/proyecto' }
         ]
       },
       {
@@ -131,11 +143,21 @@ export default defineConfig({
         items: [{ text: 'Playbook CASOS', link: '/playbook/' }]
       }
     ],
-    socialLinks: [],
+    socialLinks: [{ icon: 'github', link: SITE_BACK.repo }],
     outline: { level: [2, 3] },
     search: { provider: 'local' },
     footer: {
-      message: 'Animus Iocandi AIPLv1',
+      message: [
+        'Back:',
+        `<a href="${SITE_BACK.repo}">repo</a>`,
+        '·',
+        `<a href="${SITE_BACK.registry}">registry</a>`,
+        '·',
+        `<a href="${SITE_BACK.ci}">CI</a>`,
+        '·',
+        '<a href="/proyecto">proyecto</a>',
+        '· Animus Iocandi AIPLv1'
+      ].join(' '),
       copyright: 'Scriptorium · Zeus SDK'
     }
   }
