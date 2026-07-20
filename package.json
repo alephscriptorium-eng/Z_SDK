@@ -79,6 +79,8 @@
     "format": "prettier --write .",
     "seed:aleph": "node scripts/seed-aleph-presets.mjs",
     "skills:sync": "node scripts/sync-claude-skills.mjs",
+    "backlog:project": "node node_modules/@alephscript/skills-scriptorium/skills/swarm-orquestacion/scripts/proyectar-backlog.mjs export --alcance abiertos",
+    "backlog:project:preview": "npm run backlog:project -- --dry-run",
     "stop:services": "node scripts/stop-services.mjs",
     "stop:v1-zeus": "npm run stop:services -- \"V1 Zeus stopped\" socket-server console-monitor cache-browser firehose-browser",
     "stop:ports": "bash scripts/stop-ports.sh",
