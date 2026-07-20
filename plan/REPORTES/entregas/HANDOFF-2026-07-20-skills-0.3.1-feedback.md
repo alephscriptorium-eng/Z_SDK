@@ -6,7 +6,7 @@
 | destino | diseñador/mantenedor de `@alephscript/skills-scriptorium` |
 | fecha | 2026-07-20 |
 | versión evaluada | `0.3.1`; **revisado de nuevo contra `0.3.3`** (los 3 puntos siguen abiertos) |
-| estado | **pendiente de validación** — esperando feedback del diseñador |
+| estado | **3/4 RESUELTOS en `0.3.4`** (verificado de facto por el vigía); Punto 4 (parser) sigue abierto |
 | canal de envío | ⏳ sin definir (lo fija el custodio; esta nota queda asentada en disco) |
 
 Nota escrita con ceguera (regla 14): sin rutas locales, sin identificadores
@@ -153,3 +153,29 @@ GitHub Issues: WP-09/10/12) y **no tocan** los tres puntos: siguen abiertos.
 - **Interés de adopción (aparte del feedback):** la proyección
   backlog→Issues (opt-in, con gate de ceguera y aviso del vigía ante
   proyección no declarada) es candidata a evaluar en zeus en un lote futuro.
+
+---
+
+## Cierre de mediación — verificación de facto contra `0.3.4` (2026-07-20)
+
+El vigía re-verificó `0.3.4` (registry `latest`), sin fiarse del reporte
+del lado del paquete:
+
+| Punto | Resolución en 0.3.4 | Verificado de facto |
+| ----- | ------------------- | ------------------- |
+| **1 · semver** | README §«Semver del paquete vs versión de método» (DC-22), tabla dos ejes + nota honesta 0.4.0→0.3.4 (WP-13) | `README.md:32` ✓ |
+| **2 · gate CHANGELOG en monorepo** | `verificar-changelog.mjs` exige `--role gobierno` (DC-23), opt-in, distingue gobierno vs paquete, **nombra el caso monorepo/2º cliente** (WP-14) | `scripts/verificar-changelog.mjs:5,26` ✓ |
+| **3 · back-links por tema** | `config.mjs.tpl` con `const BACK` = fuente única (B11/DC-24), themeConfig, «no texto por página» (WP-15) | `plantillas/config.mjs.tpl:18` ✓ |
+| **4 · parser de formato** | **NO atendido** — `proyectar-backlog.mjs:62` sigue exigiendo `**WP-XX · título**` (el `·` es obligatorio); los bullets `**WP-XX**` no parsean | `scripts/proyectar-backlog.mjs:62` ✗ |
+
+**Veredicto:** los 3 puntos originales de zeus quedan **resueltos limpios**
+en 0.3.4. El Punto 4 (añadido tras U154) **sigue abierto** — el parser no
+se flexibilizó. Consecuencia para zeus: hasta que el parser acepte
+`**WP-XX**` sin `·`, la proyección omite ~16 WP con ese formato → alternativa
+local = unificar el formato de bullets del backlog (residual U154).
+
+**Nota:** el mundo del paquete anticipa un **reset** con 0 uso; el número
+de versión es lo de menos. Lo valioso —la **doctrina** semver y el
+**gate parametrizable**— quedó fijado. zeus NO adopta 0.3.4 en `main` por
+ahora (sigue en 0.3.3, rango `0.x`); adoptar = paso mecánico D-36 cuando
+el custodio quiera (o tras el reset).
