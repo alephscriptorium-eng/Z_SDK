@@ -27,16 +27,18 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-20 · Sprint 5 en curso)
+## Remate — estado swarm (2026-07-20 · Sprint 5 mergeado · push/CI)
 
-> **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 EN CURSO** (GO usuario ·
-> **D-37**): **U149–U152** ✅ · **U151** ✅; **U153** pendiente merge.
-> Handoff diseñador
+> **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 MERGEADO** (GO usuario ·
+> **D-37**): **U149–U153** ✅. Stack vía U152 ff (`9290073`/`9ef2eaf`/
+> `9c5b842`); U151 merge `d32c4a5`; U153 merge `bd62759`. Handoff
+> diseñador
 > ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md))
-> — **OA-1** canal de envío abierta. Estado declarado: **mergeando U153
-> + push/CI**. Previo: Sprint 3 cerrado · **0 DA** abiertas · publish npm
-> startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO · persistencia
-> custom domain Pages ⏳ post-deploy U143 (no bloquea).
+> — **OA-1** canal de envío abierta. Estado declarado: **push main +
+> exigir Docs/CI success (U150/U152 tocan `.github`/`docs`)**. Previo:
+> Sprint 3 cerrado · **0 DA** abiertas · publish npm startpacks =
+> residual (NO WP) · diferidos U87 §5–6 sin GO · persistencia custom
+> domain Pages ⏳ post-deploy U143 (no bloquea).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -70,20 +72,19 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | ✅ |
 | **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | ✅ |
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
-| **Sprint 5** — materializar estación de vigilancia | **U153** | 🔶 merge pend. |
+| **Sprint 5** — materializar estación de vigilancia | **U153** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** aceptación gobierno Sprint 5 (U150–U153).
+**En curso:** ninguno (Sprint 5 mergeado; esperando Docs/CI post-push).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U151** ✅ (CHANGELOG gobierno · tip `7f0103f` · merge
-`d32c4a5`) · **U152** ✅ · **U150** ✅ · **U149** ✅ · **U143** ✅ ·
-**U144** ✅ · **U142** ✅ · **U141** ✅ · **U140** ✅ · **U139** ✅ ·
-**U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
-(ver histórico). **D-35** / **D-37**.
+**Aceptado:** **U153** ✅ · **U151** ✅ · **U152** ✅ · **U150** ✅ ·
+**U149** ✅ · **U143** ✅ · **U144** ✅ · **U142** ✅ · **U141** ✅ ·
+**U140** ✅ · **U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ ·
+AMEND A+B+C · Sprint 2 base (ver histórico). **D-35** / **D-37**.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -362,7 +363,7 @@ enmascara siempre.
 
 ---
 
-## Sprint 5 — adopción 0.3.1 (GO · 2026-07-20 · D-37) — en revisión
+## Sprint 5 — adopción 0.3.1 (GO · 2026-07-20 · D-37) — ✅
 
 Lote GO · 2026-07-20. MUNDO_RAIZ = zeus-sdk. Merge stack vía **U152**
 (trae U149+U150). U151 ∥ U153 indep. post-stack.
@@ -423,25 +424,18 @@ Lote GO · 2026-07-20. MUNDO_RAIZ = zeus-sdk. Merge stack vía **U152**
   página. **CA:** nav OK · grep registry solo en config · verificar-sitio
   verde (33 html). **Eje:** site-web. **Nota CI:** Docs tras push.
 
-### WP-U153 · Materializar estación de vigilancia — 🔶
+### WP-U153 · Materializar estación de vigilancia — ✅
 
-- 🔶 **WP-U153** (independiente; greenfield, 0 retro) — en curso
-  (orquestador+ejecutor · 2026-07-20). Rama `wp/u153-estacion-vigilancia`.
+- ✅ **WP-U153** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u153-estacion-vigilancia` tip `4458380` · merge `bd62759`.
+  Reporte:
+  [REPORTES/WP-U153-estacion-vigilancia.md](REPORTES/WP-U153-estacion-vigilancia.md).
   Brief:
   [REPORTES/briefs/WP-U153-estacion-vigilancia.md](REPORTES/briefs/WP-U153-estacion-vigilancia.md).
-  **Qué:** instalar una **instancia** del
-  skill `vigilancia` para zeus: watcher parametrizado (WORLD_ROOT=raíz
-  zeus, OUT_DIR **fuera de git** / gitignorado, INTERVAL default) desde
-  `node_modules/.../vigilancia/scripts/watcher.sh` (invocar/parametrizar,
-  no copiar el método), con los **checks 0.3.1** de `ESTACION.md`
-  (residuo de info en carpetas IDE = regla 15; cruce CHANGELOG↔backlog).
-  Calibración local (rutas de colas, canal CI `gh`) documentada donde el
-  mundo la declare, **no** en el skill. **CA:** watcher arranca contra
-  WORLD_ROOT=zeus y produce pulso en OUT_DIR (evidencia literal de una
-  muestra); OUT_DIR gitignorado (no ensucia el árbol); los dos checks
-  nuevos se ejecutan (salida literal). **ALCANCE_DIFF:** script/config de
-  arranque de la estación + `.gitignore` (OUT_DIR) + reporte; **sin**
-  datos de instancia en git. **Eje:** vigilancia (protocolo read-only).
+  **Qué:** wrappers `scripts/estacion/*` invocan `watcher.sh` del
+  paquete; `.vigilancia/` gitignorado; checks 0.3.1. **CA:** pulso
+  literal · ignore OK · checks ejecutados (CHANGELOG cruz operativo
+  post-U151). **Eje:** vigilancia. Hallazgos → cola residual.
 
 ---
 
@@ -676,6 +670,12 @@ Heros/lemas de marca **EXENTOS** (D-24). Cerrado en código.
 
 Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 
+- (U153) **falso positivo regla 15:** `skills:sync` deja markdowns de
+  método bajo `.claude/skills/`; watcher 0.3.1 los eleva como RESIDUO —
+  feedback diseñador (excluir espejo) o no materializar espejo en
+  `.claude/` (solo `node_modules`)
+- (U153) huérfanos FS `.worktrees/wp-u12|u23|u89-*` sin registro git
+  (basura preexistente) — higiene residual
 - Viewer fabrica peer-card local (cara ciega / residual U93) — firma SSB vs
   micro «visor pide card»
 - `ZEUS_STOP_SERVICES` / stop targets pozo·solve (residual U109 / presets)

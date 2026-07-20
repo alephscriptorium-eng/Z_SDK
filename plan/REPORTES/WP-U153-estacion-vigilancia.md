@@ -93,4 +93,14 @@ hasta merge U151 (declarado).
 
 ## Revisión del orquestador
 
-_(pendiente — no inventar ✅)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+- [x] CA1 — watcher produce pulso en `.vigilancia/watch.log` (`wt_reg=…`)
+- [x] CA2 — `git check-ignore` → `.vigilancia/` ignorado
+- [x] CA3 — checks 0.3.1: residuo IDE=0; CHANGELOG↔backlog operativo post-U151
+- [x] ALCANCE_DIFF OK; método invocado (no copiado); sin datos de instancia en git
+
+### Merge
+merge no-ff a main (auto-merge `package.json` con `docs:verify` de U150).
+Hallazgos → cola residual (espejo skills:sync falso positivo; huérfanos worktrees).
