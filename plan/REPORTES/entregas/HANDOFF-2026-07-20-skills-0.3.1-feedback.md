@@ -113,6 +113,30 @@ el paquete puede simplificar la calibración local de zeus más adelante.
 
 ---
 
+## Punto 4 — El parser de `proyectar-backlog.mjs` exige un formato de bullet no documentado
+
+**Observación (al adoptar 0.3.2/0.3.3 en un backlog real).** El parser de
+`proyectar-backlog.mjs` solo reconoce bullets con la forma
+`- <estado> **WP-XX · título**` (ID y título dentro del mismo `**…**`). Un
+backlog vivo mezcla estilos —`- <estado> **WP-XX** (prosa)` o
+`**WP-XX** — prosa`— y esos WP **no se parsean** (en un backlog real, ~16
+de ~47 bullets quedaron fuera; la proyección `--alcance abiertos` salió
+vacía aunque había trabajo abierto).
+
+**Propuesta (a validar):** o el método **documenta el contrato de formato**
+del bullet como requisito duro (y el gate de changelog/vigía lo verifica),
+o el parser se **flexibiliza** para aceptar el ID fuera del `**…**` y el
+título tras `·`/`—`/`(`. Un requisito de formato implícito hace que la
+proyección falle en silencio (0 proyectados) en vez de avisar.
+
+**Corolario de ceguera (relacionado con el Punto 2/3).** En un backlog de
+gobierno real, el propio vocabulario del método («custodio», «vigía», etc.)
+vive legítimamente en el markdown. El gate de ceguera —correctamente—
+**bloquea** proyectar eso a un tracker público. Implica que el método
+debería decir explícitamente: **proyectar a tracker público exige un
+backlog blindado**, o recomendar tracker privado. Hoy el consumidor lo
+descubre al chocar con el `exit 1`.
+
 ## Revisión contra 0.3.2 / 0.3.3 (2026-07-20)
 
 Releases posteriores fueron por **otro eje** (proyección del backlog a

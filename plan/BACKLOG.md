@@ -27,14 +27,20 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-20 · Sprint 6 en curso)
+## Remate — estado swarm (2026-07-20 · Sprint 6 CERRADO)
 
-> **Sprint 6 EN CURSO** (GO usuario · 0.3.3): **U154** 🔶 (worker bg) —
-> montar proyección backlog→Issues en **dry-run local**; publicar a GitHub
-> = fuera de alcance (GO aparte). **Adopción 0.3.3** mecánica hecha
-> (lockfile bump `c6d9ffb`, D-36). **OA-1 RESUELTA** (canal handoff =
-> entrega manual del custodio). Estado declarado: **esperando: reporte
-> U154 (background)**.
+> **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
+> (`1a24a60`) — proyección backlog→Issues montada y validada en
+> **dry-run local**; CA re-verificadas de facto (gate: exit 3/1/0/4;
+> `custodio` en WP-U139 atrapado; 0 issues en `Z_SDK`). **Adopción 0.3.3**
+> mecánica hecha (`c6d9ffb`, D-36). **OA-1 RESUELTA** (canal handoff =
+> entrega manual). **Dos hallazgos U154:** (1) **OA-2** abierta — el
+> backlog usa vocabulario de protocolo («custodio»/«vigía») → NO blindable
+> para tracker público sin decisión de vocabulario; **bloquea cualquier GO
+> de publicación real**. (2) formato de bullets `**WP-XX**` vs parser
+> `**WP-XX · título**` (~16 no casan) → cola residual + punto handoff.
+> Estado declarado: **esperando: verde CI del merge U154 + decisiones OA-2
+> del usuario**.
 >
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 CERRADO** (GO usuario ·
 > **D-37**): **U149–U153** ✅ mergeados + push `main` tip `95afc93`.
@@ -82,7 +88,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | ✅ |
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | ✅ |
-| **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | 🔶 |
+| **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -379,9 +385,18 @@ enmascara siempre.
 a GitHub sin GO explícito del usuario **por acción**. `Z_SDK` es repo
 **público** → gate de ceguera obligatorio antes de cualquier API.
 
-### WP-U154 · Montar proyección backlog→Issues (dry-run local) — 🔶
+### WP-U154 · Montar proyección backlog→Issues (dry-run local) — ✅
 
-- 🔶 **WP-U154** (worker background · 2026-07-20). Rama
+- ✅ **WP-U154** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u154-proyeccion-backlog` merge `1a24a60`. CA1–CA4 re-verificadas de
+  facto por el orquestador (exit 3/1/0/4 remedidos; `custodio`@WP-U139;
+  `.sync-map.json={}`; `gh issue list`=[]). Reporte:
+  `plan/REPORTES/WP-U154-proyeccion-backlog.md`. Hallazgos → OA-2 (vocab
+  público) + cola residual (formato bullets). Brief:
+  [REPORTES/briefs/WP-U154-proyeccion-backlog.md](REPORTES/briefs/WP-U154-proyeccion-backlog.md).
+  **(histórico del brief abajo)**
+
+- (brief) **WP-U154** (worker background · 2026-07-20). Rama
   `wp/u154-proyeccion-backlog`. **Qué:** cablear la herramienta del paquete
   `proyectar-backlog.mjs` (0.3.3, WP-09/10/12) como npm script; definir la
   calibración local de zeus: `CEGUERA_PATTERN` (tokens de marco + locales
@@ -708,6 +723,10 @@ Heros/lemas de marca **EXENTOS** (D-24). Cerrado en código.
 
 Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 
+- (U154) **formato de bullets del backlog vs parser de proyección:** ~16
+  bullets usan `**WP-XX**` (prosa) en vez de `**WP-XX · título**` que exige
+  `proyectar-backlog.mjs`; no se parsean. Candidato: unificar formato del
+  backlog, o esperar parser flexibilizado (Punto 4 del handoff al diseñador).
 - (U153) **falso positivo regla 15:** `skills:sync` deja markdowns de
   método bajo `.claude/skills/`; watcher 0.3.1 los eleva como RESIDUO —
   feedback diseñador (excluir espejo) o no materializar espejo en

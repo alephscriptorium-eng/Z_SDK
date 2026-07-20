@@ -442,6 +442,19 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
 
 ## Abiertas (bloquean lo indicado)
 
+- **OA-2 · Vocabulario publicable antes de proyectar el backlog a un
+  tracker PÚBLICO.** Hallazgo U154: el gate de ceguera de
+  `proyectar-backlog.mjs` **aborta** porque `plan/BACKLOG.md` usa
+  vocabulario de protocolo legítimo («custodio», «vigía», etc.) que la
+  cara pública no debe filtrar (probado: `custodio` en WP-U139 → exit 1).
+  **Bloquea de facto cualquier proyección real a `Z_SDK` (repo público).**
+  Decisión del usuario, dos vías: **(a)** decidir qué vocabulario es
+  publicable + scrub/reescritura de la cara proyectada (el `CEGUERA_PATTERN`
+  se ajusta a lo realmente prohibido), o **(b)** tracker **privado** para
+  la proyección. Hasta resolverla: **LOCAL-ONLY sigue siendo el único modo
+  autorizado**; ningún GO de publicación real. No bloquea nada más (la
+  herramienta funciona en dry-run).
+
 - ~~**OA-1 · Canal de envío del handoff a skills-scriptorium.**~~
   **RESUELTA** (usuario · 2026-07-20): canal = **entrega manual del
   custodio**. La nota
