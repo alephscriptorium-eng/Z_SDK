@@ -1,6 +1,6 @@
 # Mapa del monorepo
 
-Layout canónico ([ARQUITECTURA §2](https://github.com/alephscriptorium-eng/zeus-sdk/blob/main/plan/ARQUITECTURA.md)).
+Layout canónico ([ARQUITECTURA §2](https://github.com/alephscriptorium-eng/Z_SDK/blob/main/plan/ARQUITECTURA.md)).
 Histórico de moves: [estado del swarm](/guide/estado).
 
 ```

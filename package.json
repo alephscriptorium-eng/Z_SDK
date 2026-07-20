@@ -68,6 +68,7 @@
     "spec:inspector": "node scripts/mcp-inspector.mjs",
     "docs:dev": "node scripts/docs-dev.mjs",
     "docs:build": "npm run spec:generate:all && npm run spec:redoc && npm run spec:asyncapi:html && vitepress build docs",
+    "docs:verify": "node node_modules/@alephscript/skills-scriptorium/skills/site-web/scripts/verificar-sitio.mjs --dist docs/.vitepress/dist --base / --no-external",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "gates": "node scripts/gates/run.mjs",

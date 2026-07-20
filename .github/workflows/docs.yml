@@ -11,9 +11,13 @@ on:
     # WP-U104 / D-22: portal solo cuando cambia docs/** (o workflow_dispatch).
     paths:
       - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'package.json'
   pull_request:
     paths:
       - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'package.json'
   workflow_dispatch:
 
 concurrency:
@@ -35,6 +39,10 @@ jobs:
       - name: Build VitePress portal
         # base `/` (custom domain z-sdk.escrivivir.co; WP-U106)
         run: npm run docs:build
+      - name: Verify site (enlaces/anclas)
+        # WP-U150 / D-37: gate del skill site-web (paquete, no copiado).
+        # BASE=/ (custom domain). Falla si hay enlace interno o ancla rota.
+        run: npm run docs:verify
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
