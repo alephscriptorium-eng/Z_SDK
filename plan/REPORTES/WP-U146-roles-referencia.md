@@ -125,8 +125,8 @@ exit=1        # ← nada fuera de plan/ (BACKLOG.md y package.json intactos; U14
 # ceguera del skill, armado por fragmentos; no se transcribe el literal
 # en este árbol público — mismo criterio que I60 §CA5 y U141/D-32)
 
-$ git diff main...HEAD | grep -E "^\+" | grep -icE "<términos-marco>"
-0             # ← 0 coincidencias en líneas AÑADIDAS del diff (exit=1)
+$ git diff main...HEAD | grep -E "^\+" | grep -iE "<términos-marco>" | grep -v "ZEUS_SDK"
+added_exit=1  # ← 0 coincidencias reales en líneas AÑADIDAS del diff
 
 $ grep -rniE "<términos-marco>" plan/ | grep -v "ZEUS_SDK"
 tree_exit=1   # ← 0 coincidencias reales en el árbol público plan/
@@ -134,9 +134,11 @@ tree_exit=1   # ← 0 coincidencias reales en el árbol público plan/
 
 Notas de medida (honestidad, no ✅ mecánico):
 
-- El grep crudo del árbol da 20 hits, **todos falsos positivos por
-  substring**: la env var propia `ZEUS_SDK_ROOT` contiene uno de los
-  fragmentos del patrón. Filtrado ese token propio, el árbol queda a 0.
+- El grep crudo (árbol y líneas añadidas) da hits **todos falsos positivos
+  por substring**: la env var propia `ZEUS_SDK_ROOT` — y su mención en la
+  propia evidencia de este reporte — contiene uno de los fragmentos del
+  patrón. Por eso ambas medidas aplican el mismo filtro del token propio
+  (`grep -v`); filtrado, diff añadido y árbol quedan a 0.
 - El brief U146 (preexistente en `main`, commit del orquestador `702f18c`)
   citaba una **ruta local absoluta con el token del repo externo** (misma
   clase que U140/U141). Se enmascaró como `<ruta-local-custodio>` en
