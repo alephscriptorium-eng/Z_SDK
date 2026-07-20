@@ -14,10 +14,21 @@ prose.
 
 ## [Unreleased]
 
+_(vacío — siguiente lote)_
+
+---
+
+## [Sprint 5] — 2026-07-20
+
+Adopción baseline skills 0.3.1 · D-37.
+
 ### Added
 
-- Sprint 5 (D-37) en curso: U149–U153 (baseline 0.3.1, gate sitio,
-  CHANGELOG gobierno, docs back-links por tema, estación vigilancia).
+- WP-U149 — baseline `skills-scriptorium@0.3.1` + cita regla 15
+- WP-U150 — gate `verificar-sitio.mjs` en Docs CI + slug `Z_SDK`
+- WP-U151 — CHANGELOG de gobierno (grueso por ola/sprint)
+- WP-U152 — docs página Proyecto + back-links por tema (`SITE_BACK`)
+- WP-U153 — estación local de vigilancia (wrappers + checks 0.3.1)
 
 ---
 
