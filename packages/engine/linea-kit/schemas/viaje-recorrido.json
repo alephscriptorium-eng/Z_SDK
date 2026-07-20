@@ -73,7 +73,7 @@
     "generated_at": { "type": "string" },
     "tree_normalized_from": {
       "type": "string",
-      "description": "Optional provenance note when normalizing a legacy tree.json shape"
+      "description": "Optional provenance note when normalizing a prior tree.json shape"
     }
   }
 }
