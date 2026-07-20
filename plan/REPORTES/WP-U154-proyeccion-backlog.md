@@ -215,4 +215,41 @@ orquestador (dueño del BACKLOG) decidir cómo resolver.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (orquestador / 2026-07-20)
+
+### CA (re-verificadas de facto por el orquestador, no del ✅)
+
+- [x] CA1 — npm scripts invocan el script del paquete (0.3.3), no copia.
+- [x] CA2 — `export --dry-run` corre; lista 0 (por el hallazgo de formato,
+      no por fallo del montaje).
+- [x] CA3 — **exit codes re-medidos limpios** (sin pipe): sin patrón → **3**;
+      `todos`+patrón → **1** (hit `custodio` en WP-U139); `abiertos`+patrón →
+      **0**. Gate vivo, probado.
+- [x] CA4 — candado LOCAL-ONLY re-medido → **exit 4** sin dry/opt-in;
+      `.sync-map.json` = `{}` git-tracked; `gh issue list` Z_SDK = `[]`
+      (0 issues, re-verificado por el orquestador).
+
+### Frontera dura
+
+Confirmada: **cero API de escritura**. Solo `export --dry-run` + `gh issue
+list` read-only. Aceptado.
+
+### Hallazgo escalado (importante)
+
+El gate atrapa `custodio` en el backlog porque **zeus usa vocabulario de
+protocolo** («custodio», «vigía», etc.) legítimamente en `plan/`. Corolario
+duro: **el backlog NO es blindable para un tracker público sin decisión de
+vocabulario o scrub**. Refuerza mantener LOCAL-ONLY; una proyección real a
+`Z_SDK` (público) exige antes: (a) decidir qué vocabulario es publicable, o
+(b) tracker privado. **Esto bloquea de facto cualquier GO de publicación
+hasta resolverlo** → nota a DECISIONES §abiertas.
+
+### Hallazgo formato → follow-up
+
+Parser exige `**WP-XX · título**`; ~16 bullets usan `**WP-XX**`. Candidato
+a WP (unificar formato) + punto nuevo al handoff del diseñador (parser
+demasiado estricto / contrato de formato no documentado).
+
+### Merge
+
+Directo a `main` (independiente). Tras merge: `git worktree remove`.
