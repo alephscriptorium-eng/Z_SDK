@@ -27,41 +27,19 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-20 · Sprint 4 en curso)
+## Remate — estado swarm (2026-07-20 · Sprint 5 en curso)
 
-> **Sprint 4 CERRADO en local** (GO usuario · D-35 + GO limpieza):
-> **U145 ✅ · U146 ✅ · U147 ✅ mergeados** a `main`
-> (merges `02fbdb6` → `761cb07` → `b391d10`) + **U148 ✅** micro
-> (`6ae0a56`: demolido `.cursor/` + `copilot-instructions.md`;
-> quedan solo `.github/workflows/` y `.vscode/*.json` funcionales).
-> Ejecutado con GO: (a) **pin → rango `0.x`** (deroga «pin exacto»
-> D-35 — formalizar **D-36**, custodio usuario); (b) `.claude/` →
-> gitignore, espejo local vía `npm run skills:sync`, canon multi-IDE =
-> `node_modules`; (c) **historial local reescrito pre-push**: ruta con
-> token enmascarada en la base (`702f18c` → `ce05229`); verificado
-> `git log -S` = 0 en todo lo no pushead. Hashes de actas de este
-> sprint = pre-reescritura (los tips vigentes son los de este remate).
-> Worktrees de agente retirados; ramas `wp/u14[567]-*` borradas tras
-> merge. Verde local: `gates` OK · lint del árbol trackeado limpio
-> (429+ errores restantes viven en `plan/recursos/*` **untracked**
-> local → residual). **Push `474d06c..1a9c5af` + gates remotos verdes:**
-> CI run `29733452662` success (3m38s) · Release run `29733452684`
-> success (3m22s). **Sprint 4 CERRADO.** Post-cierre (GO usuario):
-> **D-36** formalizada en DECISIONES · clones `plan/recursos/*`
-> retirados (ola 10 consumida).
->
-> **Sprint 5 PROPUESTO** (GO usuario · **D-37** adopción 0.3.1 baseline):
-> lote **U149–U153** en ⬜ (propuesto, sin 🔶 aún — falta GO de lote para
-> lanzar workers). Adopción del contrato 0.3.1: regla 15 citada (retro≈0),
-> CHANGELOG de gobierno grueso por ola, gate site-web, docs back-links por
-> tema, estación de vigilancia. Handoff al diseñador asentado
-> ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md),
-> 3 puntos) — **OA-1** abierta: canal de envío. `package-lock.json` con
-> bump 0.3.1 en working tree (entra con U149). Estado declarado:
-> **esperando: GO de lote Sprint 5 para marcar 🔶 y lanzar workers**.
-> Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
-> publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
-> persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
+> **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 EN CURSO** (GO usuario ·
+> **D-37** adopción 0.3.1 baseline): lote **U149–U153** marcado 🔶
+> (orquestador + ejecutor · 2026-07-20). BRIEFs en
+> `plan/REPORTES/briefs/WP-U14[9–3]-*.md`. Orden: U149 baseline primero;
+> U151 ∥ U153 indep.; U150 tras U149; U152 dep U150. Handoff diseñador
+> ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md))
+> — **OA-1** canal de envío abierta. `package-lock.json` bump 0.3.1 entra
+> con U149. Estado declarado: **esperando: implementación + revisión
+> U149–U153 (sin merge a main aún)**. Previo: Sprint 3 cerrado · **0 DA**
+> abiertas · publish npm startpacks = residual (NO WP) · diferidos U87 §5–6
+> sin GO · persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -91,11 +69,11 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 4** — `plan/roles/` → referencia versionada (I60) | **U146** | ✅ |
 | **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | ✅ |
 | **Sprint 4** — micro demolición `.cursor/`+copilot | **U148** | ✅ |
-| **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | ⬜ prop. |
-| **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | ⬜ prop. |
-| **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | ⬜ prop. |
-| **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ⬜ prop. |
-| **Sprint 5** — materializar estación de vigilancia | **U153** | ⬜ prop. |
+| **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | 🔶 orq+ej · 2026-07-20 |
+| **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | 🔶 orq+ej · 2026-07-20 |
+| **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | 🔶 orq+ej · 2026-07-20 |
+| **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | 🔶 orq+ej · 2026-07-20 |
+| **Sprint 5** — materializar estación de vigilancia | **U153** | 🔶 orq+ej · 2026-07-20 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -390,18 +368,20 @@ enmascara siempre.
 
 ---
 
-## Sprint 5 — adopción 0.3.1 (GO · 2026-07-20 · D-37) — ⬜ propuesto
+## Sprint 5 — adopción 0.3.1 (GO · 2026-07-20 · D-37) — 🔶 en curso
 
-Lote **propuesto** (⬜; sin 🔶 hasta GO de lote). MUNDO_RAIZ = zeus-sdk.
+Lote **en curso** (GO de lote · 2026-07-20). MUNDO_RAIZ = zeus-sdk.
 Todos parten del tip de `main` post-Sprint 4. `package-lock.json` ya tiene
 el bump 0.3.1 en working tree → lo carga **U149**. Paralelismo: U149 solo
 primero (baseline); luego U150→U152 comparten `docs/` (serie o 1 worker);
 U151 y U153 independientes. Orden de merge sugerido: U149 → U150 → U152 ·
 U151 · U153.
 
-### WP-U149 · Baseline 0.3.1 + regla 15 citada — ⬜
+### WP-U149 · Baseline 0.3.1 + regla 15 citada — 🔶
 
-- ⬜ **WP-U149** (retro≈0). Rama `wp/u149-baseline-031`.
+- 🔶 **WP-U149** (retro≈0) — en curso (orquestador+ejecutor · 2026-07-20).
+  Rama `wp/u149-baseline-031`. Brief:
+  [REPORTES/briefs/WP-U149-baseline-031.md](REPORTES/briefs/WP-U149-baseline-031.md).
   **Qué:** (1) fijar `package-lock.json` en 0.3.1 (ya en working tree) +
   `npm run skills:sync` (espejo local, gitignorado); (2) citar la
   **regla 15** (`reglas-metodo-v04`) como contrato en
@@ -415,9 +395,11 @@ U151 · U153.
   `plan/PRACTICAS.md`, reporte. **Nota CI:** lockfile dispara CI.
   **Demolición:** n/a. **Eje:** ninguno (gobierno).
 
-### WP-U150 · Gate `verificar-sitio.mjs` en docs CI + slug roto — ⬜
+### WP-U150 · Gate `verificar-sitio.mjs` en docs CI + slug roto — 🔶
 
-- ⬜ **WP-U150** (dep U149 mergeado o su rama). Rama `wp/u150-gate-sitio`.
+- 🔶 **WP-U150** (dep U149 mergeado o su rama) — en curso
+  (orquestador+ejecutor · 2026-07-20). Rama `wp/u150-gate-sitio`. Brief:
+  [REPORTES/briefs/WP-U150-gate-sitio.md](REPORTES/briefs/WP-U150-gate-sitio.md).
   **Qué:** invocar `verificar-sitio.mjs` del paquete (desde
   `node_modules`, no copiar) como paso de `docs.yml` **tras**
   `npm run docs:build`, sobre `docs/.vitepress/dist` (BASE=/). Arreglar
@@ -430,9 +412,11 @@ U151 · U153.
   **Eje:** site-web (verificación C8-ampliado). **Nota:** exigir run_id
   del workflow Docs en la revisión (toca `.github/**` → CI corre).
 
-### WP-U151 · CHANGELOG de gobierno (grueso, por ola) — ⬜
+### WP-U151 · CHANGELOG de gobierno (grueso, por ola) — 🔶
 
-- ⬜ **WP-U151** (independiente). Rama `wp/u151-changelog-gobierno`.
+- 🔶 **WP-U151** (independiente) — en curso (orquestador+ejecutor ·
+  2026-07-20). Rama `wp/u151-changelog-gobierno`. Brief:
+  [REPORTES/briefs/WP-U151-changelog-gobierno.md](REPORTES/briefs/WP-U151-changelog-gobierno.md).
   **Qué:** crear `CHANGELOG.md` de **raíz** (Keep a Changelog) **derivado
   del `plan/BACKLOG.md`**, granularidad **gruesa por ola/sprint** (no WP a
   WP; no es changelog de paquete — los 19 de `packages/*` son changesets y
@@ -446,10 +430,12 @@ U151 · U153.
   `**.md` en raíz → verificar si cae en paths-ignore U104 (probablemente
   N/A). **Demolición:** n/a.
 
-### WP-U152 · Docs: página Proyecto + back-links por tema — ⬜
+### WP-U152 · Docs: página Proyecto + back-links por tema — 🔶
 
-- ⬜ **WP-U152** (dep U150 — el gate valida los enlaces nuevos). Rama
-  `wp/u152-docs-back`. **Qué:** (1) página `docs/proyecto.md`
+- 🔶 **WP-U152** (dep U150 — el gate valida los enlaces nuevos) — en curso
+  (orquestador+ejecutor · 2026-07-20). Rama `wp/u152-docs-back`. Brief:
+  [REPORTES/briefs/WP-U152-docs-back.md](REPORTES/briefs/WP-U152-docs-back.md).
+  **Qué:** (1) página `docs/proyecto.md`
   (repo/registry/CI/backlog); (2) back-links al back **a nivel de tema**,
   **no** por página: declarar repo/registry/CI **una sola vez** como
   `themeConfig` (`socialLinks`, `footer`, o componente compartido) en
@@ -463,10 +449,13 @@ U151 · U153.
   `verificar-sitio.mjs` (U150) verde sobre el `dist` nuevo. **ALCANCE_DIFF:**
   `docs/.vitepress/**`, `docs/proyecto.md`, reporte. **Eje:** site-web.
 
-### WP-U153 · Materializar estación de vigilancia — ⬜
+### WP-U153 · Materializar estación de vigilancia — 🔶
 
-- ⬜ **WP-U153** (independiente; greenfield, 0 retro). Rama
-  `wp/u153-estacion-vigilancia`. **Qué:** instalar una **instancia** del
+- 🔶 **WP-U153** (independiente; greenfield, 0 retro) — en curso
+  (orquestador+ejecutor · 2026-07-20). Rama `wp/u153-estacion-vigilancia`.
+  Brief:
+  [REPORTES/briefs/WP-U153-estacion-vigilancia.md](REPORTES/briefs/WP-U153-estacion-vigilancia.md).
+  **Qué:** instalar una **instancia** del
   skill `vigilancia` para zeus: watcher parametrizado (WORLD_ROOT=raíz
   zeus, OUT_DIR **fuera de git** / gitignorado, INTERVAL default) desde
   `node_modules/.../vigilancia/scripts/watcher.sh` (invocar/parametrizar,
