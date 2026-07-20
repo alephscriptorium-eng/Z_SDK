@@ -27,8 +27,15 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-20 · Sprint 5 CERRADO)
+## Remate — estado swarm (2026-07-20 · Sprint 6 en curso)
 
+> **Sprint 6 EN CURSO** (GO usuario · 0.3.3): **U154** 🔶 (worker bg) —
+> montar proyección backlog→Issues en **dry-run local**; publicar a GitHub
+> = fuera de alcance (GO aparte). **Adopción 0.3.3** mecánica hecha
+> (lockfile bump `c6d9ffb`, D-36). **OA-1 RESUELTA** (canal handoff =
+> entrega manual del custodio). Estado declarado: **esperando: reporte
+> U154 (background)**.
+>
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 CERRADO** (GO usuario ·
 > **D-37**): **U149–U153** ✅ mergeados + push `main` tip `95afc93`.
 > Stack vía U152 ff; U151 merge `d32c4a5`; U153 merge `bd62759`.
@@ -75,6 +82,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | ✅ |
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | ✅ |
+| **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -361,6 +369,34 @@ enmascara siempre.
   `.claude/skills/` + README de procedencia (fuente = paquete, no
   editar a mano). **CA:** `.claude/skills/vigilancia/SKILL.md` existe e
   idéntico a `node_modules`; script idempotente; procedencia visible.
+  **Demolición:** n/a.
+
+---
+
+## Sprint 6 — proyección backlog→Issues (GO usuario · 2026-07-20 · 0.3.3)
+
+**Modo declarado (DC-15):** zeus opera **LOCAL-ONLY**. Ninguna proyección
+a GitHub sin GO explícito del usuario **por acción**. `Z_SDK` es repo
+**público** → gate de ceguera obligatorio antes de cualquier API.
+
+### WP-U154 · Montar proyección backlog→Issues (dry-run local) — 🔶
+
+- 🔶 **WP-U154** (worker background · 2026-07-20). Rama
+  `wp/u154-proyeccion-backlog`. **Qué:** cablear la herramienta del paquete
+  `proyectar-backlog.mjs` (0.3.3, WP-09/10/12) como npm script; definir la
+  calibración local de zeus: `CEGUERA_PATTERN` (tokens de marco + locales
+  prohibidos en cara pública), `--alcance abiertos` (solo ⬜/🔶; los ~140
+  ✅ no se proyectan), ubicación `plan/.sync-map.json`. Ejecutar
+  **`export --dry-run`** (sin API) y capturar salida literal como evidencia.
+  **FRONTERA DURA:** `PROYECCION_GITHUB=1` / crear-cerrar issues reales =
+  **fuera de alcance**; requiere GO explícito aparte (cara pública). El
+  worker **no** toca la API de GitHub. **CA:** npm script existe; dry-run
+  corre y lista los WP abiertos que proyectaría (salida literal); gate de
+  ceguera activo (sin patrón → rehúsa; con patrón → 0 hits, probado);
+  `.sync-map.json` vacío/inicial; cero issues creados (evidencia:
+  `gh issue list` sin novedades). **ALCANCE_DIFF:** `package.json` (script),
+  `plan/.sync-map.json`, calibración en `plan/roles/README.md` o config,
+  `.gitignore` si aplica, reporte. **Eje:** ceguera (transversal).
   **Demolición:** n/a.
 
 ---
