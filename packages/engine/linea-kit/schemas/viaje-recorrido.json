@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zeus.local/schemas/viaje-recorrido.json",
+  "title": "ViajeRecorrido",
+  "description": "Materialized origin→destination path over a GraphSource (cache volume). Uses unified curation_status; does not replace trunk/satellite schemas.",
+  "type": "object",
+  "required": ["id", "origin", "destination", "etapa", "pasos", "curation_status"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "origin": { "type": "string", "minLength": 1 },
+    "destination": { "type": "string", "minLength": 1 },
+    "source_kind": {
+      "type": "string",
+      "enum": ["linea", "wiki", "gamemap", "custom"]
+    },
+    "etapa": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "planning",
+        "traversing",
+        "choosing",
+        "pruned",
+        "blocked",
+        "completed"
+      ]
+    },
+    "pasos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "additionalProperties": true,
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "via": { "type": ["string", "null"] },
+          "chosen_from": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "milestone": { "type": "boolean" },
+          "milestone_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "candidatos_podados": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "milestones": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "curation_status": { "$ref": "curation-status.json" },
+    "snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "node_id": { "type": "string" },
+          "oldid": { "type": "integer" },
+          "wikitext_path": { "type": "string" },
+          "meta_path": { "type": "string" }
+        }
+      }
+    },
+    "generated_at": { "type": "string" },
+    "tree_normalized_from": {
+      "type": "string",
+      "description": "Optional provenance note when normalizing a legacy tree.json shape"
+    }
+  }
+}

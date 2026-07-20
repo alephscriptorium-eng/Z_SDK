@@ -1,11 +1,11 @@
 {
   "name": "@zeus/linea-kit",
-  "version": "0.2.0",
-  "description": "Canonical VOLUMES formats (DATOS.md §2/§8): JSON Schemas, curation model, validator, line loader, and dramaturg segmentation tools",
+  "version": "0.3.0",
+  "description": "Canonical VOLUMES formats (DATOS.md §2/§8): JSON Schemas, curation model, validator, line loader, dramaturg segmentation tools, and viaje path manager",
   "type": "module",
   "main": "src/index.mjs",
   "bin": {
-    "zeus-linea-kit": "./bin/linea-kit.mjs"
+    "zeus-linea-kit": "bin/linea-kit.mjs"
   },
   "exports": {
     ".": "./src/index.mjs",
@@ -16,6 +16,7 @@
     "./loader": "./src/loader.mjs",
     "./tools": "./src/tools/index.mjs",
     "./starterkits": "./src/starterkits/index.mjs",
+    "./viaje": "./src/viaje/index.mjs",
     "./schemas/*": "./schemas/*"
   },
   "scripts": {
@@ -38,5 +39,11 @@
     "bin",
     "docs",
     "README.md"
-  ]
+  ],
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "keywords": [],
+  "author": ""
 }

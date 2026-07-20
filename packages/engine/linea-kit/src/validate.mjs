@@ -34,7 +34,8 @@ export const SCHEMA_FILES = Object.freeze({
   'force-registry': 'force-registry.json',
   'force-manifest': 'force-manifest.json',
   'triage-manifest': 'triage-manifest.json',
-  'ssb-manifest': 'ssb-manifest.json'
+  'ssb-manifest': 'ssb-manifest.json',
+  'viaje-recorrido': 'viaje-recorrido.json'
 });
 
 let ajvSingleton = null;

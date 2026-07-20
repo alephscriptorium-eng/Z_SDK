@@ -18,6 +18,7 @@ El contrato de entrada al mesh es el **validador**; las tools son cortesía.
 | `@zeus/linea-kit/loader` | node | `loadLineaData`, `loadForcesData`, `readWikitext`, … |
 | `@zeus/linea-kit/tools` | node | `crear-linea`, `segmentar`, `conectar-satelite`, `fetch`, `segmentar-force`, `crear-cotas` |
 | `@zeus/linea-kit/starterkits` | node | `createLineaJuguete`, `createForceJuguete` |
+| `@zeus/linea-kit/viaje` | node | path manager origin→destination (`GraphSource`, adapters linea/wiki/gamemap, cache + `fetchSnapshot` gate) |
 | `@zeus/linea-kit/schemas/*` | — | JSON Schema files |
 
 CLI: `zeus-linea-kit <comando>` (ver `bin/linea-kit.mjs`).
@@ -48,6 +49,35 @@ npx zeus-linea-kit starterkit-force --forces-root /tmp/forces --overwrite
 `delta_status` (líneas), carpetas firehose (`raw`/`candidate`/`labeled`/…) y
 `editorialStatus` (transmedia) convergen en `CURATION_STATUSES` /
 `normalizeCurationStatus` / `readCurationStatus`.
+
+## Viaje (path manager)
+
+«Viaje» = camino origen→destino sobre un grafo (`GraphSource`), con candidatos,
+poda, máquina de etapas y cache curada (`viaje-recorrido` + `CURATION_STATUSES`).
+Reusa `fetchSnapshot` (gate `approve`), `applyMilestoneRules` / segmentación, y
+schemas existentes para sidecars — no duplica curación.
+
+```js
+import { createLineaJuguete } from '@zeus/linea-kit/starterkits';
+import { createLineaGraphSource, runViaje } from '@zeus/linea-kit/viaje';
+
+const built = createLineaJuguete({ lineasRoot, id: 'juguete', overwrite: true });
+const source = createLineaGraphSource({ nodoIds: ['N01', 'N02', 'N03'] });
+await runViaje({
+  id: 'demo',
+  origin: 'N01',
+  destination: 'N03',
+  source,
+  cacheDir: built.lineDir,
+  segment: { everyNHops: 1 }
+});
+```
+
+Adaptadores: `createWikiGraphSource` (links + wikitext offline → snapshots),
+`viajeToWalkIntents` / `acceptWalksPozo` (walk intents; room authority = consumer).
+
+Consumo de `linea://*`: viaje no reimplementa el MCP; el mesh (`linea-system`)
+resuelve nodos y el caller pasa ids a `createLineaGraphSource`.
 
 ## Force activation (WP-U92)
 
