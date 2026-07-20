@@ -44,8 +44,11 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > Worktrees de agente retirados; ramas `wp/u14[567]-*` borradas tras
 > merge. Verde local: `gates` OK · lint del árbol trackeado limpio
 > (429+ errores restantes viven en `plan/recursos/*` **untracked**
-> local → residual). Estado declarado: **esperando: push + CI verde
-> (run_id) para cierre definitivo**.
+> local → residual). **Push `474d06c..1a9c5af` + gates remotos verdes:**
+> CI run `29733452662` success (3m38s) · Release run `29733452684`
+> success (3m22s). **Sprint 4 CERRADO.** Estado declarado: **IDLE sin
+> pendientes de swarm** — quedan solo del usuario: formalizar **D-36**
+> (rango `0.x`) y decidir destino de `plan/recursos/*` untracked.
 > Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
 > publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
 > persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
