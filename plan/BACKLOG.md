@@ -30,16 +30,15 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 ## Remate — estado swarm (2026-07-20 · Sprint 5 en curso)
 
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 EN CURSO** (GO usuario ·
-> **D-37** adopción 0.3.1 baseline): lote **U149–U153** marcado 🔶
-> (orquestador + ejecutor · 2026-07-20). BRIEFs en
-> `plan/REPORTES/briefs/WP-U14[9–3]-*.md`. Orden: U149 baseline primero;
-> U151 ∥ U153 indep.; U150 tras U149; U152 dep U150. Handoff diseñador
+> **D-37**): stack **U149** ✅ mergeado (vía U152 ff); **U150–U152**
+> código en main pendientes gobierno ✅; **U151** ∥ **U153** pendientes
+> merge. Handoff diseñador
 > ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md))
-> — **OA-1** canal de envío abierta. `package-lock.json` bump 0.3.1 entra
-> con U149. Estado declarado: **esperando: implementación + revisión
-> U149–U153 (sin merge a main aún)**. Previo: Sprint 3 cerrado · **0 DA**
-> abiertas · publish npm startpacks = residual (NO WP) · diferidos U87 §5–6
-> sin GO · persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
+> — **OA-1** canal de envío abierta. Estado declarado: **revisión
+> orquestador en curso (aceptaciones atómicas V2)**. Previo: Sprint 3
+> cerrado · **0 DA** abiertas · publish npm startpacks = residual (NO WP)
+> · diferidos U87 §5–6 sin GO · persistencia custom domain Pages ⏳
+> post-deploy U143 (no bloquea).
 
 | Frente | WP | Estado |
 | ------ | --- | ------ |
@@ -69,27 +68,23 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 4** — `plan/roles/` → referencia versionada (I60) | **U146** | ✅ |
 | **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | ✅ |
 | **Sprint 4** — micro demolición `.cursor/`+copilot | **U148** | ✅ |
-| **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | 🔶 orq+ej · 2026-07-20 |
-| **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | 🔶 orq+ej · 2026-07-20 |
-| **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | 🔶 orq+ej · 2026-07-20 |
-| **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | 🔶 orq+ej · 2026-07-20 |
-| **Sprint 5** — materializar estación de vigilancia | **U153** | 🔶 orq+ej · 2026-07-20 |
+| **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | ✅ |
+| **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | 🔶 revisión |
+| **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | 🔶 merge pend. |
+| **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | 🔶 revisión |
+| **Sprint 5** — materializar estación de vigilancia | **U153** | 🔶 merge pend. |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (D-34 + D-35 registrados; sin WP).
+**En curso:** aceptación gobierno Sprint 5 (U150–U153).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U143** ✅ (CNAME `docs/public/` · D-34 · zeus merge
-`4d2d805` · library `a25ca08`) · **U144** ✅ (npm ci catálogo · D-34 ·
-library `ad9627c`) · **U142** ✅ (recepción/triage Sprint 3 · D-33) ·
-**U141** ✅ (ceguera · D-32 · merge `dcd7892`) ·
-**U140** ✅ (scrub rutas · D-31 · merge `32e5124`) · **U139** ✅ ·
-**U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C · Sprint 2 base
-(ver histórico). **D-35** (skills `@0.3.0` referencia versionada ·
-sin WP).
+**Aceptado:** **U149** ✅ (baseline 0.3.1 · tip `9290073` · stack U152) ·
+**U143** ✅ · **U144** ✅ · **U142** ✅ · **U141** ✅ · **U140** ✅ ·
+**U139** ✅ · **U138** ✅ · **U136** ✅ · **U135** ✅ · AMEND A+B+C ·
+Sprint 2 base (ver histórico). **D-35** / **D-37**.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -368,32 +363,26 @@ enmascara siempre.
 
 ---
 
-## Sprint 5 — adopción 0.3.1 (GO · 2026-07-20 · D-37) — 🔶 en curso
+## Sprint 5 — adopción 0.3.1 (GO · 2026-07-20 · D-37) — en revisión
 
-Lote **en curso** (GO de lote · 2026-07-20). MUNDO_RAIZ = zeus-sdk.
-Todos parten del tip de `main` post-Sprint 4. `package-lock.json` ya tiene
-el bump 0.3.1 en working tree → lo carga **U149**. Paralelismo: U149 solo
-primero (baseline); luego U150→U152 comparten `docs/` (serie o 1 worker);
-U151 y U153 independientes. Orden de merge sugerido: U149 → U150 → U152 ·
-U151 · U153.
+Lote GO · 2026-07-20. MUNDO_RAIZ = zeus-sdk. Merge stack vía **U152**
+(trae U149+U150). U151 ∥ U153 indep. post-stack.
 
-### WP-U149 · Baseline 0.3.1 + regla 15 citada — 🔶
+### WP-U149 · Baseline 0.3.1 + regla 15 citada — ✅
 
-- 🔶 **WP-U149** (retro≈0) — en curso (orquestador+ejecutor · 2026-07-20).
-  Rama `wp/u149-baseline-031`. Brief:
+- ✅ **WP-U149** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u149-baseline-031` tip `9290073` (en main vía stack U152).
+  Reporte:
+  [REPORTES/WP-U149-baseline-031.md](REPORTES/WP-U149-baseline-031.md).
+  Brief:
   [REPORTES/briefs/WP-U149-baseline-031.md](REPORTES/briefs/WP-U149-baseline-031.md).
-  **Qué:** (1) fijar `package-lock.json` en 0.3.1 (ya en working tree) +
-  `npm run skills:sync` (espejo local, gitignorado); (2) citar la
-  **regla 15** (`reglas-metodo-v04`) como contrato en
-  `plan/roles/README.md` §Runners/IDEs (que ya la aplica de facto) y
-  añadir el **ítem de checklist de cierre de ola v0.4** (residuo IDE +
-  memoria no-citada) a `plan/PRACTICAS.md §7`. **No** refactor retro
-  (zeus ya cumple: 0 markdowns/memorias en carpetas IDE trackeadas).
-  **CA:** `npm view @alephscript/skills-scriptorium@0.x version`
-  resuelve 0.3.1; `grep -c "regla 15" plan/` ≥ 1; lockfile en 0.3.1;
-  `gates` OK. **ALCANCE_DIFF:** `package-lock.json`, `plan/roles/README.md`,
-  `plan/PRACTICAS.md`, reporte. **Nota CI:** lockfile dispara CI.
-  **Demolición:** n/a. **Eje:** ninguno (gobierno).
+  **Qué:** (1) fijar `package-lock.json` en 0.3.1 + `npm run skills:sync`
+  (espejo local, gitignorado); (2) citar la **regla 15**
+  (`reglas-metodo-v04`) en `plan/roles/README.md` §Runners/IDEs y
+  checklist cierre ola v0.4 en `plan/PRACTICAS.md §7`. **CA:**
+  verificados de facto (npm view 0.3.1 · grep regla 15 · lock 0.3.1 ·
+  gates OK). **ALCANCE_DIFF** OK · ceguera OK. **Eje:** ninguno
+  (gobierno). **Nota CI:** lockfile dispara CI al push.
 
 ### WP-U150 · Gate `verificar-sitio.mjs` en docs CI + slug roto — 🔶
 

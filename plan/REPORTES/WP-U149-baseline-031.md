@@ -111,4 +111,14 @@ Ninguno. CI run_id = N/A sin push (protocolo: no push salvo pedido).
 
 ## Revisión del orquestador
 
-_(pendiente: aceptación humana/padre — no inventar ✅)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+- [x] CA1 — `npm view …@0.x version` incluye 0.3.1 (reproducido)
+- [x] CA2 — `grep -c "regla 15"` en roles/README + PRACTICAS ≥ 1
+- [x] CA3 — lockfile `skills-scriptorium` = 0.3.1
+- [x] CA4 — `npm run gates` → OK (0 offenders)
+- [x] ALCANCE_DIFF respetado (4 ficheros); ceguera OK (sin rutas/sesión)
+
+### Merge
+Stack vía **U152** (ff `9f35f13`→`9c5b842`); tip U149 `9290073` en main.
