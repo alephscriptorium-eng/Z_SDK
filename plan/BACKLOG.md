@@ -48,8 +48,17 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > CI run `29733452662` success (3m38s) · Release run `29733452684`
 > success (3m22s). **Sprint 4 CERRADO.** Post-cierre (GO usuario):
 > **D-36** formalizada en DECISIONES · clones `plan/recursos/*`
-> retirados (ola 10 consumida). Estado declarado: **IDLE sin
-> pendientes**.
+> retirados (ola 10 consumida).
+>
+> **Sprint 5 PROPUESTO** (GO usuario · **D-37** adopción 0.3.1 baseline):
+> lote **U149–U153** en ⬜ (propuesto, sin 🔶 aún — falta GO de lote para
+> lanzar workers). Adopción del contrato 0.3.1: regla 15 citada (retro≈0),
+> CHANGELOG de gobierno grueso por ola, gate site-web, docs back-links por
+> tema, estación de vigilancia. Handoff al diseñador asentado
+> ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md),
+> 3 puntos) — **OA-1** abierta: canal de envío. `package-lock.json` con
+> bump 0.3.1 en working tree (entra con U149). Estado declarado:
+> **esperando: GO de lote Sprint 5 para marcar 🔶 y lanzar workers**.
 > Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
 > publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
 > persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
@@ -81,6 +90,12 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 4** — dep registry `skills-scriptorium@0.3.0` | **U145** | ✅ |
 | **Sprint 4** — `plan/roles/` → referencia versionada (I60) | **U146** | ✅ |
 | **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | ✅ |
+| **Sprint 4** — micro demolición `.cursor/`+copilot | **U148** | ✅ |
+| **Sprint 5** — baseline 0.3.1 + regla 15 citada | **U149** | ⬜ prop. |
+| **Sprint 5** — gate `verificar-sitio.mjs` + slug roto | **U150** | ⬜ prop. |
+| **Sprint 5** — CHANGELOG gobierno (grueso, por ola) | **U151** | ⬜ prop. |
+| **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ⬜ prop. |
+| **Sprint 5** — materializar estación de vigilancia | **U153** | ⬜ prop. |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -372,6 +387,98 @@ enmascara siempre.
   editar a mano). **CA:** `.claude/skills/vigilancia/SKILL.md` existe e
   idéntico a `node_modules`; script idempotente; procedencia visible.
   **Demolición:** n/a.
+
+---
+
+## Sprint 5 — adopción 0.3.1 (GO · 2026-07-20 · D-37) — ⬜ propuesto
+
+Lote **propuesto** (⬜; sin 🔶 hasta GO de lote). MUNDO_RAIZ = zeus-sdk.
+Todos parten del tip de `main` post-Sprint 4. `package-lock.json` ya tiene
+el bump 0.3.1 en working tree → lo carga **U149**. Paralelismo: U149 solo
+primero (baseline); luego U150→U152 comparten `docs/` (serie o 1 worker);
+U151 y U153 independientes. Orden de merge sugerido: U149 → U150 → U152 ·
+U151 · U153.
+
+### WP-U149 · Baseline 0.3.1 + regla 15 citada — ⬜
+
+- ⬜ **WP-U149** (retro≈0). Rama `wp/u149-baseline-031`.
+  **Qué:** (1) fijar `package-lock.json` en 0.3.1 (ya en working tree) +
+  `npm run skills:sync` (espejo local, gitignorado); (2) citar la
+  **regla 15** (`reglas-metodo-v04`) como contrato en
+  `plan/roles/README.md` §Runners/IDEs (que ya la aplica de facto) y
+  añadir el **ítem de checklist de cierre de ola v0.4** (residuo IDE +
+  memoria no-citada) a `plan/PRACTICAS.md §7`. **No** refactor retro
+  (zeus ya cumple: 0 markdowns/memorias en carpetas IDE trackeadas).
+  **CA:** `npm view @alephscript/skills-scriptorium@0.x version`
+  resuelve 0.3.1; `grep -c "regla 15" plan/` ≥ 1; lockfile en 0.3.1;
+  `gates` OK. **ALCANCE_DIFF:** `package-lock.json`, `plan/roles/README.md`,
+  `plan/PRACTICAS.md`, reporte. **Nota CI:** lockfile dispara CI.
+  **Demolición:** n/a. **Eje:** ninguno (gobierno).
+
+### WP-U150 · Gate `verificar-sitio.mjs` en docs CI + slug roto — ⬜
+
+- ⬜ **WP-U150** (dep U149 mergeado o su rama). Rama `wp/u150-gate-sitio`.
+  **Qué:** invocar `verificar-sitio.mjs` del paquete (desde
+  `node_modules`, no copiar) como paso de `docs.yml` **tras**
+  `npm run docs:build`, sobre `docs/.vitepress/dist` (BASE=/). Arreglar
+  el **slug roto** encontrado: inconsistencia `Z_SDK` vs `zeus-sdk` en
+  `docs/guide/{estado,layout}.md` — verificar cuál resuelve y unificar.
+  **CA:** el gate corre en CI y **falla** ante enlace/ancla muerta (probar
+  con un enlace roto temporal → rojo → revertir); slug unificado y
+  resoluble; `docs:build` verde. **ALCANCE_DIFF:** `.github/workflows/docs.yml`,
+  `docs/guide/*.md` (slug), `package.json` (si npm script), reporte.
+  **Eje:** site-web (verificación C8-ampliado). **Nota:** exigir run_id
+  del workflow Docs en la revisión (toca `.github/**` → CI corre).
+
+### WP-U151 · CHANGELOG de gobierno (grueso, por ola) — ⬜
+
+- ⬜ **WP-U151** (independiente). Rama `wp/u151-changelog-gobierno`.
+  **Qué:** crear `CHANGELOG.md` de **raíz** (Keep a Changelog) **derivado
+  del `plan/BACKLOG.md`**, granularidad **gruesa por ola/sprint** (no WP a
+  WP; no es changelog de paquete — los 19 de `packages/*` son changesets y
+  **no se tocan**). Traer las olas/sprints cerrados relevantes (0–10 +
+  Sprints 1–4). **No** adoptar el gate `verificar-changelog.mjs` (asume 1
+  BACKLOG↔1 CHANGELOG con WP-ids; choca con changesets — Punto 2 del
+  handoff). **CA:** `CHANGELOG.md` raíz existe, formato estándar, secciones
+  por ola/sprint con sus WP ✅ agregados; cada sprint cerrado del BACKLOG
+  tiene su entrada; sin inventar prosa (deriva del backlog). **ALCANCE_DIFF:**
+  `CHANGELOG.md`, reporte. **Eje:** ninguno (gobierno). **Nota CI:** solo
+  `**.md` en raíz → verificar si cae en paths-ignore U104 (probablemente
+  N/A). **Demolición:** n/a.
+
+### WP-U152 · Docs: página Proyecto + back-links por tema — ⬜
+
+- ⬜ **WP-U152** (dep U150 — el gate valida los enlaces nuevos). Rama
+  `wp/u152-docs-back`. **Qué:** (1) página `docs/proyecto.md`
+  (repo/registry/CI/backlog); (2) back-links al back **a nivel de tema**,
+  **no** por página: declarar repo/registry/CI **una sola vez** como
+  `themeConfig` (`socialLinks`, `footer`, o componente compartido) en
+  `docs/.vitepress/config.mjs`/theme, renderizado en todas las páginas.
+  **Prohibido** hardcodear el bloque en las 25 páginas (antipatrón elevado
+  al diseñador, Punto 3 del handoff). Si alguna página tiene enlaces
+  particulares defectuosos, **regenerar por pipeline** con fuente única,
+  no parchear a mano. **CA:** página Proyecto en nav/sidebar; back-links
+  visibles en todas las páginas desde **una** fuente (grep: el dato del
+  repo/registry aparece 1 vez en config, 0 veces hardcodeado por página);
+  `verificar-sitio.mjs` (U150) verde sobre el `dist` nuevo. **ALCANCE_DIFF:**
+  `docs/.vitepress/**`, `docs/proyecto.md`, reporte. **Eje:** site-web.
+
+### WP-U153 · Materializar estación de vigilancia — ⬜
+
+- ⬜ **WP-U153** (independiente; greenfield, 0 retro). Rama
+  `wp/u153-estacion-vigilancia`. **Qué:** instalar una **instancia** del
+  skill `vigilancia` para zeus: watcher parametrizado (WORLD_ROOT=raíz
+  zeus, OUT_DIR **fuera de git** / gitignorado, INTERVAL default) desde
+  `node_modules/.../vigilancia/scripts/watcher.sh` (invocar/parametrizar,
+  no copiar el método), con los **checks 0.3.1** de `ESTACION.md`
+  (residuo de info en carpetas IDE = regla 15; cruce CHANGELOG↔backlog).
+  Calibración local (rutas de colas, canal CI `gh`) documentada donde el
+  mundo la declare, **no** en el skill. **CA:** watcher arranca contra
+  WORLD_ROOT=zeus y produce pulso en OUT_DIR (evidencia literal de una
+  muestra); OUT_DIR gitignorado (no ensucia el árbol); los dos checks
+  nuevos se ejecutan (salida literal). **ALCANCE_DIFF:** script/config de
+  arranque de la estación + `.gitignore` (OUT_DIR) + reporte; **sin**
+  datos de instancia en git. **Eje:** vigilancia (protocolo read-only).
 
 ---
 

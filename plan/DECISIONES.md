@@ -415,7 +415,39 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   **CA:** decisión registrada; refleja lo mergeado en Sprint 4
   (CI `29733452662` success).
 
+- **D-37 · 2026-07-20 · Adoptar 0.3.1 como baseline + «a partir de ahora
+  con el sistema nuevo»** (GO **usuario**). El rango `0.x` (D-36) ya
+  resolvió `0.3.1`. Se adopta como línea base y se asienta que **de aquí
+  en adelante el mundo opera con el contrato 0.3.1** (regla 15, CHANGELOG
+  derivado, gates site-web, checks de vigía). Sub-decisiones del usuario
+  (custodio), que definen el **lote Sprint 5**:
+  - **(a) Regla 15** (efimeralidad): zeus ya cumple de facto → solo se
+    **cita** como contrato (sin refactor retro).
+  - **(b) CHANGELOG de gobierno**: se **crea** `CHANGELOG.md` de raíz
+    derivado del `BACKLOG`, **granularidad gruesa por ola/sprint** (no
+    changelog de paquete; no choca con changesets — ver [Punto 2 del
+    handoff](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md)).
+  - **(c) Vigilancia**: se **materializa estación** (watcher parametrizado
+    + checks 0.3.1).
+  - **(d) site-web**: gate `verificar-sitio.mjs` en CI de docs; back-links
+    al back **a nivel de tema** (cabecera/pie/placeholders, **no** por
+    página — antipatrón elevado al diseñador, [Punto 3 del
+    handoff](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md)).
+  - **(e) Handoff al diseñador**: nota asentada en disco
+    ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md))
+    con 3 puntos (semver, gate-CHANGELOG-en-monorepo, back-links por
+    tema). **Estado: pendiente de validación**, esperando feedback;
+    canal de envío sin definir (§abiertas OA-1). **CA:** decisión
+    registrada; lote Sprint 5 abierto (U149–U153).
+
 ## Abiertas (bloquean lo indicado)
+
+- **OA-1 · Canal de envío del handoff a skills-scriptorium.** La nota
+  [HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md)
+  está escrita y asentada; **falta el canal** por el que se entrega al
+  diseñador (lo fija el usuario). Enviar contenido externo = requiere GO
+  explícito por acción. No bloquea el Sprint 5 (zeus adopta 0.3.1 sin
+  esperar el feedback).
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son
 DA: (a) endpoint registry + secret `NPM_TOKEN` para publish real → U55;
