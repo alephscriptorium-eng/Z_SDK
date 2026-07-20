@@ -267,4 +267,42 @@ ni archivo; el propio script demuele-y-recrea su salida en cada corrida).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Veredicto: Aceptado ✅** (orquestador · 2026-07-20)
+
+### CA
+
+- [x] CA1 — diff byte a byte reproducible; el `-rq` recursivo sobre las
+      3 skills excede el CA en la dirección correcta.
+- [x] CA2 — idempotencia con la prueba fuerte (post-commit, árbol
+      limpio), no solo la débil.
+- [x] CA3 — procedencia generada, versión leída del paquete (no
+      hardcodeada); el README-manifiesto que permite podar skills
+      retiradas es diseño mejor que lo pedido.
+- [x] CA4 — reproducido por el orquestador contra la base U145: 56
+      archivos, ninguno fuera de alcance; `_plantilla` ausente.
+- [x] **Verificación de facto del orquestador** (evidencia que el worker
+      no podía producir): al materializarse `.claude/skills/`, el runner
+      Claude Code del orquestador **descubrió y listó las 3 skills**
+      (`vigilancia`, `swarm-orquestacion`, `site-web`) como invocables.
+      El CA implícito del sprint — «la skill se consume de verdad» —
+      queda observado, no inferido.
+
+### PRACTICAS
+
+- Script con estilo de `scripts/` existentes ✓, tabla EXCLUDE ✓, error
+  claro si falta install ✓. Auto-revisión honesta (test permanente
+  declarado como no hecho — razonable, no estaba en CA; a residual).
+- CI: N/A honesto; **condición de merge:** `scripts/**` + `package.json`
+  disparan CI al pushear → exigir success.
+
+### Merge
+
+**U145 → U147** (este WP nace de esa rama; fast-forward natural) →
+U146. Tras merge: `git worktree remove` de los tres árboles de agente.
+
+### Hallazgos → destino
+
+Workflow anidado en ejemplo de `site-web` → nota para el repo del
+paquete (ticket de librería ya abierto); EOL/`.gitattributes` y
+`engines.node` → refuerzan residuales U145; test permanente del sync →
+cola residual.
