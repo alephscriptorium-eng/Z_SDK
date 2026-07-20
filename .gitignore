@@ -57,3 +57,6 @@ plan/recursos/*
 
 # IDE runners: espejos generados, nunca en git (regenerar: npm run skills:sync)
 .claude/
+
+# Estación de vigilancia — pulsos locales (WP-U153); nunca en git
+.vigilancia/
