@@ -306,3 +306,15 @@ Workflow anidado en ejemplo de `site-web` → nota para el repo del
 paquete (ticket de librería ya abierto); EOL/`.gitattributes` y
 `engines.node` → refuerzan residuales U145; test permanente del sync →
 cola residual.
+
+### Corrección post-aceptación (orden usuario · 2026-07-20)
+
+El usuario revocó la recomendación de committear el espejo: **ninguna
+carpeta de IDE con markdown en git**. Aplicado por el orquestador en
+esta rama: `.claude/` añadido a `.gitignore` y los 54 archivos del
+espejo des-trackeados (`git rm --cached`). El espejo sigue
+regenerándose con `npm run skills:sync` (script intacto); el consumo
+canónico multi-IDE es `node_modules` (U145). El descubrimiento de las
+3 skills por el runner (verificación de facto, arriba) ocurrió con el
+espejo en disco — sigue siendo válido: el espejo existe localmente,
+solo deja de estar en git.

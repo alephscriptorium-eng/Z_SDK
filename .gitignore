@@ -54,3 +54,6 @@ plan/recursos/*
 
 # WP-U50 release:dry tarballs (local only; never publish from here)
 .release-dry/
+
+# IDE runners: espejos generados, nunca en git (regenerar: npm run skills:sync)
+.claude/
