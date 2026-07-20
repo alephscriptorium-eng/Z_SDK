@@ -17,6 +17,7 @@
     "start:lineas": "npm run start -w @zeus/linea-system",
     "start:forces": "npm run start -w @zeus/force-system",
     "start:ssb": "npm run start -w @zeus/ssb-system",
+    "start:mcp-launcher": "npm run start -w @zeus/mcp-launcher",
     "start:editor": "npm run start -w @zeus/editor-ui",
     "start:player": "npm run start -w @zeus/player-ui",
     "start:console-monitor": "npm run start -w @zeus/console-monitor",

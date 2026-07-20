@@ -1,0 +1,33 @@
+{
+  "name": "@zeus/mcp-launcher",
+  "version": "0.1.0",
+  "description": "MCP meta-ops actuator: launch/stop/restart/health over the declared Zeus fleet catalog",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./catalog": "./src/catalog.mjs",
+    "./capability-map": "./src/capability-map.mjs",
+    "./wake-bridge": "./src/wake-bridge.mjs"
+  },
+  "scripts": {
+    "start": "node src/start.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "mcp",
+    "mcp": "launcher"
+  },
+  "dependencies": {
+    "@zeus/presets-sdk": "*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@zeus/test-utils": "*"
+  },
+  "private": true
+}
