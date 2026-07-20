@@ -14,7 +14,12 @@ prose.
 
 ## [Unreleased]
 
-_(vacío — siguiente lote)_
+### Changed
+
+- Baseline de skills `@alephscript/skills-scriptorium` **0.3.1 → 0.3.3**
+  (rango `0.x`, D-36; bump mecánico sin WP). 0.3.2/0.3.3 traen la
+  proyección backlog→GitHub Issues (WP-09/10/12 del paquete) — adopción
+  de esa capacidad = lote aparte (Sprint 6, opt-in).
 
 ---
 
