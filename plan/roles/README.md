@@ -12,19 +12,19 @@ Sprint 4 — WP-U146.)
 | dato | valor |
 | ---- | ----- |
 | paquete | `@alephscript/skills-scriptorium` |
-| versión | **`0.3.0`** (fijada; nunca `latest`) |
+| versión | rango **`0.x`** (pin solo de major; la efectiva la fija `package-lock.json`) |
 | skills | `skills/swarm-orquestacion` (SKILL.md + `reference/roles/` + plantilla de reporte) · `skills/vigilancia` (estación read-only) |
 | registry | `https://npm.scriptorium.escrivivir.co` |
 
 Consulta / instalación (resoluble por registry, sin copiar los prompts):
 
 ```bash
-# comprobar que la versión fijada existe
-npm view @alephscript/skills-scriptorium@0.3.0 \
+# comprobar qué versiones resuelve el rango
+npm view @alephscript/skills-scriptorium@0.x \
   --registry=https://npm.scriptorium.escrivivir.co version
 
 # traer el paquete a un runner
-npm install @alephscript/skills-scriptorium@0.3.0 \
+npm install @alephscript/skills-scriptorium@0.x \
   --registry=https://npm.scriptorium.escrivivir.co
 ```
 
@@ -100,8 +100,10 @@ Los commits convencionales no son cosmética: alimentan changesets → changelog
 → `npm publish` del pipeline de release (PRACTICAS §6, ARQUITECTURA §5).
 WP que toque paquete publicable ⇒ changeset obligatorio.
 
-## Adaptador Cursor
+## Runners / IDEs
 
-El refuerzo automático vive en [`.cursor/rules/`](../../.cursor/README.md) y
-solo *refuerza* esto, nunca lo contradice; si contradice a `plan/`, gana
-`plan/`. Otros runners consumen el protocolo directamente del paquete.
+Ningún IDE lleva adaptador propio en el repo (decisión usuario
+2026-07-20: sin carpetas de IDE con markdown). Todo runner — Cursor,
+Claude Code, CI u otro — consume el protocolo desde el paquete en
+`node_modules` (más, si el runner lo soporta, un espejo local generado
+con `npm run skills:sync`, fuera de git).

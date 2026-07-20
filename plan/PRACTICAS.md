@@ -6,7 +6,7 @@ que un WP **se devuelve**. El orquestador revisa contra esto.
 
 El protocolo genérico del swarm (roles, ciclo, plantilla) no se copia en
 este árbol: es la **referencia versionada**
-`@alephscript/skills-scriptorium@0.3.0` (registry
+`@alephscript/skills-scriptorium@0.x` (rango; registry
 `npm.scriptorium.escrivivir.co`, resoluble por `npm view` — C8; ver
 [roles/README.md](roles/README.md)). Este documento y la calibración de
 `roles/` son el **delta local**: lo que ESTE mundo fija sobre el paquete.

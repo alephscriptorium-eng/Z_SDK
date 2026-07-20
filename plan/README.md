@@ -39,15 +39,15 @@ ambos en un mismo WP.
 
 El protocolo genérico (prompts ORQUESTADOR, WORKER, REVISION, CORRECCION,
 BRIEF y plantilla de reporte) **no se copia en este árbol**: se referencia el
-paquete versionado `@alephscript/skills-scriptorium@0.3.0` (registry propio,
+paquete versionado `@alephscript/skills-scriptorium@0.x` (rango; registry propio,
 resoluble por `npm view` — C8). El plan queda **autocontenido vía referencia
 versionada**: este árbol + el paquete en su versión fijada bastan. En
 [roles/](roles/README.md) viven la referencia y la **calibración local** de
 zeus (dos backlogs separados, adaptador de evidencia CI `gh`/U104, límites
 Actions, dónde vive el estado).
 
-Adaptador Cursor: [`.cursor/rules/`](../.cursor/rules/) (refuerzo automático
-de PRACTICAS al editar código o `plan/`; si contradice a `plan/`, gana `plan/`).
+Sin adaptadores de IDE en el repo (decisión usuario 2026-07-20): todo
+runner consume el protocolo desde el paquete en `node_modules`.
 
 ## Ciclo de trabajo de un agente del swarm
 

@@ -276,3 +276,18 @@ esperado a lo sumo trivial en REPORTES/).
    usuario** (squash/reescritura de historial no la decide el swarm);
    elevado en el remate del sprint.
 3. Prosa antigua de plan/README («márcalo 🔶») → cola residual.
+
+### Nota post-aceptación (orquestador · 2026-07-20, GO usuario)
+
+- El hallazgo 2 (ruta con token en historial) quedó **resuelto en
+  origen**: el commit del brief se reescribió en local antes del primer
+  push (la máscara `8da5381` de esta rama se absorbió en la base y el
+  rebase la descartó como vacía — los hashes citados en este reporte
+  son pre-reescritura).
+- Amend del usuario: pin `0.3.0` → rango `0.x` — la prosa «versión
+  fijada» de los tres docs cosidos se actualizó en esta rama
+  (costura post-aceptación).
+- El hallazgo 1 (`.cursor/`) se resolvió **demoliendo** el adaptador
+  (U148, decisión usuario: sin carpetas IDE con markdown), no
+  repuntándolo; las menciones en `plan/README.md` y `roles/README.md`
+  se cosieron aquí.
