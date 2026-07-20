@@ -442,12 +442,13 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
 
 ## Abiertas (bloquean lo indicado)
 
-- **OA-1 · Canal de envío del handoff a skills-scriptorium.** La nota
+- ~~**OA-1 · Canal de envío del handoff a skills-scriptorium.**~~
+  **RESUELTA** (usuario · 2026-07-20): canal = **entrega manual del
+  custodio**. La nota
   [HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md)
-  está escrita y asentada; **falta el canal** por el que se entrega al
-  diseñador (lo fija el usuario). Enviar contenido externo = requiere GO
-  explícito por acción. No bloquea el Sprint 5 (zeus adopta 0.3.1 sin
-  esperar el feedback).
+  (revisada contra 0.3.3; los 3 puntos siguen abiertos) queda asentada; el
+  usuario la hace llegar al diseñador por su cuenta. El swarm no publica
+  contenido externo. Sin acción pendiente del swarm.
 
 *(Ninguna decisión de diseño abierta tras D-23. Ops residuales — no son
 DA: (a) endpoint registry + secret `NPM_TOKEN` para publish real → U55;
