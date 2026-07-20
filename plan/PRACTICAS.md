@@ -4,6 +4,13 @@ Este documento existe porque el código de agente tiene modos de fallo
 conocidos y repetidos. No es una guía de estilo: es la lista de cosas por las
 que un WP **se devuelve**. El orquestador revisa contra esto.
 
+El protocolo genérico del swarm (roles, ciclo, plantilla) no se copia en
+este árbol: es la **referencia versionada**
+`@alephscript/skills-scriptorium@0.x` (rango; registry
+`npm.scriptorium.escrivivir.co`, resoluble por `npm view` — C8; ver
+[roles/README.md](roles/README.md)). Este documento y la calibración de
+`roles/` son el **delta local**: lo que ESTE mundo fija sobre el paquete.
+
 ## 1. Anti-monkey-code (reglas duras)
 
 1. **Cero puertos/URLs/rutas hardcodeados.** Todo puerto sale de
@@ -126,8 +133,9 @@ sobre cada rama `wp/*`: lo que aquí es criterio de devolución, allí es rojo.
 `paths-ignore` U104 (`plan/**`, `**.md`). Verde local (`lint` / `gates` /
 tests) **no** sustituye el gate remoto cuando el runner aplica. Evidencia:
 `gh run list --branch <rama>` → run_id + conclusion, o **N/A** si el ignore
-aplica. Docs (`docs/**`) tiene workflow propio; ver roles ORQUESTADOR /
-REVISION / WORKER. **Tip de `main` sin run asociado = push faltante =
+aplica. Docs (`docs/**`) tiene workflow propio; ver
+[roles/README.md](roles/README.md) §calibración (adaptador CI).
+**Tip de `main` sin run asociado = push faltante =
 rojo** (no asumir Pages/CI del tip local; fallo 2026-07-19 U132 library
 ahead sin `git push`).
 
