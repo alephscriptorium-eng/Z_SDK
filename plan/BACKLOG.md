@@ -27,15 +27,17 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-20 · Sprint 5 mergeado · push/CI)
+## Remate — estado swarm (2026-07-20 · Sprint 5 CERRADO)
 
-> **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 MERGEADO** (GO usuario ·
-> **D-37**): **U149–U153** ✅. Stack vía U152 ff (`9290073`/`9ef2eaf`/
-> `9c5b842`); U151 merge `d32c4a5`; U153 merge `bd62759`. Handoff
-> diseñador
+> **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 CERRADO** (GO usuario ·
+> **D-37**): **U149–U153** ✅ mergeados + push `main` tip `95afc93`.
+> Stack vía U152 ff; U151 merge `d32c4a5`; U153 merge `bd62759`.
+> **Docs** [29745202928](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29745202928)
+> success · **CI** [29745202795](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29745202795)
+> success (1er intento: flake `ECONNRESET` en `npm ci` de
+> `@zeus/operator-bridge` → rerun `--failed` OK). Handoff diseñador
 > ([HANDOFF-2026-07-20](REPORTES/entregas/HANDOFF-2026-07-20-skills-0.3.1-feedback.md))
-> — **OA-1** canal de envío abierta. Estado declarado: **push main +
-> exigir Docs/CI success (U150/U152 tocan `.github`/`docs`)**. Previo:
+> — **OA-1** canal de envío abierta. Estado declarado: **IDLE**. Previo:
 > Sprint 3 cerrado · **0 DA** abiertas · publish npm startpacks =
 > residual (NO WP) · diferidos U87 §5–6 sin GO · persistencia custom
 > domain Pages ⏳ post-deploy U143 (no bloquea).
@@ -77,7 +79,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (Sprint 5 mergeado; esperando Docs/CI post-push).
+**En curso:** ninguno (Sprint 5 CERRADO · IDLE).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
