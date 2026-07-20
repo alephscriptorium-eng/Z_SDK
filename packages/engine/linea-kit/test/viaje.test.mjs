@@ -1,5 +1,5 @@
 /**
- * Viaje CA: synthetic line e2e + wiki short path with fetchSnapshot gate + gamemap pozo.
+ * Viaje CA: synthetic line e2e + wiki short path with fetchSnapshot gate + gamemap acceptWalks.
  */
 
 import assert from 'node:assert/strict';
@@ -20,7 +20,7 @@ import {
   normalizeTreeJson,
   segmentarViaje,
   viajeToWalkIntents,
-  acceptWalksPozo,
+  acceptWalks,
   planPath
 } from '../src/viaje/index.mjs';
 
@@ -136,7 +136,7 @@ describe('viaje · wiki corto + fetchSnapshot gate', () => {
     assert.deepEqual(result.recorrido.candidatos_podados, ['Noise']);
   });
 
-  it('normalizes a legacy tree.json-like shape without adopting it as target', () => {
+  it('normalizes a tree.json-like shape without adopting it as target', () => {
     const normalized = normalizeTreeJson({
       root: 'A',
       path: ['A', 'B', 'C'],
@@ -151,8 +151,8 @@ describe('viaje · wiki corto + fetchSnapshot gate', () => {
   });
 });
 
-describe('viaje · gamemap walks (pozo)', () => {
-  it('reproduces path as walk intents accepted by local pozo (room authority pending)', async () => {
+describe('viaje · gamemap walks (pendingAuthority)', () => {
+  it('reproduces path as walk intents accepted locally (room authority pending)', async () => {
     const source = createGamemapGraphSource({
       streets: {
         anchor_a: ['anchor_b'],
@@ -185,7 +185,7 @@ describe('viaje · gamemap walks (pozo)', () => {
     assert.equal(walks.walks.length, 2);
     assert.equal(walks.walks[0].kind, 'walk');
 
-    const accepted = acceptWalksPozo(walks.walks);
+    const accepted = acceptWalks(walks.walks);
     assert.equal(accepted.ok, true, JSON.stringify(accepted));
   });
 });

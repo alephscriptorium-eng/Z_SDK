@@ -74,7 +74,7 @@ await runViaje({
 ```
 
 Adaptadores: `createWikiGraphSource` (links + wikitext offline → snapshots),
-`viajeToWalkIntents` / `acceptWalksPozo` (walk intents; room authority = consumer).
+`viajeToWalkIntents` / `acceptWalks` (walk intents; room authority = consumer).
 
 Consumo de `linea://*`: viaje no reimplementa el MCP; el mesh (`linea-system`)
 resuelve nodos y el caller pasa ids a `createLineaGraphSource`.

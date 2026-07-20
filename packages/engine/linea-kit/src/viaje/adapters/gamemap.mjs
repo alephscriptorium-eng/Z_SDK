@@ -3,7 +3,7 @@
  *
  * Generic engine terms only (anchors / streets / walk). No game pack names.
  * Authority acceptance for live rooms is a consumer concern; until then this
- * module validates intent shape locally (pozo / stub).
+ * module validates intent shape locally (pendingAuthority / stub).
  */
 
 /**
@@ -74,13 +74,13 @@ export function viajeToWalkIntents(recorrido, opts = {}) {
 }
 
 /**
- * Local / pozo acceptor: shape-check walk intents when room authority is absent.
+ * Local acceptor: shape-check walk intents when room authority is absent (pendingAuthority).
  * @param {WalkIntent[]} walks
  * @returns {{ ok: true, accepted: WalkIntent[] }|{ ok: false, error: string, rule: string, at?: number }}
  */
-export function acceptWalksPozo(walks) {
+export function acceptWalks(walks) {
   if (!Array.isArray(walks)) {
-    return { ok: false, error: 'walks array required', rule: 'viaje.gamemap.pozo' };
+    return { ok: false, error: 'walks array required', rule: 'viaje.gamemap.accept' };
   }
   for (let i = 0; i < walks.length; i += 1) {
     const w = walks[i];
@@ -88,7 +88,7 @@ export function acceptWalksPozo(walks) {
       return {
         ok: false,
         error: `invalid walk intent at ${i}`,
-        rule: 'viaje.gamemap.pozo.shape',
+        rule: 'viaje.gamemap.accept.shape',
         at: i
       };
     }

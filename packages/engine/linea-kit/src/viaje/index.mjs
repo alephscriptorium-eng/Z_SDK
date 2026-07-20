@@ -41,5 +41,5 @@ export { createWikiGraphSource } from './adapters/wiki.mjs';
 export {
   createGamemapGraphSource,
   viajeToWalkIntents,
-  acceptWalksPozo
+  acceptWalks
 } from './adapters/gamemap.mjs';

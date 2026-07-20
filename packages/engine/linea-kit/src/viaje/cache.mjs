@@ -1,6 +1,6 @@
 /**
  * Materialize / validate viaje recorridos using kit schemas + curation.
- * Legacy tree.json-like shapes are a departure format to normalize, not the target.
+ * Prior tree.json-like shapes are a departure format to normalize, not the target.
  */
 
 import path from 'node:path';
@@ -117,7 +117,7 @@ export function materializeRecorrido(options) {
 }
 
 /**
- * Normalize a minimal legacy tree.json-like object into a viaje draft.
+ * Normalize a minimal tree.json-like object into a viaje draft.
  * Shape expected: { root?, nodes?: { [id]: { links?: string[] } }, path?: string[] }
  * @param {object} tree
  * @param {{ id?: string, origin?: string, destination?: string }} [opts]
