@@ -29,19 +29,23 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ## Remate — estado swarm (2026-07-20 · Sprint 4 en curso)
 
-> **Sprint 4** (GO usuario · ejecución diferida **D-35**): **U145** ✅ ·
-> **U146** ✅ · **U147** ✅ — lote aceptado. **Amend usuario 2026-07-20:**
-> pin `0.3.0` → rango `0.x` (solo major; 0.3.1 en preparación) —
-> aplicado en rama U145 `ff18b6e` por orden directa; deroga el «pin
-> exacto» de D-35 (formalizar como **D-36** al cerrar). **Lote de
-> limpieza pre-merge propuesto** (esperando GO único): (1) reescritura
-> local de `702f18c` para enmascarar ruta local (NO pushead; origin/main
-> = `474d06c`) + rebase de las 3 ramas wp; (2) corrección U147:
-> `.claude/` → gitignore (espejo generado, no commiteado); (3) U148
-> redefinido: demoler `.cursor/` + `copilot-instructions.md` de
-> operator-ui (markdown de agente, sin valor funcional); (4) costura
-> U146: prosa «versión fijada» → «rango 0.x». Después: merge
-> U145 → U147 → U146 + push (CI verde = cierre).
+> **Sprint 4 CERRADO en local** (GO usuario · D-35 + GO limpieza):
+> **U145 ✅ · U146 ✅ · U147 ✅ mergeados** a `main`
+> (merges `02fbdb6` → `761cb07` → `b391d10`) + **U148 ✅** micro
+> (`6ae0a56`: demolido `.cursor/` + `copilot-instructions.md`;
+> quedan solo `.github/workflows/` y `.vscode/*.json` funcionales).
+> Ejecutado con GO: (a) **pin → rango `0.x`** (deroga «pin exacto»
+> D-35 — formalizar **D-36**, custodio usuario); (b) `.claude/` →
+> gitignore, espejo local vía `npm run skills:sync`, canon multi-IDE =
+> `node_modules`; (c) **historial local reescrito pre-push**: ruta con
+> token enmascarada en la base (`702f18c` → `ce05229`); verificado
+> `git log -S` = 0 en todo lo no pushead. Hashes de actas de este
+> sprint = pre-reescritura (los tips vigentes son los de este remate).
+> Worktrees de agente retirados; ramas `wp/u14[567]-*` borradas tras
+> merge. Verde local: `gates` OK · lint del árbol trackeado limpio
+> (429+ errores restantes viven en `plan/recursos/*` **untracked**
+> local → residual). Estado declarado: **esperando: push + CI verde
+> (run_id) para cierre definitivo**.
 > Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
 > publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
 > persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
@@ -637,9 +641,14 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   adaptador a roles/README + paquete); conviene en el lote de merge
 - (U146) prosa antigua `plan/README.md` («toma un WP… márcalo 🔶»)
   contradice protocolo (🔶 lo marca el orquestador) — costura futura
-- (U146 · **decisión usuario**) token del repo externo reachable en
-  historial de `main` (`702f18c`, clase U140/D-32); árbol ya
-  enmascarado — squash/reescritura solo si el usuario lo decide
+- ~~(U146) token en historial de `main`~~ — **RESUELTO** (GO usuario
+  2026-07-20): reescritura local pre-push; nunca llegó a origin.
+  Aclarado: era ruta local con identificador del custodio (ceguera,
+  clase U140/D-32), **no** una credencial
+- (post-sprint4) `plan/recursos/{simple-ssb-webrtc,web-rtc-gamify-ui}`
+  untracked en checkout principal ensucian lint local (~429 errores
+  preexistentes) — candidato: ignorarlos en eslint, trackearlos o
+  retirarlos (decisión usuario)
 - (U147) test permanente del sync (fixture + tmpdir) — no estaba en CA;
   candidato si se quiere blindar
 - (U147) workflow anidado inerte en ejemplo `site-web` del paquete —
