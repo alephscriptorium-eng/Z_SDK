@@ -30,11 +30,12 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 ## Remate — estado swarm (2026-07-20 · Sprint 4 en curso)
 
 > **Sprint 4** (GO usuario · ejecución diferida **D-35**): **U145** ✅ ·
-> **U146** ✅ (ambos merge pendiente GO) · **U147** 🔶 (sobre rama U145).
-> Estado declarado:
-> **esperando: reporte U147 (background) + GO de merge del usuario**
-> (orden sugerido U145 → U147 → U146). Elevado a usuario: token en
-> historial `main` (hallazgo U146; squash = decisión suya).
+> **U146** ✅ · **U147** ✅ — lote completo aceptado. Estado declarado:
+> **esperando: GO de merge del usuario** (orden **U145 → U147 → U146**;
+> el push de U145/U147 dispara CI → verde = condición de cierre; U146
+> N/A por U104). Elevado a usuario: token en historial `main` (hallazgo
+> U146; squash = decisión suya) · candidato **U148** (`.cursor/`
+> repuntar adaptador, conviene en el lote de merge).
 > Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
 > publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
 > persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
@@ -65,7 +66,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 3** — consulta `npm ci` vs `npm install` (catálogo) | **U144** | ✅ |
 | **Sprint 4** — dep registry `skills-scriptorium@0.3.0` | **U145** | ✅ |
 | **Sprint 4** — `plan/roles/` → referencia versionada (I60) | **U146** | ✅ |
-| **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | 🔶 |
+| **Sprint 4** — `.claude/skills/` runner local (dep U145) | **U147** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -340,10 +341,15 @@ enmascara siempre.
   paquete · CA4 diff solo `plan/` · CA5 ceguera. **Demolición:** los 5
   prompts copiados (ORQUESTADOR, WORKER, REVISION, CORRECCION, BRIEF).
 
-### WP-U147 · `.claude/skills/` — materialización runner local — 🔶
+### WP-U147 · `.claude/skills/` — materialización runner local — ✅
 
-- 🔶 **WP-U147** (worker background · 2026-07-20 · parte de la rama de
-  U145 aceptada, tip `2b4eee3`). Rama
+- ✅ **WP-U147** — aceptado (orquestador / 2026-07-20). Rama
+  `wp/u147-claude-skills` tip `81036fa` (base = rama U145 `2b4eee3`;
+  merge **U145 → U147** obligado). **Merge pendiente de GO usuario**;
+  al pushear, `scripts/**`+`package.json` disparan CI → exigir success.
+  CA1–CA4 ✅ + verificación de facto: el runner del orquestador
+  **descubrió las 3 skills** al materializarse el espejo. Reporte (en
+  la rama): `plan/REPORTES/WP-U147-claude-skills.md`. Rama
   `wp/u147-claude-skills`. Brief:
   [REPORTES/briefs/WP-U147-claude-skills.md](REPORTES/briefs/WP-U147-claude-skills.md).
   Script `scripts/sync-claude-skills.mjs` (npm script `skills:sync`):
@@ -628,6 +634,10 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
 - (U146 · **decisión usuario**) token del repo externo reachable en
   historial de `main` (`702f18c`, clase U140/D-32); árbol ya
   enmascarado — squash/reescritura solo si el usuario lo decide
+- (U147) test permanente del sync (fixture + tmpdir) — no estaba en CA;
+  candidato si se quiere blindar
+- (U147) workflow anidado inerte en ejemplo `site-web` del paquete —
+  arreglo pertenece a la librería (ticket ya abierto allí)
 - Residuales de olas en [BACKLOG-HISTORICO.md](BACKLOG-HISTORICO.md) (colas
   por WP) — no reabrir en bloque
 
