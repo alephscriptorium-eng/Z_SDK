@@ -40,13 +40,18 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > `mediaci|marco|addenda|§interna|instancia-ejemplo` (+ locales runtime).
 > Consecuencia: proyección pública **desbloqueada en vocabulario**
 > *cuando* el texto pase el gate; **no** es GO de Issues reales
-> (DC-15 / LOCAL-ONLY hasta GO aparte). Hallazgo residual U154: formato
-> de bullets `**WP-XX**` vs parser `**WP-XX · título**` (~16 no casan) →
-> cola + punto handoff. CI
+> (DC-15 / LOCAL-ONLY hasta GO aparte). **D-39:** `addenda` también
+> publicable (falso positivo dominio); patrón residual vigente
+> `mediaci|marco|§interna|instancia-ejemplo` → gate `todos` exit 0.
+> **Handoff:** 3/4 puntos **resueltos en skills 0.3.4** (semver DC-22 ·
+> gate gobierno DC-23 · back-links tema DC-24, verificados de facto);
+> **Punto 4 (parser)** trasladado al mundo del paquete (su **DC-25**,
+> pendiente de triaje) — en zeus = cola residual (formato bullets). CI
 > [29748852798](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29748852798)
 > + Docs [29748852726](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29748852726)
-> success. Estado declarado: **IDLE** — 0 OA abiertas; handoff (puntos
-> de contenido) = entrega manual.
+> success. Estado declarado: **IDLE — 0 OA/DA abiertas**; único hilo
+> vivo (del otro mundo): triaje del Punto 4 en skills. zeus en 0.3.3
+> (rango `0.x`); adoptar 0.3.4 = mecánico cuando el custodio quiera.
 >
 > **Sprint 4 CERRADO** (U145–U148 ✅). **Sprint 5 CERRADO** (GO usuario ·
 > **D-37**): **U149–U153** ✅ mergeados + push `main` tip `95afc93`.

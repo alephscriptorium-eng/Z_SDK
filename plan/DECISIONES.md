@@ -473,14 +473,15 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
-  tracker PÚBLICO.**~~ **RESUELTA** (usuario · 2026-07-20 · **D-38** ·
-  vía **(a)**): roles de método `custodio` / `vigía`/`vigilante` =
-  publicables; fuera de `CEGUERA_PATTERN`. Patrón residual de marco /
-  addenda / instancia: `mediaci|marco|addenda|§interna|instancia-ejemplo`
-  (+ locales en runtime). Hallazgo U154 original: gate abortaba por
-  `custodio` en WP-U139 (exit 1). Proyección real a tracker público
-  sigue requiriendo **GO aparte** (DC-15); este cierre solo desbloquea
-  el gate de vocabulario de roles.
+  tracker PÚBLICO.**~~ **RESUELTA** (usuario · 2026-07-20 · **D-38** +
+  **D-39**): roles de método `custodio`/`vigía`/`vigilante` **y** el
+  término `addenda` (capa editorial de dominio, no meta-mecanismo) son
+  **publicables**; fuera de `CEGUERA_PATTERN`. Patrón residual **vigente**:
+  `mediaci|marco|§interna|instancia-ejemplo` (+ locales en runtime).
+  Verificado de facto (D-39): con ese patrón `alcance=todos` → **exit 0**
+  (22 WP, 0 hits); el «scrub» que temíamos quedó **descartado** (era
+  patrón, no contenido). Proyección real a tracker público sigue
+  requiriendo **GO aparte** (DC-15 / LOCAL-ONLY).
 
 - ~~**OA-1 · Canal de envío del handoff a skills-scriptorium.**~~
   **RESUELTA** (usuario · 2026-07-20): canal = **entrega manual del
