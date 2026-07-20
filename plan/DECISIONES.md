@@ -458,6 +458,18 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   cuerpo); `custodio|vig[íi]a` solos → 0 hits; `alcance=abiertos` →
   exit 0. Sin scrub masivo (requiere GO aparte).
 
+- **D-39 · 2026-07-20 · `addenda` también es publicable (falso positivo
+  del residual D-38)** (GO **usuario** / custodio). El vigía verificó que
+  el hit `addenda` de WP-U139 es el literal `ADDENDA` de la **capa
+  editorial de dominio** (Sprint 2), no el meta-mecanismo del método.
+  **Decisión:** `addenda` **no** es palabra reservada → **sale** de
+  `CEGUERA_PATTERN`. Patrón residual: `mediaci|marco|§interna|instancia-ejemplo`.
+  **Consecuencia (verificada de facto):** `alcance=todos` + patrón residual
+  → **exit 0** (22 WP validados, 0 hits); el «scrub pendiente» de D-38
+  queda **descartado** (era problema de patrón, no de contenido). Doc en
+  `plan/roles/README.md §6`. No cambia LOCAL-ONLY (proyección real a
+  Issues sigue sin GO).
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un

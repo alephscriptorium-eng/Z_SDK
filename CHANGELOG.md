@@ -14,12 +14,25 @@ prose.
 
 ## [Unreleased]
 
+_(vacío — siguiente lote)_
+
+---
+
+## [Sprint 6] — 2026-07-20
+
+Proyección backlog→Issues (skills 0.3.3) · GO usuario · D-38.
+
+### Added
+
+- WP-U154 — proyección `backlog→Issues` cableada (dry-run local,
+  LOCAL-ONLY DC-15); gate de ceguera probado (exit 3/1/0/4);
+  `plan/.sync-map.json` inicial. Baseline skills `0.3.1 → 0.3.3` (D-36).
+
 ### Changed
 
-- Baseline de skills `@alephscript/skills-scriptorium` **0.3.1 → 0.3.3**
-  (rango `0.x`, D-36; bump mecánico sin WP). 0.3.2/0.3.3 traen la
-  proyección backlog→GitHub Issues (WP-09/10/12 del paquete) — adopción
-  de esa capacidad = lote aparte (Sprint 6, opt-in).
+- D-38/D-39 — `CEGUERA_PATTERN` de gobierno: `custodio`/`vigía`/`vigilante`
+  y `addenda` son publicables (roles de método + capa editorial de
+  dominio); patrón residual `mediaci|marco|§interna|instancia-ejemplo`.
 
 ---
 

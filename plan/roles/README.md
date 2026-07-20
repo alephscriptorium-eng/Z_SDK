@@ -122,11 +122,13 @@ El método genérico vive en el paquete
   proyectan (proyección desechable ya cerrada; ver método).
 - **Gate de ceguera (DC-12) — obligatorio.** El patrón va **por env**
   (`CEGUERA_PATTERN`), **nunca committeado en el skill** (para no
-  auto-contaminarse). Base de vocabulario de marco / addenda / instancia
-  prohibido en cara pública (**D-38** · OA-2 vía a):
-  `mediaci|marco|addenda|§interna|instancia-ejemplo`. Los roles de método
-  **`custodio`**, **`vigía`/`vigilante`** son **publicables** (fuera del
-  patrón). El operador **añade en runtime** los tokens locales sensibles
+  auto-contaminarse). Base de vocabulario de marco prohibido en cara
+  pública (**D-38** · OA-2 vía a; **D-39** saca `addenda`):
+  `mediaci|marco|§interna|instancia-ejemplo`. Son **publicables** (fuera
+  del patrón) los roles de método **`custodio`**, **`vigía`/`vigilante`**
+  y el término **`addenda`** (en zeus designa la capa editorial ADDENDA de
+  dominio, Sprint 2 — no el meta-mecanismo; falso positivo confirmado en
+  WP-U139). El operador **añade en runtime** los tokens locales sensibles
   (rutas de máquina, alias privados); ésos **no** se commitean. Sin patrón
   ⇒ rehúsa (exit 3, fail-safe); con hit ⇒ aborta sin crear nada (exit 1).
 - **Mapa:** `plan/.sync-map.json` (git-tracked, `WP-XX → nº issue`). Inicial
