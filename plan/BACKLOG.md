@@ -46,9 +46,10 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > (429+ errores restantes viven en `plan/recursos/*` **untracked**
 > local → residual). **Push `474d06c..1a9c5af` + gates remotos verdes:**
 > CI run `29733452662` success (3m38s) · Release run `29733452684`
-> success (3m22s). **Sprint 4 CERRADO.** Estado declarado: **IDLE sin
-> pendientes de swarm** — quedan solo del usuario: formalizar **D-36**
-> (rango `0.x`) y decidir destino de `plan/recursos/*` untracked.
+> success (3m22s). **Sprint 4 CERRADO.** Post-cierre (GO usuario):
+> **D-36** formalizada en DECISIONES · clones `plan/recursos/*`
+> retirados (ola 10 consumida). Estado declarado: **IDLE sin
+> pendientes**.
 > Previo: Sprint 3 cerrado (U143 ✅ · U144 ✅) · **0 DA** abiertas ·
 > publish npm startpacks = residual (NO WP) · diferidos U87 §5–6 sin GO ·
 > persistencia custom domain Pages ⏳ post-deploy U143 (no bloquea).
@@ -648,10 +649,10 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   2026-07-20): reescritura local pre-push; nunca llegó a origin.
   Aclarado: era ruta local con identificador del custodio (ceguera,
   clase U140/D-32), **no** una credencial
-- (post-sprint4) `plan/recursos/{simple-ssb-webrtc,web-rtc-gamify-ui}`
-  untracked en checkout principal ensucian lint local (~429 errores
-  preexistentes) — candidato: ignorarlos en eslint, trackearlos o
-  retirarlos (decisión usuario)
+- ~~(post-sprint4) `plan/recursos/*` untracked ensucian lint local~~ —
+  **RESUELTO** (GO usuario 2026-07-20): clones retirados del disco;
+  eran referencia de ola 10 ya consumida (U88/U90 ✅), 0 cambios
+  locales; procedencia + re-clone en `plan/recursos/README.md`
 - (U147) test permanente del sync (fixture + tmpdir) — no estaba en CA;
   candidato si se quiere blindar
 - (U147) workflow anidado inerte en ejemplo `site-web` del paquete —

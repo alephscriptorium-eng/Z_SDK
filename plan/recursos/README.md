@@ -5,6 +5,11 @@ gitignorados** (`plan/recursos/*` salvo este README): son referencia de solo
 lectura, no código nuestro — lo que se reutilice se trae por WP con su
 demolición/adaptación, nunca copy-paste silencioso (PRACTICAS §1.4).
 
+> **Estado 2026-07-20 (GO usuario):** clones **retirados del disco** —
+> la ola 10 (U88/U90) ya consumió lo reutilizable y no tenían cambios
+> locales. Este README queda como procedencia; si un WP futuro los
+> necesita, re-clonar con los comandos de abajo.
+
 ## Contenido y procedencia (clonado 2026-07-15)
 
 | carpeta | origen | rama/commit | qué es |
