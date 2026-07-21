@@ -1,20 +1,31 @@
 /**
  * City lifecycle runtime — brain over Z06 ProcessManager (actuators only).
+ * f2: zone cascade + ciudad rollup + wake→authority bridge (injected domain).
  */
 
 import {
   createAggregateController,
   readActuatorIntentionalStop,
-  resolveIntentionalStop
+  resolveIntentionalStop,
+  runCascade,
+  CASCADE_CONCURRENCY_DEFAULT,
+  projectTreeLife
 } from '@zeus/lifecycle-kit';
 import { probeHealth } from '@zeus/mcp-launcher';
+import { resolveWakeLaunch } from '@zeus/mcp-launcher/wake-bridge';
 import {
   ARBOL_F1,
   catalogIdsForBarrio,
-  resolveExtendedCatalog
+  resolveExtendedCatalog,
+  buildWakeMap
 } from './catalog-extend.mjs';
 import { mandoToEvents } from './mando.mjs';
 import { projectSnapshot } from './project.mjs';
+import { roundTripWake } from './wake-sync.mjs';
+
+/** Techo cascada zonas (patrón Z08 POBLACION_MAX). Override via opts / env. */
+export const POBLACION_MAX =
+  Number(process.env.POBLACION_MAX) || CASCADE_CONCURRENCY_DEFAULT;
 
 export class CityLifecycleRuntime {
   /**
@@ -22,18 +33,25 @@ export class CityLifecycleRuntime {
    *   manager: import('@zeus/mcp-launcher').ProcessManager,
    *   catalog?: ReturnType<typeof resolveExtendedCatalog>,
    *   healthPollMs?: number,
-   *   barrioIds?: string[]
+   *   barrioIds?: string[],
+   *   concurrency?: number,
+   *   wakeDomain?: import('./wake-sync.mjs').WakeDomain,
+   *   makeIntent?: import('./wake-sync.mjs').MakeIntentFn
    * }} opts
    */
   constructor(opts) {
     this.manager = opts.manager;
     this.catalog = opts.catalog || resolveExtendedCatalog();
     this.healthPollMs = opts.healthPollMs ?? 300;
+    this.concurrency = opts.concurrency ?? POBLACION_MAX;
+    this.wakeDomain = opts.wakeDomain || null;
+    this.makeIntent = opts.makeIntent || null;
     this.ledger = [];
     this.ledgerSeq = 0;
     this.barrioIds = opts.barrioIds || Object.keys(ARBOL_F1.barrios);
     /** @type {Map<string, ReturnType<typeof createAggregateController>>} */
     this.byBarrio = new Map();
+    this.wakeMap = buildWakeMap(this.catalog, this.barrioIds);
 
     for (const barrioId of this.barrioIds) {
       const ids = catalogIdsForBarrio(barrioId, this.catalog);
@@ -52,6 +70,10 @@ export class CityLifecycleRuntime {
       autoRestart: entry?.autoRestart !== false,
       maxRestarts: 3,
       backoffMs: 200,
+      isIntentionalStop: (id) =>
+        resolveIntentionalStop({
+          actuatorIntentional: readActuatorIntentionalStop(manager, id)
+        }),
       async launch(id) {
         const result = await manager.launch(id);
         if (!result.ok) {
@@ -127,7 +149,6 @@ export class CityLifecycleRuntime {
 
   /**
    * Read intentional-stop from the actuator (Z06), not only leaf context.
-   * Cascade/zones that act on this signal = later WP (f2).
    * @param {string} catalogId
    */
   isIntentionalStop(catalogId) {
@@ -142,9 +163,26 @@ export class CityLifecycleRuntime {
     return ctrl.rollup();
   }
 
+  /** Ciudad-level rollup over barrio lives. */
+  rollupCiudad() {
+    const lives = this.barrioIds.map((id) => this.rollupBarrio(id));
+    return projectTreeLife(lives);
+  }
+
   snapshotsBarrio(barrioId) {
     const ctrl = this.byBarrio.get(barrioId);
     return ctrl ? ctrl.snapshots() : {};
+  }
+
+  /**
+   * Resolve wake → catalog ids (Z06 bridge; map owned by composition).
+   * @param {string} barrioId
+   */
+  resolveWake(barrioId) {
+    return resolveWakeLaunch(barrioId, {
+      map: this.wakeMap,
+      catalog: this.catalog
+    });
   }
 
   /**
@@ -175,7 +213,7 @@ export class CityLifecycleRuntime {
         timeoutMs: 30_000
       });
     } else if (mando.action === 'stop') {
-      // graceful: leaves stop via PARADA_SOLICITADA (children before parent — single level f1)
+      // graceful: leaves stop via PARADA_SOLICITADA (children before parent — single level)
       await ctrl.waitFor((c) => c.rollup() === 'latente', { timeoutMs: 30_000 });
     }
 
@@ -194,6 +232,77 @@ export class CityLifecycleRuntime {
       after,
       ledgerTail: this.ledger.slice(-5)
     };
+  }
+
+  /**
+   * Cascada por zonas con concurrencia acotada (techo POBLACION_MAX).
+   * @param {'start'|'stop'} command
+   * @param {{ nodos?: string[], concurrency?: number }} [opts]
+   */
+  async dispatchCascade(command, opts = {}) {
+    const nodos = opts.nodos?.length
+      ? opts.nodos
+      : [...this.byBarrio.keys()];
+    const concurrency = opts.concurrency ?? this.concurrency;
+    const beforeCiudad = this.rollupCiudad();
+
+    const results = await runCascade(
+      nodos,
+      async (nodo) => {
+        try {
+          return await this.dispatchMando(command, { nodo });
+        } catch (err) {
+          return { ok: false, barrioId: nodo, error: String(err?.message || err) };
+        }
+      },
+      { concurrency }
+    );
+
+    const afterCiudad = this.rollupCiudad();
+    this.#hecho('CIUDAD_CASCADA', {
+      command,
+      concurrency,
+      nodos,
+      beforeCiudad,
+      afterCiudad,
+      okCount: results.filter((r) => r?.ok).length
+    });
+
+    return {
+      ok: results.every((r) => r?.ok),
+      concurrency,
+      techo: POBLACION_MAX,
+      beforeCiudad,
+      afterCiudad,
+      results,
+      snapshot: this.snapshot()
+    };
+  }
+
+  /**
+   * Wake authority (Z03 domain injected) → process start → dual snapshot.
+   * Does not invent a second reducer; domain is the game brain.
+   * @param {Parameters<typeof roundTripWake>[0]} params
+   */
+  async wakeAndStart(params) {
+    const domain = params.domain || this.wakeDomain;
+    const makeIntent = params.makeIntent || this.makeIntent;
+    if (!domain || typeof domain.applyIntent !== 'function') {
+      return { ok: false, error: 'wake_domain_requerido' };
+    }
+    const out = await roundTripWake({
+      ...params,
+      domain,
+      makeIntent,
+      runtime: this
+    });
+    this.#hecho('WAKE_ROUNDTRIP', {
+      barrioId: params.barrioId,
+      ok: out.ok,
+      gameEstado: out.gameSnap?.barrios?.[params.barrioId]?.estado,
+      processEstado: out.processSnap?.barrios?.[params.barrioId]?.estado
+    });
+    return out;
   }
 
   snapshot() {

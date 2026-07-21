@@ -33,6 +33,20 @@ export function projectAggregateLife(leafStates) {
 }
 
 /**
+ * Tree rollup over child life tokens (already projected aggregates).
+ * Same policy as aggregate: vivo if ≥1 vivo; roto if all roto; else latente/transicion.
+ * @param {Array<'vivo'|'latente'|'roto'|'transicion'|string>} childLives
+ */
+export function projectTreeLife(childLives) {
+  const values = (childLives || []).filter(Boolean);
+  if (values.length === 0) return 'latente';
+  if (values.some((v) => v === 'vivo')) return 'vivo';
+  if (values.every((v) => v === 'roto')) return 'roto';
+  if (values.some((v) => v === 'transicion')) return 'transicion';
+  return 'latente';
+}
+
+/**
  * @param {import('xstate').AnyActorRef} actor
  */
 export function snapshotLeaf(actor) {

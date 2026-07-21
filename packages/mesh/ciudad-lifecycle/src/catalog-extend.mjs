@@ -259,3 +259,22 @@ export function resolveExtendedCatalog(opts = {}) {
 export function catalogIdsForBarrio(barrioId, catalog) {
   return catalog.filter((e) => e.tree?.barrio === barrioId).map((e) => e.id);
 }
+
+/**
+ * Wake map barrioId → catalog server ids (fills Z06 resolveWakeLaunch).
+ * @param {ReturnType<typeof resolveExtendedCatalog>} catalog
+ * @param {string[]} [barrioIds]
+ * @returns {Record<string, string[]>}
+ */
+export function buildWakeMap(catalog, barrioIds) {
+  const ids =
+    barrioIds ||
+    [...new Set(catalog.filter((e) => e.tree?.barrio).map((e) => e.tree.barrio))];
+  /** @type {Record<string, string[]>} */
+  const map = {};
+  for (const barrioId of ids) {
+    const serverIds = catalogIdsForBarrio(barrioId, catalog);
+    if (serverIds.length) map[barrioId] = serverIds;
+  }
+  return map;
+}

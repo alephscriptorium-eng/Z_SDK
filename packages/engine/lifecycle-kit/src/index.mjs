@@ -8,9 +8,14 @@ export { LEAF_TRANSITIONS, LEAF_STATES, LIFE_ROLLUP } from './transitions.mjs';
 export {
   projectLeafLife,
   projectAggregateLife,
+  projectTreeLife,
   snapshotLeaf
 } from './project.mjs';
 export {
   resolveIntentionalStop,
   readActuatorIntentionalStop
 } from './intent-signal.mjs';
+export {
+  runCascade,
+  CASCADE_CONCURRENCY_DEFAULT
+} from './cascade.mjs';

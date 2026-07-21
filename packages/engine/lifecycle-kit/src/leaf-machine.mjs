@@ -6,6 +6,7 @@
  */
 
 import { setup, assign, fromPromise, fromCallback } from 'xstate';
+import { resolveIntentionalStop } from './intent-signal.mjs';
 
 /** Default stubs — composition must provide real actuators. */
 const stubLaunch = fromPromise(async () => {
@@ -18,6 +19,14 @@ const stubWatch = fromCallback(({ sendBack }) => {
   // no-op watch; composition provides health polling
   return () => {};
 });
+
+/** Event carried intentional-stop (actuator watch or composition). */
+function eventLooksIntentional(event) {
+  return (
+    event?.intentionalStop === true ||
+    event?.diagnosis === 'intentional_stop'
+  );
+}
 
 export const leafMachine = setup({
   types: {
@@ -36,7 +45,7 @@ export const leafMachine = setup({
       | { type: 'PROCESO_VIVO', health?: object, identity?: object }
       | { type: 'SALUD_FALLIDA', diagnosis?: string }
       | { type: 'PARADA_SOLICITADA' }
-      | { type: 'PROCESO_TERMINADO' }
+      | { type: 'PROCESO_TERMINADO', diagnosis?: string, intentionalStop?: boolean }
       | { type: 'DEPENDENCIA_FALLIDA', diagnosis?: string }
     }} */ ({})
   },
@@ -46,6 +55,8 @@ export const leafMachine = setup({
     healthWatch: stubWatch
   },
   guards: {
+    // Default: context flag only. Composition overrides via provideLeafActors
+    // to OR actuator isIntentionalStop (Z15 read API).
     canRetry: ({ context }) =>
       context.autoRestart &&
       !context.intentionalStop &&
@@ -54,7 +65,8 @@ export const leafMachine = setup({
       !context.autoRestart ||
       context.intentionalStop ||
       context.restartCount >= context.maxRestarts,
-    alreadyLive: ({ context }) => Boolean(context.healthIdentity)
+    alreadyLive: ({ context }) => Boolean(context.healthIdentity),
+    isIntentionalExit: ({ event }) => eventLooksIntentional(event)
   },
   actions: {
     clearIntent: assign({ intentionalStop: false, diagnosis: null }),
@@ -177,7 +189,18 @@ export const leafMachine = setup({
           target: 'degradada',
           actions: 'assignDepDiagnosis'
         },
-        PROCESO_TERMINADO: { target: 'degradada', actions: 'assignDiagnosis' },
+        PROCESO_TERMINADO: [
+          {
+            // Actuator-marked intentional exit → absorb, no auto-restart
+            guard: 'isIntentionalExit',
+            target: 'parada',
+            actions: [
+              'markIntentStop',
+              assign({ healthIdentity: null, diagnosis: 'intentional_stop' })
+            ]
+          },
+          { target: 'degradada', actions: 'assignDiagnosis' }
+        ],
         PARADA_SOLICITADA: { target: 'parando', actions: 'markIntentStop' }
       }
     },
@@ -203,6 +226,17 @@ export const leafMachine = setup({
         PROCESO_VIVO: { target: 'viva', actions: ['assignAlive', 'resetRestarts'] },
         SALUD_FALLIDA: { actions: 'assignDiagnosis' },
         DEPENDENCIA_FALLIDA: { actions: 'assignDepDiagnosis' },
+        PROCESO_TERMINADO: [
+          {
+            guard: 'isIntentionalExit',
+            target: 'parada',
+            actions: [
+              'markIntentStop',
+              assign({ healthIdentity: null, diagnosis: 'intentional_stop' })
+            ]
+          },
+          { actions: 'assignDiagnosis' }
+        ],
         REINTENTOS_AGOTADOS: { target: 'rota' },
         PARADA_SOLICITADA: { target: 'parando', actions: 'markIntentStop' }
       }
@@ -258,10 +292,22 @@ export const leafMachine = setup({
  *   backoffMs?: number,
  *   launch: (catalogId: string) => Promise<object>,
  *   stop: (catalogId: string) => Promise<object>,
- *   watch?: (input: { catalogId: string }, sendBack: Function) => () => void
+ *   watch?: (input: { catalogId: string }, sendBack: Function) => () => void,
+ *   isIntentionalStop?: (catalogId: string) => boolean
  * }} opts
  */
 export function provideLeafActors(opts) {
+  const readActuator = () => {
+    if (typeof opts.isIntentionalStop !== 'function') return false;
+    return Boolean(opts.isIntentionalStop(opts.catalogId));
+  };
+
+  const intentionalNow = (context) =>
+    resolveIntentionalStop({
+      actuatorIntentional: readActuator(),
+      contextIntentional: context.intentionalStop
+    });
+
   return {
     actors: {
       launchEffect: fromPromise(async ({ input }) => opts.launch(input.catalogId)),
@@ -272,6 +318,19 @@ export function provideLeafActors(opts) {
         }
         return () => {};
       })
+    },
+    guards: {
+      // Prefer actuator read (Z15) OR leaf context — not context alone
+      canRetry: ({ context }) =>
+        context.autoRestart &&
+        !intentionalNow(context) &&
+        context.restartCount < context.maxRestarts,
+      retriesExhausted: ({ context }) =>
+        !context.autoRestart ||
+        intentionalNow(context) ||
+        context.restartCount >= context.maxRestarts,
+      isIntentionalExit: ({ event, context }) =>
+        eventLooksIntentional(event) || readActuator() || Boolean(context.intentionalStop)
     }
   };
 }

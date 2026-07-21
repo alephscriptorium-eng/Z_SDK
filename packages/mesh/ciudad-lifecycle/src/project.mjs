@@ -1,8 +1,10 @@
 /**
- * Single projector: process actors → game-facing barrio snapshot + ledger hechos.
- * Wake round-trip with Z03 authority = <pendiente> if not wired; projection is local truth here.
+ * Single projector: process actors → game-facing barrio + ciudad snapshot.
+ * Wake round-trip with Z03 authority uses wake-sync (injected domain); this
+ * file remains the unique process→game projection.
  */
 
+import { projectTreeLife } from '@zeus/lifecycle-kit';
 import { ARBOL_F1 } from './catalog-extend.mjs';
 
 /**
@@ -21,8 +23,15 @@ export function projectSnapshot(runtime) {
       maquinarias: runtime.snapshotsBarrio(barrioId)
     };
   }
+
+  const barrioLives = Object.values(barrios).map((b) => b.life);
+  const ciudadLife = projectTreeLife(barrioLives);
+  const ciudadEstado =
+    ciudadLife === 'vivo' ? 'vivo' : ciudadLife === 'roto' ? 'roto' : 'latente';
+
   return {
     at: new Date().toISOString(),
+    ciudad: { life: ciudadLife, estado: ciudadEstado },
     barrios,
     ledger: [...runtime.ledger]
   };

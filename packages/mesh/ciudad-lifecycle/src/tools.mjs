@@ -72,4 +72,47 @@ export function buildMcp(server, ctx) {
       }
     }
   );
+
+  server.registerTool(
+    'city_cascade_start',
+    {
+      title: 'City cascade start (zonas)',
+      description:
+        'Cascada start por zonas con concurrencia acotada (techo POBLACION_MAX).',
+      inputSchema: {
+        nodos: z.array(z.string()).optional(),
+        concurrency: z.number().int().positive().optional()
+      }
+    },
+    async ({ nodos, concurrency }) => {
+      try {
+        return jsonContent(
+          await runtime.dispatchCascade('start', { nodos, concurrency })
+        );
+      } catch (err) {
+        return jsonContent({ ok: false, error: String(err?.message || err) });
+      }
+    }
+  );
+
+  server.registerTool(
+    'city_cascade_stop',
+    {
+      title: 'City cascade stop (zonas)',
+      description: 'Cascada stop por zonas (misma superficie de mando).',
+      inputSchema: {
+        nodos: z.array(z.string()).optional(),
+        concurrency: z.number().int().positive().optional()
+      }
+    },
+    async ({ nodos, concurrency }) => {
+      try {
+        return jsonContent(
+          await runtime.dispatchCascade('stop', { nodos, concurrency })
+        );
+      } catch (err) {
+        return jsonContent({ ok: false, error: String(err?.message || err) });
+      }
+    }
+  );
 }

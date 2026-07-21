@@ -3,7 +3,7 @@
  *
  * Actuator (mcp-launcher) writes on stop / clears on launch.
  * Leaf context also tracks `intentionalStop` for PARADA_SOLICITADA.
- * Full cascade/zones policy that prefers actuator in guards = later WP.
+ * Guards via provideLeafActors prefer actuator OR context (not context alone).
  *
  * @param {{
  *   actuatorIntentional?: boolean,
