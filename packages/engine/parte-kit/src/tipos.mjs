@@ -2,6 +2,10 @@
  * ParteDeCiudad v1 — contrato congelado (SEMILLA-ARG §A1).
  * No inventar campos fuera de este shape.
  *
+ * `DeltaBarrio` / campo `delta` = dirección de cambio de censo (protocolo /
+ * state-patch), no el nombre del juego «delta» (D-8 · HOTFIX-ARG-1 clase
+ * kits de lectura).
+ *
  * @typedef {'vivo'|'latente'|'muerto'|'roto'} EstadoBarrio
  * @typedef {'subio'|'bajo'|'igual'} DeltaBarrio
  *
