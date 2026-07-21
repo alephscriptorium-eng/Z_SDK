@@ -744,8 +744,9 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   `.claude/` (solo `node_modules`)
 - (U153) huérfanos FS `.worktrees/wp-u12|u23|u89-*` sin registro git
   (basura preexistente) — higiene residual
-- Viewer fabrica peer-card local (cara ciega / residual U93) — firma SSB vs
-  micro «visor pide card»
+- ~~Viewer fabrica peer-card local (cara ciega / residual U93) — firma SSB vs
+  micro «visor pide card»~~ — **CERRADO** (GO-4 · **D-40**): firma del
+  conector = «visor pide card»; SSB = extensión U93 diferida.
 - `ZEUS_STOP_SERVICES` / stop targets pozo·solve (residual U109 / presets)
 - Harness U100 cid hex → formato SSB `&…sha256` (live diferido D-22)
 - CRLF `spec-sync` / `types-sync` Windows; dual-emit `arg:*`; flake e2e DJ

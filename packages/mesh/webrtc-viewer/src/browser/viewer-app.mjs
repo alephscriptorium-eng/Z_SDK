@@ -27,7 +27,11 @@ function readZeus() {
     peer: params.get('peer') || '',
     action: params.get('action') || '',
     mode: params.get('mode') || 'room',
-    iceServers: Array.isArray(z.iceServers) ? z.iceServers : []
+    iceServers: Array.isArray(z.iceServers) ? z.iceServers : [],
+    /** @type {object|null} peer-card emitido por autoridad (D-40) */
+    peerCard: z.peerCard && typeof z.peerCard === 'object' ? z.peerCard : null,
+    /** lab only — auto-fabricar ticket UI (no para terceros) */
+    allowLocalPeerCard: z.allowLocalPeerCard === true
   };
 }
 
@@ -102,15 +106,26 @@ export async function bootWebRtcViewer(root) {
     token: cfg.token,
     room: cfg.room
   });
-  const peerCard = makePeerCard({
-    roomId: cfg.room,
-    endpoint: cfg.scriptoriumUrl || 'browser',
-    token: `viewer-${cfg.user}-${Date.now()}`,
-    scopes: [roleScope('player'), 'presence:join', 'webrtc:signal'],
-    expiresAt: Date.now() + 60 * 60 * 1000,
-    sessionId: cfg.user,
-    displayName: cfg.user
-  });
+  // D-40: firma del conector = «visor pide card» (authority-issued).
+  // Terceros inyectan __ZEUS__.peerCard. Lab: allowLocalPeerCard=true.
+  let peerCard = cfg.peerCard;
+  if (!peerCard) {
+    if (!cfg.allowLocalPeerCard) {
+      throw new Error(
+        'peerCard requerido (D-40): inyectá __ZEUS__.peerCard desde la autoridad, ' +
+          'o __ZEUS__.allowLocalPeerCard=true solo en lab'
+      );
+    }
+    peerCard = makePeerCard({
+      roomId: cfg.room,
+      endpoint: cfg.scriptoriumUrl || 'browser',
+      token: `viewer-${cfg.user}-${Date.now()}`,
+      scopes: [roleScope('player'), 'presence:join', 'webrtc:signal'],
+      expiresAt: Date.now() + 60 * 60 * 1000,
+      sessionId: cfg.user,
+      displayName: cfg.user
+    });
+  }
   await engine.joinRoom(cfg.room, peerCard);
   setStatus(`signaling · ${cfg.user} @ ${cfg.room}`);
 

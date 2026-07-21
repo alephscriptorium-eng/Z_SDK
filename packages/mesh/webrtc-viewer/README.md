@@ -41,6 +41,23 @@ En la vista jugador (arg-console), el menú de contacto HORSE incluye
 - Código A entra como port con `data-provenance` / comentarios de procedencia,
   no copia muerta.
 
+## Peer-card (D-40 · firma del conector)
+
+Contrato para terceros (residual U93 cerrado): el visor **pide/inyecta** un
+peer-card emitido por la autoridad — no se auto-fabrica como credencial de
+sala.
+
+```js
+globalThis.__ZEUS__ = {
+  scriptoriumUrl: '…',
+  peerCard: /* issuePeerCard / onPeerCard de authority-kit */,
+  // lab only:
+  // allowLocalPeerCard: true
+};
+```
+
+Firma SSB del asiento = extensión U93 diferida (no es la firma v0).
+
 ## Tests
 
 ```bash

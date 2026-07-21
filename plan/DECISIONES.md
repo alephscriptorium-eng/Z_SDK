@@ -470,6 +470,20 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   `plan/roles/README.md §6`. No cambia LOCAL-ONLY (proyección real a
   Issues sigue sin GO).
 
+- **D-40 · 2026-07-21 · Firma del conector peer-card = «visor pide card»**
+  (GO-4 ops · residual U93 / cara ciega §3). Cierra la pregunta
+  «firma SSB vs micro «visor pide card»» **sin** abrir epic peercards /
+  embajador. Veredicto: el conector a terceros **exige** peer-card
+  emitido por autoridad (`issuePeerCard` / `onPeerCard`); el cliente
+  (visor u otro) **pide/inyecta** la card — no se auto-fabrica como
+  credencial de sala. Mitigación mínima en
+  `@zeus/webrtc-viewer` browser: preferir `__ZEUS__.peerCard`;
+  `makePeerCard` local solo con `__ZEUS__.allowLocalPeerCard === true`
+  (lab). **Firma SSB del asiento** permanece el hook de extensión ya
+  documentado en U93 / D-20 — carril cuando toque; no es la firma del
+  conector v0. Consecuencia: residual U93 de cola viva → cerrado;
+  peercards a terceros pavimentados a nivel contrato.
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un

@@ -41,7 +41,9 @@ function defaultZeusConfig() {
     webrtcRoom: process.env.ZEUS_WEBRTC_ROOM ?? `webrtc:${base.room}`,
     user: process.env.ZEUS_SCRIPTORIUM_USER ?? 'webrtc-viewer',
     game: process.env.ZEUS_GAME ?? 'delta',
-    iceServers
+    iceServers,
+    // Lab host: ticket UI local. Terceros: inyectar peerCard (D-40).
+    allowLocalPeerCard: true
   };
 }
 
