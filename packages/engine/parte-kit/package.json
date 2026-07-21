@@ -1,0 +1,34 @@
+{
+  "name": "@zeus/parte-kit",
+  "version": "0.1.0",
+  "description": "Plaza bulletin kit: pure redactarParte / renderProsa / validarParte (ParteDeCiudad v1). Reading role; no LLM.",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./tipos": "./src/tipos.mjs",
+    "./redactar": "./src/redactar.mjs",
+    "./render": "./src/render.mjs",
+    "./validar": "./src/validar.mjs",
+    "./publicar": "./src/publicar.mjs",
+    "./from-mock": "./src/from-mock.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/protocol": "*"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "private": true
+}
