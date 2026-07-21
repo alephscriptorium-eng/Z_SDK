@@ -17,10 +17,23 @@ export async function refreshEditorMcpCatalog(opts = {}) {
       const env = await import('@zeus/presets-sdk/env');
       const ui = env.resolveZeusUiPorts();
       const host = env.resolveZeusHost();
-      const port = ui.editor?.port ?? 3012;
+      const port = ui.editor?.port;
+      if (port == null) {
+        return {
+          ok: false,
+          skipped: true,
+          url: null,
+          error: 'editor port unresolved (presets-sdk/env)'
+        };
+      }
       base = `http://${host}:${port}`;
-    } catch {
-      base = 'http://localhost:3012';
+    } catch (err) {
+      return {
+        ok: false,
+        skipped: true,
+        url: null,
+        error: String(err?.message || err)
+      };
     }
   }
 

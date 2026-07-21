@@ -10,7 +10,7 @@ import * as tools from './tools.mjs';
 export const SERVER_NAME = 'mcp-launcher';
 export const SERVER_VERSION = '0.1.0';
 
-/** Default launcher port (mesh-legacy MCPLauncher :3050). Override ZEUS_MCP_LAUNCHER. */
+/** Launcher bind port from ZEUS_MCP_LAUNCHER or presets-sdk PORT_TABLE. */
 export function resolveLauncherPort() {
   const raw = process.env.ZEUS_MCP_LAUNCHER;
   if (raw && Number.isFinite(Number(raw))) return Number(raw);

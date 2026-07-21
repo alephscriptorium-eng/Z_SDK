@@ -3,14 +3,17 @@
  *
  * Actuator data only (id, port, spawn, deps, capabilities).
  * Tree/lifecycle fields (`tree.*`, autoRestart, …) are reserved for Z12
- * extension — see README §Z12. Do not invent supervision semantics here.
+ * extension — see README. Do not invent supervision semantics here.
  *
- * Port table (defaults; override via resolveZeusMcpPorts / ZEUS_MCP_*):
- *   solar 4101-03 · lineas 4111-12 · forces 4113 · ssb 4114
- *   firehose 3008 (mesh-legacy) · consoleMonitor 3014
- *   arg 4121/22 · pozo 4131 · solve 4132 · launcher 3050
- *   editor-ui 3012 (UI, not in this catalog)
+ * Ports: single source = `@zeus/presets-sdk/env` (DEFAULT_ZEUS_MCP /
+ * resolveZeusMcpPorts + ZEUS_MCP_* / ZEUS_PORT_*). No local literals.
  */
+
+import {
+  DEFAULT_ZEUS_MCP,
+  resolveZeusMcpPorts,
+  resolveZeusUiPorts
+} from '@zeus/presets-sdk/env';
 
 /** @typedef {'stopped'|'starting'|'running'|'stopping'|'unhealthy'|'unknown'} RuntimeStatus */
 
@@ -30,19 +33,8 @@
  *   Reserved for Z12 — ignored by Z06 actuator.
  */
 
-/** Default ports when presets-sdk/env is unavailable (tests / offline). */
-export const FALLBACK_MCP_PORTS = {
-  solar: { sun: 4101, moon: 4102, earth: 4103 },
-  lineas: { espana: 4111, wpHistoria: 4112 },
-  forces: { disk: 4113 },
-  ssb: { disk: 4114 },
-  firehose: { disk: 3008 },
-  launcher: { disk: 3050 },
-  playerDebug: { monitor: 3014 },
-  argPlayer: { uno: 4121, dos: 4122 },
-  pozoPlayer: { uno: 4131 },
-  solvePlayer: { uno: 4132 }
-};
+/** Offline/tests mirror of presets-sdk defaults (no local port literals). */
+export const FALLBACK_MCP_PORTS = structuredClone(DEFAULT_ZEUS_MCP);
 
 async function loadEnv() {
   try {
@@ -53,9 +45,11 @@ async function loadEnv() {
 }
 
 function syncEnvPorts() {
-  // Prefer sync require-path via createRequire only if already resolvable —
-  // tests pass mcp explicitly. Runtime start uses resolveCatalogLive.
-  return FALLBACK_MCP_PORTS;
+  try {
+    return resolveZeusMcpPorts();
+  } catch {
+    return FALLBACK_MCP_PORTS;
+  }
 }
 
 /**
@@ -144,7 +138,7 @@ export const CATALOG_SEED = [
     capabilities: ['fleet.firehose'],
     healthPath: '/mcp/health',
     mcpPath: '/mcp',
-    notes: 'Port 3008 — mesh-legacy inheritance; do not collide with editor 3012'
+    notes: 'Firehose MCP port from presets-sdk env; keep clear of editor UI port'
   },
   {
     id: 'console-monitor',
@@ -327,18 +321,25 @@ export function buildSpawnSpec(entry, opts = {}) {
 }
 
 /**
- * Final port collision table (documented for CA).
+ * Port collision table derived from presets-sdk (documented for CA).
+ * @param {object} [mcp]
+ * @param {object} [ui]
  */
-export const PORT_TABLE = {
-  launcher: 3050,
-  firehose: 3008,
-  editorUi: 3012,
-  consoleMonitor: 3014,
-  solar: [4101, 4102, 4103],
-  lineas: [4111, 4112],
-  forces: 4113,
-  ssb: 4114,
-  argPlayer: [4121, 4122],
-  pozoPlayer: 4131,
-  solvePlayer: 4132
-};
+export function buildPortTable(mcp = syncEnvPorts(), ui = resolveZeusUiPorts()) {
+  return {
+    launcher: mcp.launcher.disk,
+    firehose: mcp.firehose.disk,
+    editorUi: ui.editor.port,
+    consoleMonitor: mcp.playerDebug.monitor,
+    solar: [mcp.solar.sun, mcp.solar.moon, mcp.solar.earth],
+    lineas: [mcp.lineas.espana, mcp.lineas.wpHistoria],
+    forces: mcp.forces.disk,
+    ssb: mcp.ssb.disk,
+    argPlayer: [mcp.argPlayer.uno, mcp.argPlayer.dos],
+    pozoPlayer: mcp.pozoPlayer.uno,
+    solvePlayer: mcp.solvePlayer.uno
+  };
+}
+
+/** @deprecated Prefer buildPortTable(); kept as live snapshot for callers. */
+export const PORT_TABLE = buildPortTable();
