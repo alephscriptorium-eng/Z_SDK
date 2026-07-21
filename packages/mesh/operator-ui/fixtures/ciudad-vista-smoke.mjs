@@ -152,14 +152,17 @@ async function assertServeCiudad() {
     return { skipped: true, reason: 'dist' };
   }
   let createOperatorUiServer;
+  let resolveRoomClientConfig;
   try {
     ({ createOperatorUiServer } = await import('../serve.mjs'));
+    ({ resolveRoomClientConfig } = await import('@zeus/room-client-browser'));
   } catch (err) {
     console.log('SKIP serve/shell — deps:', err.message);
     return { skipped: true, reason: 'deps' };
   }
+  // URL vía presets-sdk env (resolveRoomClientConfig → resolveZeusUiPorts); sin puerto hardcode.
   const zeus = {
-    scriptoriumUrl: 'http://localhost:3017/runtime',
+    ...resolveRoomClientConfig({}),
     room: 'CIUDAD_DEMO',
     token: 'dev-secret',
     user: 'operator-ui',
