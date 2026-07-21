@@ -49,6 +49,7 @@ ZEUS_GAME=delta ZEUS_ARG_ROOM=ARG_DELTA npm run start:operator-ui
 - **Outbound:** botón → `inspect` (intent rol `operator`)
 - **Conexión:** `serve.mjs` inyecta `window.__ZEUS__` (scriptoriumUrl, room, token, game)
 - **Ciudad:** `state.barrios` → hub bots (canal por estado) + HUD tallies
+- **Campanas:** ledger `parte` → tonos por clase (despertar/degradar/roto) + toggle silencio en HUD
 
 ### Variables de entorno
 
@@ -64,9 +65,10 @@ ZEUS_GAME=delta ZEUS_ARG_ROOM=ARG_DELTA npm run start:operator-ui
 ## Verificación
 
 ```bash
-npm test -w @zeus/operator-bridge          # incluye proyección barrios
+npm test -w @zeus/operator-bridge          # incluye proyección barrios + campanasFromLedger
 npm run build:operator-ui
 npm --prefix packages/mesh/operator-ui run smoke:ciudad
+npm --prefix packages/mesh/operator-ui run smoke:campanas
 npm run verify:operator-ui                 # bridge + build + e2e:operator-ui (delta inject)
 npm run verify:dual-ui                     # build + e2e:dual-ui
 ```

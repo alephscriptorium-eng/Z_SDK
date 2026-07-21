@@ -11,6 +11,8 @@ output — fixed-template prose + JSON delta. Deterministic calculator; no LLM.
 | `renderProsa` | `(parte) → markdown` plantillas fijas |
 | `validarParte` | `(parte, patronCeguera) → { ok, matches }` |
 | `intentarPublicarParte` | valida + publica en canal **ledger** existente (`entryKind: parte` / `parte_rechazado`) |
+| `claseTitular` | `(titular) → 'despertar'\|'degradar'\|'roto'\|null` |
+| `campanasDesdeParte` | `(parte) → [{ clase, titular }]` — un evento por clase presente |
 
 Mock adapters (consumer passes Z01/Z02 JSON; kit does not import game packs):
 

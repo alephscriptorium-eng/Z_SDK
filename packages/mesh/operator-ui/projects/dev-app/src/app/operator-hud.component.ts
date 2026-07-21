@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 
 import { ZeusOperatorBridgeService, OperatorHudSlice } from './zeus-operator-bridge.service';
+import { CampanasAudioService } from './campanas-audio.service';
 
 @Component({
   selector: 'app-operator-hud',
@@ -74,6 +75,23 @@ import { ZeusOperatorBridgeService, OperatorHudSlice } from './zeus-operator-bri
           </section>
         }
 
+        <section class="operator-hud__controls" aria-label="Campanas">
+          <h3 class="operator-hud__subtitle">Campanas</h3>
+          <div class="operator-hud__row">
+            @if (muted$ | async; as muted) {
+              <button
+                type="button"
+                [attr.aria-pressed]="muted"
+                (click)="toggleMute()">
+                {{ muted ? 'Silencio ON' : 'Silencio OFF' }}
+              </button>
+              <button type="button" (click)="probeCampana()" [disabled]="muted">
+                Probar
+              </button>
+            }
+          </div>
+        </section>
+
         @if (bridge.isLive()) {
           <section class="operator-hud__controls" aria-label="Controles operador">
             <h3 class="operator-hud__subtitle">Inspect</h3>
@@ -86,6 +104,18 @@ import { ZeusOperatorBridgeService, OperatorHudSlice } from './zeus-operator-bri
     } @else {
       <aside class="operator-hud operator-hud--empty" aria-label="Operator HUD">
         <span>Sin snapshot de estado</span>
+        <section class="operator-hud__controls" aria-label="Campanas">
+          <div class="operator-hud__row">
+            @if (muted$ | async; as muted) {
+              <button
+                type="button"
+                [attr.aria-pressed]="muted"
+                (click)="toggleMute()">
+                {{ muted ? 'Silencio ON' : 'Silencio OFF' }}
+              </button>
+            }
+          </div>
+        </section>
       </aside>
     }
   `,
@@ -211,11 +241,23 @@ import { ZeusOperatorBridgeService, OperatorHudSlice } from './zeus-operator-bri
     .operator-hud__controls button:hover {
       background: rgba(50, 80, 120, 0.75);
     }
+
+    .operator-hud__controls button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .operator-hud__controls button[aria-pressed='true'] {
+      border-color: rgba(224, 168, 92, 0.7);
+      color: #f0d0a0;
+    }
   `,
 })
 export class OperatorHudComponent {
   protected readonly bridge = inject(ZeusOperatorBridgeService);
+  protected readonly campanas = inject(CampanasAudioService);
   protected readonly slice$ = this.bridge.operatorSlice$;
+  protected readonly muted$ = this.campanas.muted$;
   private inspectCount = 0;
 
   actorEntries(slice: OperatorHudSlice): Array<{ id: string; zone?: string; kind?: string }> {
@@ -256,6 +298,18 @@ export class OperatorHudComponent {
       labeled: [obj.labeled[0] ?? 0, obj.labeled[1] ?? '—'],
       excavated: [obj.excavated[0] ?? 0, obj.excavated[1] ?? '—'],
     };
+  }
+
+  toggleMute(): void {
+    this.campanas.toggleMute();
+  }
+
+  probeCampana(): void {
+    this.campanas.play([
+      { clase: 'despertar' },
+      { clase: 'degradar' },
+      { clase: 'roto' },
+    ]);
   }
 
   runInspect(slice: OperatorHudSlice): void {

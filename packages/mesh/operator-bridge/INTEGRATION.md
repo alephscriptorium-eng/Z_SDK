@@ -24,7 +24,8 @@ el host (`ZeusOperatorBridgeService` en `@zeus/operator-ui`).
 |---|---|---|
 | `state.actors` (por actor nuevo) | `channel=sys`, `bot-to-center`, `fromBot=actorId` | idempotente en reconexión |
 | `state.barrios` (id → estado) | canal por estado (`vivo→ui`, `latente→agent`, `muerto→sys`, `roto→app`) | re-emite si cambia el estado |
-| `ledger` kind conocido | `channel=game`, content según tabla `LEDGER_CONTENT` | inspect/label/wake/sleep/… |
+| `ledger` kind conocido | `channel=game`, content según tabla `LEDGER_CONTENT` | inspect/label/wake/sleep/parte/… |
+| `ledger` kind `parte` | content `parte tick=… titulares=N` | `campanasFromLedger(entry)` → clases sonoras |
 | `ledger` kind desconocido | `channel=game`, content=`kind …` | no silencia hechos nuevos |
 
 - **`CentralHub`** = centro del hub visual (no es master de sesión).

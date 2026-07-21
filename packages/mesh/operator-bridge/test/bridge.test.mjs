@@ -9,6 +9,7 @@ import {
   createOperatorBridge,
   projectOperatorSlice,
   makeOperatorIntent,
+  campanasFromLedger,
   CHANNELS,
   TYPES,
   HUB,
@@ -168,4 +169,54 @@ test('end-to-end: state + ledger produce a coherent hub stream', () => {
   assert.equal(stream.filter((m) => m.channel === CHANNELS.SYS).length, 2);
   assert.equal(stream.filter((m) => m.channel === CHANNELS.GAME).length, 2);
   assert.ok(stream.every((m) => m.toBot === HUB && typeof m.id === 'string'));
+});
+
+test('onLedger parte → hub content with tick + titulares count', () => {
+  const b = createOperatorBridge();
+  const [m] = b.onLedger({
+    kind: 'parte',
+    actorId: 'plaza',
+    ts: 3,
+    detail: {
+      parte: {
+        version: 'parte/1',
+        tick: 42,
+        censo: { vivos: 1, latentes: 0, muertos: 0, rotos: 1 },
+        barrios: [
+          { id: 'a', estado: 'vivo', delta: 'subio', gentesActivas: 1 },
+          { id: 'b', estado: 'roto', delta: 'bajo', gentesActivas: 0 },
+        ],
+        titulares: ['a gana pulso', 'b queda roto'],
+        pendientes: [],
+      },
+    },
+  });
+  assert.equal(m.channel, CHANNELS.GAME);
+  assert.match(m.content, /parte tick=42 titulares=2/);
+});
+
+test('campanasFromLedger — clases desde parte; rechazado/silencio vacío', () => {
+  const events = campanasFromLedger({
+    entryKind: 'parte',
+    detail: {
+      parte: {
+        version: 'parte/1',
+        tick: 1,
+        censo: { vivos: 1, latentes: 1, muertos: 0, rotos: 1 },
+        barrios: [
+          { id: 'a', estado: 'vivo', delta: 'subio', gentesActivas: 1 },
+          { id: 'b', estado: 'latente', delta: 'bajo', gentesActivas: 0 },
+          { id: 'c', estado: 'roto', delta: 'bajo', gentesActivas: 0 },
+        ],
+        titulares: ['a gana pulso', 'b espera relevo', 'c queda roto'],
+        pendientes: [],
+      },
+    },
+  });
+  assert.deepEqual(
+    events.map((e) => e.clase),
+    ['despertar', 'degradar', 'roto'],
+  );
+  assert.deepEqual(campanasFromLedger({ kind: 'parte_rechazado', detail: { parte: {} } }), []);
+  assert.deepEqual(campanasFromLedger({ kind: 'inspect' }), []);
 });

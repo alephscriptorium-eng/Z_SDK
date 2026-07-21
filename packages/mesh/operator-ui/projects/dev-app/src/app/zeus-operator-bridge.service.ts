@@ -7,9 +7,12 @@ import {
   createOperatorBridge,
   projectOperatorSlice,
   makeOperatorIntent,
+  campanasFromLedger,
   WIRE,
 } from '@zeus/operator-bridge';
 import type { AlephMessage } from '@zeus/operator-bridge';
+
+import { CampanasAudioService } from './campanas-audio.service';
 
 export interface ZeusOperatorConfig {
   scriptoriumUrl: string;
@@ -38,6 +41,8 @@ export class ZeusOperatorBridgeService {
   private user = 'operator-ui';
   private game = 'ciudad';
   private unsubs: Array<() => void> = [];
+
+  constructor(private readonly campanas: CampanasAudioService) {}
 
   /** Live bot-hub message stream to feed `<tjs-threejs-scene-pure [externalMessages$]>`. */
   readonly messages$: Observable<AlephMessage> = this.messages.asObservable();
@@ -85,6 +90,8 @@ export class ZeusOperatorBridgeService {
       this.unsubs.push(
         client.onRoomEvent(ev, (entry: any) => {
           push(this.bridge.onLedger(entry));
+          const bells = campanasFromLedger(entry);
+          if (bells.length) this.campanas.play(bells);
         }),
       );
     }

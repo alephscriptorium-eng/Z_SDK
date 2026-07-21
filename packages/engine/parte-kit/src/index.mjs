@@ -31,3 +31,9 @@ export {
   deltasDesdeStatePatch
 } from './from-mock.mjs';
 export { PLANTILLAS, PLANTILLAS_PENDIENTE, applyPlantilla } from './plantillas.mjs';
+export {
+  CLASES_CAMPANA,
+  claseTitular,
+  campanasDesdeParte,
+  campanasPlantillasOk
+} from './campanas.mjs';

@@ -46,6 +46,11 @@ declare module '@zeus/operator-bridge' {
     args?: Record<string, unknown>,
     opts?: { game?: string; from?: string; ts?: number },
   ): Record<string, unknown>;
+  export function campanasFromLedger(entry?: {
+    kind?: string;
+    entryKind?: string;
+    detail?: { parte?: unknown };
+  }): Array<{ clase: 'despertar' | 'degradar' | 'roto'; titular: string }>;
   export const CHANNELS: Record<string, string>;
   export const TYPES: Record<string, string>;
   export const HUB: string;
@@ -55,6 +60,8 @@ declare module '@zeus/operator-bridge' {
     LEDGER: readonly string[];
   };
   export const SCENE_IDS: Record<string, string>;
+  export const LEDGER_PARTE: string;
+  export const LEDGER_PARTE_RECHAZADO: string;
 }
 
 declare module '@zeus/room-client-browser/browser' {

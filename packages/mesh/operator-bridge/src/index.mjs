@@ -7,6 +7,11 @@
  */
 
 import { makeIntent, EVENTS as PROTOCOL_EVENTS } from '@zeus/protocol';
+import {
+  LEDGER_PARTE,
+  LEDGER_PARTE_RECHAZADO,
+  campanasDesdeParte,
+} from '@zeus/parte-kit';
 
 /** AlephMessage channels (COMPATIBLE_MESSAGES) → hub animation colour buckets. */
 export const CHANNELS = Object.freeze({
@@ -74,11 +79,34 @@ const LEDGER_CONTENT = Object.freeze({
   wake: (e) => `wake ${e.detail?.barrioId ?? e.barrioId ?? '—'}`,
   sleep: (e) => `sleep ${e.detail?.barrioId ?? e.barrioId ?? '—'}`,
   announce: (e) => `announce ${e.detail?.message ?? e.message ?? ''}`.trim(),
+  parte: (e) => {
+    const tick = e.detail?.parte?.tick;
+    const n = Array.isArray(e.detail?.parte?.titulares)
+      ? e.detail.parte.titulares.length
+      : 0;
+    return `parte tick=${tick ?? '—'} titulares=${n}`;
+  },
+  parte_rechazado: (e) => {
+    const n = Array.isArray(e.detail?.matches) ? e.detail.matches.length : 0;
+    return `parte_rechazado matches=${n}`;
+  },
   objetivo: () => 'objetivo cumplido',
   burst: (e) => `burst ${e.detail?.riverId ?? ''}`,
   collapse: () => 'collapse',
   error: (e) => `error: ${e.detail?.message ?? e.detail?.reason ?? '—'}`,
 });
+
+/**
+ * Campanas from a ledger entry (`entryKind`/`kind` = parte).
+ * Pure: returns [] if not a published parte or titulares sin clase.
+ * @param {object} [entry]
+ * @returns {Array<{ clase: 'despertar'|'degradar'|'roto', titular: string }>}
+ */
+export function campanasFromLedger(entry = {}) {
+  const kind = entry.kind ?? entry.entryKind;
+  if (kind !== LEDGER_PARTE && kind !== 'parte') return [];
+  return campanasDesdeParte(entry.detail?.parte);
+}
 
 /**
  * Count barrios by estado (unknown estados ignored in tallies).
@@ -236,4 +264,4 @@ export function createOperatorBridge({ hub = HUB } = {}) {
   return { onState, onLedger, reset, projectSlice: projectOperatorSlice };
 }
 
-export { PROTOCOL_EVENTS, makeIntent };
+export { PROTOCOL_EVENTS, makeIntent, LEDGER_PARTE, LEDGER_PARTE_RECHAZADO };

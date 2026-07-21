@@ -25,7 +25,8 @@
     "test": "ng test threejs-ui-lib",
     "lint": "ng lint threejs-ui-lib",
     "devapp": "ng serve dev-app",
-    "smoke:ciudad": "node fixtures/ciudad-vista-smoke.mjs"
+    "smoke:ciudad": "node fixtures/ciudad-vista-smoke.mjs",
+    "smoke:campanas": "node fixtures/campanas-smoke.mjs"
   },
   "dependencies": {
     "@angular-devkit/build-angular": "^20.2.1",
