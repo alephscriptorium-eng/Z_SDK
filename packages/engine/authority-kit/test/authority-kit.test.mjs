@@ -8,6 +8,7 @@ import {
   startAuthority,
   normalizeEvents,
   resolveContentRevSnapshotOpts,
+  resolveStateDeltaSnapshotOpts,
   PROTOCOL_EVENTS,
   issuePeerCard
 } from '../src/index.mjs';
@@ -106,7 +107,8 @@ describe('normalizeEvents', () => {
       STATE: [PROTOCOL_EVENTS.STATE],
       INTENT: [PROTOCOL_EVENTS.INTENT],
       TRACK: [PROTOCOL_EVENTS.TRACK],
-      LEDGER: [PROTOCOL_EVENTS.LEDGER]
+      LEDGER: [PROTOCOL_EVENTS.LEDGER],
+      DELTA: []
     });
   });
 
@@ -115,10 +117,12 @@ describe('normalizeEvents', () => {
       STATE: ['state', 'arg:state'],
       INTENT: 'arg:intent',
       TRACK: 'arg:track',
-      LEDGER: 'arg:ledger'
+      LEDGER: 'arg:ledger',
+      DELTA: 'GAME_STATE_DELTA'
     });
     assert.deepEqual(n.STATE, ['state', 'arg:state']);
     assert.deepEqual(n.INTENT, ['arg:intent']);
+    assert.deepEqual(n.DELTA, ['GAME_STATE_DELTA']);
   });
 });
 
@@ -165,6 +169,39 @@ describe('resolveContentRevSnapshotOpts', () => {
     });
     assert.equal(compact.isFull, false);
     assert.deepEqual(compact.opts, { full: false });
+  });
+});
+
+describe('resolveStateDeltaSnapshotOpts', () => {
+  it('full si no hay lastPublished o vence heartbeat', () => {
+    const boot = resolveStateDeltaSnapshotOpts({
+      now: 100,
+      lastFullAt: 0,
+      heartbeatMs: 1000,
+      lastPublished: null,
+      lastContentRev: NaN
+    });
+    assert.equal(boot.isFull, true);
+    assert.deepEqual(boot.opts, { full: true, mode: 'full' });
+
+    const mid = resolveStateDeltaSnapshotOpts({
+      now: 500,
+      lastFullAt: 100,
+      heartbeatMs: 1000,
+      lastPublished: { tick: 1 },
+      lastContentRev: NaN
+    });
+    assert.equal(mid.isFull, false);
+    assert.deepEqual(mid.opts, { full: false, mode: 'delta' });
+
+    const hb = resolveStateDeltaSnapshotOpts({
+      now: 1200,
+      lastFullAt: 100,
+      heartbeatMs: 1000,
+      lastPublished: { tick: 1 },
+      lastContentRev: NaN
+    });
+    assert.equal(hb.isFull, true);
   });
 });
 
@@ -371,6 +408,68 @@ describe('startAuthority', () => {
 
     const explicit = auth.issuePeerCard({ role: 'dj', sessionId: 'dos' });
     assert.ok(explicit.scopes.includes('role:dj'));
+
+    await auth.stop(null);
+  });
+
+  it('stateDelta: publica GAME_STATE_DELTA entre heartbeats (eje IV wire)', async () => {
+    let clock = 1000;
+    const actors = {
+      rabbit: { id: 'rabbit', pose: 'sit', nodeId: 'plaza' }
+    };
+    const domain = {
+      applyIntent(payload) {
+        if (payload.intent === 'walk') {
+          actors.rabbit = { ...actors.rabbit, pose: 'walk', nodeId: payload.to };
+        }
+        return { ok: true, error: null };
+      },
+      tick() {},
+      snapshot(reason) {
+        return {
+          reason,
+          tick: actors.rabbit.pose === 'walk' ? 2 : 1,
+          ts: clock,
+          sceneId: 'demo',
+          actors: structuredClone(actors),
+          anchors: { a1: { occupiedBy: actors.rabbit.pose === 'sit' ? 'rabbit' : null } }
+        };
+      },
+      drainOutbox: () => ({ ledger: [], tracks: [] })
+    };
+    const fake = createFakeClient();
+    const auth = await startAuthority(
+      baseOpts({
+        domain,
+        stateDelta: true,
+        heartbeatMs: 10_000,
+        now: () => clock,
+        events: { ...PROTOCOL_EVENTS, DELTA: 'GAME_STATE_DELTA' },
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T' })
+      })
+    );
+
+    const boot = fake.published.filter((p) => p.event === 'state');
+    assert.equal(boot.length, 1);
+    assert.equal(boot[0].payload.mode, 'full');
+
+    clock = 1500;
+    fake.io.emit('intent', {
+      actorId: 'rabbit',
+      intent: 'walk',
+      to: 'zigurat',
+      game: GAME
+    });
+
+    const deltas = fake.published.filter((p) => p.event === 'GAME_STATE_DELTA');
+    assert.ok(deltas.length >= 1);
+    const d = deltas[deltas.length - 1].payload;
+    assert.equal(d.mode, 'delta');
+    assert.equal(d.kind, 'state');
+    assert.equal(d.game, GAME);
+    assert.ok(d.actors.rabbit);
+    assert.equal(d.actors.rabbit.pose, 'walk');
 
     await auth.stop(null);
   });

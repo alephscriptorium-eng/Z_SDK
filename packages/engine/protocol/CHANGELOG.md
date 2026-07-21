@@ -9,6 +9,7 @@
 
 ### Patch Changes
 
+- GAME_STATE_DELTA helpers (`diffGameState` / `applyGameStateDelta`) + `mode` on state EVENT_META (gamechannel v0.2).
 - fadb4b5: WP-U53: adopt changesets for per-package semver, changelog, and CI release
   to the private @zeus registry (replaces lockstep 0.x policy).
 - 5031cec: WP-U95: shared `nodeSrcDir` in `@zeus/protocol/node-src-dir`; unify package `./node` entry files to `src/node.mjs`.

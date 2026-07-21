@@ -75,8 +75,36 @@ interface GameStateMessage {
   actors: Record<string, ActorState>;
   anchors: Record<string, { occupiedBy: string | null }>;
   reason?: 'change' | 'heartbeat';
+  mode?: 'full';
 }
 ```
+
+---
+
+## GAME_STATE_DELTA (v0.2)
+
+**Dirección:** autoridad → viewers  
+**Emisor:** autoridad con `stateDelta: true` (`@zeus/authority-kit`)  
+**Cuándo:** entre heartbeats full; solo actores/anclas que cambiaron.
+
+```typescript
+interface GameStateDeltaMessage {
+  type: 'GAME_STATE_DELTA';
+  v: 2;
+  mode: 'delta';
+  from: string;
+  ts: number;
+  sceneId: string;
+  tick: number;
+  baseTick: number; // tick del estado local sobre el que aplica
+  actors?: Record<string, ActorState | null>; // null = borrado
+  anchors?: Record<string, { occupiedBy: string | null } | null>;
+  reason?: 'change' | 'heartbeat';
+}
+```
+
+Helpers canónicos: `diffGameState` / `applyGameStateDelta` en `@zeus/protocol`.
+Si `baseTick` no coincide → pedir/esperar full (`GAME_STATE`).
 
 ---
 

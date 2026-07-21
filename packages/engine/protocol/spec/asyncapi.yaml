@@ -50,7 +50,7 @@ components:
     state:
       name: state
       title: state
-      summary: Authoritative compact snapshot (budget-checked)
+      summary: Authoritative snapshot (budget-checked); mode full|delta (GAME_STATE_DELTA body when mode=delta)
       payload:
         type: object
         required:
@@ -80,6 +80,14 @@ components:
             enum:
               - change
               - heartbeat
+          mode:
+            type: string
+            enum:
+              - full
+              - delta
+          baseTick:
+            type: integer
+            description: "Required when mode=delta: tick of the base snapshot"
         additionalProperties: true
     intent:
       name: intent

@@ -38,3 +38,15 @@ export {
   peerCardGrantsRole,
   roleScope
 } from './peer-card.mjs';
+
+export {
+  GAME_STATE_DELTA,
+  GAME_STATE_DELTA_V,
+  DEFAULT_DELTA_MAP_KEYS,
+  deepEqualJson,
+  diffGameState,
+  applyGameStateDelta,
+  isGameStateDeltaShaped,
+  isEmptyGameStateDelta,
+  makeGameStateDeltaMessage
+} from './game-state-delta.mjs';

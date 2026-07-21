@@ -214,3 +214,33 @@ export declare function peerCardGrantsRole(
 ): boolean;
 
 export declare function roleScope(role: string): string;
+
+/** Gamechannel GAME_STATE_DELTA wire name (v0.2). */
+export declare const GAME_STATE_DELTA: 'GAME_STATE_DELTA';
+
+export declare const GAME_STATE_DELTA_V: 2;
+
+export declare const DEFAULT_DELTA_MAP_KEYS: readonly string[];
+
+export declare function deepEqualJson(a: unknown, b: unknown): boolean;
+
+export declare function diffGameState(
+  prev: object | null | undefined,
+  next: object,
+  opts?: { mapKeys?: string[]; reason?: string }
+): object;
+
+export declare function applyGameStateDelta(
+  base: object,
+  delta: object,
+  opts?: { mapKeys?: string[] }
+): { ok: true; state: object } | { ok: false; error: string };
+
+export declare function isGameStateDeltaShaped(data: unknown): boolean;
+
+export declare function isEmptyGameStateDelta(
+  delta: object,
+  mapKeys?: string[]
+): boolean;
+
+export declare function makeGameStateDeltaMessage(body: object): object;

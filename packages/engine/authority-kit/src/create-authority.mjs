@@ -11,7 +11,10 @@ import {
   EVENTS as PROTOCOL_EVENTS,
   makeEnvelope,
   checkSnapshotBudget,
-  SNAPSHOT_BUDGET_BYTES
+  SNAPSHOT_BUDGET_BYTES,
+  diffGameState,
+  isEmptyGameStateDelta,
+  applyGameStateDelta
 } from '@zeus/protocol';
 import {
   issuePeerCard,
@@ -30,9 +33,11 @@ function asList(value) {
 /**
  * Normaliza el mapa de eventos (string o lista por kind).
  * Default: kinds canónicos de `@zeus/protocol`.
+ * `DELTA` es opcional (gamechannel `GAME_STATE_DELTA`); vacío ⇒ se publica
+ * el delta en los nombres STATE con `mode: 'delta'`.
  *
- * @param {Partial<{ STATE: string|string[], INTENT: string|string[], TRACK: string|string[], LEDGER: string|string[] }>|null} [events]
- * @returns {{ STATE: string[], INTENT: string[], TRACK: string[], LEDGER: string[] }}
+ * @param {Partial<{ STATE: string|string[], INTENT: string|string[], TRACK: string|string[], LEDGER: string|string[], DELTA: string|string[] }>|null} [events]
+ * @returns {{ STATE: string[], INTENT: string[], TRACK: string[], LEDGER: string[], DELTA: string[] }}
  */
 export function normalizeEvents(events = null) {
   const src = events ?? PROTOCOL_EVENTS;
@@ -40,7 +45,8 @@ export function normalizeEvents(events = null) {
     STATE: asList(src.STATE ?? PROTOCOL_EVENTS.STATE),
     INTENT: asList(src.INTENT ?? PROTOCOL_EVENTS.INTENT),
     TRACK: asList(src.TRACK ?? PROTOCOL_EVENTS.TRACK),
-    LEDGER: asList(src.LEDGER ?? PROTOCOL_EVENTS.LEDGER)
+    LEDGER: asList(src.LEDGER ?? PROTOCOL_EVENTS.LEDGER),
+    DELTA: asList(src.DELTA)
   };
 }
 
@@ -61,6 +67,23 @@ export function resolveContentRevSnapshotOpts(ctx) {
   const isFull =
     contentRev !== lastContentRev || now - lastFullAt >= heartbeatMs;
   return { opts: { full: isFull }, contentRev, isFull };
+}
+
+/**
+ * Full en boot + cada `heartbeatMs`; entre medias, delta (GAME_STATE_DELTA).
+ * No depende de `contentRev` (los cambios intermedios salen como parche).
+ *
+ * @param {object} ctx
+ * @returns {{ opts: object, contentRev: number, isFull: boolean }}
+ */
+export function resolveStateDeltaSnapshotOpts(ctx) {
+  const { now, lastFullAt, heartbeatMs, lastPublished } = ctx;
+  const isFull = lastPublished == null || now - lastFullAt >= heartbeatMs;
+  return {
+    opts: { full: isFull, mode: isFull ? 'full' : 'delta' },
+    contentRev: ctx.lastContentRev,
+    isFull
+  };
 }
 
 /**
@@ -105,8 +128,10 @@ async function resolveRoomFns(options) {
  * @param {number} [options.heartbeatMs=1000]
  * @param {object} options.domain — { applyIntent, tick, snapshot, drainOutbox, contentRev? }
  * @param {{ type?: string, features?: string[] }} [options.join]
- * @param {object} [options.events] — mapa kind→nombre(s) wire; default canónico
+ * @param {object} [options.events] — mapa kind→nombre(s) wire; default canónico (+ DELTA opcional)
  * @param {(ctx: object) => { opts: object, contentRev: number, isFull: boolean }} [options.resolveSnapshotOpts]
+ * @param {boolean} [options.stateDelta=false] — full en boot/heartbeat; delta entre medias (GAME_STATE_DELTA)
+ * @param {string[]} [options.deltaMapKeys] — claves Record a difar (default actors/anchors)
  * @param {boolean|((snap: object) => { ok: boolean, bytes: number, budget: number })} [options.snapshotBudget]
  * @param {() => Promise<void>|void} [options.onShutdown]
  * @param {(entry: object) => void} [options.onLedger]
@@ -134,7 +159,9 @@ export async function startAuthority(options) {
     domain,
     join = {},
     events: eventsOpt = null,
-    resolveSnapshotOpts = resolveContentRevSnapshotOpts,
+    resolveSnapshotOpts: resolveSnapshotOptsOpt = null,
+    stateDelta = false,
+    deltaMapKeys = undefined,
     snapshotBudget = false,
     onShutdown = null,
     onLedger = null,
@@ -174,6 +201,9 @@ export async function startAuthority(options) {
 
   const { createClient, connectAndJoin } = await resolveRoomFns(options);
   const events = normalizeEvents(eventsOpt);
+  const resolveSnapshotOpts =
+    resolveSnapshotOptsOpt ??
+    (stateDelta ? resolveStateDeltaSnapshotOpts : resolveContentRevSnapshotOpts);
   const budgetChecker =
     snapshotBudget === true
       ? (snap) => checkSnapshotBudget(snap, SNAPSHOT_BUDGET_BYTES)
@@ -215,6 +245,8 @@ export async function startAuthority(options) {
   const client = createClient(user, { room });
   let lastFullAt = 0;
   let lastContentRev = Number.NaN;
+  /** @type {object|null} */
+  let lastPublished = null;
   let interval = null;
   let stopped = false;
   const signalCleanups = [];
@@ -226,31 +258,70 @@ export async function startAuthority(options) {
       now: t,
       lastContentRev,
       lastFullAt,
-      heartbeatMs
+      heartbeatMs,
+      lastPublished
     });
-    if (resolved.isFull) {
+
+    // stateDelta: siempre pedimos full interno para difar; legado: respeta opts del resolver
+    const snapOpts = stateDelta ? { ...resolved.opts, full: true } : resolved.opts;
+    const snapshot = domain.snapshot(reason, snapOpts);
+
+    let outbound = snapshot;
+    let publishNames = events.STATE;
+    let isFullPublish = resolved.isFull;
+
+    if (stateDelta && !resolved.isFull && lastPublished != null) {
+      const delta = diffGameState(lastPublished, snapshot, {
+        reason,
+        ...(deltaMapKeys ? { mapKeys: deltaMapKeys } : {})
+      });
+      if (isEmptyGameStateDelta(delta, deltaMapKeys) && reason === 'heartbeat') {
+        return lastPublished;
+      }
+      outbound = delta;
+      isFullPublish = false;
+      publishNames = events.DELTA.length > 0 ? events.DELTA : events.STATE;
+    } else if (stateDelta) {
+      outbound = snapshot.mode == null ? { mode: 'full', ...snapshot } : snapshot;
+      isFullPublish = true;
+      publishNames = events.STATE;
+    }
+
+    if (isFullPublish || (!stateDelta && resolved.isFull)) {
       lastFullAt = t;
       lastContentRev = resolved.contentRev;
     }
-    const snapshot = domain.snapshot(reason, resolved.opts);
+
     if (budgetChecker) {
-      const budget = budgetChecker(snapshot);
+      const budget = budgetChecker(outbound);
       if (!budget.ok) {
         warn(
           `[${user}] snapshot over budget: ${budget.bytes} > ${budget.budget} bytes (reason=${reason})`
         );
       }
     }
-    const { kind: _snapKind, ...snapRest } = snapshot;
+    const { kind: _snapKind, ...snapRest } = outbound;
     const payload = makeEnvelope({
       game,
       kind: PROTOCOL_EVENTS.STATE,
       from: user,
-      ts: snapshot.ts ?? t,
+      ts: outbound.ts ?? t,
       ...snapRest
     });
-    publishAll(client, events.STATE, payload, room);
-    return snapshot;
+    publishAll(client, publishNames, payload, room);
+
+    if (stateDelta) {
+      if (isFullPublish) {
+        lastPublished = { ...snapshot, mode: 'full' };
+      } else {
+        const applied = applyGameStateDelta(lastPublished, outbound, {
+          ...(deltaMapKeys ? { mapKeys: deltaMapKeys } : {})
+        });
+        lastPublished = applied.ok ? applied.state : { ...snapshot, mode: 'full' };
+      }
+    }
+
+    return outbound;
   }
 
   function publishOutbox() {

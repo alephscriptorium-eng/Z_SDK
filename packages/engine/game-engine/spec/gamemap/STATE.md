@@ -74,4 +74,7 @@ Solo la **autoridad del mapa** (`map-app`) muta estado vía `MapEngine`. Cliente
 
 ## Deltas (v0.2)
 
-MVP publica snapshot completo cada cambio + heartbeat. Futuro: `GAME_STATE_DELTA` por actor.
+`GAME_STATE_DELTA`: parche por actor/ancla entre heartbeats full. Contrato y
+helpers en `@zeus/protocol` (`diffGameState`, `applyGameStateDelta`). La
+autoridad opt-in (`startAuthority({ stateDelta: true, events: { DELTA: 'GAME_STATE_DELTA' } })`)
+publica full en boot/heartbeat y deltas en cambios intermedios.

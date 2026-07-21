@@ -8,9 +8,9 @@ Matriz **quién escucha qué** en el MVP vaivén.
 
 | Rol | App | Subscribe | Publish | Notas |
 |-----|-----|-----------|---------|-------|
-| Autoridad | `map-app` | `GAME_INTENT` | `GAME_STATE` | Única fuente de verdad |
-| Jugador / driver | `walk-app` | `GAME_STATE` | `GAME_INTENT` | Automatiza loop |
-| Observador | `watch-app` | `GAME_STATE` | — | gameviewer tier0 |
+| Autoridad | `map-app` | `GAME_INTENT` | `GAME_STATE` (+ `GAME_STATE_DELTA` si stateDelta) | Única fuente de verdad |
+| Jugador / driver | `walk-app` | `GAME_STATE` (+ delta) | `GAME_INTENT` | Automatiza loop |
+| Observador | `watch-app` | `GAME_STATE` (+ delta) | — | gameviewer tier0; apply delta |
 | Legacy ping | `ping-app` | `PONG` | `PING` | Sin cambios |
 | Legacy pong | `pong-app` | `PING` | `PONG` | Sin cambios |
 

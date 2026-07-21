@@ -30,6 +30,9 @@ await startAuthority({
   domain,
   events: PROTOCOL_EVENTS, // o alias del juego, o dual ['state','arg:state']
   join: { type: 'MyAuthority', features: ['my-game-0.1'] },
+  // GAME_STATE_DELTA (v0.2): full boot/heartbeat; parches entre medias
+  // stateDelta: true,
+  // events: { ...PROTOCOL_EVENTS, DELTA: 'GAME_STATE_DELTA' },
   snapshotBudget: true, // avisa si > 32 KiB (G-PROTO.5)
   onShutdown: async () => { /* cerrar feeds, etc. */ }
 });

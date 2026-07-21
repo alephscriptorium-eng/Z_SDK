@@ -9,6 +9,7 @@ export { checkSnapshotBudget, measureSnapshotBytes, SNAPSHOT_BUDGET_BYTES } from
 export {
   startAuthority,
   resolveContentRevSnapshotOpts,
+  resolveStateDeltaSnapshotOpts,
   normalizeEvents
 } from './create-authority.mjs';
 

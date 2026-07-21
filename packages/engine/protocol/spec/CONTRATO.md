@@ -45,7 +45,8 @@ antes del envelope completo en wire.
 
 ### Outbound: `state` | `track` | `ledger`
 
-- `state` — snapshot compacto @Hz + heartbeat
+- `state` — snapshot compacto @Hz + heartbeat; opcionalmente `mode: 'delta'`
+  (cuerpo `GAME_STATE_DELTA`, ver §6)
 - `track` — pista de navegación (no muta dominio)
 - `ledger` — hechos append-only
 
@@ -66,6 +67,7 @@ antes del envelope completo en wire.
 - `createIntentCatalog(defs)` / `assertIntentRole(payload, catalog)`
 - `makePeerCard({ roomId, endpoint, token, scopes, expiresAt, ... })`
 - `checkSnapshotBudget(snapshot)`
+- `diffGameState` / `applyGameStateDelta` / `isGameStateDeltaShaped` (§6)
 
 ## 4. Peer Card (credencial de rol)
 
@@ -85,3 +87,33 @@ npm run spec:asyncapi:html   # → docs/public/api/protocol/
 
 Los juegos (p. ej. delta en `@zeus/arg-domain`) re-exportan/consumen este
 paquete y aportan catálogo de intents + alias de wire si los necesitan.
+
+## 6. GAME_STATE_DELTA (gamechannel v0.2)
+
+Entre heartbeats full, la autoridad puede publicar **parches** en lugar del
+snapshot completo (dolor: N actores ⇒ snapshots que no escalan).
+
+| Campo | Full (`mode: 'full'` o legado) | Delta (`mode: 'delta'`) |
+| ----- | ------------------------------ | ----------------------- |
+| `tick` | tick actual | tick actual |
+| `baseTick` | — | tick del estado base sobre el que aplica |
+| `actors` / `anchors` | mapas completos | solo ids cambiados; `null` = borrado |
+| wire Rooms | `state` / `GAME_STATE` | mismo kind `state` **o** alias `GAME_STATE_DELTA` |
+
+API pura (2º cliente = cualquier viewer que aplique sin mutar dominio):
+
+```js
+import {
+  diffGameState,
+  applyGameStateDelta,
+  isGameStateDeltaShaped,
+  GAME_STATE_DELTA
+} from '@zeus/protocol';
+
+const delta = diffGameState(prev, next, { reason: 'change' });
+const applied = applyGameStateDelta(prev, delta);
+// applied.ok ? applied.state : resync full (p. ej. base_tick_mismatch)
+```
+
+`@zeus/authority-kit` con `stateDelta: true` calcula el diff y publica full
+en boot/heartbeat y delta en cambios intermedios (ver README del kit).

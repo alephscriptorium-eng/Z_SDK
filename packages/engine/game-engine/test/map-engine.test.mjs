@@ -42,9 +42,31 @@ test('createMapEngine exposes the runtime API and ticks without throwing', () =>
   assert.equal(typeof engine.applyIntent, 'function');
   assert.equal(typeof engine.tick, 'function');
   assert.equal(typeof engine.getSnapshot, 'function');
+  assert.equal(typeof engine.getDelta, 'function');
   assert.equal(typeof engine.drainEvents, 'function');
   for (let i = 0; i < 20; i += 1) engine.tick(0.1);
   const snap = engine.getSnapshot();
   assert.equal(snap.sceneId, 'vaiven-dos-nodos');
   assert.ok(snap.actors);
+});
+
+test('getDelta emits GAME_STATE_DELTA body for actor changes', () => {
+  const engine = createMapEngine(structuredClone(vaivenDosNodos));
+  engine.registerActor('robot-ping', {
+    zone: 'nodo-a',
+    pose: 'sit',
+    anchorId: 'ancla-a',
+    position: { x: 0, y: 0, z: 0 },
+  });
+  const prev = engine.getSnapshot();
+  engine.applyIntent('robot-ping', {
+    intent: 'walk',
+    linkId: 'enlace-ab',
+    direction: 'a-to-b',
+  });
+  const delta = engine.getDelta(prev, { reason: 'change' });
+  assert.equal(delta.mode, 'delta');
+  assert.equal(delta.baseTick, prev.tick);
+  assert.ok(delta.actors['robot-ping']);
+  assert.equal(delta.actors['robot-ping'].pose, 'walk');
 });

@@ -8,6 +8,7 @@
 
 ### Patch Changes
 
+- `stateDelta` opt-in: full on boot/heartbeat, `GAME_STATE_DELTA` patches between; `resolveStateDeltaSnapshotOpts` + optional `events.DELTA`.
 - Updated dependencies [fadb4b5]
 - Updated dependencies [5031cec]
 - Updated dependencies [4b09212]

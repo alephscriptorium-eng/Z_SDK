@@ -48,7 +48,8 @@ export const EVENT_META = Object.freeze({
   }),
   [EVENTS.STATE]: Object.freeze({
     direction: 'outbound',
-    summary: 'Authoritative compact snapshot (budget-checked)',
+    summary:
+      'Authoritative snapshot (budget-checked); mode full|delta (GAME_STATE_DELTA body when mode=delta)',
     payload: Object.freeze({
       type: 'object',
       required: Object.freeze(['v', 'game', 'ts']),
@@ -56,7 +57,12 @@ export const EVENT_META = Object.freeze({
         ...ENVELOPE_PROPS,
         kind: { type: 'string', const: 'state' },
         tick: { type: 'integer' },
-        reason: { type: 'string', enum: ['change', 'heartbeat'] }
+        reason: { type: 'string', enum: ['change', 'heartbeat'] },
+        mode: { type: 'string', enum: ['full', 'delta'] },
+        baseTick: {
+          type: 'integer',
+          description: 'Required when mode=delta: tick of the base snapshot'
+        }
       }),
       additionalProperties: true
     })

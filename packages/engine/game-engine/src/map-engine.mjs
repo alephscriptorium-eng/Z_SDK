@@ -1,3 +1,5 @@
+import { diffGameState } from '@zeus/protocol';
+
 /**
  * Motor lógico del gamemap — sin red ni render.
  * Aplica reglas de gamethings (nodo / enlace / ancla).
@@ -227,6 +229,15 @@ export function createMapEngine(scene, initialActors = {}) {
           Object.entries(anchors).map(([id, a]) => [id, { occupiedBy: a.occupiedBy }]),
         ),
       };
+    },
+
+    /**
+     * Delta v0.2 respecto a un snapshot previo (mismo shape que getSnapshot).
+     * @param {object|null|undefined} prev
+     * @param {object} [opts]
+     */
+    getDelta(prev, opts = {}) {
+      return diffGameState(prev, this.getSnapshot(), opts);
     },
 
     drainEvents() {
