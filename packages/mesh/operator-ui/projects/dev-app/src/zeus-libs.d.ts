@@ -26,10 +26,20 @@ declare module '@zeus/operator-bridge' {
     actorCount: number;
     actors: Record<string, unknown>;
     lines: Record<string, unknown>;
+    barrios: Record<string, { id?: string; estado?: string; anchorId?: string; parent?: string }>;
+    barrioCount: number;
+    barrioByEstado: Record<string, number>;
     objetivo: unknown;
     maze: unknown;
     contacts: unknown;
+    lastWake: unknown;
+    lastSleep: unknown;
   };
+  export function tallyBarrioEstados(
+    barrios?: Record<string, { estado?: string }>,
+  ): Record<string, number>;
+  export const BARRIO_CHANNEL: Record<string, string>;
+  export const BARRIO_ESTADOS: readonly string[];
   export function makeOperatorIntent(
     actorId: string,
     intent: string,

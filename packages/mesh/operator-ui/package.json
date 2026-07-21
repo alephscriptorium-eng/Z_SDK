@@ -24,7 +24,8 @@
     "prepack": "npm run build:all",
     "test": "ng test threejs-ui-lib",
     "lint": "ng lint threejs-ui-lib",
-    "devapp": "ng serve dev-app"
+    "devapp": "ng serve dev-app",
+    "smoke:ciudad": "node fixtures/ciudad-vista-smoke.mjs"
   },
   "dependencies": {
     "@angular-devkit/build-angular": "^20.2.1",

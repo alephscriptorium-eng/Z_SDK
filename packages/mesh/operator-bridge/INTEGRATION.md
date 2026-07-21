@@ -23,11 +23,14 @@ el host (`ZeusOperatorBridgeService` en `@zeus/operator-ui`).
 | Evento/estado | AlephMessage | Notas |
 |---|---|---|
 | `state.actors` (por actor nuevo) | `channel=sys`, `bot-to-center`, `fromBot=actorId` | idempotente en reconexión |
-| `ledger` kind conocido | `channel=game`, content según tabla `LEDGER_CONTENT` | inspect/label/cache/… |
+| `state.barrios` (id → estado) | canal por estado (`vivo→ui`, `latente→agent`, `muerto→sys`, `roto→app`) | re-emite si cambia el estado |
+| `ledger` kind conocido | `channel=game`, content según tabla `LEDGER_CONTENT` | inspect/label/wake/sleep/… |
 | `ledger` kind desconocido | `channel=game`, content=`kind …` | no silencia hechos nuevos |
 
 - **`CentralHub`** = centro del hub visual (no es master de sesión).
 - **timestamp** viene de `state.ts` / `entry.ts`; ids estables por orden de stream.
+- El puente **no nombra** un juego: `barrios` es un campo opcional del snapshot;
+  el caller inyecta `game` en `makeOperatorIntent` (p. ej. `'ciudad'`).
 
 ## Uso
 
@@ -44,7 +47,7 @@ const bridge = createOperatorBridge();
 for (const ev of WIRE.STATE) {
   roomClient.on(ev, (state) => {
     for (const msg of bridge.onState(state)) sink.push(msg);
-    hud = projectOperatorSlice(state);
+    hud = projectOperatorSlice(state); // incluye barrioCount / barrioByEstado
   });
 }
 for (const ev of WIRE.LEDGER) {
@@ -54,7 +57,7 @@ for (const ev of WIRE.LEDGER) {
 }
 
 // outbound (host):
-roomClient.emit('intent', makeOperatorIntent('op', 'inspect', { targetId: 'nodo-a' }, { game: 'delta' }));
+roomClient.emit('intent', makeOperatorIntent('op', 'inspect', { targetId: 'plaza' }, { game: 'ciudad' }));
 ```
 
 En `@zeus/operator-ui` este `sink` sustituye al `demo-message-simulator` del

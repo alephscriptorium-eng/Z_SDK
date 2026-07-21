@@ -72,7 +72,64 @@ test('projectOperatorSlice derives HUD fields from state', () => {
   assert.equal(slice.actorCount, 1);
   assert.equal(slice.actors.a.zone, 'mar');
   assert.ok(slice.lines.L1);
+  assert.equal(slice.barrioCount, 0);
   assert.equal(SCENE_IDS.operator, 'operator');
+});
+
+test('projectOperatorSlice tallies barrios by estado', () => {
+  const slice = projectOperatorSlice({
+    sceneId: 'ciudad-v0',
+    barrios: {
+      plaza: { id: 'plaza', estado: 'vivo' },
+      zigurat: { id: 'zigurat', estado: 'latente' },
+      muerto: { id: 'muerto', estado: 'muerto' },
+      roto: { id: 'roto', estado: 'roto' },
+    },
+  });
+  assert.equal(slice.barrioCount, 4);
+  assert.deepEqual(slice.barrioByEstado, {
+    vivo: 1,
+    latente: 1,
+    muerto: 1,
+    roto: 1,
+  });
+  assert.equal(slice.barrios.plaza.estado, 'vivo');
+});
+
+test('onState projects barrios as hub bots coloured by estado', () => {
+  const b = createOperatorBridge();
+  const first = b.onState({
+    ts: 1,
+    sceneId: 'ciudad-v0',
+    barrios: {
+      'blockly-editor': { id: 'blockly-editor', estado: 'latente' },
+      plaza: { id: 'plaza', estado: 'vivo' },
+    },
+  });
+  assert.equal(first.length, 2);
+  const byId = Object.fromEntries(first.map((m) => [m.fromBot, m]));
+  assert.equal(byId.plaza.channel, CHANNELS.UI);
+  assert.match(byId.plaza.content, /plaza · vivo/);
+  assert.equal(byId['blockly-editor'].channel, CHANNELS.AGENT);
+  assert.match(byId['blockly-editor'].content, /latente/);
+  assert.deepEqual(b.onState({
+    ts: 2,
+    barrios: {
+      'blockly-editor': { id: 'blockly-editor', estado: 'latente' },
+      plaza: { id: 'plaza', estado: 'vivo' },
+    },
+  }), []);
+  const changed = b.onState({
+    ts: 3,
+    barrios: {
+      'blockly-editor': { id: 'blockly-editor', estado: 'vivo' },
+      plaza: { id: 'plaza', estado: 'vivo' },
+    },
+  });
+  assert.equal(changed.length, 1);
+  assert.equal(changed[0].fromBot, 'blockly-editor');
+  assert.equal(changed[0].channel, CHANNELS.UI);
+  assert.match(changed[0].content, /latente→vivo/);
 });
 
 test('makeOperatorIntent stamps role=operator and game from caller', () => {

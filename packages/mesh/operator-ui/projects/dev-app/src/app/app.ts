@@ -42,7 +42,7 @@ export class App implements OnInit, OnDestroy {
   );
 
   layoutConfig: ThreeJSLayoutConfig = {
-    gameTitle: 'ZEUS Operator',
+    gameTitle: 'Operator · ciudad',
     sceneConfig: { debugMode: true },
     showHeader: true,
     showLeftSidebar: true,
@@ -57,6 +57,11 @@ export class App implements OnInit, OnDestroy {
   private inspectCount = 0;
 
   async ngOnInit(): Promise<void> {
+    const cfg = this.zeusConfig();
+    this.layoutConfig = {
+      ...this.layoutConfig,
+      gameTitle: cfg.game === 'ciudad' ? 'Operator · ciudad' : `Operator · ${cfg.game}`,
+    };
     this.sliceSub = this.zeusBridge.operatorSlice$.subscribe((slice) => {
       this.operatorInspectEnabled = this.zeusBridge.isLive() && slice != null;
     });
@@ -69,12 +74,14 @@ export class App implements OnInit, OnDestroy {
 
   private zeusConfig(): ZeusOperatorConfig {
     const cfg = (globalThis as { __ZEUS__?: ZeusOperatorConfig }).__ZEUS__;
+    const game = cfg?.game ?? 'ciudad';
+    const roomFallback = game === 'ciudad' ? 'CIUDAD_DEMO' : DEV_ROOM_CLIENT_CONFIG.room;
     return {
       scriptoriumUrl: cfg?.scriptoriumUrl ?? DEV_ROOM_CLIENT_CONFIG.scriptoriumUrl,
-      room: cfg?.room ?? DEV_ROOM_CLIENT_CONFIG.room,
+      room: cfg?.room ?? roomFallback,
       token: cfg?.token ?? DEV_ROOM_CLIENT_CONFIG.token,
       user: cfg?.user ?? 'operator-ui',
-      game: cfg?.game ?? 'delta',
+      game,
     };
   }
 

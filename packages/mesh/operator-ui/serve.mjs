@@ -5,6 +5,9 @@
  * room config as `window.__ZEUS__`, so ZeusOperatorBridgeService joins the
  * authority room (contrato único).
  *
+ * Default game slice: `ciudad` (room `CIUDAD_DEMO`). Override with ZEUS_GAME /
+ * ZEUS_ARG_ROOM (e.g. `delta` / `ARG_DELTA`).
+ *
  * Build first: `npm run build:all` (lib + dev-app). Then: `node serve.mjs`.
  */
 import express from 'express';
@@ -20,13 +23,17 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 // Angular 20 application build emits under dist/public/browser/.
 const distDir = path.join(here, 'dist', 'public', 'browser');
 
+const DEFAULT_CIUDAD_ROOM = 'CIUDAD_DEMO';
+
 function defaultZeusConfig() {
   const base = resolveRoomClientConfig({});
+  const game = process.env.ZEUS_GAME ?? 'ciudad';
+  const roomFallback = game === 'ciudad' ? DEFAULT_CIUDAD_ROOM : base.room;
   return {
     ...base,
-    room: process.env.ZEUS_ARG_ROOM ?? base.room,
+    room: process.env.ZEUS_ARG_ROOM ?? roomFallback,
     user: process.env.ZEUS_SCRIPTORIUM_USER ?? 'operator-ui',
-    game: process.env.ZEUS_GAME ?? 'delta'
+    game
   };
 }
 
@@ -56,7 +63,7 @@ export async function createOperatorUiServer({ port, host = 'localhost', zeus } 
       port: resolvedPort,
       role: 'operator',
       room: ZEUS.room,
-      game: ZEUS.game ?? 'delta'
+      game: ZEUS.game ?? 'ciudad'
     })
   );
 
@@ -104,5 +111,7 @@ if (isMain) {
   );
   const ZEUS = defaultZeusConfig();
   const handle = await createOperatorUiServer({ port: PORT, zeus: ZEUS });
-  console.log(`Serving at http://localhost:${handle.port} · room=${ZEUS.room}`);
+  console.log(
+    `Serving at http://localhost:${handle.port} · room=${ZEUS.room} · game=${ZEUS.game}`
+  );
 }

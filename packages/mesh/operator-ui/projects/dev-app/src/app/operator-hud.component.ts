@@ -24,6 +24,14 @@ import { ZeusOperatorBridgeService, OperatorHudSlice } from './zeus-operator-bri
             <dd>{{ slice.actorCount }}</dd>
           </div>
           <div>
+            <dt>Barrios</dt>
+            <dd>{{ slice.barrioCount ?? 0 }}</dd>
+          </div>
+          <div>
+            <dt>Estados</dt>
+            <dd>{{ estadoSummary(slice) }}</dd>
+          </div>
+          <div>
             <dt>Objetivo</dt>
             <dd>
               @if (objetivoOf(slice); as obj) {
@@ -35,6 +43,22 @@ import { ZeusOperatorBridgeService, OperatorHudSlice } from './zeus-operator-bri
             </dd>
           </div>
         </dl>
+
+        @if (barrioEntries(slice).length) {
+          <section class="operator-hud__section" aria-label="Barrios">
+            <h3 class="operator-hud__subtitle">Barrios</h3>
+            <ul class="operator-hud__list">
+              @for (entry of barrioEntries(slice); track entry.id) {
+                <li>
+                  <span class="operator-hud__actor">{{ entry.id }}</span>
+                  <span
+                    class="operator-hud__meta"
+                    [attr.data-estado]="entry.estado">{{ entry.estado }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
 
         @if (actorEntries(slice).length) {
           <section class="operator-hud__section" aria-label="Actores en room">
@@ -155,6 +179,11 @@ import { ZeusOperatorBridgeService, OperatorHudSlice } from './zeus-operator-bri
       font-size: 10px;
     }
 
+    .operator-hud__meta[data-estado='vivo'] { color: #6dcf8a; }
+    .operator-hud__meta[data-estado='latente'] { color: #e0a85c; }
+    .operator-hud__meta[data-estado='muerto'] { color: #e07070; }
+    .operator-hud__meta[data-estado='roto'] { color: #7aa0e0; }
+
     .operator-hud__controls {
       pointer-events: auto;
       margin-top: 0.35rem;
@@ -193,9 +222,26 @@ export class OperatorHudComponent {
     const actors = slice?.actors ?? {};
     return Object.entries(actors).map(([id, a]) => ({
       id,
-      zone: (a as { zone?: string })?.zone,
+      zone: (a as { zone?: string; nodeId?: string })?.zone
+        ?? (a as { nodeId?: string })?.nodeId,
       kind: (a as { kind?: string })?.kind,
     }));
+  }
+
+  barrioEntries(slice: OperatorHudSlice): Array<{ id: string; estado: string }> {
+    const barrios = (slice as { barrios?: Record<string, { estado?: string }> })?.barrios ?? {};
+    return Object.entries(barrios)
+      .map(([id, b]) => ({ id, estado: b?.estado ?? '?' }))
+      .sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  estadoSummary(slice: OperatorHudSlice): string {
+    const tallies = (slice as { barrioByEstado?: Record<string, number> })?.barrioByEstado;
+    if (!tallies) return '—';
+    const parts = ['vivo', 'latente', 'muerto', 'roto']
+      .map((k) => `${k[0]}${tallies[k] ?? 0}`)
+      .join(' ');
+    return parts;
   }
 
   objetivoOf(
@@ -214,9 +260,10 @@ export class OperatorHudComponent {
 
   runInspect(slice: OperatorHudSlice): void {
     this.inspectCount += 1;
+    const firstBarrio = this.barrioEntries(slice)[0]?.id;
     const firstActor = this.actorEntries(slice)[0]?.id;
     this.bridge.inspect({
-      targetId: firstActor ?? 'spawn',
+      targetId: firstBarrio ?? firstActor ?? 'spawn',
       label: `operator inspect #${this.inspectCount}`,
     });
   }

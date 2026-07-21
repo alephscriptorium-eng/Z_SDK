@@ -5,6 +5,10 @@ zeus. Renderiza el **contrato único** (`state` / `ledger` / intents rol
 `operator`) como un **hub de bots** vía `@zeus/operator-bridge`. Convive con
 `player-ui` (DJ) y `player-3d-ui`: **varias vistas, un contrato**.
 
+Slice por defecto: **`game: 'ciudad'`** (room `CIUDAD_DEMO`) — proyecta
+`state.barrios` (vivo/latente/muerto/roto) en la escena Three + HUD. Override
+con `ZEUS_GAME` / `ZEUS_ARG_ROOM` (p. ej. `delta` / `ARG_DELTA`).
+
 > **Workspace aislado.** No es miembro del workspace npm de zeus (Angular trae su
 > propio toolchain). Se instala y compila por su cuenta y se sirve como `dist`.
 
@@ -22,11 +26,14 @@ serve.mjs                  → createOperatorUiServer() + CLI; inyecta window.__
 # desde este paquete
 npm install
 npm run build:all        # lib (ng-packagr) + dev-app → dist/public
-node serve.mjs           # :3020 (OPERATOR_UI_PORT)
+node serve.mjs           # :3020 (OPERATOR_UI_PORT) · game=ciudad
 
 # o desde zeus-sdk
 npm run build:operator-ui
 npm run start:operator-ui
+
+# delta (legacy demo)
+ZEUS_GAME=delta ZEUS_ARG_ROOM=ARG_DELTA npm run start:operator-ui
 ```
 
 ## Arquitectura del host
@@ -41,6 +48,7 @@ npm run start:operator-ui
 - **Inbound:** `merge(zeusBridge.messages$, demoFallback.messages$)` → `[externalMessages$]`
 - **Outbound:** botón → `inspect` (intent rol `operator`)
 - **Conexión:** `serve.mjs` inyecta `window.__ZEUS__` (scriptoriumUrl, room, token, game)
+- **Ciudad:** `state.barrios` → hub bots (canal por estado) + HUD tallies
 
 ### Variables de entorno
 
@@ -48,14 +56,17 @@ npm run start:operator-ui
 |----------|---------|-----|
 | `OPERATOR_UI_PORT` / `ZEUS_PORT_OPERATOR_UI` | `3020` | Puerto HTTP |
 | `ZEUS_SCRIPTORIUM_URL` | mesh scriptorium | Runtime (se normaliza a `/runtime`) |
-| `ZEUS_ARG_ROOM` | `ARG_DELTA` | Room del juego |
-| `ZEUS_GAME` | `delta` | Id de juego en el envelope |
+| `ZEUS_ARG_ROOM` | `CIUDAD_DEMO` (si game=ciudad) | Room del juego |
+| `ZEUS_GAME` | `ciudad` | Id de juego en el envelope |
 | `ZEUS_SCRIPTORIUM_SECRET` | `dev-secret` | Token de auth |
 | `ZEUS_SCRIPTORIUM_USER` | `operator-ui` | actorId outbound |
 
 ## Verificación
 
 ```bash
-npm run verify:operator-ui    # test:operator-bridge + build + e2e:operator-ui
-npm run verify:dual-ui        # build + e2e:dual-ui
+npm test -w @zeus/operator-bridge          # incluye proyección barrios
+npm run build:operator-ui
+npm --prefix packages/mesh/operator-ui run smoke:ciudad
+npm run verify:operator-ui                 # bridge + build + e2e:operator-ui (delta inject)
+npm run verify:dual-ui                     # build + e2e:dual-ui
 ```

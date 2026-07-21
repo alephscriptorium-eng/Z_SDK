@@ -36,7 +36,7 @@ export class ZeusOperatorBridgeService {
   private readonly bridge = createOperatorBridge();
   private lastState: any = null;
   private user = 'operator-ui';
-  private game = 'delta';
+  private game = 'ciudad';
   private unsubs: Array<() => void> = [];
 
   /** Live bot-hub message stream to feed `<tjs-threejs-scene-pure [externalMessages$]>`. */
@@ -60,7 +60,7 @@ export class ZeusOperatorBridgeService {
     if (this.client) return;
 
     this.user = cfg.user ?? 'operator-ui';
-    this.game = cfg.game ?? 'delta';
+    this.game = cfg.game ?? 'ciudad';
     const client = createBrowserRoomClient({
       scriptoriumUrl: cfg.scriptoriumUrl,
       room: cfg.room,

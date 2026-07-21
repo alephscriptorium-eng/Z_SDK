@@ -43,6 +43,19 @@ export const SCENE_IDS = Object.freeze({
 });
 
 /**
+ * Barrio estado → hub channel (particle colour). Game-agnostic field `state.barrios`.
+ * vivo=ui(green) · latente=agent(orange) · muerto=sys(red) · roto=app(blue).
+ */
+export const BARRIO_CHANNEL = Object.freeze({
+  vivo: CHANNELS.UI,
+  latente: CHANNELS.AGENT,
+  muerto: CHANNELS.SYS,
+  roto: CHANNELS.APP,
+});
+
+export const BARRIO_ESTADOS = Object.freeze(['vivo', 'latente', 'muerto', 'roto']);
+
+/**
  * Ledger kind → short content for the hub. Table, not switch (PRACTICAS §1.2).
  * @type {Record<string, (entry: object) => string>}
  */
@@ -58,6 +71,9 @@ const LEDGER_CONTENT = Object.freeze({
   milestone: (e) => `milestone ${e.detail?.registroId ?? '—'}`,
   excavate: (e) => `excavate ${e.detail?.corridorId ?? '—'}`,
   join: (e) => `${e.actorId ?? 'actor'} join`,
+  wake: (e) => `wake ${e.detail?.barrioId ?? e.barrioId ?? '—'}`,
+  sleep: (e) => `sleep ${e.detail?.barrioId ?? e.barrioId ?? '—'}`,
+  announce: (e) => `announce ${e.detail?.message ?? e.message ?? ''}`.trim(),
   objetivo: () => 'objetivo cumplido',
   burst: (e) => `burst ${e.detail?.riverId ?? ''}`,
   collapse: () => 'collapse',
@@ -65,15 +81,33 @@ const LEDGER_CONTENT = Object.freeze({
 });
 
 /**
+ * Count barrios by estado (unknown estados ignored in tallies).
+ * @param {Record<string, { estado?: string }>} barrios
+ */
+export function tallyBarrioEstados(barrios = {}) {
+  const barrioByEstado = Object.fromEntries(BARRIO_ESTADOS.map((e) => [e, 0]));
+  for (const b of Object.values(barrios)) {
+    const e = b?.estado;
+    if (e && Object.prototype.hasOwnProperty.call(barrioByEstado, e)) {
+      barrioByEstado[e] += 1;
+    }
+  }
+  return barrioByEstado;
+}
+
+/**
  * Project operator HUD slice from a game `state` envelope/snapshot.
+ * Includes optional `barrios` (ciudad snapshot shape) without naming a game id.
  * @param {object} [state]
  * @param {string} [_sceneId]
  */
 export function projectOperatorSlice(state = {}, _sceneId = SCENE_IDS.operator) {
   const actors = state.actors ?? {};
   const lines = state.lines ?? {};
+  const barrios = state.barrios ?? {};
   const objetivo = state.objetivo ?? null;
   const actorIds = Object.keys(actors);
+  const barrioIds = Object.keys(barrios);
   return {
     sceneId: state.sceneId ?? null,
     gamemapId: state.gamemapId ?? null,
@@ -82,9 +116,14 @@ export function projectOperatorSlice(state = {}, _sceneId = SCENE_IDS.operator) 
     actorCount: actorIds.length,
     actors,
     lines,
+    barrios,
+    barrioCount: barrioIds.length,
+    barrioByEstado: tallyBarrioEstados(barrios),
     objetivo,
     maze: state.maze ?? null,
     contacts: state.contacts ?? null,
+    lastWake: state.lastWake ?? null,
+    lastSleep: state.lastSleep ?? null,
   };
 }
 
@@ -114,6 +153,8 @@ export function makeOperatorIntent(actorId, intent, args = {}, opts = {}) {
 export function createOperatorBridge({ hub = HUB } = {}) {
   let seq = 0;
   const announced = new Set();
+  /** @type {Map<string, string>} barrioId → last seen estado */
+  const barrioEstados = new Map();
 
   function make({ channel, from, to = hub, type = TYPES.BOT_TO_CENTER, content, ts }) {
     seq += 1;
@@ -129,22 +170,35 @@ export function createOperatorBridge({ hub = HUB } = {}) {
   }
 
   /**
-   * Reconcile a full game `state` snapshot: announce actors not seen yet.
-   * Idempotent across repeated snapshots.
+   * Reconcile a full game `state` snapshot: announce actors not seen yet,
+   * and project `barrios` (id → estado) as hub bots coloured by estado.
+   * Idempotent across repeated snapshots; re-emits when barrio estado changes.
    * @param {object} [state]
    * @returns {Array<object>} AlephMessage[]
    */
   function onState(state = {}) {
     const actors = state.actors ?? {};
+    const barrios = state.barrios ?? {};
     const ts = state.ts;
     const out = [];
 
     for (const id of Object.keys(actors)) {
       if (announced.has(id)) continue;
       announced.add(id);
-      const zone = actors[id]?.zone;
+      const zone = actors[id]?.zone ?? actors[id]?.nodeId;
       const tail = zone ? ` · ${zone}` : '';
       out.push(make({ channel: CHANNELS.SYS, from: id, content: `${id} presente${tail}`, ts }));
+    }
+
+    for (const [id, barrio] of Object.entries(barrios)) {
+      const estado = typeof barrio?.estado === 'string' ? barrio.estado : 'latente';
+      const prev = barrioEstados.get(id);
+      if (prev === estado) continue;
+      barrioEstados.set(id, estado);
+      const channel = BARRIO_CHANNEL[estado] ?? CHANNELS.GAME;
+      const content =
+        prev == null ? `${id} · ${estado}` : `${id} · ${prev}→${estado}`;
+      out.push(make({ channel, from: id, content, ts }));
     }
 
     return out;
@@ -173,9 +227,10 @@ export function createOperatorBridge({ hub = HUB } = {}) {
     ];
   }
 
-  /** Reset announced-actor tracking (e.g. on reconnect). Keeps the id counter. */
+  /** Reset announced-actor + barrio tracking (e.g. on reconnect). Keeps the id counter. */
   function reset() {
     announced.clear();
+    barrioEstados.clear();
   }
 
   return { onState, onLedger, reset, projectSlice: projectOperatorSlice };
