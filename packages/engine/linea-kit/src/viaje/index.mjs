@@ -43,3 +43,5 @@ export {
   viajeToWalkIntents,
   acceptWalks
 } from './adapters/gamemap.mjs';
+
+export { runViajeReparacionJuguete } from './reparar.mjs';

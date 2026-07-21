@@ -21,7 +21,8 @@ import {
   segmentarViaje,
   viajeToWalkIntents,
   acceptWalks,
-  planPath
+  planPath,
+  runViajeReparacionJuguete
 } from '../src/viaje/index.mjs';
 
 describe('viaje · línea sintética e2e', () => {
@@ -209,5 +210,20 @@ describe('viaje · segmentar', () => {
     assert.equal(seg.ok, true, JSON.stringify(seg));
     assert.equal(seg.recorrido.pasos[1].milestone, true);
     assert.ok(seg.recorrido.milestones.includes('B->C'));
+  });
+});
+
+describe('viaje · reparar juguete (A03 wiring)', () => {
+  it('completes R0→R2 and signals reparacion for barrioId', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-viaje-reparar-'));
+    const result = await runViajeReparacionJuguete({
+      barrioId: 'blockly-editor',
+      cacheDir: root
+    });
+    assert.equal(result.ok, true, JSON.stringify(result));
+    assert.equal(result.reparacion, true);
+    assert.equal(result.barrioId, 'blockly-editor');
+    assert.deepEqual(result.path, ['R0', 'R1', 'R2']);
+    assert.equal(result.recorrido.etapa, 'completed');
   });
 });

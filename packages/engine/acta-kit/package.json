@@ -1,0 +1,34 @@
+{
+  "name": "@zeus/acta-kit",
+  "version": "0.1.0",
+  "description": "Barrio acta kit: ActaDeBarrio v1 emit/adopt via plaza ledger. Pure; no LLM; no new channel.",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./tipos": "./src/tipos.mjs",
+    "./emitir": "./src/emitir.mjs",
+    "./validar": "./src/validar.mjs",
+    "./publicar": "./src/publicar.mjs",
+    "./adoptar": "./src/adoptar.mjs",
+    "./huella": "./src/huella.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/protocol": "*"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "private": true
+}
