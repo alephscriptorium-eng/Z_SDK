@@ -1,0 +1,36 @@
+{
+  "name": "@zeus/ciudad-lifecycle",
+  "version": "0.1.0",
+  "description": "City lifecycle composition: XState brain over @zeus/mcp-launcher actuators (WP-Z12 f1)",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./catalog": "./src/catalog-extend.mjs",
+    "./mando": "./src/mando.mjs",
+    "./runtime": "./src/runtime.mjs"
+  },
+  "scripts": {
+    "start": "node src/start.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "mcp",
+    "mcp": "ciudad-lifecycle"
+  },
+  "dependencies": {
+    "@zeus/lifecycle-kit": "*",
+    "@zeus/mcp-launcher": "*",
+    "@zeus/presets-sdk": "*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "zod": "^4.4.3",
+    "xstate": "^5.32.4"
+  },
+  "devDependencies": {
+    "@zeus/test-utils": "*"
+  },
+  "private": true
+}

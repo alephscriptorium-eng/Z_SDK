@@ -1,0 +1,32 @@
+{
+  "name": "@zeus/lifecycle-kit",
+  "version": "0.1.0",
+  "description": "Generic XState 5 leaf/aggregate lifecycle (start/stop/health/supervision). No domain tree names.",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./leaf": "./src/leaf-machine.mjs",
+    "./aggregate": "./src/aggregate-machine.mjs",
+    "./transitions": "./src/transitions.mjs",
+    "./project": "./src/project.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "xstate": "^5.32.4"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "private": true
+}
