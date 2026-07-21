@@ -21,6 +21,17 @@ _(lista con una línea por archivo: creado/modificado/borrado + para qué)_
 
 > Regla CASOS.md: no inventes observaciones. Salida literal o `⏳ sin verificar`.
 
+### Gates (obligatorio)
+
+> PRACTICAS §5 / HOTFIX-GATES-2: si el WP toca código bajo `packages/` o
+> `scripts/`, **`npm run gates` debe figurar aquí con salida literal**
+> (`gates: OK` o lista de offenders). Verde local ≠ gate CI.
+
+```
+$ npm run gates
+(pegar salida)
+```
+
 - Comandos ejecutados y su salida relevante (tests, e2e, lint, gates):
 
 ```

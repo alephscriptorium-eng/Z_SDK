@@ -19,7 +19,7 @@
 export const EXCEPTIONS = [
   // --- (a) puertos/URLs hardcodeados fuera de presets-sdk/env ---
   // Fallbacks preexistentes que duplican DEFAULT_ZEUS_* hasta que un WP
-  // posterior los retire (no es demolición de U00).
+  // posterior los retire (no es demolición de U00).
   {
     path: 'packages/mesh/linea-firehose/src/config.mjs',
     rule: 'ports',
@@ -180,5 +180,46 @@ export const EXCEPTIONS = [
     rule: 'two-games',
     reason:
       'WP-U109: slots pozoPlayer/pozoView en catálogo env (BACKLOG); espejo de argPlayer'
+  },
+
+  // HOTFIX-GATES-2 (2026-07-21): token `\bdelta\b` del gate two-games (D-8)
+  // choca con el léxico genérico de state-delta / GAME_STATE_DELTA (protocolo
+  // v0.2, Z05-f1). No es el nombre del juego «delta»; no se reabre Z05-f1.
+  // Gate intacto: excepciones por path, no desactivación.
+  {
+    path: 'packages/engine/authority-kit/src/create-authority.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: «delta» = mode/payload GAME_STATE_DELTA (state-diff genérico), no nombre de juego'
+  },
+  {
+    path: 'packages/engine/game-engine/src/map-engine.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: «Delta» en JSDoc de getDelta = diff de snapshot map-engine, no juego delta'
+  },
+  {
+    path: 'packages/engine/protocol/src/event-meta.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: enum mode full|delta y descripción GAME_STATE_DELTA (wire genérico)'
+  },
+  {
+    path: 'packages/engine/protocol/src/game-state-delta.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: módulo state-delta / applyGameStateDelta; léxico de patch, no juego'
+  },
+  {
+    path: 'packages/engine/protocol/src/index.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: re-export de game-state-delta.mjs; colisión léxica del path/símbolo'
+  },
+  {
+    path: 'packages/engine/protocol/types/index.d.ts',
+    rule: 'two-games',
+    reason:
+      'D-8: tipado applyGameStateDelta(param delta); no concepto del juego delta'
   }
 ];
