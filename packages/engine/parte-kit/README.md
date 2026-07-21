@@ -22,6 +22,10 @@ Mock adapters (consumer passes Z01/Z02 JSON; kit does not import game packs):
 
 Frozen shape in `src/tipos.mjs` (`isParteDeCiudadShaped`). Do not add fields.
 
+`delta` / `DeltaBarrio` aquí es léxico de state-patch y censo (protocolo), no
+el nombre del juego **delta**. Gate `two-games` (D-8): excepción por **clase**
+de kits de lectura en `scripts/gates/exceptions.mjs` (HOTFIX-ARG-1 ← GATES-2).
+
 ## Ceguera
 
 `validarParte` uses the same env pattern as the projector (`CEGUERA_PATTERN`).
