@@ -22,3 +22,10 @@ this package never spawns or kills processes.
 Kit source must not name domain tree nouns of the consuming world
 (`ciudad` / `barrio`) nor method-framework tokens. Content seeds live in
 composition packages.
+
+## Intentional-stop hook
+
+`resolveIntentionalStop` / `readActuatorIntentionalStop` compose the actuator
+read signal with the leaf `context.intentionalStop` flag. Full cascade that
+drives `canRetry` from the actuator alone is left to composition (later WP).
+

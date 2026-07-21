@@ -2,7 +2,11 @@
  * City lifecycle runtime — brain over Z06 ProcessManager (actuators only).
  */
 
-import { createAggregateController } from '@zeus/lifecycle-kit';
+import {
+  createAggregateController,
+  readActuatorIntentionalStop,
+  resolveIntentionalStop
+} from '@zeus/lifecycle-kit';
 import { probeHealth } from '@zeus/mcp-launcher';
 import {
   ARBOL_F1,
@@ -82,9 +86,15 @@ export class CityLifecycleRuntime {
                 identity: { healthUrl: entry.healthUrl, probe }
               });
             } else if (!manager.isManaged(id)) {
+              const intentional = resolveIntentionalStop({
+                actuatorIntentional: readActuatorIntentionalStop(manager, id)
+              });
               sendBack({
                 type: 'PROCESO_TERMINADO',
-                diagnosis: probe.error || 'process_gone'
+                diagnosis: intentional
+                  ? 'intentional_stop'
+                  : probe.error || 'process_gone',
+                intentionalStop: intentional
               });
             } else {
               sendBack({
@@ -113,6 +123,17 @@ export class CityLifecycleRuntime {
       detail
     });
     if (this.ledger.length > 200) this.ledger.shift();
+  }
+
+  /**
+   * Read intentional-stop from the actuator (Z06), not only leaf context.
+   * Cascade/zones that act on this signal = later WP (f2).
+   * @param {string} catalogId
+   */
+  isIntentionalStop(catalogId) {
+    return resolveIntentionalStop({
+      actuatorIntentional: readActuatorIntentionalStop(this.manager, catalogId)
+    });
   }
 
   rollupBarrio(barrioId) {

@@ -62,6 +62,31 @@ export class ProcessManager {
   }
 
   /**
+   * Resolve spawnGroup for a catalog server id.
+   * @param {string} serverId
+   */
+  #groupOf(serverId) {
+    const entry = this.getEntry(serverId);
+    return entry.spawnGroup || entry.id;
+  }
+
+  /**
+   * Read intentional-stop mark for a catalog id (write in stop, clear in launch).
+   * No restart policy here — composition (Z12) owns that.
+   * @param {string} serverId
+   */
+  isIntentionalStop(serverId) {
+    return this.intentionalStops.has(this.#groupOf(serverId));
+  }
+
+  /**
+   * @returns {string[]} spawnGroup ids currently marked intentional stop
+   */
+  listIntentionalStops() {
+    return [...this.intentionalStops];
+  }
+
+  /**
    * Launch one catalog id (starts whole spawnGroup).
    * @param {string} serverId
    */
@@ -230,6 +255,8 @@ export class ProcessManager {
         managed: Boolean(managed),
         pid: managed?.pid ?? null,
         status: probe.ok ? 'running' : managed ? 'unhealthy' : 'stopped',
+        /** true only after stop(); crash/exit without stop stays false */
+        intentionalStop: this.intentionalStops.has(group),
         probe
       });
     }
@@ -237,7 +264,8 @@ export class ProcessManager {
       ok: true,
       at: new Date().toISOString(),
       fleet: rows,
-      managedGroups: [...this.byGroup.keys()]
+      managedGroups: [...this.byGroup.keys()],
+      intentionalGroups: [...this.intentionalStops]
     };
   }
 

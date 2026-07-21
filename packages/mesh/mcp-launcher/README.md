@@ -26,6 +26,22 @@ Campos reservados en catálogo para extensión Z12 (ignorados aquí):
 `tree.barrio`, `tree.edificio`, `tree.maquinaria`, y políticas tipo
 `autoRestart`. Z12 **extiende** el catálogo; no duplicar cerebro aquí.
 
+### Contrato `intentionalStops` (lectura para Z12)
+
+| momento | efecto |
+| ------- | ------ |
+| `stop(id)` | marca `spawnGroup` como parada intencional |
+| `launch(id)` | borra la marca del grupo |
+| crash / exit sin `stop` | **no** marca — health `intentionalStop: false` |
+
+API de lectura (sin política de restart aquí):
+
+- `ProcessManager.isIntentionalStop(serverId)` → `boolean`
+- `ProcessManager.listIntentionalStops()` → `spawnGroup[]`
+- `health()` → cada fila `intentionalStop` + resumen `intentionalGroups`
+
+Cero XState / auto-restart en este paquete.
+
 ## Catálogo
 
 Fuente: nota zeus-mcp-servers + `resolveZeusMcpPorts()`.

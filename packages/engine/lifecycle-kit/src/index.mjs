@@ -10,3 +10,7 @@ export {
   projectAggregateLife,
   snapshotLeaf
 } from './project.mjs';
+export {
+  resolveIntentionalStop,
+  readActuatorIntentionalStop
+} from './intent-signal.mjs';
