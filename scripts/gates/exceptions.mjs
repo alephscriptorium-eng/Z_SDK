@@ -5,16 +5,28 @@
  * legítima, se anota AQUÍ con comentario de por qué.
  *
  * Formato:
- * - `path` relativo al root del monorepo (con `/`, sin leading `./`)
+ * - `path` relativo al root del monorepo (con `/`, sin leading `./`) — archivo exacto
+ * - `pathPrefix` / `pathPrefixes`: clase de paths (prefijo con `/` final); preferir
+ *   CLASE sobre instancia suelta cuando el custodio lo decida (HOTFIX-ARG-1 ← GATES-2)
  * - `rule`: 'ports' | 'transition' | 'arg-import' | 'two-games' | 'google-stun'
  * - `reason`: por qué está permitido (obligatorio)
- * - `line` (opcional): si se omite, aplica a todo el archivo para esa regla
+ * - `line` (opcional): si se omite, aplica a todo el archivo/clase para esa regla
  */
 
 /** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'} GateRule */
 
 /**
- * @type {Array<{ path: string, rule: GateRule, reason: string, line?: number }>}
+ * @typedef {object} GateException
+ * @property {GateRule} rule
+ * @property {string} reason
+ * @property {string} [path]
+ * @property {string} [pathPrefix]
+ * @property {string[]} [pathPrefixes]
+ * @property {number} [line]
+ */
+
+/**
+ * @type {GateException[]}
  */
 export const EXCEPTIONS = [
   // --- (a) puertos/URLs hardcodeados fuera de presets-sdk/env ---
@@ -182,44 +194,27 @@ export const EXCEPTIONS = [
       'WP-U109: slots pozoPlayer/pozoView en catálogo env (BACKLOG); espejo de argPlayer'
   },
 
-  // HOTFIX-GATES-2 (2026-07-21): token `\bdelta\b` del gate two-games (D-8)
-  // choca con el léxico genérico de state-delta / GAME_STATE_DELTA (protocolo
-  // v0.2, Z05-f1). No es el nombre del juego «delta»; no se reabre Z05-f1.
-  // Gate intacto: excepciones por path, no desactivación.
+  // HOTFIX-ARG-1 (2026-07-21) ← lección GATES-2: excepción por CLASE, no
+  // instancia suelta. Token `\bdelta\b` del gate two-games (D-8) choca con el
+  // léxico genérico state-delta / GAME_STATE_DELTA (protocolo v0.2, Z05-f1) y
+  // con usos derivados en kits de lectura (ParteDeCiudad.delta / DeltaBarrio /
+  // state-patch). No es el nombre del juego «delta»; no se reabre Z05-f1 ni
+  // A01/A03; no se renombra el contrato. Gate intacto: pathPrefixes de clase,
+  // no desactivación.
   {
-    path: 'packages/engine/authority-kit/src/create-authority.mjs',
+    pathPrefixes: [
+      'packages/engine/protocol/',
+      'packages/engine/authority-kit/',
+      'packages/engine/parte-kit/'
+    ],
     rule: 'two-games',
     reason:
-      'D-8: «delta» = mode/payload GAME_STATE_DELTA (state-diff genérico), no nombre de juego'
+      'D-8/clase (HOTFIX-ARG-1←GATES-2): «delta» = léxico state-delta / kits de lectura derivados del protocolo; no nombre de juego'
   },
   {
     path: 'packages/engine/game-engine/src/map-engine.mjs',
     rule: 'two-games',
     reason:
       'D-8: «Delta» en JSDoc de getDelta = diff de snapshot map-engine, no juego delta'
-  },
-  {
-    path: 'packages/engine/protocol/src/event-meta.mjs',
-    rule: 'two-games',
-    reason:
-      'D-8: enum mode full|delta y descripción GAME_STATE_DELTA (wire genérico)'
-  },
-  {
-    path: 'packages/engine/protocol/src/game-state-delta.mjs',
-    rule: 'two-games',
-    reason:
-      'D-8: módulo state-delta / applyGameStateDelta; léxico de patch, no juego'
-  },
-  {
-    path: 'packages/engine/protocol/src/index.mjs',
-    rule: 'two-games',
-    reason:
-      'D-8: re-export de game-state-delta.mjs; colisión léxica del path/símbolo'
-  },
-  {
-    path: 'packages/engine/protocol/types/index.d.ts',
-    rule: 'two-games',
-    reason:
-      'D-8: tipado applyGameStateDelta(param delta); no concepto del juego delta'
   }
 ];

@@ -97,6 +97,17 @@ export function isPortsPathExempt(rel) {
 }
 
 /**
+ * @param {string} n normalized rel path
+ * @param {string} prefix path prefix (with or without trailing `/`)
+ */
+function matchesPathPrefix(n, prefix) {
+  const p = prefix.replace(/\\/g, '/');
+  if (n === p.replace(/\/$/, '')) return true;
+  const withSlash = p.endsWith('/') ? p : `${p}/`;
+  return n.startsWith(withSlash);
+}
+
+/**
  * @param {GateRule} rule
  * @param {string} rel
  * @param {number} [line]
@@ -105,7 +116,15 @@ export function isExcepted(rule, rel, line) {
   const n = rel.replace(/\\/g, '/');
   return EXCEPTIONS.some((ex) => {
     if (ex.rule !== rule) return false;
-    if (ex.path !== n) return false;
+    /** @type {string[]} */
+    const prefixes = [
+      ...(ex.pathPrefix ? [ex.pathPrefix] : []),
+      ...(Array.isArray(ex.pathPrefixes) ? ex.pathPrefixes : [])
+    ];
+    const pathOk =
+      (ex.path != null && ex.path === n) ||
+      prefixes.some((p) => matchesPathPrefix(n, p));
+    if (!pathOk) return false;
     if (ex.line == null) return true;
     return line == null || ex.line === line;
   });
