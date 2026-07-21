@@ -102,3 +102,33 @@ test('onState subscribes to SET_STATE', () => {
   mockIo.emit('SET_STATE', { phase: 'cierre' });
   assert.deepEqual(seen, [{ phase: 'activa' }]);
 });
+
+test('connectAndJoin emits CLIENT_SUSCRIBE with optional zones', async () => {
+  const emitted = [];
+  const mockIo = new EventEmitter();
+  mockIo.id = 'sock-zones';
+  mockIo.io = { opts: {} };
+  mockIo.connect = () => {
+    queueMicrotask(() => mockIo.emit('connect'));
+  };
+  mockIo.disconnect = () => {};
+  mockIo.emit = (event, payload) => {
+    EventEmitter.prototype.emit.call(mockIo, event, payload);
+    if (event === 'CLIENT_REGISTER' || event === 'CLIENT_SUSCRIBE') {
+      emitted.push({ event, payload });
+    }
+  };
+
+  const client = { io: mockIo };
+  const joined = await connectAndJoin(client, 'zone-peer', {
+    room: 'ROOM_Z',
+    zones: ['editores'],
+    features: ['zeus-rooms', 'gamechannel']
+  });
+
+  assert.equal(joined.room, 'ROOM_Z');
+  assert.deepEqual(joined.zones, ['editores']);
+  const sub = emitted.find((e) => e.event === 'CLIENT_SUSCRIBE');
+  assert.ok(sub);
+  assert.deepEqual(sub.payload, { room: 'ROOM_Z', zones: ['editores'] });
+});

@@ -13,12 +13,16 @@ import {
   sampleLink,
   linkDistance,
   vaivenDosNodos,
+  filterSnapshotByZones,
+  createZoneStateHandler,
 } from '../src/index.mjs';
 
 test('public API is exported', () => {
   assert.equal(typeof createMapEngine, 'function');
   assert.equal(typeof sampleLink, 'function');
   assert.equal(typeof linkDistance, 'function');
+  assert.equal(typeof filterSnapshotByZones, 'function');
+  assert.equal(typeof createZoneStateHandler, 'function');
   assert.equal(typeof vaivenDosNodos, 'object');
   assert.equal(vaivenDosNodos.id, 'vaiven-dos-nodos');
 });

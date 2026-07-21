@@ -56,6 +56,44 @@ MVP: un solo actor `robot-ping`.
 
 ---
 
+## Suscripción por zona (interés opaco)
+
+Además del rol (qué eventos escuchar), el cliente puede declarar **zonas**
+opacas — ids de nodo/distrito/agrupación que el juego mapea; el engine no
+conoce nombres de barrio.
+
+### Wire Rooms
+
+```json
+{
+  "room": "PUBLIC_ROOM",
+  "zones": ["editores"]
+}
+```
+
+Emitido en `CLIENT_SUSCRIBE` vía `connectAndJoin({ zones })`. Ausente / `*` =
+firehose.
+
+### Filtro lógico (`@zeus/game-engine`)
+
+```js
+import {
+  buildZoneIndexFromCatalog,
+  createZoneStateHandler,
+  filterSnapshotByZones,
+} from '@zeus/game-engine';
+
+const index = buildZoneIndexFromCatalog(seed.zones);
+const onState = createZoneStateHandler(['editores'], (filtered) => {
+  // segundo cliente: solo entidades de la zona
+}, index);
+```
+
+CA de contrato: un cliente sin filtro + un cliente con `zones` sobre el
+mismo snapshot deben divergir en el subconjunto visible.
+
+---
+
 ## Registro al conectar
 
 Extensión de `CLIENT_REGISTER.features`:

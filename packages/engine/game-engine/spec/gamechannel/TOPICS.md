@@ -130,4 +130,18 @@ Misma `ROOMS_ROOM`, distintos handlers.
 **Físico:** Rooms entrega todos los eventos de la room al socket.  
 **Lógico:** cada app registra solo los handlers que necesita (= suscripción).
 
-No hace falta un bus intermedio en MVP. v0.2: prefijos en payload para filtrado client-side masivo.
+No hace falta un bus intermedio en MVP.
+
+### Zone interest (v0.2 — logical)
+
+Opaque zone ids on the subscriber (`CLIENT_SUSCRIBE.zones` and/or
+`filterSnapshotByZones` / `createZoneStateHandler` in `@zeus/game-engine`).
+
+| Capa | Comportamiento |
+|------|----------------|
+| Rooms wire | `CLIENT_SUSCRIBE { room, zones? }` declara interés; fan-out físico sigue siendo room-wide |
+| Client filter | `filterSnapshotByZones(snapshot, zones, { zoneByBarrio, zoneByNode })` recorta actors / anclas / barrios / nodos |
+| Default | `zones` ausente / `*` = firehose (compat) |
+
+Server-side slice + unicast queda fuera de este corte (authority publish path;
+coordina con cambios de wire de estado cuando existan).

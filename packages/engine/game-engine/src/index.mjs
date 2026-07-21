@@ -14,5 +14,17 @@
 // engine — pure logic (no three)
 export { createMapEngine, sampleLink, linkDistance } from './map-engine.mjs';
 
+// gamechannel zone interest — opaque ids; filter snapshots without game nouns
+export {
+  ZONE_INTEREST_ALL,
+  normalizeZoneInterest,
+  interestCoversAll,
+  buildZoneIndexFromCatalog,
+  resolveEntityZones,
+  entityMatchesInterest,
+  filterSnapshotByZones,
+  createZoneStateHandler,
+} from './zone-subscription.mjs';
+
 // scenes — runtime form of gamethings/escenas/*.yaml
 export { vaivenDosNodos } from './scenes/vaiven-dos-nodos.mjs';

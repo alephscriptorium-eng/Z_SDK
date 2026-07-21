@@ -39,11 +39,20 @@ export function createClient(user = config.user, overrides = {}) {
 /**
  * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
  * @param {string} user
- * @param {{ type?: string, features?: string[], room?: string, connectTimeoutMs?: number }} [options]
+ * @param {{
+ *   type?: string,
+ *   features?: string[],
+ *   room?: string,
+ *   connectTimeoutMs?: number,
+ *   zones?: string | string[],
+ * }} [options]
+ * `zones` — optional opaque zone interest on CLIENT_SUSCRIBE (logical
+ * filter; physical fan-out remains room-wide until authority slices).
  */
 export async function connectAndJoin(client, user, options = {}) {
   const room = options.room ?? config.room;
   const connectTimeoutMs = options.connectTimeoutMs ?? 10_000;
+  const zones = options.zones;
 
   const join = async () => {
     client.io.connect();
@@ -56,8 +65,10 @@ export async function connectAndJoin(client, user, options = {}) {
       features: options.features ?? ['zeus-rooms']
     });
 
-    client.io.emit('CLIENT_SUSCRIBE', { room });
-    return { room, socketId: client.io.id };
+    const subscribePayload =
+      zones == null ? { room } : { room, zones };
+    client.io.emit('CLIENT_SUSCRIBE', subscribePayload);
+    return { room, socketId: client.io.id, zones: zones ?? null };
   };
 
   let timer;
