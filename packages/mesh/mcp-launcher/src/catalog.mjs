@@ -120,6 +120,17 @@ export const CATALOG_SEED = [
     mcpPath: '/mcp'
   },
   {
+    id: 'linea-editor',
+    name: 'linea-editor',
+    workspace: '@zeus/linea-editor',
+    spawnGroup: 'linea-editor',
+    deps: [],
+    capabilities: ['linea.editor', 'fleet.lineas', 'rnfp.linea.editor'],
+    healthPath: '/mcp/health',
+    mcpPath: '/mcp',
+    notes: 'Gated authorship MCP; sibling of linea-system (read)'
+  },
+  {
     id: 'ssb',
     name: 'ssb-disk',
     workspace: '@zeus/ssb-system',
@@ -201,6 +212,7 @@ function portsById(mcp) {
   return {
     'linea-espana': mcp.lineas.espana,
     'linea-wp-historia': mcp.lineas.wpHistoria,
+    'linea-editor': mcp.lineaEditor?.disk ?? 4115,
     'solar-sun': mcp.solar.sun,
     'solar-moon': mcp.solar.moon,
     'solar-earth': mcp.solar.earth,
@@ -333,6 +345,7 @@ export function buildPortTable(mcp = syncEnvPorts(), ui = resolveZeusUiPorts()) 
     consoleMonitor: mcp.playerDebug.monitor,
     solar: [mcp.solar.sun, mcp.solar.moon, mcp.solar.earth],
     lineas: [mcp.lineas.espana, mcp.lineas.wpHistoria],
+    lineaEditor: mcp.lineaEditor?.disk ?? 4115,
     forces: mcp.forces.disk,
     ssb: mcp.ssb.disk,
     argPlayer: [mcp.argPlayer.uno, mcp.argPlayer.dos],

@@ -18,6 +18,7 @@
     "start:forces": "npm run start -w @zeus/force-system",
     "start:ssb": "npm run start -w @zeus/ssb-system",
     "start:mcp-launcher": "npm run start -w @zeus/mcp-launcher",
+    "start:linea-editor": "npm run start -w @zeus/linea-editor",
     "start:ciudad-lifecycle": "npm run start -w @zeus/ciudad-lifecycle",
     "start:editor": "npm run start -w @zeus/editor-ui",
     "start:player": "npm run start -w @zeus/player-ui",
