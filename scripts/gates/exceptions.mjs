@@ -194,27 +194,57 @@ export const EXCEPTIONS = [
       'WP-U109: slots pozoPlayer/pozoView en catálogo env (BACKLOG); espejo de argPlayer'
   },
 
-  // HOTFIX-ARG-1 (2026-07-21) ← lección GATES-2: excepción por CLASE, no
-  // instancia suelta. Token `\bdelta\b` del gate two-games (D-8) choca con el
-  // léxico genérico state-delta / GAME_STATE_DELTA (protocolo v0.2, Z05-f1) y
-  // con usos derivados en kits de lectura (ParteDeCiudad.delta / DeltaBarrio /
-  // state-patch). No es el nombre del juego «delta»; no se reabre Z05-f1 ni
-  // A01/A03; no se renombra el contrato. Gate intacto: pathPrefixes de clase,
-  // no desactivación.
+  // HOTFIX-GATES-2 (2026-07-21): token `\bdelta\b` del gate two-games (D-8)
+  // choca con el léxico genérico de state-delta / GAME_STATE_DELTA (protocolo
+  // v0.2, Z05-f1). No es el nombre del juego «delta»; no se reabre Z05-f1.
+  // Gate intacto: excepciones por path, no desactivación.
+  // Nota: protocol/ NO va por pathPrefix de paquete — el test rojo sintético
+  // (CA d) planta `game = 'delta'` bajo protocol/ y debe seguir fallando.
   {
-    pathPrefixes: [
-      'packages/engine/protocol/',
-      'packages/engine/authority-kit/',
-      'packages/engine/parte-kit/'
-    ],
+    path: 'packages/engine/authority-kit/src/create-authority.mjs',
     rule: 'two-games',
     reason:
-      'D-8/clase (HOTFIX-ARG-1←GATES-2): «delta» = léxico state-delta / kits de lectura derivados del protocolo; no nombre de juego'
+      'D-8: «delta» = mode/payload GAME_STATE_DELTA (state-diff genérico), no nombre de juego'
   },
   {
     path: 'packages/engine/game-engine/src/map-engine.mjs',
     rule: 'two-games',
     reason:
       'D-8: «Delta» en JSDoc de getDelta = diff de snapshot map-engine, no juego delta'
+  },
+  {
+    path: 'packages/engine/protocol/src/event-meta.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: enum mode full|delta y descripción GAME_STATE_DELTA (wire genérico)'
+  },
+  {
+    path: 'packages/engine/protocol/src/game-state-delta.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: módulo state-delta / applyGameStateDelta; léxico de patch, no juego'
+  },
+  {
+    path: 'packages/engine/protocol/src/index.mjs',
+    rule: 'two-games',
+    reason:
+      'D-8: re-export de game-state-delta.mjs; colisión léxica del path/símbolo'
+  },
+  {
+    path: 'packages/engine/protocol/types/index.d.ts',
+    rule: 'two-games',
+    reason:
+      'D-8: tipado applyGameStateDelta(param delta); no concepto del juego delta'
+  },
+
+  // HOTFIX-ARG-1 (2026-07-21) ← lección GATES-2: ampliar a CLASE, no otra
+  // instancia suelta. Kits de lectura que consumen léxico delta derivado del
+  // protocolo (ParteDeCiudad.delta / DeltaBarrio / state-patch). No renombrar
+  // contrato; no reabrir A01/A03. Gate intacto: pathPrefix de clase.
+  {
+    pathPrefixes: ['packages/engine/parte-kit/'],
+    rule: 'two-games',
+    reason:
+      'D-8/clase (HOTFIX-ARG-1←GATES-2): kits de lectura — «delta» = state-patch / DeltaBarrio derivados del protocolo; no nombre de juego'
   }
 ];
