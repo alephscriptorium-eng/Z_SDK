@@ -1,4 +1,4 @@
-# `@zeus/mcp-launcher` — fleet actuator (WP-Z06)
+# `@zeus/mcp-launcher` — fleet actuator
 
 MCP **meta-ops** server: launch / stop / restart / health over a **declared
 catalog**. Federation enabler (r/s/h): someone has to turn capacities on;

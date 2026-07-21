@@ -1,4 +1,4 @@
-# `@zeus/ciudad-lifecycle` (WP-Z12 f1+f2)
+# `@zeus/ciudad-lifecycle`
 
 Composition **brain**: XState lifecycle over `@zeus/mcp-launcher` actuators.
 
