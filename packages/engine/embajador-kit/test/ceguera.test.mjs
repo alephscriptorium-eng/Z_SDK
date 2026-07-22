@@ -20,6 +20,22 @@ const PATRON_METODO = [
   'orquest' + 'ador'
 ].join('|');
 
+/**
+ * @param {string} dir
+ * @param {(n: string) => boolean} pred
+ * @returns {string[]}
+ */
+function walkFiles(dir, pred) {
+  /** @type {string[]} */
+  const out = [];
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, ent.name);
+    if (ent.isDirectory()) out.push(...walkFiles(p, pred));
+    else if (pred(ent.name)) out.push(p);
+  }
+  return out;
+}
+
 function collectTexts() {
   /** @type {string[]} */
   const blobs = [];
@@ -28,11 +44,26 @@ function collectTexts() {
   }
   blobs.push(readFileSync(join(root, 'README.md'), 'utf8'));
   blobs.push(readFileSync(join(root, 'package.json'), 'utf8'));
+  const skillDir = join(root, 'skill');
+  for (const f of walkFiles(skillDir, (n) => n.endsWith('.md'))) {
+    blobs.push(readFileSync(f, 'utf8'));
+  }
   return blobs;
 }
 
-test('ceguera árbol: cero tokens de método en src + README + package.json', () => {
+test('ceguera árbol: cero tokens de método en src + skill + README + package.json', () => {
   const re = new RegExp(PATRON_METODO, 'i');
+  /** @type {string[]} */
+  const hits = [];
+  for (const blob of collectTexts()) {
+    const m = blob.match(re);
+    if (m) hits.push(m[0]);
+  }
+  assert.deepEqual(hits, []);
+});
+
+test('ceguera tracking: cero WP-ids en skill + src + README', () => {
+  const re = /WP-[A-Z]{1,2}\d/;
   /** @type {string[]} */
   const hits = [];
   for (const blob of collectTexts()) {

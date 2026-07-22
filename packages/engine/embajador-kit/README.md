@@ -30,6 +30,16 @@ this shape (do not re-declare in loose engine files).
 Imports only `@zeus/protocol` (makePeerCard / freshness / TTL cycle / roles).
 No game packs, no signaling, no authority-kit dependency.
 
+## Agent skill (usuario)
+
+Onboarding peercard + mapa «dónde está cada cosa» (URLs estables /
+DRY semver):
+
+- `skill/SKILL.md`
+- `skill/reference/donde-esta-cada-cosa.md`
+
+Espejo runner local (si existe): `.claude/skills/embajador/`.
+
 ## Test
 
 ```bash
