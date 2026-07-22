@@ -2,27 +2,27 @@
 layout: home
 hero:
   name: Z_SDK
-  text: Juegos de Ventana de Contexto
+  text: Motor de mundos federados
   tagline: |-
-    FOSS Docs: framework ARG para comunidades.
+    Tres puertas FOSS: jugar la ciudad, federar con peercard, construir con kits publicados.
   actions:
     - theme: brand
-      text: Guía
-      link: /guide/getting-started
+      text: Jugar
+      link: https://games.z-sdk.escrivivir.co/startpacks
     - theme: alt
-      text: Contratos
-      link: /contracts/asyncapi
+      text: Federar
+      link: /guide/external-handshake
     - theme: alt
-      text: Juegos
-      link: /games/
+      text: Construir
+      link: /guide/kits-foss
 features:
-  - title: Guía
-    details: Arranque, mapa del monorepo y la regla de juegos de referencia.
-    link: /guide/getting-started
-  - title: Contratos
-    details: AsyncAPI del envelope, OpenAPI/Redoc de rutas, resources MCP.
-    link: /contracts/asyncapi
-  - title: Juegos
-    details: delta (ARG) y pozo como consumidores del engine — un kit, varios títulos.
-    link: /games/
+  - title: Jugar
+    details: Ciudad en el catálogo de la library — fila startpacks + tag startpack-ciudad-v0.1.0 (portal games.z-sdk).
+    link: https://games.z-sdk.escrivivir.co/startpacks
+  - title: Federar
+    details: Handshake externo — peercard, rooms y ssbId en la tarjeta viajera. Registry @zeus/* para consumidores anónimos.
+    link: /guide/external-handshake
+  - title: Construir
+    details: Kits FOSS con versiones citables en el registry npm.scriptorium.escrivivir.co (protocol, rooms, player-mcp, embajador y familia).
+    link: /guide/kits-foss
 ---

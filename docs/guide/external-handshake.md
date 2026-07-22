@@ -5,7 +5,10 @@ JS/TS (Node, Bun, navegador vía kits browser) instala los paquetes tipados
 y se une a una room. Zeus trata al consumidor como anónimo: el contrato y
 las variables de entorno bastan.
 
-Ids y estado de publish: [estado del swarm](/guide/estado).
+Esta guía es la puerta **Federar** del portal: peercard + rooms + (cuando
+aplica) `ssbId` / firma de asiento. Catálogo de kits con versiones
+citables: [Kits FOSS](/guide/kits-foss). Ids y rastro de planificación:
+[estado del swarm](/guide/estado).
 
 ## Variables de entorno
 
@@ -99,10 +102,17 @@ Plantilla: `examples/external-consumer/`.
 `ZEUS_OPEN_BROWSER` es **opt-in**: solo abre si vale exactamente `1`. Smoke y
 e2e dejan el default (cerrado).
 
-## Federación SSB — ssbId + firma de asiento (Z_SDK #4)
+## Federación SSB — ssbId + firma de asiento
 
 Extensión del peer-card (D-20 paso 3). Distinto de la firma del conector v0
 (D-40: «visor pide card»).
+
+**Hecho en código y documentado aquí:** el handshake lleva `ssbId` y puede
+exigir `seatSignature` (API `@zeus/protocol/peer-card-seat` + torno en
+`@zeus/webrtc-signaling`). **Sigue abierto el seguimiento de producto** en
+[Z_SDK#4](https://github.com/alephscriptorium-eng/Z_SDK/issues/4) — citar;
+no cerrar desde esta página. Vista casa de la tubería (protege hoy / abierto):
+[La tubería, protegida](https://s-sdk.escrivivir.co/guide/tuberia-protegida).
 
 1. **`ssbId` en el handshake** — feed id `@….ed25519` viaja en la card y en
    los mensajes gated (`offer` / `answer` / `ice-candidate` / `join-room`).

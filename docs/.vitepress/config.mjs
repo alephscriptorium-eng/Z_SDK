@@ -19,7 +19,7 @@ function resolveDocsBase() {
 }
 
 /**
- * Back-links del mundo (fuente única · WP-U152 / handoff Punto 3).
+ * Back-links del mundo (fuente única · handoff Punto 3).
  * No duplicar estas URLs en páginas markdown.
  */
 const SITE_BACK = {
@@ -39,6 +39,9 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Inicio', link: '/' },
+      { text: 'Jugar', link: 'https://games.z-sdk.escrivivir.co/startpacks' },
+      { text: 'Federar', link: '/guide/external-handshake' },
+      { text: 'Construir', link: '/guide/kits-foss' },
       { text: 'Guía', link: '/guide/getting-started' },
       { text: 'Proyecto', link: '/proyecto' },
       { text: 'Contratos', link: '/contracts/asyncapi' },
@@ -96,6 +99,7 @@ export default defineConfig({
           { text: 'Mapa del monorepo', link: '/guide/layout' },
           { text: 'Juegos de referencia', link: '/guide/two-games' },
           { text: 'Handshake externo', link: '/guide/external-handshake' },
+          { text: 'Kits FOSS', link: '/guide/kits-foss' },
           { text: 'Publicar la web', link: '/guide/publicar-la-web' },
           { text: 'Estado del swarm', link: '/guide/estado' },
           { text: 'Proyecto (back)', link: '/proyecto' }
