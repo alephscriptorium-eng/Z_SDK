@@ -132,3 +132,43 @@ test('connectAndJoin emits CLIENT_SUSCRIBE with optional zones', async () => {
   assert.ok(sub);
   assert.deepEqual(sub.payload, { room: 'ROOM_Z', zones: ['editores'] });
 });
+
+test('connectAndJoin forwards peerCard on CLIENT_REGISTER', async () => {
+  const emitted = [];
+  const mockIo = new EventEmitter();
+  mockIo.id = 'sock-card';
+  mockIo.io = { opts: {} };
+  mockIo.connect = () => {
+    queueMicrotask(() => mockIo.emit('connect'));
+  };
+  mockIo.disconnect = () => {};
+  mockIo.emit = (event, payload) => {
+    EventEmitter.prototype.emit.call(mockIo, event, payload);
+    if (event === 'CLIENT_REGISTER' || event === 'CLIENT_SUSCRIBE') {
+      emitted.push({ event, payload });
+    }
+  };
+
+  const peerCard = {
+    roomId: 'ROOM_C',
+    endpoint: 'wss://rooms.example/runtime',
+    token: 'seat-test',
+    scopes: ['role:player'],
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    ssbId: '@AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=.ed25519',
+    seatSignature: 'dGVzdA=='
+  };
+
+  const client = { io: mockIo };
+  await connectAndJoin(client, 'card-peer', {
+    room: 'ROOM_C',
+    type: 'PlayerMcp',
+    features: ['intent', 'mcp-wrapper'],
+    peerCard
+  });
+
+  const reg = emitted.find((e) => e.event === 'CLIENT_REGISTER');
+  assert.ok(reg);
+  assert.equal(reg.payload.type, 'PlayerMcp');
+  assert.deepEqual(reg.payload.peerCard, peerCard);
+});

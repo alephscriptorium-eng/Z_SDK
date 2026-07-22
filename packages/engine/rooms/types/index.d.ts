@@ -60,8 +60,10 @@ export declare function connectAndJoin(
     features?: string[];
     room?: string;
     connectTimeoutMs?: number;
+    zones?: string | string[];
+    peerCard?: object;
   }
-): Promise<{ room: string; socketId: string | undefined }>;
+): Promise<{ room: string; socketId: string | undefined; zones: string | string[] | null }>;
 
 export declare function makeMaster(
   client: RoomsClient,

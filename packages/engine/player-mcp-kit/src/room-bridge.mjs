@@ -2,9 +2,12 @@
  * Puente de room genérico: un MCP = un actor.
  * Suscribe state/ledger/track (nombres wire inyectados), emite intents solo
  * como SU actor. Sin nombres de juego (D-8).
+ *
+ * Identidad: peercard opcional en bootstrap (mismo carril que la puerta).
+ * Si `requirePeerCard`, connect exige card + assertPeerCard ok antes del join.
  */
 
-import { createClient, connectAndJoin } from '@zeus/rooms';
+import { createClient, connectAndJoin as defaultConnectAndJoin } from '@zeus/rooms';
 import { DEFAULT_POLL_MS, sleep } from './util.mjs';
 
 const DEFAULT_LEDGER_TAIL = 50;
@@ -18,6 +21,11 @@ const DEFAULT_TRACKS_TAIL = 20;
  *   events: { STATE: string, INTENT: string, TRACK: string, LEDGER: string },
  *   makeIntent: (actorId: string, intent: string, args?: object, from?: string) => object,
  *   peer?: { type: string, features?: string[] },
+ *   peerCard?: object|null,
+ *   requirePeerCard?: boolean,
+ *   assertPeerCard?: (card: object) => { ok: boolean, error?: string },
+ *   createClient?: typeof createClient,
+ *   connectAndJoin?: typeof defaultConnectAndJoin,
  *   isStateSnapshot?: (snapshot: unknown) => boolean,
  *   myActorFromState?: (state: object|null, actor: string) => object|null,
  *   onState?: (snapshot: object) => void,
@@ -33,6 +41,11 @@ export function createPlayerRoomBridge({
   events,
   makeIntent,
   peer = { type: 'PlayerMcp', features: ['intent', 'mcp-wrapper'] },
+  peerCard = null,
+  requirePeerCard = false,
+  assertPeerCard = null,
+  createClient: createClientFn = createClient,
+  connectAndJoin: connectAndJoinFn = defaultConnectAndJoin,
   isStateSnapshot = (snapshot) =>
     Boolean(snapshot && typeof snapshot === 'object' && snapshot.actors),
   myActorFromState = (state, actorId) => state?.actors?.[actorId] ?? null,
@@ -50,8 +63,21 @@ export function createPlayerRoomBridge({
   if (typeof room !== 'string' || !room) {
     throw new TypeError('createPlayerRoomBridge: room (string no vacío) es obligatorio');
   }
+  if (requirePeerCard && (peerCard == null || typeof peerCard !== 'object')) {
+    throw new TypeError(
+      'createPlayerRoomBridge: requirePeerCard exige peerCard (objeto) en bootstrap'
+    );
+  }
+  if (peerCard != null && typeof assertPeerCard === 'function') {
+    const gate = assertPeerCard(peerCard);
+    if (!gate || gate.ok !== true) {
+      throw new TypeError(
+        `createPlayerRoomBridge: peerCard rechazada: ${gate?.error ?? 'assert failed'}`
+      );
+    }
+  }
 
-  const client = createClient(user, { room });
+  const client = createClientFn(user, { room });
 
   let lastState = null;
   let lastStateAt = 0;
@@ -60,6 +86,7 @@ export function createPlayerRoomBridge({
   const tracks = [];
   const trackKeySeen = new Set();
   let connected = false;
+  let activePeerCard = peerCard;
 
   function onState(snapshot) {
     if (!isStateSnapshot(snapshot)) return;
@@ -105,6 +132,22 @@ export function createPlayerRoomBridge({
     connected = false;
   });
 
+  function resolvePeerCardForConnect(overrideCard) {
+    const card = overrideCard !== undefined ? overrideCard : activePeerCard;
+    if (requirePeerCard && (card == null || typeof card !== 'object')) {
+      throw new Error('createPlayerRoomBridge.connect: peerCard requerida (mismo carril puerta)');
+    }
+    if (card != null && typeof assertPeerCard === 'function') {
+      const gate = assertPeerCard(card);
+      if (!gate || gate.ok !== true) {
+        throw new Error(
+          `createPlayerRoomBridge.connect: peerCard rechazada: ${gate?.error ?? 'assert failed'}`
+        );
+      }
+    }
+    return card ?? null;
+  }
+
   return {
     actor,
     room,
@@ -116,12 +159,38 @@ export function createPlayerRoomBridge({
       return connected;
     },
 
-    async connect() {
-      await connectAndJoin(client, user, {
+    get peerCard() {
+      return activePeerCard;
+    },
+
+    get ssbId() {
+      return activePeerCard?.ssbId ?? null;
+    },
+
+    /** Actualiza peercard antes de connect (p.ej. renovación TTL). */
+    setPeerCard(card) {
+      if (requirePeerCard && (card == null || typeof card !== 'object')) {
+        throw new TypeError('setPeerCard: peerCard objeto requerido');
+      }
+      if (card != null && typeof assertPeerCard === 'function') {
+        const gate = assertPeerCard(card);
+        if (!gate || gate.ok !== true) {
+          throw new TypeError(`setPeerCard: peerCard rechazada: ${gate?.error ?? 'assert failed'}`);
+        }
+      }
+      activePeerCard = card;
+    },
+
+    async connect(opts = {}) {
+      const card = resolvePeerCardForConnect(opts.peerCard);
+      if (opts.peerCard !== undefined) activePeerCard = card;
+      const joinOpts = {
         type: peer.type,
         features: peer.features ?? [],
         room
-      });
+      };
+      if (card != null) joinOpts.peerCard = card;
+      await connectAndJoinFn(client, user, joinOpts);
       connected = true;
     },
 

@@ -45,9 +45,12 @@ export function createClient(user = config.user, overrides = {}) {
  *   room?: string,
  *   connectTimeoutMs?: number,
  *   zones?: string | string[],
+ *   peerCard?: object,
  * }} [options]
  * `zones` — optional opaque zone interest on CLIENT_SUSCRIBE (logical
  * filter; physical fan-out remains room-wide until authority slices).
+ * `peerCard` — optional traveling peer-card (same identity lane as puerta);
+ * forwarded on CLIENT_REGISTER when present.
  */
 export async function connectAndJoin(client, user, options = {}) {
   const room = options.room ?? config.room;
@@ -58,12 +61,16 @@ export async function connectAndJoin(client, user, options = {}) {
     client.io.connect();
     await once(client.io, 'connect');
 
-    client.io.emit('CLIENT_REGISTER', {
+    const registerPayload = {
       usuario: user,
       sesion: `${user}-${Date.now()}`,
       type: options.type ?? 'ZeusClient',
       features: options.features ?? ['zeus-rooms']
-    });
+    };
+    if (options.peerCard != null) {
+      registerPayload.peerCard = options.peerCard;
+    }
+    client.io.emit('CLIENT_REGISTER', registerPayload);
 
     const subscribePayload =
       zones == null ? { room } : { room, zones };

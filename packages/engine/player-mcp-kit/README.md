@@ -28,7 +28,9 @@ const bridge = createPlayerRoomBridge({
   events: EVENTS, // o alias wire del juego
   makeIntent: (actorId, intent, args, from) =>
     makeIntent(actorId, intent, args, { from, game: 'my-game' }),
-  peer: { type: 'MyPlayerMcp', features: ['intent', 'mcp-wrapper'] }
+  peer: { type: 'MyPlayerMcp', features: ['intent', 'mcp-wrapper'] },
+  // Peercard firmada (peer-card-seat) — mismo carril que la puerta:
+  // peerCard, requirePeerCard: true, assertPeerCard: verifyTravelingPeerCard
 });
 
 const registry = buildStandardPlayerResources({
