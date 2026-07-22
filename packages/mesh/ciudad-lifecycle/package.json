@@ -1,6 +1,6 @@
 {
   "name": "@zeus/ciudad-lifecycle",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "City lifecycle composition: XState brain over @zeus/mcp-launcher actuators",
   "type": "module",
   "main": "src/index.mjs",

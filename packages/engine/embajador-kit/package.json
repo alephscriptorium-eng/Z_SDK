@@ -1,6 +1,6 @@
 {
   "name": "@zeus/embajador-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Minimal peer-credential kit: emit + consume peercard with startpack-ciudad-v0.1.0 as default entrant base. No crypto (signature stubs until federation privacy lands).",
   "type": "module",
   "main": "src/index.mjs",

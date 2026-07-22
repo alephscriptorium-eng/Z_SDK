@@ -1,5 +1,14 @@
 # @zeus/operator-bridge
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [1df2fd2]
+- Updated dependencies [62b25cc]
+  - @zeus/protocol@0.4.0
+  - @zeus/parte-kit@0.1.1
+
 ## 0.1.1
 
 ### Patch Changes

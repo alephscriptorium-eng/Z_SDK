@@ -1,6 +1,6 @@
 {
   "name": "@zeus/parte-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Plaza bulletin kit: pure redactarParte / renderProsa / validarParte (ParteDeCiudad v1). Reading role; no LLM.",
   "type": "module",
   "main": "src/index.mjs",
