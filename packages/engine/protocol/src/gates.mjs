@@ -13,7 +13,12 @@ export const GATES = Object.freeze({
   /** Reducers: tabla de handlers; inválido = no-op explicable. */
   REDUCER_TABLE: 'G-PROTO.4',
   /** Snapshot con presupuesto medible (arrays compactos / diffs). */
-  SNAPSHOT_BUDGET: 'G-PROTO.5'
+  SNAPSHOT_BUDGET: 'G-PROTO.5',
+  /**
+   * Poder real (mutate/destructive) = default deny direccional;
+   * destructive exige capability explícita (ownership no basta).
+   */
+  ACL_DEFAULT_DENY_POWER: 'G-PROTO.6'
 });
 
 /** Presupuesto por defecto (mismo orden que G-ARG.5: ≤32 KiB). */

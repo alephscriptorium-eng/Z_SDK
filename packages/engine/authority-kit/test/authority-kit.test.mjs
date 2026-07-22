@@ -510,3 +510,88 @@ describe('issuePeerCard', () => {
     assert.equal(card.scopes.includes('role:dj'), false);
   });
 });
+
+describe('ACL direccional (opt-in)', () => {
+  it('default deny mutate sin owner; ownership permite; destructive exige cap', async () => {
+    const { createAclPolicy, POWER, setOwner, capabilityScope } = await import(
+      '../src/index.mjs'
+    );
+    const policy = createAclPolicy({
+      'health.smoke': { power: POWER.IDEMPOTENT },
+      'barrio.annotate': { power: POWER.MUTATE },
+      'svc.stop': { power: POWER.DESTRUCTIVE }
+    });
+    const ownership = new Map();
+    const applied = [];
+    const rejected = [];
+    const fake = createFakeClient();
+
+    const auth = await startAuthority(
+      baseOpts({
+        createClient: () => fake,
+        connectAndJoin: async () => ({ room: 'ROOM_T' }),
+        domain: createDomain({ onApply: (p) => applied.push(p.intent) }),
+        onIntentRejected: (_p, err) => rejected.push(err),
+        acl: { policy, ownership },
+        peerCardEndpoint: 'http://test.local/runtime'
+      })
+    );
+
+    // idempotent: allow
+    fake.io.emit('intent', {
+      actorId: 'alice',
+      intent: 'health.smoke',
+      barrioId: 'go:barrio:salud'
+    });
+    assert.ok(applied.includes('health.smoke'));
+
+    // mutate sin owner: deny
+    fake.io.emit('intent', {
+      actorId: 'alice',
+      intent: 'barrio.annotate',
+      resourceId: 'go:barrio:salud'
+    });
+    assert.ok(rejected.includes('acl_denied'));
+    assert.equal(applied.includes('barrio.annotate'), false);
+
+    // ownership → allow
+    setOwner(ownership, 'go:barrio:salud', 'alice');
+    fake.io.emit('intent', {
+      actorId: 'alice',
+      intent: 'barrio.annotate',
+      resourceId: 'go:barrio:salud'
+    });
+    assert.ok(applied.includes('barrio.annotate'));
+
+    // destructive: ownership no basta
+    rejected.length = 0;
+    fake.io.emit('intent', {
+      actorId: 'alice',
+      intent: 'svc.stop',
+      resourceId: 'go:barrio:salud'
+    });
+    assert.ok(rejected.includes('capability_required'));
+    assert.equal(applied.includes('svc.stop'), false);
+
+    // peer-card con cap:destructive → allow
+    const card = issuePeerCard({
+      roomId: 'ROOM_T',
+      endpoint: 'http://test.local/runtime',
+      role: 'operator',
+      sessionId: 'alice',
+      scopes: [
+        'role:operator',
+        capabilityScope(POWER.DESTRUCTIVE, 'go:barrio:salud')
+      ]
+    });
+    auth.peerCards.set('alice', card);
+    fake.io.emit('intent', {
+      actorId: 'alice',
+      intent: 'svc.stop',
+      resourceId: 'go:barrio:salud'
+    });
+    assert.ok(applied.includes('svc.stop'));
+
+    await auth.stop(null);
+  });
+});

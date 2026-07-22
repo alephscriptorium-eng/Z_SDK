@@ -279,6 +279,92 @@ export declare function peerCardGrantsRole(
 
 export declare function roleScope(role: string): string;
 
+/** Clases de poder ACL direccional (peer→recurso). */
+export type AclPower = 'read' | 'idempotent' | 'mutate' | 'destructive';
+
+export declare const POWER: {
+  readonly READ: 'read';
+  readonly IDEMPOTENT: 'idempotent';
+  readonly MUTATE: 'mutate';
+  readonly DESTRUCTIVE: 'destructive';
+};
+
+export declare function isPower(power: string): power is AclPower;
+
+export declare function capabilityScope(power: AclPower | string, resourceId: string): string;
+
+export declare function parseCapabilityScope(
+  scope: unknown
+): { power: string; resourceId: string } | null;
+
+export declare function hasCapability(
+  capabilities: Iterable<string> | null | undefined,
+  power: AclPower | string,
+  resourceId: string
+): boolean;
+
+export declare function capabilitiesFromScopes(
+  scopesOrCard: string[] | { scopes?: string[] } | null | undefined
+): string[];
+
+export declare function ownerOf(
+  ownership: Map<string, string> | { get(id: string): string | undefined } | null | undefined,
+  resourceId: string
+): string | null;
+
+export declare function setOwner(
+  ownership: Map<string, string>,
+  resourceId: string,
+  subjectId: string
+): Map<string, string>;
+
+export declare function clearOwner(
+  ownership: Map<string, string>,
+  resourceId: string
+): Map<string, string>;
+
+export type AuthorizeAclResult =
+  | { ok: true; reason: string }
+  | { ok: false; error: string };
+
+export declare function authorizeAcl(input: {
+  subject: string;
+  resource: string;
+  power: AclPower | string;
+  ownership?: Map<string, string> | null;
+  capabilities?: Iterable<string> | null;
+}): AuthorizeAclResult;
+
+export type AclPolicyEntry = {
+  power: AclPower | string;
+  resourceFrom?: ((payload: object) => string | null | undefined) | null;
+};
+
+export declare function createAclPolicy(
+  defs: Record<string, AclPolicyEntry>
+): Map<string, { power: string; resourceFrom: ((payload: object) => string | null | undefined) | null }>;
+
+export declare function defaultResourceFrom(payload: object): string | null;
+
+export declare function resolveIntentCapabilities(
+  payload: object,
+  peerCards?: Map<string, object> | null
+): string[];
+
+export type AssertIntentAclResult =
+  | { ok: true; reason?: string; power?: string; resource?: string }
+  | { ok: false; error: string };
+
+export declare function assertIntentAcl(
+  payload: object,
+  policy: Map<string, { power: string; resourceFrom: ((payload: object) => string | null | undefined) | null }>,
+  ctx?: {
+    ownership?: Map<string, string> | null;
+    peerCards?: Map<string, object> | null;
+    capabilities?: Iterable<string> | null;
+  }
+): AssertIntentAclResult;
+
 /** Gamechannel GAME_STATE_DELTA wire name (v0.2). */
 export declare const GAME_STATE_DELTA: 'GAME_STATE_DELTA';
 

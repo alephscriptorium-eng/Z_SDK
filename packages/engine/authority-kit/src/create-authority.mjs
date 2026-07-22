@@ -14,7 +14,8 @@ import {
   SNAPSHOT_BUDGET_BYTES,
   diffGameState,
   isEmptyGameStateDelta,
-  applyGameStateDelta
+  applyGameStateDelta,
+  assertIntentAcl
 } from '@zeus/protocol';
 import {
   issuePeerCard,
@@ -137,6 +138,9 @@ async function resolveRoomFns(options) {
  * @param {(entry: object) => void} [options.onLedger]
  * @param {(payload: object) => void} [options.onIntentAccepted]
  * @param {(payload: object, error: string) => void} [options.onIntentRejected]
+ * @param {object} [options.acl] — ACL direccional opt-in (G-PROTO.6)
+ * @param {Map<string, { power: string, resourceFrom?: Function|null }>} [options.acl.policy] — createAclPolicy(…)
+ * @param {Map<string, string>} [options.acl.ownership] — resourceId → owner actorId
  * @param {string} [options.peerCardEndpoint] — endpoint del peer-card (scriptorium URL)
  * @param {string[]} [options.joinIntents] — intents que emiten peer-card al aceptar (default: `join`)
  * @param {(card: object, intent: object) => void} [options.onPeerCard] — callback al emitir
@@ -147,7 +151,7 @@ async function resolveRoomFns(options) {
  * @param {boolean} [options.installSignalHandlers=true]
  * @param {number|null} [options.exitOnSignal=0]
  * @param {() => number} [options.now]
- * @returns {Promise<{ client: object, stop: (exitCode?: number|null) => Promise<void>, publishState: (reason: string) => object, publishOutbox: () => number, events: object, game: string, issuePeerCard: Function, peerCards: Map<string, object> }>}
+ * @returns {Promise<{ client: object, stop: (exitCode?: number|null) => Promise<void>, publishState: (reason: string) => object, publishOutbox: () => number, events: object, game: string, issuePeerCard: Function, peerCards: Map<string, object>, ownership: Map<string, string>|null }>}
  */
 export async function startAuthority(options) {
   const {
@@ -167,6 +171,7 @@ export async function startAuthority(options) {
     onLedger = null,
     onIntentAccepted = null,
     onIntentRejected = null,
+    acl: aclOpt = null,
     peerCardEndpoint: peerCardEndpointOpt = null,
     joinIntents: joinIntentsOpt = null,
     onPeerCard = null,
@@ -214,6 +219,17 @@ export async function startAuthority(options) {
   const joinIntentSet = new Set(joinIntentsOpt ?? DEFAULT_JOIN_INTENTS);
   /** @type {Map<string, object>} */
   const peerCards = new Map();
+  const aclPolicy =
+    aclOpt && aclOpt.policy && typeof aclOpt.policy.get === 'function'
+      ? aclOpt.policy
+      : null;
+  /** @type {Map<string, string>|null} */
+  const ownership =
+    aclOpt && aclOpt.ownership instanceof Map
+      ? aclOpt.ownership
+      : aclPolicy
+        ? new Map()
+        : null;
   let peerCardEndpoint = peerCardEndpointOpt;
 
   if (!peerCardEndpoint) {
@@ -360,6 +376,18 @@ export async function startAuthority(options) {
   }
 
   function onIntent(data) {
+    if (aclPolicy) {
+      const acl = assertIntentAcl(data, aclPolicy, {
+        ownership,
+        peerCards
+      });
+      if (!acl.ok) {
+        if (onIntentRejected) onIntentRejected(data, acl.error);
+        else warn(`[${user}] intent rechazada (${acl.error}):`, JSON.stringify(data));
+        return;
+      }
+    }
+
     const result = domain.applyIntent(data);
     if (!result.ok) {
       if (onIntentRejected) onIntentRejected(data, result.error);
@@ -447,6 +475,7 @@ export async function startAuthority(options) {
     events,
     game,
     issuePeerCard: issueRoomPeerCard,
-    peerCards
+    peerCards,
+    ownership
   };
 }

@@ -1,7 +1,7 @@
 {
   "name": "@zeus/protocol",
   "version": "0.3.0",
-  "description": "Contrato único Zeus: envelope state|intent|track|ledger, makeIntent, roles, gates, Peer Card, AsyncAPI",
+  "description": "Contrato único Zeus: envelope state|intent|track|ledger, makeIntent, roles, gates, ACL, Peer Card, AsyncAPI",
   "type": "module",
   "main": "src/index.mjs",
   "types": "./types/index.d.ts",
@@ -13,6 +13,7 @@
     "./contract": "./src/contract.mjs",
     "./roles": "./src/roles.mjs",
     "./gates": "./src/gates.mjs",
+    "./acl": "./src/acl.mjs",
     "./peer-card": "./src/peer-card.mjs",
     "./peer-card-seat": "./src/peer-card-seat.mjs",
     "./node-src-dir": "./src/node-src-dir.mjs",

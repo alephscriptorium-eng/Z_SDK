@@ -22,3 +22,15 @@ export {
   peerCardRemainingMs,
   PEER_CARD_PHASE
 } from './issue-peer-card.mjs';
+
+// Re-export ACL surface used by startAuthority({ acl }) — single import path.
+export {
+  POWER,
+  createAclPolicy,
+  authorizeAcl,
+  assertIntentAcl,
+  capabilityScope,
+  setOwner,
+  clearOwner,
+  ownerOf
+} from '@zeus/protocol';

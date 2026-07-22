@@ -74,6 +74,41 @@ const card = issuePeerCard({ role: 'player', sessionId: 'alice', ttlMs: 3_600_00
 
 También: `import { issuePeerCard, DEFAULT_PEER_CARD_TTL_MS } from '@zeus/authority-kit'`.
 
+## ACL direccional (opt-in)
+
+Si pasás `acl: { policy, ownership? }`, la autoridad aplica
+`assertIntentAcl` **antes** de `domain.applyIntent` (default deny en
+mutate/destructive; destructive exige `cap:destructive:…` en scopes del
+peer-card o `capabilities` del intent).
+
+```js
+import {
+  startAuthority,
+  createAclPolicy,
+  POWER,
+  setOwner
+} from '@zeus/authority-kit';
+
+const policy = createAclPolicy({
+  'health.smoke': { power: POWER.IDEMPOTENT },
+  'barrio.annotate': { power: POWER.MUTATE },
+  'svc.stop': { power: POWER.DESTRUCTIVE }
+});
+const ownership = new Map();
+
+await startAuthority({
+  // …
+  acl: { policy, ownership },
+  onIntentRejected: (payload, error) => {
+    // error: acl_denied | capability_required | …
+  }
+});
+
+setOwner(ownership, 'go:barrio:salud', 'alice');
+```
+
+Sin `acl`, el comportamiento previo (solo dominio + roles del juego) no cambia.
+
 ## Tests
 
 `npm test -w @zeus/authority-kit`

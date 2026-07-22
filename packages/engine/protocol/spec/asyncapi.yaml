@@ -2,7 +2,7 @@ asyncapi: 3.1.0
 info:
   title: Zeus Protocol
   version: "1"
-  description: "Contrato único Zeus: state | intent | track | ledger. El campo `game` en el envelope discrimina el juego; el engine no nombra juegos. Roles de intent: player, dj, operator. Credencial de rol: Peer Card (scopes role:*). Gates: G-PROTO.1, G-PROTO.2, G-PROTO.3, G-PROTO.4, G-PROTO.5. Snapshot budget default: 32768 bytes."
+  description: "Contrato único Zeus: state | intent | track | ledger. El campo `game` en el envelope discrimina el juego; el engine no nombra juegos. Roles de intent: player, dj, operator. Credencial de rol: Peer Card (scopes role:*). Gates: G-PROTO.1, G-PROTO.2, G-PROTO.3, G-PROTO.4, G-PROTO.5, G-PROTO.6. Snapshot budget default: 32768 bytes."
 defaultContentType: application/json
 channels:
   room:

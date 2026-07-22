@@ -31,6 +31,23 @@ export {
 } from './gates.mjs';
 
 export {
+  POWER,
+  isPower,
+  capabilityScope,
+  parseCapabilityScope,
+  hasCapability,
+  capabilitiesFromScopes,
+  ownerOf,
+  setOwner,
+  clearOwner,
+  authorizeAcl,
+  createAclPolicy,
+  defaultResourceFrom,
+  resolveIntentCapabilities,
+  assertIntentAcl
+} from './acl.mjs';
+
+export {
   SSB_ID_RE,
   isSsbId,
   ssbIdFromPublicKeyBytes,
