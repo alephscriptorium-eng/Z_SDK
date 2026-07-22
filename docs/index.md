@@ -17,7 +17,7 @@ hero:
       link: /guide/kits-foss
 features:
   - title: Jugar
-    details: Ficha p�blica Ciudad (juego insignia) en games.z-sdk � tag startpack-ciudad-v0.1.0.
+    details: Ficha pública Ciudad (juego insignia) en games.z-sdk — tag startpack-ciudad-v0.1.0.
     link: https://games.z-sdk.escrivivir.co/games/ciudad
   - title: Federar
     details: Handshake externo — peercard, rooms y ssbId en la tarjeta viajera. Registry @zeus/* para consumidores anónimos.
