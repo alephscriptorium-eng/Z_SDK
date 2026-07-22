@@ -9,10 +9,11 @@
  * per-candidate messages reliably. Set `allowTrickle: true` only for labs.
  */
 
+import { isSsbId } from '@zeus/protocol';
 import { createMessageId } from './messages.mjs';
 import { SignalingService } from './signaling-service.mjs';
 import { SSB_WEBRTC_SIGNAL_TYPE } from './ssb-private-transport.mjs';
-import { peerCardFromMessage } from './peer-card-gate.mjs';
+import { peerCardFromMessage, ssbIdFromMessage } from './peer-card-gate.mjs';
 
 /**
  * Abstract signaling type → SSB content.signal field.
@@ -36,6 +37,8 @@ export const SSB_SIGNAL_TO_ABSTRACT = Object.freeze(
  * @typedef {object} SsbPrivateSignalingOptions
  * @property {import('./ssb-private-transport.mjs').SsbPrivateTransport} [transport]
  * @property {boolean} [allowTrickle=false] — when false, sendIceCandidate is a no-op
+ * @property {boolean} [requireSsbId=true] — ssbId obligatorio en card (federación)
+ * @property {boolean} [requireSeatSignature=false] — exigir firma de asiento
  */
 
 export class SsbPrivateSignalingService extends SignalingService {
@@ -48,6 +51,9 @@ export class SsbPrivateSignalingService extends SignalingService {
     /** @type {(() => void)|null} */
     this._unsub = null;
     this._allowTrickle = options.allowTrickle === true;
+    // Carril SSB: identidad = feed id en el saludo (Z_SDK #4)
+    this._requireSsbId = options.requireSsbId !== false;
+    this._requireSeatSignature = options.requireSeatSignature === true;
   }
 
   getTransport() {
@@ -75,6 +81,10 @@ export class SsbPrivateSignalingService extends SignalingService {
     }
     this.userId = userId || who;
     this._allowTrickle = opts.allowTrickle === true;
+    if (opts.requireSsbId != null) this._requireSsbId = opts.requireSsbId;
+    if (opts.requireSeatSignature != null) {
+      this._requireSeatSignature = opts.requireSeatSignature;
+    }
 
     this._unbind();
     this._unsub = this._transport.subscribePrivate((msg) => this._onPrivateMsg(msg));
@@ -97,7 +107,12 @@ export class SsbPrivateSignalingService extends SignalingService {
     if (!this._connected || !this._transport) {
       throw new Error('Not connected to SSB private signaling transport');
     }
-    this.setPeerCard(peerCard);
+    let card = peerCard;
+    // Amarrar ssbId al feed local si la card aún no lo trae
+    if (card && typeof card === 'object' && !isSsbId(card.ssbId) && isSsbId(this.userId)) {
+      card = { ...card, ssbId: this.userId };
+    }
+    this.setPeerCard(card);
     this.roomId = roomId;
   }
 
@@ -148,6 +163,9 @@ export class SsbPrivateSignalingService extends SignalingService {
     if (gated.candidate != null) content.candidate = gated.candidate;
     if (gated.data != null) content.data = gated.data;
     if (gated.peerCard != null) content.peerCard = gated.peerCard;
+    if (isSsbId(gated.ssbId)) content.ssbId = gated.ssbId;
+    else if (isSsbId(gated.peerCard?.ssbId)) content.ssbId = gated.peerCard.ssbId;
+    else if (isSsbId(gated.from || this.userId)) content.ssbId = gated.from || this.userId;
 
     await this._transport.publishPrivate(content, [to]);
   }
@@ -180,6 +198,7 @@ export class SsbPrivateSignalingService extends SignalingService {
 
     const abstractType = SSB_SIGNAL_TO_ABSTRACT[content.signal] || content.signal;
     const peerCard = peerCardFromMessage(content);
+    const ssbId = ssbIdFromMessage(content) || (isSsbId(from) ? from : null);
     /** @type {import('./signaling-service.mjs').SignalingMessage} */
     const message = {
       type: abstractType,
@@ -189,7 +208,8 @@ export class SsbPrivateSignalingService extends SignalingService {
       timestamp: content.timestamp ?? msg.value.timestamp ?? Date.now(),
       messageId: content.messageId || createMessageId(from || 'peer'),
       data: content.data,
-      ...(peerCard != null ? { peerCard } : {})
+      ...(peerCard != null ? { peerCard } : {}),
+      ...(ssbId ? { ssbId } : {})
     };
 
     if (abstractType === 'offer') message.offer = content.offer ?? content.data;

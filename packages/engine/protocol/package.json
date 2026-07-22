@@ -14,6 +14,7 @@
     "./roles": "./src/roles.mjs",
     "./gates": "./src/gates.mjs",
     "./peer-card": "./src/peer-card.mjs",
+    "./peer-card-seat": "./src/peer-card-seat.mjs",
     "./node-src-dir": "./src/node-src-dir.mjs",
     "./node": "./src/node.mjs",
     "./spec": "./spec/asyncapi.yaml",

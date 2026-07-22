@@ -4,16 +4,114 @@
  * Forma mínima:
  *   { roomId, endpoint, token, scopes, expiresAt, displayName?, sessionId? }
  *
+ * Extensión SSB / federación (Z_SDK #4 · WP-E02):
+ *   { ssbId?, seatSignature? }
+ *   - `ssbId` = feed id `@….ed25519` (clave pública en el saludo)
+ *   - `seatSignature` = firma ed25519 (base64) del asiento / tarjeta viajera
+ *     sobre el payload canónico (`travelingPeerCardPayload`)
+ *
+ * La firma del conector v0 (D-40: «visor pide card») sigue siendo emisión
+ * de autoridad + torno de forma/frescura/rol. La firma de asiento es el
+ * hook D-20 paso 3 — verificar con `peer-card-seat` (Node) / torno signaling.
+ *
  * scopes tipicos: `role:player` | `role:dj` | `role:operator` más
  * permisos de transporte (`presence:join`, `events:publish`, …).
- *
- * No es identidad fuerte (eso es SSB / horizonte U73); es un ticket de room
- * con rol y caducidad, reutilizable luego por WebRTC (ola 10).
  */
 
 import { ROLES, isRole } from './roles.mjs';
 
 const ROLE_SCOPE_PREFIX = 'role:';
+
+/** Feed id SSB: `@` + base64(32-byte pubkey) + `.ed25519`. */
+export const SSB_ID_RE = /^@[A-Za-z0-9+/]+={0,2}\.ed25519$/;
+
+/**
+ * @param {unknown} value
+ * @returns {value is string}
+ */
+export function isSsbId(value) {
+  return typeof value === 'string' && SSB_ID_RE.test(value);
+}
+
+/**
+ * @param {Uint8Array|Buffer} publicKeyBytes — 32 raw ed25519 pubkey bytes
+ * @returns {string}
+ */
+export function ssbIdFromPublicKeyBytes(publicKeyBytes) {
+  if (!publicKeyBytes || publicKeyBytes.length !== 32) {
+    throw new TypeError('ssbIdFromPublicKeyBytes: expected 32-byte public key');
+  }
+  const b64 =
+    typeof Buffer !== 'undefined'
+      ? Buffer.from(publicKeyBytes).toString('base64')
+      : uint8ToBase64(publicKeyBytes);
+  return `@${b64}.ed25519`;
+}
+
+/**
+ * @param {string} ssbId
+ * @returns {Uint8Array}
+ */
+export function publicKeyBytesFromSsbId(ssbId) {
+  if (!isSsbId(ssbId)) {
+    throw new TypeError(`publicKeyBytesFromSsbId: invalid ssbId ${ssbId}`);
+  }
+  const b64 = ssbId.slice(1, -'.ed25519'.length);
+  const bytes =
+    typeof Buffer !== 'undefined'
+      ? new Uint8Array(Buffer.from(b64, 'base64'))
+      : base64ToUint8(b64);
+  if (bytes.length !== 32) {
+    throw new TypeError('publicKeyBytesFromSsbId: decoded key must be 32 bytes');
+  }
+  return bytes;
+}
+
+/**
+ * Payload canónico de la tarjeta viajera (sin `seatSignature`).
+ * Claves ordenadas — base estable para firmar/verificar.
+ * @param {object} card
+ * @returns {Record<string, unknown>}
+ */
+export function travelingPeerCardPayload(card) {
+  if (!card || typeof card !== 'object') {
+    throw new TypeError('travelingPeerCardPayload: card object required');
+  }
+  /** @type {Record<string, unknown>} */
+  const out = {};
+  for (const key of Object.keys(card).sort()) {
+    if (key === 'seatSignature') continue;
+    out[key] = card[key];
+  }
+  return out;
+}
+
+/**
+ * Bytes UTF-8 del JSON canónico (hook de firma).
+ * @param {object} card
+ * @returns {Uint8Array}
+ */
+export function travelingPeerCardBytes(card) {
+  return new TextEncoder().encode(JSON.stringify(travelingPeerCardPayload(card)));
+}
+
+/**
+ * Adjunta identidad SSB + firma de asiento (no verifica).
+ * @param {object} card
+ * @param {{ ssbId: string, seatSignature: string }} seat
+ */
+export function attachTravelingSeat(card, { ssbId, seatSignature }) {
+  if (!isPeerCardShaped(card)) {
+    throw new TypeError('attachTravelingSeat: peer-card malformed');
+  }
+  if (!isSsbId(ssbId)) {
+    throw new TypeError('attachTravelingSeat: ssbId inválido');
+  }
+  if (typeof seatSignature !== 'string' || !seatSignature) {
+    throw new TypeError('attachTravelingSeat: seatSignature requerida');
+  }
+  return { ...card, ssbId, seatSignature };
+}
 
 /**
  * @param {object} input
@@ -24,6 +122,8 @@ const ROLE_SCOPE_PREFIX = 'role:';
  * @param {string|number|Date} input.expiresAt — ISO string o epoch ms
  * @param {string} [input.displayName]
  * @param {string} [input.sessionId]
+ * @param {string} [input.ssbId] — feed id `@….ed25519`
+ * @param {string} [input.seatSignature] — firma ed25519 base64 del asiento
  */
 export function makePeerCard({
   roomId,
@@ -32,7 +132,9 @@ export function makePeerCard({
   scopes,
   expiresAt,
   displayName,
-  sessionId
+  sessionId,
+  ssbId,
+  seatSignature
 }) {
   if (typeof roomId !== 'string' || !roomId) {
     throw new TypeError('makePeerCard: roomId requerido');
@@ -50,6 +152,12 @@ export function makePeerCard({
   if (!Number.isFinite(expiresMs)) {
     throw new TypeError('makePeerCard: expiresAt inválido');
   }
+  if (ssbId != null && !isSsbId(ssbId)) {
+    throw new TypeError('makePeerCard: ssbId inválido');
+  }
+  if (seatSignature != null && (typeof seatSignature !== 'string' || !seatSignature)) {
+    throw new TypeError('makePeerCard: seatSignature inválida');
+  }
   const card = {
     roomId,
     endpoint,
@@ -59,6 +167,8 @@ export function makePeerCard({
   };
   if (displayName != null) card.displayName = displayName;
   if (sessionId != null) card.sessionId = sessionId;
+  if (ssbId != null) card.ssbId = ssbId;
+  if (seatSignature != null) card.seatSignature = seatSignature;
   return card;
 }
 
@@ -140,4 +250,17 @@ function toEpochMs(value) {
     return Number.isFinite(ms) ? ms : NaN;
   }
   return NaN;
+}
+
+function uint8ToBase64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+
+function base64ToUint8(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
 }

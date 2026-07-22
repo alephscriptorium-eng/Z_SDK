@@ -31,6 +31,13 @@ export {
 } from './gates.mjs';
 
 export {
+  SSB_ID_RE,
+  isSsbId,
+  ssbIdFromPublicKeyBytes,
+  publicKeyBytesFromSsbId,
+  travelingPeerCardPayload,
+  travelingPeerCardBytes,
+  attachTravelingSeat,
   makePeerCard,
   isPeerCardShaped,
   isPeerCardFresh,

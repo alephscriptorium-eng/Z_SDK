@@ -31,6 +31,8 @@ export interface PeerCard {
   expiresAt: string;
   displayName?: string;
   sessionId?: string;
+  ssbId?: string;
+  seatSignature?: string;
 }
 
 export interface SignalingMessage {
@@ -126,9 +128,31 @@ export const PEER_CARD_GATED_TYPES: readonly string[];
 export function isPeerCardGatedType(abstractType: string): boolean;
 export function assertSignalingPeerCard(
   card: unknown,
-  opts?: { role?: string; now?: number }
-): { ok: true; role: string } | { ok: false; error: string };
+  opts?: {
+    role?: string;
+    now?: number;
+    requireSsbId?: boolean;
+    requireSeatSignature?: boolean;
+    expectedSsbId?: string;
+  }
+): { ok: true; role: string; ssbId?: string } | { ok: false; error: string };
 export function peerCardFromMessage(messageOrPayload?: object): unknown;
+export function ssbIdFromMessage(messageOrPayload?: object): string | null;
+
+export function generateSeatKeyPair(): {
+  ssbId: string;
+  publicKey: import('node:crypto').KeyObject;
+  privateKey: import('node:crypto').KeyObject;
+  publicKeyBytes: Buffer;
+};
+export function signTravelingPeerCard(
+  card: object,
+  privateKey: import('node:crypto').KeyObject | string | Buffer,
+  ssbId?: string
+): PeerCard;
+export function verifyTravelingPeerCard(
+  card: unknown
+): { ok: true } | { ok: false; error: string };
 
 export function loadRtcPeerConnection(): Promise<typeof RTCPeerConnection>;
 export function waitForIceComplete(

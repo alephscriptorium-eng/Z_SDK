@@ -98,3 +98,48 @@ Plantilla: `examples/external-consumer/`.
 
 `ZEUS_OPEN_BROWSER` es **opt-in**: solo abre si vale exactamente `1`. Smoke y
 e2e dejan el default (cerrado).
+
+## Federación SSB — ssbId + firma de asiento (Z_SDK #4)
+
+Extensión del peer-card (D-20 paso 3). Distinto de la firma del conector v0
+(D-40: «visor pide card»).
+
+1. **`ssbId` en el handshake** — feed id `@….ed25519` viaja en la card y en
+   los mensajes gated (`offer` / `answer` / `ice-candidate` / `join-room`).
+   En el carril `SsbPrivateSignalingService` el torno exige `ssbId` por
+   defecto (se amarra al `userId` / whoami si la card aún no lo trae).
+2. **Firma de la tarjeta viajera** — `seatSignature` (ed25519 base64) sobre
+   el payload canónico (`travelingPeerCardPayload` en `@zeus/protocol`).
+   Firmar / verificar: `@zeus/protocol/peer-card-seat` (Node) o reexport en
+   `@zeus/webrtc-signaling`. Si la card trae `seatSignature`, el torno la
+   verifica y **rechaza** si falla; `requireSeatSignature: true` la hace
+   obligatoria.
+
+```js
+import { makePeerCard, roleScope } from '@zeus/protocol';
+import {
+  generateSeatKeyPair,
+  signTravelingPeerCard,
+  SsbPrivateSignalingService,
+  assertSignalingPeerCard
+} from '@zeus/webrtc-signaling';
+
+const keys = generateSeatKeyPair();
+const card = signTravelingPeerCard(
+  makePeerCard({
+    roomId: 'oasis-private',
+    endpoint: 'ssb:oasis',
+    token: 'tok',
+    scopes: [roleScope('player')],
+    expiresAt: Date.now() + 60_000,
+    sessionId: keys.ssbId
+  }),
+  keys.privateKey,
+  keys.ssbId
+);
+
+assertSignalingPeerCard(card, {
+  requireSsbId: true,
+  requireSeatSignature: true
+}); // { ok: true, role: 'player', ssbId }
+```

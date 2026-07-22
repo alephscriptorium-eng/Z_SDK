@@ -2,9 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makePeerCard, roleScope } from '@zeus/protocol';
 import {
+  generateSeatKeyPair,
+  signTravelingPeerCard
+} from '@zeus/protocol/peer-card-seat';
+import {
   assertSignalingPeerCard,
   isPeerCardGatedType,
   peerCardFromMessage,
+  ssbIdFromMessage,
   PEER_CARD_GATED_TYPES
 } from '../src/peer-card-gate.mjs';
 import { SignalingService } from '../src/signaling-service.mjs';
@@ -56,6 +61,26 @@ test('assertSignalingPeerCard accepts fresh card with role', () => {
   assert.equal(r.role, 'player');
 });
 
+test('assertSignalingPeerCard requireSsbId + seat signature (Z_SDK #4)', () => {
+  const keys = generateSeatKeyPair();
+  const unsigned = freshCard({ ssbId: keys.ssbId });
+  assert.equal(assertSignalingPeerCard(unsigned, { requireSsbId: true }).ok, true);
+  assert.equal(assertSignalingPeerCard(freshCard(), { requireSsbId: true }).ok, false);
+
+  const signed = signTravelingPeerCard(freshCard(), keys.privateKey, keys.ssbId);
+  const ok = assertSignalingPeerCard(signed, {
+    requireSsbId: true,
+    requireSeatSignature: true
+  });
+  assert.equal(ok.ok, true);
+  assert.equal(ok.ssbId, keys.ssbId);
+
+  const bad = { ...signed, seatSignature: Buffer.alloc(64, 9).toString('base64') };
+  const rejected = assertSignalingPeerCard(bad, { requireSeatSignature: true });
+  assert.equal(rejected.ok, false);
+  assert.match(rejected.error, /seat signature rejected/);
+});
+
 test('sendOffer throws without peer-card; accepts with card', async () => {
   const sent = [];
   class Stub extends SignalingService {
@@ -77,6 +102,26 @@ test('sendOffer throws without peer-card; accepts with card', async () => {
   assert.equal(sent.length, 1);
   assert.equal(sent[0].type, 'offer');
   assert.ok(sent[0].peerCard);
+});
+
+test('sendOffer propagates ssbId on handshake', async () => {
+  const keys = generateSeatKeyPair();
+  const sent = [];
+  class Stub extends SignalingService {
+    async sendMessage(message) {
+      sent.push(message);
+    }
+  }
+  const s = new Stub();
+  s.userId = keys.ssbId;
+  s.roomId = 'R1';
+  s.setPeerCard(signTravelingPeerCard(freshCard(), keys.privateKey, keys.ssbId), {
+    requireSsbId: true,
+    requireSeatSignature: true
+  });
+  await s.sendOffer('@bob.ed25519', { type: 'offer', sdp: 'x' });
+  assert.equal(sent[0].ssbId, keys.ssbId);
+  assert.equal(sent[0].peerCard.ssbId, keys.ssbId);
 });
 
 test('handleMessage drops offer with expired peer-card', () => {
@@ -101,9 +146,41 @@ test('handleMessage drops offer with expired peer-card', () => {
   assert.match(errors[0].message, /expired/);
 });
 
+test('handleMessage rejects bad seat signature', () => {
+  const keys = generateSeatKeyPair();
+  const signed = signTravelingPeerCard(freshCard(), keys.privateKey, keys.ssbId);
+  const s = new SignalingService();
+  s._requireSeatSignature = true;
+  const errors = [];
+  const seen = [];
+  s.on('error', (e) => errors.push(e));
+  s.on('message', (m) => seen.push(m));
+  s.handleMessage({
+    type: 'offer',
+    from: keys.ssbId,
+    to: 'alice',
+    roomId: 'R1',
+    timestamp: Date.now(),
+    messageId: 'm1',
+    offer: { type: 'offer', sdp: 'x' },
+    ssbId: keys.ssbId,
+    peerCard: { ...signed, seatSignature: Buffer.alloc(64, 2).toString('base64') }
+  });
+  assert.equal(seen.length, 0);
+  assert.match(errors[0].message, /seat signature/);
+});
+
 test('peerCardFromMessage reads top-level or data.peerCard', () => {
   const card = freshCard();
   assert.equal(peerCardFromMessage({ peerCard: card }), card);
   assert.equal(peerCardFromMessage({ data: { peerCard: card } }), card);
   assert.equal(peerCardFromMessage({ data: {} }), null);
+});
+
+test('ssbIdFromMessage reads handshake fields', () => {
+  const id = '@AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=.ed25519';
+  assert.equal(ssbIdFromMessage({ ssbId: id }), id);
+  assert.equal(ssbIdFromMessage({ data: { ssbId: id } }), id);
+  assert.equal(ssbIdFromMessage({ peerCard: { ssbId: id } }), id);
+  assert.equal(ssbIdFromMessage({}), null);
 });

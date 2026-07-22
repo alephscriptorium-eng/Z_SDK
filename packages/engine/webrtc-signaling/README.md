@@ -41,15 +41,32 @@ await alice.joinRoom('ROOM', card); // sin card ⇒ rechazo
 Identidad ad-hoc del handshake (`peerId` / `displayName` sueltos) queda
 sustituida por el card (`sessionId` / `displayName` / `scopes` en el ticket).
 
-### Hook SSB (extensión explícita — sin implementar aquí)
+### Hook SSB (extensión Z_SDK #4 / WP-E02)
 
-Punto de enganche futuro (D-20 paso 3; D-21 fila 4/6): el asiento SSB
-(credencial de room / grafo de follows del pub Oasis) puede **sustituir o
-reforzar** la emisión del peer-card antes del torno LAN. Este paquete solo
-valida la card; **cero código SSB nuevo en U93** — ni blobs, ni sidecar, ni
-puente `ssb-blobs` WAN. Cuando exista el puente, la señalización seguirá
-exigiendo `assertSignalingPeerCard` igual; solo cambia quién firma/emite el
-ticket (autoridad de sala hoy → credencial Oasis mañana).
+Punto de enganche D-20 paso 3 (antes documentado sin implementar):
+
+1. **`ssbId`** (`@….ed25519`) en la card y en el handshake de señalización.
+   `SsbPrivateSignalingService` exige `ssbId` por defecto; si falta en la
+   card al `joinRoom`, se toma del `userId` / whoami cuando es un feed id.
+2. **`seatSignature`** — firma ed25519 del payload canónico de la tarjeta
+   viajera (`travelingPeerCardPayload` / `signTravelingPeerCard` /
+   `verifyTravelingPeerCard`). Presente ⇒ el torno verifica; inválida ⇒
+   rechazo. `requireSeatSignature: true` la hace obligatoria.
+
+```js
+import {
+  generateSeatKeyPair,
+  signTravelingPeerCard,
+  assertSignalingPeerCard
+} from '@zeus/webrtc-signaling';
+
+const keys = generateSeatKeyPair();
+const signed = signTravelingPeerCard(card, keys.privateKey, keys.ssbId);
+assertSignalingPeerCard(signed, { requireSsbId: true, requireSeatSignature: true });
+```
+
+No es ACL ni niveles (Z_SDK #5 / #6). La emisión TTL/campos no-crypto de la
+card sigue en `@zeus/authority-kit` (`issuePeerCard`).
 
 **Portería del carril LAN para blobs (WP-U100/U101 / D-21 fila 4):** el
 transfer de blobs por DataChannel debe pasar por el mismo torno

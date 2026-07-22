@@ -47,7 +47,15 @@ export {
   PEER_CARD_GATED_TYPES,
   isPeerCardGatedType,
   assertSignalingPeerCard,
-  peerCardFromMessage
+  peerCardFromMessage,
+  ssbIdFromMessage
 } from './peer-card-gate.mjs';
+
+export {
+  generateSeatKeyPair,
+  signTravelingPeerCard,
+  verifyTravelingPeerCard,
+  publicKeyFromRaw
+} from '@zeus/protocol/peer-card-seat';
 
 export { resolveIceServers, GOOGLE_STUN_URLS } from '@zeus/presets-sdk/env';

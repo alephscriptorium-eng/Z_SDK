@@ -18,9 +18,10 @@ import {
   onRoomEvent,
   config as roomsConfig
 } from '@zeus/rooms';
+import { isSsbId } from '@zeus/protocol';
 import { SIGNALING_WIRE_EVENTS, WIRE_TO_ABSTRACT, createWireMessage } from './messages.mjs';
 import { SignalingService, abstractMessageToWire } from './signaling-service.mjs';
-import { peerCardFromMessage } from './peer-card-gate.mjs';
+import { peerCardFromMessage, ssbIdFromMessage } from './peer-card-gate.mjs';
 
 /**
  * @typedef {object} SocketRoomSignalingOptions
@@ -31,6 +32,8 @@ import { peerCardFromMessage } from './peer-card-gate.mjs';
  * @property {number} [connectTimeoutMs]
  * @property {import('@alephscript/mcp-core-sdk/client').SocketClient} [client] — inject for tests
  * @property {string} [requiredRole] — rol concreto exigido por el torno
+ * @property {boolean} [requireSsbId] — exigir ssbId en card (federación)
+ * @property {boolean} [requireSeatSignature] — exigir firma de asiento
  */
 
 export class SocketRoomSignalingService extends SignalingService {
@@ -45,6 +48,8 @@ export class SocketRoomSignalingService extends SignalingService {
     /** @type {boolean} */
     this._ownsClient = !options.client;
     if (options.requiredRole) this._requiredRole = options.requiredRole;
+    if (options.requireSsbId) this._requireSsbId = true;
+    if (options.requireSeatSignature) this._requireSeatSignature = true;
   }
 
   getClient() {
@@ -59,6 +64,10 @@ export class SocketRoomSignalingService extends SignalingService {
     this.userId = userId;
     const opts = { ...this._options, ...config };
     if (opts.requiredRole) this._requiredRole = opts.requiredRole;
+    if (opts.requireSsbId != null) this._requireSsbId = opts.requireSsbId;
+    if (opts.requireSeatSignature != null) {
+      this._requireSeatSignature = opts.requireSeatSignature;
+    }
 
     if (!this._client) {
       this._client = createClient(userId, {
@@ -104,12 +113,13 @@ export class SocketRoomSignalingService extends SignalingService {
     this.setPeerCard(peerCard);
     this.roomId = roomId;
     this._client.io.emit('CLIENT_SUSCRIBE', { room: roomId });
+    const ssbId = isSsbId(peerCard?.ssbId) ? peerCard.ssbId : undefined;
     const payload = createWireMessage({
       type: 'join-room',
       from: this.userId,
       room: roomId,
-      data: { peerCard, roomId },
-      extra: { peerCard }
+      data: { peerCard, roomId, ...(ssbId ? { ssbId } : {}) },
+      extra: { peerCard, ...(ssbId ? { ssbId } : {}) }
     });
     emitRoomEvent(this._client, 'join-room', payload, roomId);
   }
@@ -177,6 +187,7 @@ export class SocketRoomSignalingService extends SignalingService {
 
     const abstractType = WIRE_TO_ABSTRACT[wireType] || wireType;
     const peerCard = peerCardFromMessage(payload);
+    const ssbId = ssbIdFromMessage(payload);
 
     /** @type {import('./signaling-service.mjs').SignalingMessage} */
     const message = {
@@ -187,7 +198,8 @@ export class SocketRoomSignalingService extends SignalingService {
       timestamp: payload.timestamp ?? Date.now(),
       messageId: payload.messageId || createWireMessage({ type: wireType, from: from || 'unknown' }).messageId,
       data: payload.data,
-      ...(peerCard != null ? { peerCard } : {})
+      ...(peerCard != null ? { peerCard } : {}),
+      ...(ssbId ? { ssbId } : {})
     };
 
     if (abstractType === 'offer') message.offer = payload.data ?? payload.offer;

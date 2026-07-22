@@ -57,6 +57,10 @@ export interface PeerCard {
   expiresAt: string;
   displayName?: string;
   sessionId?: string;
+  /** SSB feed id `@….ed25519` (federation handshake · Z_SDK #4) */
+  ssbId?: string;
+  /** ed25519 seat signature (base64) over travelingPeerCardPayload */
+  seatSignature?: string;
 }
 
 export interface IntentPayload extends EnvelopeBase {
@@ -195,7 +199,30 @@ export interface MakePeerCardInput {
   expiresAt: string | number | Date;
   displayName?: string;
   sessionId?: string;
+  ssbId?: string;
+  seatSignature?: string;
 }
+
+export declare const SSB_ID_RE: RegExp;
+
+export declare function isSsbId(value: unknown): value is string;
+
+export declare function ssbIdFromPublicKeyBytes(
+  publicKeyBytes: Uint8Array | Buffer
+): string;
+
+export declare function publicKeyBytesFromSsbId(ssbId: string): Uint8Array;
+
+export declare function travelingPeerCardPayload(
+  card: object
+): Record<string, unknown>;
+
+export declare function travelingPeerCardBytes(card: object): Uint8Array;
+
+export declare function attachTravelingSeat(
+  card: object,
+  seat: { ssbId: string; seatSignature: string }
+): PeerCard;
 
 export declare function makePeerCard(input: MakePeerCardInput): PeerCard;
 
