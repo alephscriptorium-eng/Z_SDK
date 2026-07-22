@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "@zeus/mcp-launcher",
   "version": "0.1.0",
   "description": "MCP meta-ops actuator: launch/stop/restart/health over the declared Zeus fleet catalog",
@@ -29,5 +29,12 @@
   "devDependencies": {
     "@zeus/test-utils": "*"
   },
-  "private": true
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
 }

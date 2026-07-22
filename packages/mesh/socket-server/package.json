@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "@zeus/socket-server",
   "version": "0.1.0",
   "description": "Socket.io runtime server (E2 slot)",
@@ -24,5 +24,11 @@
   "zeus": {
     "role": "app"
   },
-  "private": true
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src"
+  ]
 }
