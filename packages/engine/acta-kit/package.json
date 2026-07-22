@@ -1,6 +1,6 @@
 {
   "name": "@zeus/acta-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Barrio acta kit: ActaDeBarrio v1 emit/adopt via plaza ledger. Pure; no LLM; no new channel.",
   "type": "module",
   "main": "src/index.mjs",

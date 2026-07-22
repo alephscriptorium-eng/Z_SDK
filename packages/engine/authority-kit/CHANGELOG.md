@@ -1,5 +1,16 @@
 # @zeus/authority-kit
 
+## 0.4.0
+
+### Minor Changes
+
+- 1df2fd2: Directional ACL (peer→resource): default deny for mutate/destructive; destructive requires explicit capability scope; optional authority-kit `acl` gate before applyIntent.
+
+### Patch Changes
+
+- Updated dependencies [1df2fd2]
+  - @zeus/protocol@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes

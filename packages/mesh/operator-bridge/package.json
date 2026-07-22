@@ -1,6 +1,6 @@
 {
   "name": "@zeus/operator-bridge",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pure protocol bridge: contrato único state/ledger slice → gamify-ui AlephMessage bot-hub. No Angular, no three, no network — testable in node.",
   "type": "module",
   "main": "src/index.mjs",
@@ -11,8 +11,8 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@zeus/protocol": "0.3.0",
-    "@zeus/parte-kit": "0.1.0"
+    "@zeus/protocol": "0.4.0",
+    "@zeus/parte-kit": "0.1.1"
   },
   "license": "AIPLv1",
   "zeus": {

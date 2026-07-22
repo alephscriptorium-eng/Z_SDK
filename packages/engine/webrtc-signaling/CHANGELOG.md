@@ -1,5 +1,12 @@
 # @zeus/webrtc-signaling
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [1df2fd2]
+  - @zeus/protocol@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
