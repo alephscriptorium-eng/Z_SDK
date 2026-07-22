@@ -8,6 +8,9 @@
  * Default game slice: `ciudad` (room `CIUDAD_DEMO`). Override with ZEUS_GAME /
  * ZEUS_ARG_ROOM (e.g. `delta` / `ARG_DELTA`).
  *
+ * Puerta: injects startpack-ciudad-v0.1.0 default + POST /api/puerta/enter
+ * (embajador-kit + E02 seat verify — Node).
+ *
  * Build first: `npm run build:all` (lib + dev-app). Then: `node serve.mjs`.
  */
 import express from 'express';
@@ -25,6 +28,11 @@ const distDir = path.join(here, 'dist', 'public', 'browser');
 
 const DEFAULT_CIUDAD_ROOM = 'CIUDAD_DEMO';
 
+const puertaMod = await import(
+  pathToFileURL(path.join(here, 'fixtures/puerta-entry.mjs')).href
+);
+const { DEFAULT_STARTPACK, entrarPorPuerta, puertaZeusSlice } = puertaMod;
+
 function defaultZeusConfig() {
   const base = resolveRoomClientConfig({});
   const game = process.env.ZEUS_GAME ?? 'ciudad';
@@ -33,7 +41,13 @@ function defaultZeusConfig() {
     ...base,
     room: process.env.ZEUS_ARG_ROOM ?? roomFallback,
     user: process.env.ZEUS_SCRIPTORIUM_USER ?? 'operator-ui',
-    game
+    game,
+    puerta: puertaZeusSlice({
+      startpack: { ...DEFAULT_STARTPACK },
+      role: null,
+      ssbId: null,
+      seat: { ok: false },
+    }),
   };
 }
 
@@ -53,8 +67,17 @@ export async function createOperatorUiServer({ port, host = 'localhost', zeus } 
         DEFAULT_ZEUS_UI_MESH.operator.port
     );
   const ZEUS = zeus ?? defaultZeusConfig();
+  if (!ZEUS.puerta) {
+    ZEUS.puerta = puertaZeusSlice({
+      startpack: { ...DEFAULT_STARTPACK },
+      role: null,
+      ssbId: null,
+      seat: { ok: false },
+    });
+  }
 
   const app = express();
+  app.use(express.json({ limit: '256kb' }));
 
   app.get('/health', (_req, res) =>
     res.json({
@@ -63,9 +86,40 @@ export async function createOperatorUiServer({ port, host = 'localhost', zeus } 
       port: resolvedPort,
       role: 'operator',
       room: ZEUS.room,
-      game: ZEUS.game ?? 'ciudad'
+      game: ZEUS.game ?? 'ciudad',
+      puerta: {
+        defaultStartpackRef: DEFAULT_STARTPACK.ref,
+        enabled: true,
+      },
     })
   );
+
+  /**
+   * Puerta de entrada: peercard (+ envelope embajador) → verify seat E02 +
+   * startpack default startpack-ciudad-v0.1.0.
+   */
+  app.post('/api/puerta/enter', (req, res) => {
+    const entry = entrarPorPuerta(req.body);
+    if (!entry.ok) {
+      res.status(400).json({
+        ok: false,
+        errors: entry.errors,
+        startpack: entry.startpack,
+        defaultStartpackRef: DEFAULT_STARTPACK.ref,
+      });
+      return;
+    }
+    ZEUS.puerta = puertaZeusSlice(entry);
+    res.json({
+      ok: true,
+      startpack: entry.startpack,
+      defaultStartpack: entry.defaultStartpack,
+      role: entry.role,
+      ssbId: entry.ssbId,
+      seatOk: true,
+      puerta: ZEUS.puerta,
+    });
+  });
 
   // Inject the room config into index.html as window.__ZEUS__ before the app boots.
   app.get(['/', '/index.html'], (_req, res) => {

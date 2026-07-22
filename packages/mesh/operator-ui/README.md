@@ -50,6 +50,9 @@ ZEUS_GAME=delta ZEUS_ARG_ROOM=ARG_DELTA npm run start:operator-ui
 - **Conexión:** `serve.mjs` inyecta `window.__ZEUS__` (scriptoriumUrl, room, token, game)
 - **Ciudad:** `state.barrios` → hub bots (canal por estado) + HUD tallies
 - **Campanas:** ledger `parte` → tonos por clase (despertar/degradar/roto) + toggle silencio en HUD
+- **Puerta:** peercard firmada (E02 seat) + `@zeus/embajador-kit` →
+  default `startpack-ciudad-v0.1.0`. `serve.mjs` inyecta `window.__ZEUS__.puerta`
+  y expone `POST /api/puerta/enter`. Smoke: `npm run smoke:puerta`.
 
 ### Variables de entorno
 
@@ -69,6 +72,7 @@ npm test -w @zeus/operator-bridge          # incluye proyección barrios + campa
 npm run build:operator-ui
 npm --prefix packages/mesh/operator-ui run smoke:ciudad
 npm --prefix packages/mesh/operator-ui run smoke:campanas
+npm --prefix packages/mesh/operator-ui run smoke:puerta
 npm run verify:operator-ui                 # bridge + build + e2e:operator-ui (delta inject)
 npm run verify:dual-ui                     # build + e2e:dual-ui
 ```

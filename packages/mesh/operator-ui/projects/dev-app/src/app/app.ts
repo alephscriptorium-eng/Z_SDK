@@ -58,6 +58,7 @@ export class App implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     const cfg = this.zeusConfig();
+    this.zeusBridge.applyPuertaConfig(cfg.puerta);
     this.layoutConfig = {
       ...this.layoutConfig,
       gameTitle: cfg.game === 'ciudad' ? 'Operator · ciudad' : `Operator · ${cfg.game}`,
@@ -82,6 +83,7 @@ export class App implements OnInit, OnDestroy {
       token: cfg?.token ?? DEV_ROOM_CLIENT_CONFIG.token,
       user: cfg?.user ?? 'operator-ui',
       game,
+      puerta: cfg?.puerta,
     };
   }
 

@@ -75,6 +75,26 @@ import { CampanasAudioService } from './campanas-audio.service';
           </section>
         }
 
+        <section class="operator-hud__section" aria-label="Puerta">
+          <h3 class="operator-hud__subtitle">Puerta</h3>
+          @if (puerta$ | async; as puerta) {
+            <dl class="operator-hud__grid">
+              <div>
+                <dt>Startpack</dt>
+                <dd>{{ puerta.startpack?.ref ?? puerta.defaultStartpackRef ?? '—' }}</dd>
+              </div>
+              <div>
+                <dt>Seat</dt>
+                <dd>{{ puerta.seatOk ? 'ok' : 'pendiente' }}</dd>
+              </div>
+              <div>
+                <dt>ssbId</dt>
+                <dd>{{ shortSsb(puerta.ssbId) }}</dd>
+              </div>
+            </dl>
+          }
+        </section>
+
         <section class="operator-hud__controls" aria-label="Campanas">
           <h3 class="operator-hud__subtitle">Campanas</h3>
           <div class="operator-hud__row">
@@ -257,8 +277,14 @@ export class OperatorHudComponent {
   protected readonly bridge = inject(ZeusOperatorBridgeService);
   protected readonly campanas = inject(CampanasAudioService);
   protected readonly slice$ = this.bridge.operatorSlice$;
+  protected readonly puerta$ = this.bridge.puerta$;
   protected readonly muted$ = this.campanas.muted$;
   private inspectCount = 0;
+
+  shortSsb(ssbId: string | null | undefined): string {
+    if (!ssbId) return '—';
+    return ssbId.length > 14 ? `${ssbId.slice(0, 14)}…` : ssbId;
+  }
 
   actorEntries(slice: OperatorHudSlice): Array<{ id: string; zone?: string; kind?: string }> {
     const actors = slice?.actors ?? {};
