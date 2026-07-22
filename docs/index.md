@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: Jugar
-      link: https://games.z-sdk.escrivivir.co/startpacks
+      link: https://games.z-sdk.escrivivir.co/games/ciudad
     - theme: alt
       text: Federar
       link: /guide/external-handshake
@@ -18,7 +18,7 @@ hero:
 features:
   - title: Jugar
     details: Ciudad en el catálogo de la library — fila startpacks + tag startpack-ciudad-v0.1.0 (portal games.z-sdk).
-    link: https://games.z-sdk.escrivivir.co/startpacks
+    link: https://games.z-sdk.escrivivir.co/games/ciudad
   - title: Federar
     details: Handshake externo — peercard, rooms y ssbId en la tarjeta viajera. Registry @zeus/* para consumidores anónimos.
     link: /guide/external-handshake

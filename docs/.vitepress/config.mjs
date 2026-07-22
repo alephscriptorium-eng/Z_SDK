@@ -39,7 +39,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Inicio', link: '/' },
-      { text: 'Jugar', link: 'https://games.z-sdk.escrivivir.co/startpacks' },
+      { text: 'Jugar', link: 'https://games.z-sdk.escrivivir.co/games/ciudad' },
       { text: 'Federar', link: '/guide/external-handshake' },
       { text: 'Construir', link: '/guide/kits-foss' },
       { text: 'Guía', link: '/guide/getting-started' },
