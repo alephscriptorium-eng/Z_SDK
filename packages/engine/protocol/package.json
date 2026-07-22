@@ -1,6 +1,6 @@
 {
   "name": "@zeus/protocol",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Contrato único Zeus: envelope state|intent|track|ledger, makeIntent, roles, gates, Peer Card, AsyncAPI",
   "type": "module",
   "main": "src/index.mjs",
