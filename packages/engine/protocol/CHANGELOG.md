@@ -1,5 +1,12 @@
 # @zeus/protocol
 
+## 0.3.0
+
+### Minor Changes
+
+- bd02d70: Z_SDK #4: ssbId on federation handshake + traveling peer-card seat signature (ed25519).
+- 3ebfce3: Peer-card TTL lifecycle: issuedAt + peerCardPhase/remainingMs; authority issuePeerCard stamps issuedAt without auto-escalating scopes.
+
 ## 0.2.0
 
 ### Minor Changes

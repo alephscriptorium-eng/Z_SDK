@@ -1,5 +1,17 @@
 # @zeus/authority-kit
 
+## 0.3.0
+
+### Minor Changes
+
+- 3ebfce3: Peer-card TTL lifecycle: issuedAt + peerCardPhase/remainingMs; authority issuePeerCard stamps issuedAt without auto-escalating scopes.
+
+### Patch Changes
+
+- Updated dependencies [bd02d70]
+- Updated dependencies [3ebfce3]
+  - @zeus/protocol@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes

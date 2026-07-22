@@ -1,6 +1,6 @@
 {
   "name": "@zeus/webrtc-signaling",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "WebRTC SignalingService: socket rooms (trickle) + SSB private DMs via OASIS pub (WP-U88/U90)",
   "type": "module",
   "main": "src/index.mjs",
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@zeus/presets-sdk": "0.1.2",
-    "@zeus/protocol": "0.2.0",
+    "@zeus/protocol": "0.3.0",
     "@zeus/rooms": "0.1.0"
   },
   "optionalDependencies": {

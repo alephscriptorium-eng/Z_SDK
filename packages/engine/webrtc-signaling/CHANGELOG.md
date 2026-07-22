@@ -1,5 +1,17 @@
 # @zeus/webrtc-signaling
 
+## 0.3.0
+
+### Minor Changes
+
+- bd02d70: Z_SDK #4: ssbId on federation handshake + traveling peer-card seat signature (ed25519).
+
+### Patch Changes
+
+- Updated dependencies [bd02d70]
+- Updated dependencies [3ebfce3]
+  - @zeus/protocol@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes
