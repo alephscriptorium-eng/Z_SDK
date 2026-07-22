@@ -1,5 +1,11 @@
 # @zeus/embajador-kit
 
+## 0.1.3
+
+### Patch Changes
+
+- cd293b8: Sello PO operator-ui = B (build-doc): mapa embajador actualiza catálogo C8 (ciudad/startpack/socket/mcp-launcher) y receta build:operator-ui.
+
 ## 0.1.2
 
 ### Patch Changes
