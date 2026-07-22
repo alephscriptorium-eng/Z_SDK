@@ -8,12 +8,12 @@
  * - `path` relativo al root del monorepo (con `/`, sin leading `./`) — archivo exacto
  * - `pathPrefix` / `pathPrefixes`: clase de paths (prefijo con `/` final); preferir
  *   CLASE sobre instancia suelta cuando el custodio lo decida (HOTFIX-ARG-1 ← GATES-2)
- * - `rule`: 'ports' | 'transition' | 'arg-import' | 'two-games' | 'google-stun'
+ * - `rule`: 'ports' | 'transition' | 'arg-import' | 'two-games' | 'google-stun' | 'tracking-id'
  * - `reason`: por qué está permitido (obligatorio)
  * - `line` (opcional): si se omite, aplica a todo el archivo/clase para esa regla
  */
 
-/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'} GateRule */
+/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'|'tracking-id'} GateRule */
 
 /**
  * @typedef {object} GateException

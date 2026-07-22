@@ -29,7 +29,7 @@ const SKIP_DIRS = new Set([
   'vendor'
 ]);
 
-/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'} GateRule */
+/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'|'tracking-id'} GateRule */
 
 /**
  * @typedef {object} Offender
@@ -398,6 +398,96 @@ export function scanGoogleStun(opts = {}) {
 }
 
 /**
+ * Tracking-id hygiene: expanded from `WP-Z*` → `WP-[A-Z]{1,2}\d`.
+ * Home series `WP-U*` (repo-native backlog ids) is not flagged.
+ */
+export const TRACKING_ID_RE = /\bWP-[A-Z]{1,2}\d+/g;
+
+/**
+ * @param {string} id
+ * @returns {boolean}
+ */
+export function isHomeTrackingId(id) {
+  return /^WP-U\d+$/.test(id);
+}
+
+/**
+ * Docs under plan/ may cite ids; gates look at obra surfaces.
+ * @param {string} rel
+ */
+export function isTrackingIdPathExempt(rel) {
+  const n = rel.replace(/\\/g, '/');
+  if (n.startsWith('docs/') || n.startsWith('plan/')) return true;
+  if (n.startsWith('scripts/gates/') || n.startsWith('test/gates/')) return true;
+  return false;
+}
+
+const TRACKING_SOURCE_EXT = /\.(mjs|js|cjs|mts|cts|ts|tsx|md)$/;
+
+/**
+ * @param {string} dir
+ * @param {string} [repoRoot]
+ * @returns {string[]}
+ */
+function collectTrackingFiles(dir, repoRoot = REPO_ROOT) {
+  const abs = path.isAbsolute(dir) ? dir : path.join(repoRoot, dir);
+  if (!fs.existsSync(abs)) return [];
+  /** @type {string[]} */
+  const out = [];
+  for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(entry.name)) continue;
+    const full = path.join(abs, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...collectTrackingFiles(full, repoRoot));
+      continue;
+    }
+    if (!TRACKING_SOURCE_EXT.test(entry.name)) continue;
+    out.push(full);
+  }
+  return out;
+}
+
+/**
+ * (f) foreign tracking ids in obra (packages / e2e / kits / .changeset).
+ * @param {{ repoRoot?: string, files?: string[] }} [opts]
+ * @returns {Offender[]}
+ */
+export function scanTrackingIds(opts = {}) {
+  const repoRoot = opts.repoRoot ?? REPO_ROOT;
+  const files =
+    opts.files ??
+    [
+      ...collectTrackingFiles('packages', repoRoot),
+      ...collectTrackingFiles('e2e', repoRoot),
+      ...collectTrackingFiles('kits', repoRoot),
+      ...collectTrackingFiles('.changeset', repoRoot)
+    ];
+  /** @type {Offender[]} */
+  const offenders = [];
+  for (const file of files) {
+    const rel = normalizeRel(repoRoot, file);
+    if (isTrackingIdPathExempt(rel)) continue;
+    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+    lines.forEach((line, idx) => {
+      TRACKING_ID_RE.lastIndex = 0;
+      const matches = line.match(TRACKING_ID_RE);
+      if (!matches) return;
+      const foreign = [...new Set(matches)].filter((id) => !isHomeTrackingId(id));
+      if (foreign.length === 0) return;
+      const lineNo = idx + 1;
+      if (isExcepted('tracking-id', rel, lineNo)) return;
+      offenders.push({
+        rule: 'tracking-id',
+        path: rel,
+        line: lineNo,
+        detail: `matched ${foreign.join(',')}: ${line.trim().slice(0, 140)}`
+      });
+    });
+  }
+  return offenders;
+}
+
+/**
  * @param {{ repoRoot?: string }} [opts]
  * @returns {{ ok: boolean, offenders: Offender[], byRule: Record<GateRule, Offender[]> }}
  */
@@ -407,7 +497,8 @@ export function runAllGates(opts = {}) {
     ...scanTransitionNames(opts),
     ...scanArgImportViolations(opts),
     ...scanTwoGamesRule(opts),
-    ...scanGoogleStun(opts)
+    ...scanGoogleStun(opts),
+    ...scanTrackingIds(opts)
   ];
   /** @type {Record<GateRule, Offender[]>} */
   const byRule = {
@@ -415,7 +506,8 @@ export function runAllGates(opts = {}) {
     transition: [],
     'arg-import': [],
     'two-games': [],
-    'google-stun': []
+    'google-stun': [],
+    'tracking-id': []
   };
   for (const o of offenders) byRule[o.rule].push(o);
   return { ok: offenders.length === 0, offenders, byRule };

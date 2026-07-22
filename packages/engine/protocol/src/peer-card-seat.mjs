@@ -5,7 +5,7 @@
  * Usa los hooks canónicos de `peer-card.mjs` (`travelingPeerCardBytes`,
  * `isSsbId`, `ssbIdFromPublicKeyBytes`, …).
  *
- * Z_SDK #4 · WP-E02 — distinto de la firma del conector v0 (D-40).
+ * Z_SDK #4 — distinto de la firma del conector v0 (D-40).
  */
 
 import {

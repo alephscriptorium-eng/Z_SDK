@@ -4,7 +4,7 @@
  * Forma mínima:
  *   { roomId, endpoint, token, scopes, expiresAt, displayName?, sessionId? }
  *
- * Extensión SSB / federación (Z_SDK #4 · WP-E02):
+ * Extensión SSB / federación (Z_SDK #4):
  *   { ssbId?, seatSignature? }
  *   - `ssbId` = feed id `@….ed25519` (clave pública en el saludo)
  *   - `seatSignature` = firma ed25519 (base64) del asiento / tarjeta viajera

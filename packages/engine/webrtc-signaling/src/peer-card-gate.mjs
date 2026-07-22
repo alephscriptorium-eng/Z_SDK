@@ -1,5 +1,5 @@
 /**
- * Torno peer-card del carril WebRTC (WP-U93 / D-20 · WP-E02 / Z_SDK #4).
+ * Torno peer-card del carril WebRTC (WP-U93 / D-20 · Z_SDK #4).
  * Exige card con forma, frescura y rol antes de offer/answer/ICE.
  * Extensión SSB: `ssbId` en handshake + verificación de `seatSignature`.
  *

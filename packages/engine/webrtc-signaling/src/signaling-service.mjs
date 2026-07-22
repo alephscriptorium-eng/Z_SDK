@@ -4,7 +4,7 @@
  * Concrete transport: SocketRoomSignalingService (rooms / socket-server).
  *
  * WP-U93: offer/answer/ICE y room-join exigen peer-card válida (torno).
- * WP-E02 / Z_SDK #4: handshake lleva `ssbId`; asiento firmado se verifica.
+ * Z_SDK #4: handshake lleva `ssbId`; asiento firmado se verifica.
  */
 
 import { EventEmitter } from 'node:events';
@@ -187,7 +187,7 @@ export class SignalingService extends EventEmitter {
     if (isPeerCardGatedType(message?.type)) {
       let card = peerCardFromMessage(message) ?? message?.peerCard;
       const handshakeSsbId = ssbIdFromMessage(message);
-      // Amarrar ssbId del handshake a la card si aún no lo trae (wire legacy)
+      // Amarrar ssbId del handshake a la card si aún no lo trae (wire previo)
       if (
         card &&
         typeof card === 'object' &&

@@ -41,7 +41,7 @@ await alice.joinRoom('ROOM', card); // sin card ⇒ rechazo
 Identidad ad-hoc del handshake (`peerId` / `displayName` sueltos) queda
 sustituida por el card (`sessionId` / `displayName` / `scopes` en el ticket).
 
-### Hook SSB (extensión Z_SDK #4 / WP-E02)
+### Hook SSB (extensión Z_SDK #4)
 
 Punto de enganche D-20 paso 3 (antes documentado sin implementar):
 
