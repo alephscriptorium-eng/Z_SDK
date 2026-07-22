@@ -32,5 +32,12 @@
   "devDependencies": {
     "@zeus/test-utils": "*"
   },
-  "private": true
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
 }

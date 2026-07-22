@@ -28,5 +28,5 @@
     "src",
     "README.md"
   ],
-  "private": true
+  "private": false
 }
