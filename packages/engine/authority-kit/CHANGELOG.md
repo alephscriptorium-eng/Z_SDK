@@ -1,5 +1,12 @@
 # @zeus/authority-kit
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [05d70fd]
+  - @zeus/rooms@0.1.1
+
 ## 0.4.0
 
 ### Minor Changes

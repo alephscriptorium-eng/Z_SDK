@@ -1,5 +1,12 @@
 # @zeus/room-client-browser
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [05d70fd]
+  - @zeus/rooms@0.1.1
+
 ## 0.1.2
 
 ### Patch Changes
