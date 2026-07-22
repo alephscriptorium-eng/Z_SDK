@@ -4,6 +4,9 @@ import {
   makePeerCard,
   isPeerCardShaped,
   isPeerCardFresh,
+  peerCardPhase,
+  peerCardRemainingMs,
+  PEER_CARD_PHASE,
   roleFromPeerCard,
   peerCardGrantsRole,
   roleScope,
@@ -47,6 +50,50 @@ test('Peer Card shape + freshness + role scopes', () => {
   });
   assert.equal(isPeerCardFresh(expired), false);
   assert.equal(peerCardGrantsRole(expired, 'dj'), false);
+});
+
+test('Peer Card TTL lifecycle: issuedAt + phase + remainingMs', () => {
+  const now = 1_700_000_000_000;
+  const card = makePeerCard({
+    roomId: 'ROOM_TTL',
+    endpoint: 'wss://example.test/runtime',
+    token: 'tok-ttl',
+    scopes: [roleScope('player')],
+    issuedAt: now,
+    expiresAt: now + 60_000
+  });
+  assert.equal(card.issuedAt, new Date(now).toISOString());
+  assert.equal(peerCardPhase(card, now), PEER_CARD_PHASE.ACTIVE);
+  assert.equal(peerCardRemainingMs(card, now), 60_000);
+  assert.equal(isPeerCardFresh(card, now), true);
+
+  assert.equal(peerCardPhase(card, now + 60_000), PEER_CARD_PHASE.EXPIRED);
+  assert.equal(peerCardRemainingMs(card, now + 60_000), 0);
+  assert.equal(isPeerCardFresh(card, now + 60_000), false);
+
+  const early = makePeerCard({
+    roomId: 'ROOM_TTL',
+    endpoint: 'wss://example.test/runtime',
+    token: 'tok-early',
+    scopes: [roleScope('player')],
+    issuedAt: now + 10_000,
+    expiresAt: now + 60_000
+  });
+  assert.equal(peerCardPhase(early, now), PEER_CARD_PHASE.NOT_YET_VALID);
+  assert.equal(isPeerCardFresh(early, now), false);
+
+  assert.throws(
+    () =>
+      makePeerCard({
+        roomId: 'R',
+        endpoint: 'http://x',
+        token: 't',
+        scopes: [roleScope('player')],
+        expiresAt: now + 1000,
+        issuedAt: 'not-a-date'
+      }),
+    /issuedAt/
+  );
 });
 
 test('ssbId helpers round-trip raw ed25519 pubkey', () => {

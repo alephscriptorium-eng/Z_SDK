@@ -2,7 +2,13 @@
  * Peer Card — credencial revocable de rol (patrón transmedia-system).
  *
  * Forma mínima:
- *   { roomId, endpoint, token, scopes, expiresAt, displayName?, sessionId? }
+ *   { roomId, endpoint, token, scopes, expiresAt, displayName?, sessionId?,
+ *     issuedAt? }
+ *
+ * Ciclo de vida (no-crypto): issuedAt → active mientras expiresAt > now →
+ * expired. Fases vía `peerCardPhase` / `peerCardRemainingMs`.
+ * Niveles / escalado automático de poder = fuera de este módulo (fase
+ * posterior; la emisión nunca muta scopes hacia más poder por su cuenta).
  *
  * Extensión SSB / federación (Z_SDK #4):
  *   { ssbId?, seatSignature? }
@@ -21,6 +27,14 @@
 import { ROLES, isRole } from './roles.mjs';
 
 const ROLE_SCOPE_PREFIX = 'role:';
+
+/** Fases del ciclo de vida de la tarjeta (TTL / caducidad). */
+export const PEER_CARD_PHASE = Object.freeze({
+  ACTIVE: 'active',
+  EXPIRED: 'expired',
+  NOT_YET_VALID: 'not_yet_valid',
+  MALFORMED: 'malformed'
+});
 
 /** Feed id SSB: `@` + base64(32-byte pubkey) + `.ed25519`. */
 export const SSB_ID_RE = /^@[A-Za-z0-9+/]+={0,2}\.ed25519$/;
@@ -120,6 +134,7 @@ export function attachTravelingSeat(card, { ssbId, seatSignature }) {
  * @param {string} input.token
  * @param {string[]} input.scopes
  * @param {string|number|Date} input.expiresAt — ISO string o epoch ms
+ * @param {string|number|Date} [input.issuedAt] — inicio de validez (ISO / epoch)
  * @param {string} [input.displayName]
  * @param {string} [input.sessionId]
  * @param {string} [input.ssbId] — feed id `@….ed25519`
@@ -131,6 +146,7 @@ export function makePeerCard({
   token,
   scopes,
   expiresAt,
+  issuedAt,
   displayName,
   sessionId,
   ssbId,
@@ -152,6 +168,13 @@ export function makePeerCard({
   if (!Number.isFinite(expiresMs)) {
     throw new TypeError('makePeerCard: expiresAt inválido');
   }
+  let issuedMs;
+  if (issuedAt != null) {
+    issuedMs = toEpochMs(issuedAt);
+    if (!Number.isFinite(issuedMs)) {
+      throw new TypeError('makePeerCard: issuedAt inválido');
+    }
+  }
   if (ssbId != null && !isSsbId(ssbId)) {
     throw new TypeError('makePeerCard: ssbId inválido');
   }
@@ -165,6 +188,7 @@ export function makePeerCard({
     scopes: [...scopes],
     expiresAt: new Date(expiresMs).toISOString()
   };
+  if (issuedMs != null) card.issuedAt = new Date(issuedMs).toISOString();
   if (displayName != null) card.displayName = displayName;
   if (sessionId != null) card.sessionId = sessionId;
   if (ssbId != null) card.ssbId = ssbId;
@@ -192,13 +216,45 @@ export function isPeerCardShaped(card) {
 }
 
 /**
+ * Fase del ciclo TTL: active | expired | not_yet_valid | malformed.
+ * @param {object} card
+ * @param {number} [now=Date.now()]
+ * @returns {typeof PEER_CARD_PHASE[keyof typeof PEER_CARD_PHASE]}
+ */
+export function peerCardPhase(card, now = Date.now()) {
+  if (!isPeerCardShaped(card)) return PEER_CARD_PHASE.MALFORMED;
+  const expiresMs = toEpochMs(card.expiresAt);
+  if (!Number.isFinite(expiresMs)) return PEER_CARD_PHASE.MALFORMED;
+  if (card.issuedAt != null) {
+    const issuedMs = toEpochMs(card.issuedAt);
+    if (Number.isFinite(issuedMs) && now < issuedMs) {
+      return PEER_CARD_PHASE.NOT_YET_VALID;
+    }
+  }
+  if (expiresMs <= now) return PEER_CARD_PHASE.EXPIRED;
+  return PEER_CARD_PHASE.ACTIVE;
+}
+
+/**
+ * Ms restantes hasta caducar (≥0). `null` si shape/expiresAt inválidos.
+ * @param {object} card
+ * @param {number} [now=Date.now()]
+ * @returns {number|null}
+ */
+export function peerCardRemainingMs(card, now = Date.now()) {
+  if (!isPeerCardShaped(card)) return null;
+  const expiresMs = toEpochMs(card.expiresAt);
+  if (!Number.isFinite(expiresMs)) return null;
+  return Math.max(0, expiresMs - now);
+}
+
+/**
+ * ¿La card está en fase active (TTL vigente y ya emitida)?
  * @param {object} card
  * @param {number} [now=Date.now()]
  */
 export function isPeerCardFresh(card, now = Date.now()) {
-  if (!isPeerCardShaped(card)) return false;
-  const expiresMs = toEpochMs(card.expiresAt);
-  return Number.isFinite(expiresMs) && expiresMs > now;
+  return peerCardPhase(card, now) === PEER_CARD_PHASE.ACTIVE;
 }
 
 /**

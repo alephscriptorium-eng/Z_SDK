@@ -73,6 +73,8 @@ export interface PeerCard {
   scopes: string[];
   /** ISO-8601 datetime */
   expiresAt: string;
+  /** ISO-8601 datetime — start of validity (TTL lifecycle) */
+  issuedAt?: string;
   displayName?: string;
   sessionId?: string;
   /** SSB feed id \`@….ed25519\` (federation handshake · Z_SDK #4) */
@@ -211,6 +213,7 @@ export interface MakePeerCardInput {
   token: string;
   scopes: string[];
   expiresAt: string | number | Date;
+  issuedAt?: string | number | Date;
   displayName?: string;
   sessionId?: string;
   ssbId?: string;
@@ -218,6 +221,16 @@ export interface MakePeerCardInput {
 }
 
 export declare const SSB_ID_RE: RegExp;
+
+export declare const PEER_CARD_PHASE: {
+  readonly ACTIVE: 'active';
+  readonly EXPIRED: 'expired';
+  readonly NOT_YET_VALID: 'not_yet_valid';
+  readonly MALFORMED: 'malformed';
+};
+
+export type PeerCardPhase =
+  (typeof PEER_CARD_PHASE)[keyof typeof PEER_CARD_PHASE];
 
 export declare function isSsbId(value: unknown): value is string;
 
@@ -241,6 +254,16 @@ export declare function attachTravelingSeat(
 export declare function makePeerCard(input: MakePeerCardInput): PeerCard;
 
 export declare function isPeerCardShaped(card: unknown): boolean;
+
+export declare function peerCardPhase(
+  card: object,
+  now?: number
+): PeerCardPhase;
+
+export declare function peerCardRemainingMs(
+  card: object,
+  now?: number
+): number | null;
 
 export declare function isPeerCardFresh(card: object, now?: number): boolean;
 

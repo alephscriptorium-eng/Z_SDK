@@ -21,6 +21,7 @@ function baseEmit(extra = {}) {
     expiresAt: NOW + 3_600_000,
     displayName: 'amigo',
     sessionId: 'sess-1',
+    now: NOW,
     ...extra
   });
 }
@@ -31,16 +32,36 @@ test('eje I smoke: emitir → consumir peercard + startpack default', () => {
   assert.equal(isCredencialEmbajadorShaped(cred), true);
   assert.deepEqual(cred.startpack, { ...DEFAULT_STARTPACK });
   assert.equal(cred.signature.alg, 'stub');
+  assert.ok(cred.peerCard.issuedAt);
 
   const out = consumirCredencial(cred, { now: NOW });
   assert.equal(out.ok, true);
   assert.deepEqual(out.errors, []);
   assert.equal(out.peerCard.roomId, 'ROOM_ENTRADA');
   assert.equal(out.role, 'player');
+  assert.equal(out.phase, 'active');
+  assert.equal(out.remainingMs, 3_600_000);
   assert.equal(out.startpack.ref, 'startpack-ciudad-v0.1.0');
   assert.equal(out.defaultStartpack, true);
   assert.equal(out.signature.verified, false);
   assert.equal(out.signature.mode, 'stub');
+});
+
+test('emitir con ttlMs sella issuedAt + expiresAt', () => {
+  const cred = emitirCredencial({
+    roomId: 'ROOM_TTL',
+    endpoint: 'wss://example.test/runtime',
+    token: 'tok-ttl',
+    role: 'player',
+    ttlMs: 120_000,
+    now: NOW
+  });
+  assert.equal(cred.peerCard.issuedAt, new Date(NOW).toISOString());
+  assert.equal(cred.peerCard.expiresAt, new Date(NOW + 120_000).toISOString());
+  const out = consumirCredencial(cred, { now: NOW + 120_000 });
+  assert.equal(out.ok, false);
+  assert.equal(out.phase, 'expired');
+  assert.ok(out.errors.some((e) => e.includes('expirado')));
 });
 
 test('consumir peercard desnudo rellena DEFAULT_STARTPACK', () => {

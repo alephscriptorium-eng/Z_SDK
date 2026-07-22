@@ -1,11 +1,14 @@
 /**
- * Consumir credencial de peer: valida shape, frescura y resuelve startpack.
+ * Consumir credencial de peer: valida shape, frescura/TTL y resuelve startpack.
  */
 
 import {
   isPeerCardShaped,
   isPeerCardFresh,
-  roleFromPeerCard
+  roleFromPeerCard,
+  peerCardPhase,
+  peerCardRemainingMs,
+  PEER_CARD_PHASE
 } from '@zeus/protocol';
 import {
   CREDENCIAL_VERSION,
@@ -28,6 +31,8 @@ import { verifySignatureStub } from './firma-stub.mjs';
  *   peerCard: object|null,
  *   startpack: import('./tipos.mjs').StartpackRef|null,
  *   role: string|null,
+ *   phase: string|null,
+ *   remainingMs: number|null,
  *   signature: { ok: boolean, mode: string, verified: boolean },
  *   defaultStartpack: boolean
  * }}
@@ -91,8 +96,19 @@ export function consumirCredencial(raw, opts = {}) {
     }
   }
 
+  const phase =
+    peerCard && isPeerCardShaped(peerCard) ? peerCardPhase(peerCard, now) : null;
+  const remainingMs =
+    peerCard && isPeerCardShaped(peerCard)
+      ? peerCardRemainingMs(peerCard, now)
+      : null;
+
   if (requireFresh && peerCard && isPeerCardShaped(peerCard) && !isPeerCardFresh(peerCard, now)) {
-    errors.push('peerCard: expirado');
+    if (phase === PEER_CARD_PHASE.NOT_YET_VALID) {
+      errors.push('peerCard: aún no vigente');
+    } else {
+      errors.push('peerCard: expirado');
+    }
   }
 
   const envelope =
@@ -113,6 +129,8 @@ export function consumirCredencial(raw, opts = {}) {
       peerCard: isPeerCardShaped(peerCard) ? peerCard : null,
       startpack,
       role,
+      phase,
+      remainingMs,
       signature,
       defaultStartpack
     };
@@ -129,6 +147,8 @@ export function consumirCredencial(raw, opts = {}) {
     peerCard,
     startpack,
     role,
+    phase,
+    remainingMs,
     signature,
     defaultStartpack
   };
@@ -148,6 +168,8 @@ function fail(errors, extra = {}) {
     peerCard: null,
     startpack: null,
     role: null,
+    phase: null,
+    remainingMs: null,
     signature: extra.signature ?? { ok: false, mode: 'none', verified: false },
     defaultStartpack: false
   };

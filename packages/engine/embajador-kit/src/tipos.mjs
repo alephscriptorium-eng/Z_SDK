@@ -3,7 +3,8 @@
  * Destino único (eje II): no duplicar este shape fuera del kit.
  *
  * Firma criptográfica real = paquete de privacidad federada (stub tipado aquí).
- * TTL / campos de emisión de sala = authority-kit (otro WP); este kit no los redefine.
+ * Emisión de sala (`issuePeerCard`) = `@zeus/authority-kit`; este kit cablea
+ * TTL/ciclo vía campos protocol (`issuedAt` / `expiresAt` / `ttlMs`).
  *
  * @typedef {object} StartpackRef
  * @property {string} id

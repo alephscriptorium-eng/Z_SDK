@@ -10,7 +10,9 @@ import {
   resolveContentRevSnapshotOpts,
   resolveStateDeltaSnapshotOpts,
   PROTOCOL_EVENTS,
-  issuePeerCard
+  issuePeerCard,
+  peerCardPhase,
+  peerCardRemainingMs
 } from '../src/index.mjs';
 
 const GAME = 'kit-test';
@@ -476,15 +478,35 @@ describe('startAuthority', () => {
 });
 
 describe('issuePeerCard', () => {
-  it('construye card fresca con rol', () => {
+  it('construye card fresca con rol, issuedAt y TTL', () => {
+    const now = 1_700_000_000_000;
     const card = issuePeerCard({
       roomId: 'R',
       endpoint: 'http://ep',
       role: 'operator',
-      sessionId: 'op-1'
+      sessionId: 'op-1',
+      now,
+      ttlMs: 3_600_000
     });
     assert.equal(card.roomId, 'R');
     assert.ok(card.scopes.includes('role:operator'));
     assert.ok(card.scopes.includes('webrtc:signal'));
+    assert.equal(card.issuedAt, new Date(now).toISOString());
+    assert.equal(card.expiresAt, new Date(now + 3_600_000).toISOString());
+    assert.equal(peerCardPhase(card, now), 'active');
+    assert.equal(peerCardRemainingMs(card, now), 3_600_000);
+    assert.equal(peerCardPhase(card, now + 3_600_000), 'expired');
+  });
+
+  it('no escala scopes hacia más poder (caller-chosen)', () => {
+    const card = issuePeerCard({
+      roomId: 'R',
+      endpoint: 'http://ep',
+      role: 'player',
+      scopes: ['role:player', 'presence:join']
+    });
+    assert.deepEqual(card.scopes, ['role:player', 'presence:join']);
+    assert.equal(card.scopes.includes('role:operator'), false);
+    assert.equal(card.scopes.includes('role:dj'), false);
   });
 });

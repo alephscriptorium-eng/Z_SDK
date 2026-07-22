@@ -1,6 +1,7 @@
 /**
  * Emitir credencial de peer (peercard + startpack default).
- * Usa makePeerCard de @zeus/protocol — no reimplementa crypto ni TTL de sala.
+ * Usa makePeerCard de @zeus/protocol — TTL/ciclo vía issuedAt + expiresAt/ttlMs.
+ * No reimplementa crypto ni issuePeerCard de sala (authority-kit).
  */
 
 import { makePeerCard, roleScope, isRole } from '@zeus/protocol';
@@ -10,6 +11,9 @@ import {
 } from './tipos.mjs';
 import { FIRMA_STUB_PENDIENTE } from './firma-stub.mjs';
 
+/** TTL default alineado a authority-kit (1 h) cuando el caller pasa ttlMs. */
+export const DEFAULT_CREDENCIAL_TTL_MS = 60 * 60 * 1000;
+
 /**
  * @param {object} input
  * @param {string} input.roomId
@@ -17,7 +21,10 @@ import { FIRMA_STUB_PENDIENTE } from './firma-stub.mjs';
  * @param {string} input.token
  * @param {string} [input.role='player']
  * @param {string[]} [input.scopes]
- * @param {string|number|Date} input.expiresAt
+ * @param {string|number|Date} [input.expiresAt] — requerido si no hay ttlMs
+ * @param {number} [input.ttlMs] — relativo a `now` si no hay expiresAt
+ * @param {string|number|Date} [input.issuedAt]
+ * @param {number} [input.now]
  * @param {string} [input.displayName]
  * @param {string} [input.sessionId]
  * @param {import('./tipos.mjs').StartpackRef|Partial<import('./tipos.mjs').StartpackRef>} [input.startpack]
@@ -31,6 +38,9 @@ export function emitirCredencial({
   role = 'player',
   scopes,
   expiresAt,
+  ttlMs,
+  issuedAt,
+  now = Date.now(),
   displayName,
   sessionId,
   startpack,
@@ -40,12 +50,21 @@ export function emitirCredencial({
     throw new TypeError(`emitirCredencial: rol desconocido ${role}`);
   }
   const cardScopes = scopes ?? [roleScope(role), 'presence:join', 'webrtc:signal'];
+  let expiresMs = expiresAt;
+  if (expiresMs == null) {
+    const ttl = ttlMs ?? DEFAULT_CREDENCIAL_TTL_MS;
+    if (typeof ttl !== 'number' || !Number.isFinite(ttl) || ttl <= 0) {
+      throw new TypeError('emitirCredencial: ttlMs positivo o expiresAt requerido');
+    }
+    expiresMs = now + ttl;
+  }
   const peerCard = makePeerCard({
     roomId,
     endpoint,
     token,
     scopes: cardScopes,
-    expiresAt,
+    expiresAt: expiresMs,
+    issuedAt: issuedAt ?? now,
     displayName,
     sessionId
   });

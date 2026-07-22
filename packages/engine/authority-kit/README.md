@@ -47,8 +47,16 @@ hereda: el kit solo escucha `SIGINT`/`SIGTERM` en el proceso de autoridad.
 ## Peer Card (WP-U93 / D-20)
 
 Al aceptar un intent de join (default: `join`), la autoridad **emite** un
-peer-card (`issuePeerCard` → `makePeerCard`) con rol y caducidad. El carril
-WebRTC (`@zeus/webrtc-signaling`) **exige** esa card antes de offer/answer/ICE.
+peer-card (`issuePeerCard` → `makePeerCard`) con rol, `issuedAt` y caducidad
+(`expiresAt` / `ttlMs`, default 1 h). Ciclo de vida no-crypto:
+`peerCardPhase` / `peerCardRemainingMs` (re-exportados desde `@zeus/protocol`).
+
+El carril WebRTC (`@zeus/webrtc-signaling`) **exige** esa card antes de
+offer/answer/ICE. La firma de asiento / `ssbId` la adjunta el caller vía
+protocol (no este kit).
+
+**Guardarraíl:** `issuePeerCard` no escala scopes ni rol hacia más poder por
+su cuenta; niveles de federación son una fase posterior.
 
 ```js
 await startAuthority({
@@ -61,10 +69,10 @@ await startAuthority({
 
 // emisión explícita (misma fábrica):
 const { issuePeerCard } = await startAuthority({ /* … */ });
-const card = issuePeerCard({ role: 'player', sessionId: 'alice' });
+const card = issuePeerCard({ role: 'player', sessionId: 'alice', ttlMs: 3_600_000 });
 ```
 
-También: `import { issuePeerCard } from '@zeus/authority-kit'`.
+También: `import { issuePeerCard, DEFAULT_PEER_CARD_TTL_MS } from '@zeus/authority-kit'`.
 
 ## Tests
 

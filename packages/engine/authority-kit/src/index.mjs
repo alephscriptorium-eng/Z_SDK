@@ -15,6 +15,10 @@ export {
 
 export {
   issuePeerCard,
+  resolvePeerCardExpiresAt,
   DEFAULT_PEER_CARD_TTL_MS,
-  DEFAULT_JOIN_INTENTS
+  DEFAULT_JOIN_INTENTS,
+  peerCardPhase,
+  peerCardRemainingMs,
+  PEER_CARD_PHASE
 } from './issue-peer-card.mjs';

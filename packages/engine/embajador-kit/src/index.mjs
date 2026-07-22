@@ -11,10 +11,22 @@ export {
   resolveStartpack
 } from './tipos.mjs';
 
-export { emitirCredencial, emitPeerCredential } from './emitir.mjs';
+export {
+  emitirCredencial,
+  emitPeerCredential,
+  DEFAULT_CREDENCIAL_TTL_MS
+} from './emitir.mjs';
 export { consumirCredencial, consumePeerCredential } from './consumir.mjs';
 export {
   FIRMA_STUB_PENDIENTE,
   attachSignatureStub,
   verifySignatureStub
 } from './firma-stub.mjs';
+
+/** Re-export ciclo TTL (consumidor mínimo del modelo protocol). */
+export {
+  PEER_CARD_PHASE,
+  peerCardPhase,
+  peerCardRemainingMs,
+  isPeerCardFresh
+} from '@zeus/protocol';
