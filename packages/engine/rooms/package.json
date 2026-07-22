@@ -1,6 +1,6 @@
 {
   "name": "@zeus/rooms",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scriptorium rooms client (E1 slot)",
   "type": "module",
   "main": "src/index.mjs",

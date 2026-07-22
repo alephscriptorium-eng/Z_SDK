@@ -1,6 +1,6 @@
 {
   "name": "@zeus/authority-kit",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Autoridad genérica Zeus: tick, intents vía reducer, state/ledger/track, presupuesto snapshot, arranque/parada",
   "type": "module",
   "main": "src/index.mjs",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@zeus/protocol": "0.4.0",
-    "@zeus/rooms": "0.1.0"
+    "@zeus/rooms": "0.1.1"
   },
   "publishConfig": {
     "registry": "https://npm.scriptorium.escrivivir.co"

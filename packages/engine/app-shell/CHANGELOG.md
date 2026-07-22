@@ -1,5 +1,12 @@
 # @zeus/app-shell
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [05d70fd]
+  - @zeus/rooms@0.1.1
+
 ## 0.2.1
 
 ### Patch Changes

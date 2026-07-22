@@ -1,6 +1,6 @@
 {
   "name": "@zeus/app-shell",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Shared app bootstrap factories for Zeus UI packages",
   "type": "module",
   "main": "src/index.mjs",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@zeus/presets-sdk": "0.1.2",
-    "@zeus/rooms": "0.1.0",
+    "@zeus/rooms": "0.1.1",
     "@zeus/ui-kit": "0.1.2",
     "hyperaxe": "^3.0.2"
   },
