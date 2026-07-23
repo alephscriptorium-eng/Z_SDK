@@ -10,14 +10,38 @@
       "types": "./types/index.d.ts",
       "default": "./src/index.mjs"
     },
-    "./contract": "./src/contract.mjs",
-    "./roles": "./src/roles.mjs",
-    "./gates": "./src/gates.mjs",
-    "./acl": "./src/acl.mjs",
-    "./peer-card": "./src/peer-card.mjs",
-    "./peer-card-seat": "./src/peer-card-seat.mjs",
-    "./node-src-dir": "./src/node-src-dir.mjs",
-    "./node": "./src/node.mjs",
+    "./contract": {
+      "types": "./types/contract.d.ts",
+      "default": "./src/contract.mjs"
+    },
+    "./roles": {
+      "types": "./types/roles.d.ts",
+      "default": "./src/roles.mjs"
+    },
+    "./gates": {
+      "types": "./types/gates.d.ts",
+      "default": "./src/gates.mjs"
+    },
+    "./acl": {
+      "types": "./types/acl.d.ts",
+      "default": "./src/acl.mjs"
+    },
+    "./peer-card": {
+      "types": "./types/peer-card.d.ts",
+      "default": "./src/peer-card.mjs"
+    },
+    "./peer-card-seat": {
+      "types": "./types/peer-card-seat.d.ts",
+      "default": "./src/peer-card-seat.mjs"
+    },
+    "./node-src-dir": {
+      "types": "./types/node-src-dir.d.ts",
+      "default": "./src/node-src-dir.mjs"
+    },
+    "./node": {
+      "types": "./types/node.d.ts",
+      "default": "./src/node.mjs"
+    },
     "./spec": "./spec/asyncapi.yaml",
     "./spec/build": "./spec/build.mjs"
   },

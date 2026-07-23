@@ -1,0 +1,8 @@
+{
+  "name": "zeus-protocol-ts-subpath-smoke",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@zeus/protocol": "file:../../.."
+  }
+}
