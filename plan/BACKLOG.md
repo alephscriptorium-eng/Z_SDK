@@ -201,7 +201,6 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
   [REPORTES/briefs/WP-U160-migrar-corte-mcp-core.md](REPORTES/briefs/WP-U160-migrar-corte-mcp-core.md).
   **CA:** `rg` mcp-core-sdk = 0 en `packages/@zeus` (residuales
   root/examples listados); definición única Socket*; tests verdes.
-  **Ejes:** I + II. **Ola 2** — listo para despacho �  root/examples listados); definición única Socket*; tests verdes.
   **Ejes:** I + II. **Ola 2** — listo para despacho ∥ U157.
 
 #### WP-U161 · smoke scope solo `@zeus` + demolición residual — ⬜
