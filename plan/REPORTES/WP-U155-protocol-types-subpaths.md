@@ -5,7 +5,7 @@
 | agente | Worker-U155 |
 | fecha | 2026-07-23 |
 | rama | `wp/u155-protocol-types-subpaths` |
-| commits | _(hashes tras commit)_ |
+| commits | `7184540 76e183b` |
 | eje(s) CA | IV |
 | estado propuesto | listo para revisión |
 
