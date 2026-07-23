@@ -5,7 +5,7 @@
 | agente | Worker-U161 |
 | fecha | 2026-07-23 |
 | rama | `wp/u161-smoke-zeus-only` |
-| commit(s) | `d06bb4c4ea2295d9cac8e9476b9bfb3406fe2e76` · `566723059f046a4c53b958345ac872ace76d4484` · _(este reporte)_ |
+| commit(s) | `d06bb4c4ea2295d9cac8e9476b9bfb3406fe2e76` · `566723059f046a4c53b958345ac872ace76d4484` · `9c08e603dcd8e038433bb3efc4d2ac2fbd7edb40` |
 | eje(s) CA | I (extracción con cableado) + II (demolición con destino canónico) |
 | estado propuesto | listo para revisión |
 
