@@ -163,4 +163,15 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅** — orquestador-Z · 2026-07-23.
+
+### CA verificados de facto
+- [x] `exports["./peer-card-seat"].types` → `./types/peer-card-seat.d.ts` (+ resto JS tipados; `./spec*` justificado)
+- [x] `npm test -w @zeus/protocol` → 40/40 (re-smoke orquestador)
+- [x] Changeset patch presente
+- [x] Diff dentro de ALCANCE_DIFF (protocol + changeset + reporte)
+- [x] Eje IV: smoke dual-consumer `tsc --noEmit` (peer-card-seat + roles)
+
+### Merge
+Rama `wp/u155-protocol-types-subpaths` tip `af69e91` → `main`. Worktree a retirar post-merge.
+CI remoto: ⏳ sin push en este turno (exigir success al pushear paths de paquete).
