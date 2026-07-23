@@ -97,7 +97,7 @@ Sprint 7 **Ola 2 CERRADA** en `main` (gobierno + merges + tip publicado):
 | ---- | ----- |
 | Tip código Ola 2 (merge U160) | `53af36bb317bd907cca80c9da92a9328e9d465d6` |
 | Tip gobierno backlog | `8b5befb224342f7a6568267d5ed7a0f23c885f91` |
-| Tip `origin/main` (este AVISO) | ver `git rev-parse HEAD` al push del aviso |
+| Tip `origin/main` (este AVISO) | `e980b2570a368016cd8029c540c5a8f59e8aaa23` |
 | Push | normal (sin force) |
 | CI | `30043577686` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30043577686 (SHA `53af36b`) |
 | Release | `30043577613` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30043577613 (SHA `53af36b`) |
