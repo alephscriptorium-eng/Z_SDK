@@ -5,7 +5,7 @@
 | agente | Worker-U156 |
 | fecha | 2026-07-23 |
 | rama | `wp/u156-types-subpaths-presets-webrtc-ui3d` |
-| commit(s) | `29e42cf` (feat types) · _(este reporte en commit siguiente)_ |
+| commit(s) | `29e42cf` (feat) · `98ae158` (reporte) |
 | eje(s) CA | IV |
 | estado propuesto | listo para revisión |
 
