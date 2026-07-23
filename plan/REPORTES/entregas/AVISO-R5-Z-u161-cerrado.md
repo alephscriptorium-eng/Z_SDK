@@ -30,14 +30,15 @@ Sprint 7 **Ola 3 parcial** (secuencial): **U161** ✅ en `main`.
 | ---- | ----- |
 | Tip código U161 (merge) | `229c03420460eb1c9e73cf0c3e968a2fc87f4c32` |
 | Tip gobierno (BACKLOG ✅) | `31f6e7b79d899cfaddeedbebf34427d1d01a7443` |
-| Push | normal (sin force) · `30136cb..31f6e7b` |
+| Tip aviso (este doc) | tip `origin/main` que transporte este AVISO (solo `plan/`) |
+| Push | normal (sin force) · desde `30136cb` |
 | CI | `30045415107` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30045415107 (SHA `31f6e7b`) |
 | Release | **N/A (U104)** — el push no tocó `.changeset/**` ni `packages/**` (`release.yml` `paths:`). Último Release verde de tip código Ola 2: `30043577613` success sobre `53af36b`. |
 | Docs | **N/A** — sin cambios bajo `docs/` en el delta U161. |
 
-> Delta `229c034..31f6e7b` = solo `plan/` (cierre ✅ + revisión orquestador).
-> CI corrió sobre el tip de push `31f6e7b` (incluye código U161 del merge).
-> Release no se inventa verde: filtro de paths U104 = skip legítimo.
+> Delta `229c034..31f6e7b` = `plan/` (cierre ✅). Delta posterior = aviso R5-Z
+> (solo `plan/`). CI corrió sobre `31f6e7b` (incluye código U161). Release
+> no se inventa verde: filtro de paths U104 = skip legítimo.
 
 ### Higiene
 
