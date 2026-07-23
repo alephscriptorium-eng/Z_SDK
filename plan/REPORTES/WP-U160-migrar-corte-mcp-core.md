@@ -200,4 +200,16 @@ Ninguno bloqueante.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅ (orquestador-Z · 2026-07-23).**
+
+- Alcance conforme: no toca BACKLOG ni WPs ajenos.
+- Eje I: `rooms` y `socket-server` consumen en producción las clases de
+  `@zeus/socket-core`; smoke `instanceof` y tests de comportamiento verdes.
+- Eje II: tabla de destino canónico completa; definiciones runtime únicas en
+  `packages/engine/socket-core/src/{client,server}.mjs`.
+- Corte directo cumplido: cero imports y cero dependencias declaradas de
+  `@alephscript/mcp-core-sdk` en los `package.json` de packages.
+- Residual honesto: el lock anidado de `operator-ui` refleja una versión
+  publicada anterior de `rooms`; queda para la demolición U161 ya prevista y
+  no invalida el cableado de U160.
+- Re-smoke del orquestador: se ejecutará sobre el tip integrado antes del push.
