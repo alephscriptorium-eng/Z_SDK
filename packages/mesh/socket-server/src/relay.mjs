@@ -1,4 +1,4 @@
-import { SocketClient } from '@alephscript/mcp-core-sdk/client';
+import { SocketClient } from '@zeus/socket-core/client';
 import { NAMESPACE, RELAY_DOWNSTREAM_TOP, RELAY_UPSTREAM } from './config.mjs';
 
 /** Unwrap ROOM_MESSAGE broadcasts for downstream socket.io clients. */
@@ -23,7 +23,7 @@ export function emitDownstream(localNs, payload) {
 /**
  * @param {import('socket.io').Namespace} localNs
  * @param {{ bridgeUrl: string, secret: string }} options
- * @returns {import('@alephscript/mcp-core-sdk/client').SocketClient}
+ * @returns {import('@zeus/socket-core/client').SocketClient}
  */
 export function attachRemoteBridge(localNs, { bridgeUrl, secret }) {
   const bridgeClient = new SocketClient('scriptorium-bridge', bridgeUrl, `/${NAMESPACE}`, {

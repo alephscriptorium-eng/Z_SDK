@@ -1,7 +1,7 @@
 /**
  * @param {import('http').Server} httpServer
- * @param {import('@alephscript/mcp-core-sdk/server').SocketServer} socketServer
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient | null} bridgeClient
+ * @param {import('@zeus/socket-core/server').SocketServer} socketServer
+ * @param {import('@zeus/socket-core/client').SocketClient | null} bridgeClient
  */
 export async function closeScriptoriumServer(httpServer, socketServer, bridgeClient) {
   bridgeClient?.io?.removeAllListeners();
