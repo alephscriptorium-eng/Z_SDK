@@ -27,21 +27,22 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-23 · Sprint 7 Ola 1 CERRADA)
+## Remate — estado swarm (2026-07-23 · Sprint 7 Ola 1 CERRADA · espera R3-Z)
 
-> **Ola 1 CERRADA (2026-07-23):** U155 ✅ · U156 ✅ · U159 ✅. Tip
-> `46c6de2`. Gate `R2-Z PASS` + GO custodio. Siguiente lote seguro:
-> **U157 ∥ U160** (Ola 2) — requiere despacho orquestador; smokes
-> U158/U161 aún no. CI tip
+> **Ola 1 CERRADA (2026-07-23):** U155 ✅ · U156 ✅ · U159 ✅. Merges
+> `54d60d2` / `3c7d15d` / `46c6de2`. Tip gobierno `ea553a8` (**ahead 20**
+> vs `origin/main`). Gate Ola 1: `R2-Z PASS` (solo autorizó
+> U155∥U156∥U159). **Ola 2 bloqueada** hasta **`R3-Z PASS`** — aviso:
+> [AVISO-R3-Z-ola2-listo.md](REPORTES/entregas/AVISO-R3-Z-ola2-listo.md)
+> · acta higiene:
+> [ACTA-R3-Z-higiene-post-ola1-2026-07-23.md](REPORTES/entregas/ACTA-R3-Z-higiene-post-ola1-2026-07-23.md).
+> Lote previsto tras PASS: **U157 ∥ U160**. Smokes U158/U161 aún no.
+> CI tip base
 > [29969972042](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29969972042)
 > success · Docs
 > [29969971978](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29969971978)
-> success. Higiene R1-Z:
-> [ACTA-R1-Z-higiene-2026-07-23.md](REPORTES/entregas/ACTA-R1-Z-higiene-2026-07-23.md).
-> Replan:
-> [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md)
-> · AVISO:
-> [AVISO-R2-Z-plan-listo.md](REPORTES/entregas/AVISO-R2-Z-plan-listo.md).
+> success. Replan:
+> [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
 > DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear `.claude/skills/`).
 >
 > **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
@@ -107,8 +108,8 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno — Ola 1 mergeada; worktrees Ola 1 a retirar.
-**Listo para Ola 2 (tras despacho):** **U157** ∥ **U160**.
+**En curso:** ninguno — Ola 1 ✅; espera **R3-Z PASS** (cero 🔶 Ola 2).
+**Listo tras R3-Z PASS + GO:** **U157** ∥ **U160** (Ola 2).
 **Pendiente (no paralelo aún):** **U158** / **U161** (smokes; costura
 ficheros/deps — ver GATE-R2-Z-PASS).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
@@ -122,12 +123,15 @@ sprints 1–5 (ver histórico). **D-35** / **D-37**.
 
 ---
 
-## Sprint 7 — ts-compat + extracción (GO · 2026-07-23 · Ola 1 ✅)
+## Sprint 7 — ts-compat + extracción (GO · 2026-07-23 · Ola 1 ✅ · espera R3-Z)
 
 Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
 [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
-**Gate:** `R2-Z PASS` + GO custodio implementación (2026-07-23).
-**Ola 1:** U155 ✅ · U156 ✅ · U159 ✅ (tip `46c6de2`). DC-15 LOCAL-ONLY.
+**Gate Ola 1:** `R2-Z PASS` + GO custodio. **Ola 2:** pendiente
+`R3-Z PASS` —
+[AVISO-R3-Z-ola2-listo.md](REPORTES/entregas/AVISO-R3-Z-ola2-listo.md).
+**Ola 1:** U155 ✅ · U156 ✅ · U159 ✅ (merges → tip gobierno
+`ea553a8`). DC-15 LOCAL-ONLY.
 
 ### (A) Compatibilidad TypeScript `@zeus/*`
 
@@ -160,12 +164,13 @@ Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
 #### WP-U157 · `.d.ts` grafo cercano (fase 2) — ⬜
 
 - ⬜ **WP-U157 · Declaraciones `.d.ts` kits publicables BARE del grafo
-  de los cinco tipados** — pendiente. Est. L. Dep: U155+U156. Brief:
+  de los cinco tipados** — pendiente. Est. L. Dep: U155+U156 ✅. Brief:
   [REPORTES/briefs/WP-U157-dts-grafo-cercano.md](REPORTES/briefs/WP-U157-dts-grafo-cercano.md).
   Lote mínimo propuesto: view-kit, game-engine, authority-kit,
   room-client-browser, http-contract, ui-kit, app-shell, player-mcp-kit,
   socket-server. **CA:** consumer TS resuelve types; residuales listados.
-  **Eje:** IV. **Ola 2** — deps Ola 1 ✅; despachar con U160.
+  **Eje:** IV. **Ola 2** — deps Ola 1 ✅; **bloqueado** hasta R3-Z PASS
+  (∥ U160; sin subdividir salvo nuevo GO).
 
 #### WP-U158 · smoke TS desde registry + CI — ⬜
 
@@ -201,7 +206,8 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
   [REPORTES/briefs/WP-U160-migrar-corte-mcp-core.md](REPORTES/briefs/WP-U160-migrar-corte-mcp-core.md).
   **CA:** `rg` mcp-core-sdk = 0 en `packages/@zeus` (residuales
   root/examples listados); definición única Socket*; tests verdes.
-  **Ejes:** I + II. **Ola 2** — listo para despacho ∥ U157.
+  **Ejes:** I + II. **Ola 2** — deps ✅; **bloqueado** hasta R3-Z PASS
+  (∥ U157).
 
 #### WP-U161 · smoke scope solo `@zeus` + demolición residual — ⬜
 
