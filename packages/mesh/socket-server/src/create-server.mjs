@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { SocketServer } from '@alephscript/mcp-core-sdk/server';
+import { SocketServer } from '@zeus/socket-core/server';
 import {
   NAMESPACE,
   resolveBridgeUrl,
@@ -26,12 +26,12 @@ export async function createScriptoriumServer(options = {}) {
 
   const httpServer = http.createServer(app);
 
-  /** @type {import('@alephscript/mcp-core-sdk/server').SocketServer} */
+  /** @type {import('@zeus/socket-core/server').SocketServer} */
   const socketServer = new SocketServer('Scriptorium', httpServer, true, true);
   socketServer.createNamespace(NAMESPACE);
   const localNs = socketServer.io.of(`/${NAMESPACE}`);
 
-  /** @type {import('@alephscript/mcp-core-sdk/client').SocketClient | null} */
+  /** @type {import('@zeus/socket-core/client').SocketClient | null} */
   let bridgeClient = null;
 
   if (bridge === 'remote') {

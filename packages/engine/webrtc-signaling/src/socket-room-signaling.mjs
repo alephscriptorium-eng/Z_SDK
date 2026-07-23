@@ -30,7 +30,7 @@ import { peerCardFromMessage, ssbIdFromMessage } from './peer-card-gate.mjs';
  * @property {string} [secret]
  * @property {string} [room] — default room before joinRoom
  * @property {number} [connectTimeoutMs]
- * @property {import('@alephscript/mcp-core-sdk/client').SocketClient} [client] — inject for tests
+ * @property {import('@zeus/socket-core/client').SocketClient} [client] — inject for tests
  * @property {string} [requiredRole] — rol concreto exigido por el torno
  * @property {boolean} [requireSsbId] — exigir ssbId en card (federación)
  * @property {boolean} [requireSeatSignature] — exigir firma de asiento
@@ -41,7 +41,7 @@ export class SocketRoomSignalingService extends SignalingService {
   constructor(options = {}) {
     super();
     this._options = options;
-    /** @type {import('@alephscript/mcp-core-sdk/client').SocketClient|null} */
+    /** @type {import('@zeus/socket-core/client').SocketClient|null} */
     this._client = options.client ?? null;
     /** @type {Array<() => void>} */
     this._unsubs = [];
