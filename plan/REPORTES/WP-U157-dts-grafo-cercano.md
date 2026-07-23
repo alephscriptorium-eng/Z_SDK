@@ -5,7 +5,7 @@
 | agente | Worker-U157 |
 | fecha | 2026-07-23 |
 | rama | `wp/u157-dts-grafo-cercano` |
-| commits | `6262f1d` (feat) · `1e2cafd` (reporte) · `7681f0e`·`871002d`·`bc17aba` (docs tip) |
+| commits | `6262f1d` (feat) · `1e2cafd` (reporte) · `dea9233` (tip; docs hashes) |
 | eje(s) CA | IV |
 | estado propuesto | listo para revisión |
 
@@ -100,7 +100,7 @@ ok 1 - Eje IV: tsc resolves grafo-cercano lote types (two consumers)
 | campo | valor |
 | ----- | ----- |
 | branch | `wp/u157-dts-grafo-cercano` |
-| tip feat | `6262f1d` |
+| tip | `dea9233` (feat `6262f1d`) |
 | run_id | N/A — sin push en este turno de worker |
 | conclusion | N/A |
 
