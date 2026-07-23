@@ -163,4 +163,15 @@ U160 (acordado en brief/REPLAN).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador-Z · 2026-07-23.
+
+### CA verificados de facto
+- [x] Paquete `@zeus/socket-core` instalable; exports `./client`/`./server`
+- [x] `npm test -w @zeus/socket-core` → 6/6 (re-smoke orquestador)
+- [x] `IMPORTS_MCP=0` en paquete nuevo · rooms/socket-server no tocados
+- [x] Changeset minor + workspace/lock · ALCANCE_DIFF OK
+- [x] Eje I: consumidor producción diferido a U160 (declarado); tests de comportamiento aquí
+
+### Merge
+Rama `wp/u159-socket-core-scaffold` tip `13f98ad` → `main`.
+CI remoto: ⏳ al push.
