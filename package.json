@@ -48,6 +48,7 @@
     "test:console-monitor": "npm test -w @zeus/console-monitor",
     "test:http-contract": "npm test -w @zeus/http-contract",
     "test:rooms": "npm test -w @zeus/rooms",
+    "test:socket-core": "npm test -w @zeus/socket-core",
     "test:socket-server": "npm test -w @zeus/socket-server",
     "test:ui-3d-kit": "node --test packages/engine/ui-3d-kit/test/*.test.mjs",
     "test:game-engine": "npm test -w @zeus/game-engine",

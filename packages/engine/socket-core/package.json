@@ -1,0 +1,42 @@
+{
+  "name": "@zeus/socket-core",
+  "version": "0.1.0",
+  "description": "Socket.IO client/server surface (SocketClient / SocketServer) for Zeus rooms transport",
+  "type": "module",
+  "main": "src/index.mjs",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./client": {
+      "types": "./types/client.d.ts",
+      "default": "./src/client.mjs"
+    },
+    "./server": {
+      "types": "./types/server.d.ts",
+      "default": "./src/server.mjs"
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs"
+  },
+  "dependencies": {
+    "@socket.io/admin-ui": "^0.5.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "types",
+    "README.md"
+  ]
+}
