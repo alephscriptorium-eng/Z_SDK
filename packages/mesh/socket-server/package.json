@@ -5,7 +5,10 @@
   "type": "module",
   "main": "src/index.mjs",
   "exports": {
-    ".": "./src/index.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    }
   },
   "scripts": {
     "start": "node src/index.mjs",
@@ -29,6 +32,8 @@
     "registry": "https://npm.scriptorium.escrivivir.co"
   },
   "files": [
-    "src"
-  ]
+    "src",
+    "types"
+  ],
+  "types": "./types/index.d.ts"
 }

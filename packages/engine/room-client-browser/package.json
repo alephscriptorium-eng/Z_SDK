@@ -5,9 +5,18 @@
   "type": "module",
   "main": "src/index.mjs",
   "exports": {
-    ".": "./src/index.mjs",
-    "./browser": "./browser/room-client.browser.mjs",
-    "./dev-config": "./browser/dev-room-config.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./browser": {
+      "types": "./types/browser.d.ts",
+      "default": "./browser/room-client.browser.mjs"
+    },
+    "./dev-config": {
+      "types": "./types/dev-config.d.ts",
+      "default": "./browser/dev-room-config.mjs"
+    }
   },
   "scripts": {
     "test": "node --experimental-test-module-mocks --test test/*.mjs"
@@ -27,6 +36,8 @@
   "files": [
     "src",
     "browser",
-    "README.md"
-  ]
+    "README.md",
+    "types"
+  ],
+  "types": "./types/index.d.ts"
 }
