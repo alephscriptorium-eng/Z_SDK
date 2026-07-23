@@ -5,7 +5,7 @@
 | agente | Worker-U159 |
 | fecha | 2026-07-23 |
 | rama | `wp/u159-socket-core-scaffold` |
-| commit(s) | `3c0a778ddde2214b7645de7f45712dbf01816d9c` (+ commit de este reporte) |
+| commit(s) | `3c0a778ddde2214b7645de7f45712dbf01816d9c` · `84e99b6f982997feb66573642637d519b53fcddb` |
 | eje(s) CA | I (extracción; cableado consumidores = U160) |
 | estado propuesto | listo para revisión |
 
