@@ -27,13 +27,12 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-23 · Sprint 7 Ola 3 · U161 🔶)
+## Remate — estado swarm (2026-07-23 · Sprint 7 Ola 3 · U161 ✅ · R5-Z)
 
-> **Ola 3 ABIERTA (2026-07-23 · secuencial):** GO custodio «Ola 3
-> secuencial: U161 primero; U158 tras Release verde y R5-Z PASS». Gate
-> `R4-Z PASS` (`vigilancia/z/GATE-R4-Z-PASS.md` · tip `30136cb`).
-> **En curso:** **U161** 🔶. **NO** despachar U158 en esta ronda.
-> Ola 2 ✅ (U157/U160 · tip `53af36b`). Ola 1 ✅ (U155/U156/U159).
+> **Ola 3 parcial CERRADA (2026-07-23 · secuencial):** **U161** ✅
+> mergeado. Gate apertura `R4-Z PASS` + GO «U161 primero; U158 tras
+> Release verde y R5-Z PASS». Pedido siguiente: **R5-Z PASS**.
+> **NO** despachar U158 hasta R5-Z PASS. Ola 2 ✅ (U157/U160). Ola 1 ✅.
 > Replan:
 > [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
 > DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear `.claude/skills/`).
@@ -96,26 +95,26 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — materializar estación de vigilancia | **U153** | ✅ |
 | **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | ✅ |
 | **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U157 · ⬜ U158 |
-| **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U160 · 🔶 U161 |
+| **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U161** 🔶 (Ola 3 secuencial · rama `wp/u161-smoke-zeus-only`).
+**En curso:** ninguno — U161 mergeado; quietud worktrees; pedido **R5-Z**.
 **Pendiente (tras R5-Z PASS):** **U158** — **NO** despachar ahora.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U160** ✅ · **U157** ✅ · **U159** ✅ · **U156** ✅ ·
-**U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ · **U152** ✅ ·
-**U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico). **D-35** /
-**D-37**.
+**Aceptado:** **U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ ·
+**U156** ✅ · **U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ ·
+**U152** ✅ · **U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico).
+**D-35** / **D-37**.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 7 — ts-compat + extracción (GO · 2026-07-23 · Ola 3 U161 🔶)
+## Sprint 7 — ts-compat + extracción (GO · 2026-07-23 · Ola 3 U161 ✅)
 
 Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
 [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
@@ -124,7 +123,7 @@ Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
 (`vigilancia/z/GATE-R4-Z-PASS.md` · tip `30136cb`) + GO secuencial
 custodio — solo **U161**; U158 tras Release verde y R5-Z PASS.
 **Ola 1:** U155 ✅ · U156 ✅ · U159 ✅. **Ola 2:** U157 ✅ · U160 ✅
-(tip merge `53af36b`). **Ola 3:** U161 🔶. DC-15 LOCAL-ONLY.
+(tip merge `53af36b`). **Ola 3:** U161 ✅. DC-15 LOCAL-ONLY.
 
 ### (A) Compatibilidad TypeScript `@zeus/*`
 
@@ -210,17 +209,18 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
   **CA:** cumplidos. **Ejes:** I + II. Residuales root/examples → U161.
   CI ⏳.
 
-#### WP-U161 · smoke scope solo `@zeus` + demolición residual — 🔶
+#### WP-U161 · smoke scope solo `@zeus` + demolición residual — ✅
 
-- 🔶 **WP-U161 · Smoke consumidor un solo scope `@zeus` + cierre
-  demolición** — en curso (orquestador-Z / 2026-07-23 · Ola 3).
-  Rama `wp/u161-smoke-zeus-only` · worktree
-  `C:\S_LAB\.worktrees\z\wp-u161-smoke-zeus-only`. Est. M. Dep: U160 ✅.
-  Brief:
+- ✅ **WP-U161 · Smoke consumidor un solo scope `@zeus` + cierre
+  demolición** — aceptado (orquestador-Z / 2026-07-23 · Ola 3).
+  Rama `wp/u161-smoke-zeus-only` tip `3474872` · merge `229c034`.
+  Est. M. Dep: U160 ✅. Brief:
   [REPORTES/briefs/WP-U161-smoke-zeus-only-demolicion.md](REPORTES/briefs/WP-U161-smoke-zeus-only-demolicion.md).
-  **CA:** install con `.npmrc` solo-`@zeus` exit 0; tabla demolición /
-  excepciones ops; tests+smoke. **Ejes:** I + II.
-  **U158 no paralelo** en esta ronda (GO secuencial R4-Z).
+  Reporte:
+  [REPORTES/WP-U161-smoke-zeus-only.md](REPORTES/WP-U161-smoke-zeus-only.md).
+  **CA:** cumplidos (smoke solo-`@zeus` exit 0; tabla demolición +
+  excepciones ops `/spec` `/channels` operator-ui lock; tests+smoke).
+  **Ejes:** I + II. Pedido: **R5-Z**. U158 aún ⬜ (tras R5-Z PASS).
 
 ---
 

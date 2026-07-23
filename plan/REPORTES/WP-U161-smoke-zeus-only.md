@@ -213,4 +213,13 @@ excepción ops (no stub en este WP).
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅ (orquestador-Z · 2026-07-23).**
+
+- Alcance conforme: no toca BACKLOG ni U158.
+- Eje I: smoke externo pack+install tarballs con `.npmrc` solo-`@zeus`,
+  aserción cero `@alephscript` en árbol, socket-server + rooms (Node+Bun).
+- Eje II: tabla demolición completa; destinos canónicos JSDoc→socket-core;
+  excepciones ops firmadas (`/spec`, `/channels`, lock operator-ui).
+- CA: install exit 0 + tests rooms/socket-server/socket-core/bots + smoke
+  GREEN (evidencia en reporte).
+- Merge: `229c034` · tip rama `3474872`.
