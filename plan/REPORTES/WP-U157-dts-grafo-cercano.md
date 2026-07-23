@@ -5,7 +5,7 @@
 | agente | Worker-U157 |
 | fecha | 2026-07-23 |
 | rama | `wp/u157-dts-grafo-cercano` |
-| commits | `6262f1d` (feat) · `1e2cafd` (reporte) · `7681f0e` (hashes) |
+| commits | `6262f1d` (feat) · `1e2cafd` (reporte) · `f57a6d0` (tip) |
 | eje(s) CA | IV |
 | estado propuesto | listo para revisión |
 
