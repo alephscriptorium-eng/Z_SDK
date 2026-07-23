@@ -5,8 +5,14 @@
   "type": "module",
   "main": "src/index.mjs",
   "exports": {
-    ".": "./src/index.mjs",
-    "./create-authority": "./src/create-authority.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./create-authority": {
+      "types": "./types/create-authority.d.ts",
+      "default": "./src/create-authority.mjs"
+    }
   },
   "scripts": {
     "test": "node --test test/*.test.mjs"
@@ -24,6 +30,8 @@
   },
   "files": [
     "src",
-    "README.md"
-  ]
+    "README.md",
+    "types"
+  ],
+  "types": "./types/index.d.ts"
 }

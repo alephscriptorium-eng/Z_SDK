@@ -5,9 +5,18 @@
   "type": "module",
   "main": "src/index.mjs",
   "exports": {
-    ".": "./src/index.mjs",
-    "./express": "./src/middleware.mjs",
-    "./mcp-resources": "./src/mcp-resources/index.mjs",
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./express": {
+      "types": "./types/express.d.ts",
+      "default": "./src/middleware.mjs"
+    },
+    "./mcp-resources": {
+      "types": "./types/mcp-resources.d.ts",
+      "default": "./src/mcp-resources/index.mjs"
+    },
     "./spec": "./spec/mcp-resources.md"
   },
   "scripts": {
@@ -29,6 +38,8 @@
   "files": [
     "src",
     "spec",
-    "README.md"
-  ]
+    "README.md",
+    "types"
+  ],
+  "types": "./types/index.d.ts"
 }
