@@ -184,4 +184,15 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅** — orquestador-Z · 2026-07-23.
+
+### CA verificados de facto
+- [x] Subpaths tocados con `"types"` → `.d.ts` en `files` (audit tabla + spot-check env/peer-session/node)
+- [x] Tests: presets-sdk 43 · webrtc-signaling 22 · ui-3d-kit 24 (re-smoke orquestador)
+- [x] Changesets ×3 presentes · ALCANCE_DIFF OK · rooms no tocado
+- [x] Eje IV: sensores webrtc-signaling types + mesh consumers documentados
+- Deferidos `./horse` `./presets/contract` `./mcp/http-contract` OK como residual
+
+### Merge
+Rama `wp/u156-types-subpaths-presets-webrtc-ui3d` tip `051f384` → `main`.
+CI remoto: ⏳ al push.
