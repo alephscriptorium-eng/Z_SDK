@@ -1,4 +1,5 @@
 import { createClient, connectAndJoin, config } from '@zeus/rooms';
+// WP-U161 · excepción ops: /channels no está en @zeus/socket-core (solo client/server).
 import { createChannelsFacade } from '@alephscript/mcp-core-sdk/channels';
 
 const USER = process.env.ZEUS_SCRIPTORIUM_USER || process.env.SPIDER_USER || 'spider-demo';

@@ -110,4 +110,7 @@ Configuración base en el `.env` de la raíz del monorepo (ver `.env.example`).
 
 ## Dependencias
 
-- `@alephscript/mcp-core-sdk` — `SocketClient` (base del cliente Rooms local).
+- `@zeus/rooms` / `@zeus/socket-core` — cliente de rooms (`SocketClient`).
+- `@alephscript/mcp-core-sdk` — **solo** `createChannelsFacade` (`/channels`)
+  en `apps/spider` (superficie no absorbida por `@zeus/socket-core`;
+  excepción ops firmada en WP-U161).
