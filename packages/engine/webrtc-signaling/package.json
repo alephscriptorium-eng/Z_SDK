@@ -10,9 +10,18 @@
       "types": "./types/index.d.ts",
       "default": "./src/index.mjs"
     },
-    "./peer-session": "./src/peer-session.mjs",
-    "./messages": "./src/messages.mjs",
-    "./peer-card-gate": "./src/peer-card-gate.mjs"
+    "./peer-session": {
+      "types": "./types/peer-session.d.ts",
+      "default": "./src/peer-session.mjs"
+    },
+    "./messages": {
+      "types": "./types/messages.d.ts",
+      "default": "./src/messages.mjs"
+    },
+    "./peer-card-gate": {
+      "types": "./types/peer-card-gate.d.ts",
+      "default": "./src/peer-card-gate.mjs"
+    }
   },
   "scripts": {
     "test": "node --test test/*.mjs"

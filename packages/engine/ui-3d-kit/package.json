@@ -10,7 +10,10 @@
       "types": "./src/index.d.ts",
       "default": "./src/index.mjs"
     },
-    "./node": "./src/node.mjs"
+    "./node": {
+      "types": "./src/node.d.ts",
+      "default": "./src/node.mjs"
+    }
   },
   "scripts": {
     "test": "node --test test/*.test.mjs"
