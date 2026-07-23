@@ -137,4 +137,15 @@ Ninguno. Listo para revisión del orquestador.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅ (orquestador-Z · 2026-07-23).**
+
+- Alcance conforme: lote cerrado de nueve paquetes, sin BACKLOG ni WPs
+  ajenos.
+- Eje IV cumplido: dos consumidores TypeScript independientes ejercitan el
+  lote mediante `tsc --noEmit`.
+- Cada paquete declara `types`, condiciones `"types"` en los exports
+  tipados y publicación de `types/` mediante `files`.
+- Tests declarados del lote y `npm run gates` verdes; sin diagnósticos IDE.
+- Residuales enumerados sin inflar el WP (fans protocol, subpaths diferidos
+  U156 y actualización TypeScript candidata para U158).
+- Re-smoke del orquestador: se ejecutará sobre el tip integrado antes del push.
