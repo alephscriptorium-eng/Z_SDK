@@ -1,10 +1,10 @@
 /**
  * @zeus/rooms — Scriptorium rooms client (E1).
- * Wraps @alephscript/mcp-core-sdk SocketClient with ZEUS_SCRIPTORIUM_* env.
+ * Wraps @zeus/socket-core SocketClient with ZEUS_SCRIPTORIUM_* env.
  */
 
 import { once } from 'node:events';
-import { SocketClient } from '@alephscript/mcp-core-sdk/client';
+import { SocketClient } from '@zeus/socket-core/client';
 import {
   loadScriptoriumConfig,
   config,
@@ -37,7 +37,7 @@ export function createClient(user = config.user, overrides = {}) {
 }
 
 /**
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
+ * @param {import('@zeus/socket-core/client').SocketClient} client
  * @param {string} user
  * @param {{
  *   type?: string,
