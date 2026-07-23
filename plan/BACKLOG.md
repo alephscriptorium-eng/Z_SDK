@@ -30,10 +30,10 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 ## Remate — estado swarm (2026-07-23 · Sprint 7 Ola 1 DESPACHADA)
 
 > **Despacho Ola 1 (2026-07-23):** `R2-Z PASS` + GO custodio
-> implementación. Tip base `aa368b6` = `origin/main`. Gate:
-> `C:\S_LAB\vigilancia\z\GATE-R2-Z-PASS.md`. Carriles activos:
-> **U155 ∥ U156 ∥ U159** 🔶. Ola 2 (`U157 ∥ U160`) y smokes
-> (`U158`/`U161`) **no** despachados. CI tip
+> implementación. Tip merge U155 `54d60d2`. Gate:
+> `C:\S_LAB\vigilancia\z\GATE-R2-Z-PASS.md`. Carriles: **U155** ✅ ·
+> **U156 ∥ U159** 🔶. Ola 2 (`U157 ∥ U160`) y smokes (`U158`/`U161`)
+> **no** despachados. CI tip
 > [29969972042](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29969972042)
 > success · Docs
 > [29969971978](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29969971978)
@@ -102,24 +102,23 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | ✅ |
 | **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | ✅ |
-| **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | 🔶 U155∥U156 · ⬜ U157–U158 |
+| **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155 · 🔶 U156 · ⬜ U157–U158 |
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | 🔶 U159 · ⬜ U160–U161 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso (Ola 1 · 2026-07-23):** **U155** 🔶 · **U156** 🔶 ·
-**U159** 🔶 (workers en worktrees `C:\S_LAB\.worktrees\z\wp-u155-*` /
-`wp-u156-*` / `wp-u159-*`).
+**En curso (Ola 1 · 2026-07-23):** **U156** 🔶 · **U159** 🔶
+(worktrees `wp-u156-*` / `wp-u159-*`).
 **Pendiente (no despachar aún):** **U157** ∥ **U160** (Ola 2 post-
 aceptación Ola 1) · **U158** / **U161** (smokes; no paralelos hasta
 costura de ficheros/deps — ver GATE-R2-Z-PASS).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U154** ✅ · **U153** ✅ · **U151** ✅ · **U152** ✅ ·
-**U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico). **D-35** /
-**D-37**.
+**Aceptado:** **U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ ·
+**U152** ✅ · **U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico).
+**D-35** / **D-37**.
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
@@ -130,21 +129,22 @@ economía CI) — ver triage U142.
 Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
 [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
 **Gate:** `R2-Z PASS` + GO custodio implementación (2026-07-23).
-**Ola 1 despachada:** U155 ∥ U156 ∥ U159. DC-15 LOCAL-ONLY (sin Issues).
+**Ola 1:** U155 ✅ · U156 🔶 · U159 🔶. DC-15 LOCAL-ONLY (sin Issues).
 
 ### (A) Compatibilidad TypeScript `@zeus/*`
 
-#### WP-U155 · `@zeus/protocol` types en subpaths — 🔶
+#### WP-U155 · `@zeus/protocol` types en subpaths — ✅
 
-- 🔶 **WP-U155 · Condiciones `"types"` en subpaths de `@zeus/protocol`
-  (primero `./peer-card-seat`)** — en curso (worker · 2026-07-23).
-  Rama `wp/u155-protocol-types-subpaths` · worktree
-  `C:\S_LAB\.worktrees\z\wp-u155-protocol-types-subpaths`. Est. M. Brief:
+- ✅ **WP-U155 · Condiciones `"types"` en subpaths de `@zeus/protocol`
+  (primero `./peer-card-seat`)** — aceptado (orquestador / 2026-07-23).
+  Rama `wp/u155-protocol-types-subpaths` tip `6b3308d` · merge
+  `54d60d2`. Est. M. Brief:
   [REPORTES/briefs/WP-U155-protocol-types-subpaths.md](REPORTES/briefs/WP-U155-protocol-types-subpaths.md).
-  **CA:** `exports["./peer-card-seat"].types` → `.d.ts` publicado; resto
-  de subpaths JS tipados o justificados; tests + changeset.
-  **Demolición:** exports string-only en subpaths JS públicos.
-  **Eje:** IV. **Paralelo:** ∥ U156 ∥ U159.
+  Reporte:
+  [REPORTES/WP-U155-protocol-types-subpaths.md](REPORTES/WP-U155-protocol-types-subpaths.md).
+  Re-smoke: `npm test -w @zeus/protocol` 40/40. **CA:** cumplidos.
+  **Demolición:** exports string-only en subpaths JS públicos — ✅.
+  **Eje:** IV. CI remoto ⏳ al push.
 
 #### WP-U156 · types subpaths presets / webrtc / ui-3d — 🔶
 
