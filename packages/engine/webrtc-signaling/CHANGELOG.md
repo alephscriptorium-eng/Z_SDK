@@ -1,5 +1,18 @@
 # @zeus/webrtc-signaling
 
+## 0.3.3
+
+### Patch Changes
+
+- 29e42cf: WP-U156: add `"types"` conditions on `./peer-session`, `./messages`, and `./peer-card-gate`.
+- 21796ba: WP-U160: rooms/socket-server/webrtc-signaling consumen @zeus/socket-core; se corta la dep @alephscript/mcp-core-sdk en paquetes @zeus.
+- Updated dependencies [76e183b]
+- Updated dependencies [29e42cf]
+- Updated dependencies [21796ba]
+  - @zeus/protocol@0.4.1
+  - @zeus/presets-sdk@0.1.3
+  - @zeus/rooms@0.1.2
+
 ## 0.3.2
 
 ### Patch Changes

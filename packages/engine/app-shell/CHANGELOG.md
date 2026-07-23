@@ -1,5 +1,17 @@
 # @zeus/app-shell
 
+## 0.2.3
+
+### Patch Changes
+
+- 6262f1d: WP-U157: add root/subpath `"types"` conditions and publish `.d.ts` for the grafo-cercano lote.
+- Updated dependencies [29e42cf]
+- Updated dependencies [6262f1d]
+- Updated dependencies [21796ba]
+  - @zeus/presets-sdk@0.1.3
+  - @zeus/ui-kit@0.1.3
+  - @zeus/rooms@0.1.2
+
 ## 0.2.2
 
 ### Patch Changes

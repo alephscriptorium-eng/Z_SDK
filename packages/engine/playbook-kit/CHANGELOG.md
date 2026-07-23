@@ -1,5 +1,12 @@
 # @zeus/playbook-kit
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [29e42cf]
+  - @zeus/presets-sdk@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes

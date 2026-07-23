@@ -1,5 +1,15 @@
 # @zeus/ui-3d-kit
 
+## 0.1.4
+
+### Patch Changes
+
+- 29e42cf: WP-U156: add `"types"` condition on `./node` subpath.
+- Updated dependencies [76e183b]
+- Updated dependencies [6262f1d]
+  - @zeus/protocol@0.4.1
+  - @zeus/game-engine@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
