@@ -1,6 +1,12 @@
 /**
  * Regenerate all HTTP OpenAPI specs + mcp-resources.md.
  * Run: npm run spec:generate:http
+ *
+ * WP-U161 · excepción ops firmada: `buildAllSpecs` sigue viniendo de
+ * `@alephscript/mcp-core-sdk/spec` (devDependency de root). Genera los YAML
+ * bajo `packages/engine/http-contract/spec/mcp-core/`. No se extrae stub a
+ * Zeus en este WP: es tooling de regeneración de specs del plano mcp-core,
+ * no runtime de consumidores `@zeus/*`. Extraer stub = WP futuro con GO.
  */
 
 import fs from 'node:fs';

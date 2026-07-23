@@ -40,7 +40,7 @@ async function main() {
   const engines = [];
   /** @type {SocketRoomSignalingService[]} */
   const signals = [];
-  /** @type {import('@alephscript/mcp-core-sdk/client').SocketClient|null} */
+  /** @type {import('@zeus/socket-core/client').SocketClient|null} */
   let gameClient = null;
 
   const prev = {

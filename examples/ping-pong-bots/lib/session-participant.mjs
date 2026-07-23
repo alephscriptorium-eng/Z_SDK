@@ -99,7 +99,7 @@ function snapshotFromWire(msg) {
  * have joined `room` already (the SAME room the master owns), keeping room
  * ownership in one place.
  *
- * @param {import('@alephscript/mcp-core-sdk/client').SocketClient} client
+ * @param {import('@zeus/socket-core/client').SocketClient} client
  * @param {{ room: string, actorId: string, deckId?: string }} opts
  */
 export function attachSessionParticipant(client, opts) {
