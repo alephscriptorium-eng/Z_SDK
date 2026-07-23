@@ -1,11 +1,25 @@
 /**
  * Generate TypeScript declarations for @zeus/protocol from contract constants
  * (same source of truth as AsyncAPI in build.mjs — WP-U54).
+ * Subpath `.d.ts` files: WP-U155 (`exports` `"types"` conditions).
  */
 
 import { PROTOCOL_VERSION, EVENT_KINDS, EVENTS } from '../src/kinds.mjs';
 import { ROLES } from '../src/roles.mjs';
 import { GATES, SNAPSHOT_BUDGET_BYTES } from '../src/gates.mjs';
+
+/** Public JS subpaths that get a `"types"` condition (WP-U155). */
+export const TYPED_SUBPATHS = Object.freeze([
+  'contract',
+  'roles',
+  'gates',
+  'acl',
+  'peer-card',
+  'peer-card-seat',
+  'node',
+  'node-src-dir'
+]);
+
 /**
  * @returns {string} contents of types/index.d.ts
  */
@@ -395,4 +409,155 @@ export declare function isEmptyGameStateDelta(
 
 export declare function makeGameStateDeltaMessage(body: object): object;
 `;
+}
+
+/**
+ * Subpath declaration files keyed by basename (e.g. `roles` → `roles.d.ts`).
+ * Re-exports from `./index.js` where the root surface already declares the API;
+ * `peer-card-seat` / `node*` are subpath-only.
+ *
+ * @returns {Record<string, string>}
+ */
+export function buildSubpathTypeDeclarations() {
+  const header = (sub) =>
+    `/**
+ * @zeus/protocol/${sub} — generated types (WP-U155).
+ * Do not edit by hand: npm run types:generate -w @zeus/protocol
+ */
+`;
+
+  return {
+    contract: `${header('contract')}
+export {
+  PROTOCOL_VERSION,
+  EVENT_KINDS,
+  EVENTS,
+  EVENT_META,
+  makeEnvelope,
+  makeIntent,
+  isShaped,
+  isIntentShaped,
+  validateIntent
+} from './index.js';
+export type {
+  EventKind,
+  EnvelopeBase,
+  IntentPayload,
+  StatePayload,
+  TrackPayload,
+  LedgerPayload,
+  ProtocolEnvelope,
+  MakeEnvelopeOpts,
+  MakeIntentOpts,
+  IntentCatalog,
+  ValidateIntentResult
+} from './index.js';
+`,
+    roles: `${header('roles')}
+export {
+  ROLES,
+  isRole,
+  createIntentCatalog,
+  intentAllowsRole,
+  resolveIntentRole,
+  assertIntentRole
+} from './index.js';
+export type {
+  Role,
+  IntentCatalog,
+  IntentCatalogEntry,
+  ValidateIntentResult
+} from './index.js';
+`,
+    gates: `${header('gates')}
+export {
+  GATES,
+  SNAPSHOT_BUDGET_BYTES,
+  measureSnapshotBytes,
+  checkSnapshotBudget
+} from './index.js';
+`,
+    acl: `${header('acl')}
+export {
+  POWER,
+  isPower,
+  capabilityScope,
+  parseCapabilityScope,
+  hasCapability,
+  capabilitiesFromScopes,
+  ownerOf,
+  setOwner,
+  clearOwner,
+  authorizeAcl,
+  createAclPolicy,
+  defaultResourceFrom,
+  resolveIntentCapabilities,
+  assertIntentAcl
+} from './index.js';
+export type {
+  AclPower,
+  AuthorizeAclResult,
+  AclPolicyEntry,
+  AssertIntentAclResult
+} from './index.js';
+`,
+    'peer-card': `${header('peer-card')}
+export {
+  SSB_ID_RE,
+  isSsbId,
+  ssbIdFromPublicKeyBytes,
+  publicKeyBytesFromSsbId,
+  travelingPeerCardPayload,
+  travelingPeerCardBytes,
+  attachTravelingSeat,
+  PEER_CARD_PHASE,
+  makePeerCard,
+  isPeerCardShaped,
+  peerCardPhase,
+  peerCardRemainingMs,
+  isPeerCardFresh,
+  roleFromPeerCard,
+  peerCardGrantsRole,
+  roleScope
+} from './index.js';
+export type { PeerCard, MakePeerCardInput, PeerCardPhase, Role } from './index.js';
+`,
+    'peer-card-seat': `${header('peer-card-seat')}
+import type { KeyObject } from 'node:crypto';
+import type { PeerCard } from './index.js';
+
+export interface SeatKeyPair {
+  ssbId: string;
+  publicKey: KeyObject;
+  privateKey: KeyObject;
+  publicKeyBytes: Buffer;
+}
+
+export declare function generateSeatKeyPair(): SeatKeyPair;
+
+export declare function publicKeyFromRaw(
+  publicKeyBytes: Buffer | Uint8Array
+): KeyObject;
+
+export declare function signTravelingPeerCard(
+  card: object,
+  privateKey: KeyObject | string | Buffer,
+  ssbId?: string
+): PeerCard;
+
+export declare function verifyTravelingPeerCard(
+  card: unknown
+): { ok: true } | { ok: false; error: string };
+`,
+    'node-src-dir': `${header('node-src-dir')}
+/** Absolute directory of the calling module — pass \`import.meta.url\`. Node-only. */
+export declare function nodeSrcDir(metaUrl: string | URL): string;
+`,
+    node: `${header('node')}
+export { nodeSrcDir } from './node-src-dir.js';
+
+/** \`src/\` directory of this package (from \`./node\` entry). Node-only. */
+export declare const srcDir: string;
+`
+  };
 }

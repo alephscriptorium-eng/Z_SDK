@@ -97,7 +97,10 @@ const here = nodeSrcDir(import.meta.url);
 
 - Contrato: [`spec/CONTRATO.md`](spec/CONTRATO.md)
 - AsyncAPI: `npm run spec:generate` → `spec/asyncapi.yaml`
-- Tipos TS: `npm run types:generate` → `types/index.d.ts` (misma fuente que AsyncAPI)
+- Tipos TS: `npm run types:generate` → `types/index.d.ts` + subpaths
+  (`contract`, `roles`, `gates`, `acl`, `peer-card`, `peer-card-seat`,
+  `node`, `node-src-dir`) con condición `"types"` en `exports` (WP-U155).
+  `./spec` y `./spec/build` quedan sin types (YAML / script de build).
 - HTML portal: `npm run spec:asyncapi:html` (raíz) → `docs/public/api/protocol/`
 
 ## Tests
