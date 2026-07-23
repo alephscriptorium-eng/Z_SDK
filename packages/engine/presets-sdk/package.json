@@ -9,14 +9,38 @@
       "types": "./src/types.d.ts",
       "default": "./src/index.mjs"
     },
-    "./env": "./src/env/index.mjs",
-    "./docs": "./src/docs/index.mjs",
-    "./paths": "./src/paths/index.mjs",
-    "./discovery": "./src/discovery/index.mjs",
-    "./mcp": "./src/mcp/index.mjs",
-    "./volumes": "./src/volumes/index.mjs",
-    "./browse-core": "./src/volumes/browse-core.mjs",
-    "./anchor-grid": "./src/paths/anchor-grid.mjs",
+    "./env": {
+      "types": "./src/env/index.d.ts",
+      "default": "./src/env/index.mjs"
+    },
+    "./docs": {
+      "types": "./src/docs/index.d.ts",
+      "default": "./src/docs/index.mjs"
+    },
+    "./paths": {
+      "types": "./src/paths/index.d.ts",
+      "default": "./src/paths/index.mjs"
+    },
+    "./discovery": {
+      "types": "./src/discovery/index.d.ts",
+      "default": "./src/discovery/index.mjs"
+    },
+    "./mcp": {
+      "types": "./src/mcp/index.d.ts",
+      "default": "./src/mcp/index.mjs"
+    },
+    "./volumes": {
+      "types": "./src/volumes/index.d.ts",
+      "default": "./src/volumes/index.mjs"
+    },
+    "./browse-core": {
+      "types": "./src/volumes/browse-core.d.ts",
+      "default": "./src/volumes/browse-core.mjs"
+    },
+    "./anchor-grid": {
+      "types": "./src/paths/anchor-grid.d.ts",
+      "default": "./src/paths/anchor-grid.mjs"
+    },
     "./presets/contract": "./src/presets/contract.mjs",
     "./mcp/http-contract": "./src/mcp/http-contract.mjs",
     "./horse": "./src/horse/index.mjs"
