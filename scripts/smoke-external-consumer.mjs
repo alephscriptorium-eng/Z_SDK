@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * smoke:external-consumer — WP-U54
+ * smoke:external-consumer — WP-U54 + WP-U161
  *
- * Packs @zeus/protocol + @zeus/rooms, installs into a clean directory outside
- * the workspace (tarball/file — not registry publish), starts socket-server,
- * runs the consumer with Node and Bun.
+ * Packs @zeus/protocol + @zeus/rooms + @zeus/socket-core, installs into a
+ * clean directory outside the workspace (tarball/file — not registry publish),
+ * starts socket-server, runs the consumer with Node and Bun.
  *
+ * Consumer .npmrc is @zeus-only (no @alephscript scope) — CA WP-U161.
  * No npm publish. No ZEUS_OPEN_BROWSER.
  */
 
@@ -13,9 +14,11 @@ import { spawn, spawnSync } from 'node:child_process';
 import {
   rmSync,
   writeFileSync,
+  readFileSync,
   copyFileSync,
   existsSync,
-  mkdtempSync
+  mkdtempSync,
+  readdirSync
 } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -28,6 +31,7 @@ const PORT = Number(process.env.ZEUS_SMOKE_SCRIPTORIUM_PORT || 13054);
 const ROOM = 'EXTERNAL_SMOKE';
 const SECRET = process.env.ZEUS_SCRIPTORIUM_SECRET || 'dev-secret';
 const USER = 'external-anon';
+const ZEUS_REGISTRY = 'https://npm.scriptorium.escrivivir.co';
 
 const children = [];
 
@@ -78,15 +82,35 @@ function packWorkspace(pkgName) {
 }
 
 function writeNpmrc(dir) {
+  // WP-U161: consumer scope routing is @zeus-only — no @alephscript line.
   // Scope routing only — no auth tokens (swarm smoke).
   writeFileSync(
     path.join(dir, '.npmrc'),
-    [
-      '@alephscript:registry=https://npm.scriptorium.escrivivir.co',
-      '@zeus:registry=https://npm.scriptorium.escrivivir.co',
-      ''
-    ].join('\n')
+    [`@zeus:registry=${ZEUS_REGISTRY}`, ''].join('\n')
   );
+}
+
+/** CA WP-U161: .npmrc solo-@zeus and zero @alephscript packages in the tree. */
+function assertZeusOnlyConsumerTree(dir) {
+  const npmrcPath = path.join(dir, '.npmrc');
+  if (!existsSync(npmrcPath)) {
+    throw new Error('consumer .npmrc missing');
+  }
+  const npmrcText = readFileSync(npmrcPath, 'utf8');
+  if (/@alephscript\s*:/m.test(npmrcText)) {
+    throw new Error(`consumer .npmrc still routes @alephscript:\n${npmrcText}`);
+  }
+  if (!npmrcText.includes('@zeus:registry=')) {
+    throw new Error(`consumer .npmrc missing @zeus registry:\n${npmrcText}`);
+  }
+  const alephDir = path.join(dir, 'node_modules', '@alephscript');
+  if (existsSync(alephDir)) {
+    const kids = readdirSync(alephDir);
+    throw new Error(
+      `consumer node_modules still has @alephscript/*: ${kids.join(', ')}`
+    );
+  }
+  console.log('consumer .npmrc solo-@zeus + zero @alephscript in tree: ok');
 }
 
 function parseLastJsonLine(stdout) {
@@ -106,10 +130,10 @@ function parseLastJsonLine(stdout) {
   throw new Error(`no JSON result line in consumer output:\n${stdout}`);
 }
 
-const packDir = mkdtempSync(path.join(os.tmpdir(), 'zeus-u54-packs-'));
-const cleanDir = mkdtempSync(path.join(os.tmpdir(), 'zeus-u54-external-'));
+const packDir = mkdtempSync(path.join(os.tmpdir(), 'zeus-u161-packs-'));
+const cleanDir = mkdtempSync(path.join(os.tmpdir(), 'zeus-u161-external-'));
 
-console.log('smoke:external-consumer');
+console.log('smoke:external-consumer (WP-U161 · scope @zeus-only)');
 console.log(`  packs:  ${packDir}`);
 console.log(`  clean:  ${cleanDir}`);
 console.log(`  room:   ${ROOM} @ http://${HOST}:${PORT}`);
@@ -117,6 +141,7 @@ console.log('');
 
 let protocolTgz;
 let roomsTgz;
+let socketCoreTgz;
 
 try {
   // Ensure protocol types exist before pack
@@ -129,8 +154,11 @@ try {
     throw new Error(`types:generate failed:\n${gen.stderr || gen.stdout}`);
   }
 
+  // socket-core must be packed: rooms depends on it and it is not on registry yet.
+  socketCoreTgz = packWorkspace('@zeus/socket-core');
   protocolTgz = packWorkspace('@zeus/protocol');
   roomsTgz = packWorkspace('@zeus/rooms');
+  console.log(`packed ${path.basename(socketCoreTgz)}`);
   console.log(`packed ${path.basename(protocolTgz)}`);
   console.log(`packed ${path.basename(roomsTgz)}`);
 
@@ -159,13 +187,23 @@ try {
 
   const install = spawnSync(
     'npm',
-    ['install', protocolTgz, roomsTgz, '--no-fund', '--no-audit'],
+    [
+      'install',
+      socketCoreTgz,
+      protocolTgz,
+      roomsTgz,
+      '--no-fund',
+      '--no-audit'
+    ],
     { cwd: cleanDir, encoding: 'utf8', shell: true }
   );
   if (install.status !== 0) {
-    throw new Error(`npm install tarballs failed:\n${install.stderr || install.stdout}`);
+    throw new Error(
+      `npm install tarballs failed (exit ${install.status}):\n${install.stderr || install.stdout}`
+    );
   }
-  console.log('install from tarballs: ok');
+  console.log(`install from tarballs (solo-@zeus .npmrc): exit ${install.status}`);
+  assertZeusOnlyConsumerTree(cleanDir);
 
   // Verify .d.ts landed in node_modules
   const dtsProtocol = path.join(
@@ -254,8 +292,10 @@ try {
   console.log('Bun:', JSON.stringify(bunJson));
 
   console.log('');
-  console.log('smoke:external-consumer — GREEN (Node + Bun, tarball install)');
-  console.log('registry install: ⏳ (no publish in swarm)');
+  console.log(
+    'smoke:external-consumer — GREEN (Node + Bun, tarball install, .npmrc solo-@zeus)'
+  );
+  console.log('registry install: ⏳ (no publish in swarm; socket-core via tarball)');
 } catch (err) {
   fail(err instanceof Error ? err.message : String(err));
 } finally {
