@@ -27,21 +27,15 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-23 · Sprint 7 Ola 1 CERRADA · espera R3-Z)
+## Remate — estado swarm (2026-07-23 · Sprint 7 Ola 2 EN CURSO · R3-Z PASS)
 
-> **Ola 1 CERRADA (2026-07-23):** U155 ✅ · U156 ✅ · U159 ✅. Merges
-> `54d60d2` / `3c7d15d` / `46c6de2`. Tip gobierno `ea553a8` (**ahead 20**
-> vs `origin/main`). Gate Ola 1: `R2-Z PASS` (solo autorizó
-> U155∥U156∥U159). **Ola 2 bloqueada** hasta **`R3-Z PASS`** — aviso:
-> [AVISO-R3-Z-ola2-listo.md](REPORTES/entregas/AVISO-R3-Z-ola2-listo.md)
-> · acta higiene:
-> [ACTA-R3-Z-higiene-post-ola1-2026-07-23.md](REPORTES/entregas/ACTA-R3-Z-higiene-post-ola1-2026-07-23.md).
-> Lote previsto tras PASS: **U157 ∥ U160**. Smokes U158/U161 aún no.
-> CI tip base
-> [29969972042](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29969972042)
-> success · Docs
-> [29969971978](https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/29969971978)
-> success. Replan:
+> **Ola 2 ABIERTA (2026-07-23):** tras **`R3-Z PASS`**
+> (`C:\S_LAB\vigilancia\z\GATE-R3-Z-PASS.md`; tip autorización
+> `7b0ff20`). Lote en curso: **U157** 🔶 ∥ **U160** 🔶. **No** despachar
+> U158/U161 (costura smokes/deps pendiente). Ola 1 ✅ (U155/U156/U159).
+> Tip base despacho = `origin/main` @ `7b0ff20`. Carriles:
+> `wp/u157-dts-grafo-cercano` · `wp/u160-migrar-corte-mcp-core` bajo
+> `C:\S_LAB\.worktrees\z\`. Replan:
 > [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
 > DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear `.claude/skills/`).
 >
@@ -102,16 +96,15 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | ✅ |
 | **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | ✅ |
-| **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U156 · ⬜ U157–U158 |
-| **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159 · ⬜ U160–U161 |
+| **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U156 · 🔶 U157 · ⬜ U158 |
+| **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159 · 🔶 U160 · ⬜ U161 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno — Ola 1 ✅; espera **R3-Z PASS** (cero 🔶 Ola 2).
-**Listo tras R3-Z PASS + GO:** **U157** ∥ **U160** (Ola 2).
+**En curso:** **U157** 🔶 ∥ **U160** 🔶 (Ola 2 · R3-Z PASS).
 **Pendiente (no paralelo aún):** **U158** / **U161** (smokes; costura
-ficheros/deps — ver GATE-R2-Z-PASS).
+ficheros/deps — ver GATE-R2-Z-PASS / R3-Z; **NO** despachar).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -123,15 +116,15 @@ sprints 1–5 (ver histórico). **D-35** / **D-37**.
 
 ---
 
-## Sprint 7 — ts-compat + extracción (GO · 2026-07-23 · Ola 1 ✅ · espera R3-Z)
+## Sprint 7 — ts-compat + extracción (GO · 2026-07-23 · Ola 2 EN CURSO)
 
 Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
 [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
-**Gate Ola 1:** `R2-Z PASS` + GO custodio. **Ola 2:** pendiente
-`R3-Z PASS` —
-[AVISO-R3-Z-ola2-listo.md](REPORTES/entregas/AVISO-R3-Z-ola2-listo.md).
-**Ola 1:** U155 ✅ · U156 ✅ · U159 ✅ (merges → tip gobierno
-`ea553a8`). DC-15 LOCAL-ONLY.
+**Gate Ola 1:** `R2-Z PASS`. **Gate Ola 2:** `R3-Z PASS`
+(`vigilancia/z/GATE-R3-Z-PASS.md` · tip `7b0ff20`) — autoriza
+**U157 ∥ U160**; no U158/U161.
+**Ola 1:** U155 ✅ · U156 ✅ · U159 ✅. **Ola 2:** U157 🔶 ∥ U160 🔶.
+DC-15 LOCAL-ONLY.
 
 ### (A) Compatibilidad TypeScript `@zeus/*`
 
@@ -161,16 +154,18 @@ Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
   Re-smoke: presets 43 · webrtc 22 · ui-3d 24. **CA:** cumplidos.
   **Eje:** IV. Deferidos horse/contract/http-contract → residual. CI ⏳.
 
-#### WP-U157 · `.d.ts` grafo cercano (fase 2) — ⬜
+#### WP-U157 · `.d.ts` grafo cercano (fase 2) — 🔶
 
-- ⬜ **WP-U157 · Declaraciones `.d.ts` kits publicables BARE del grafo
-  de los cinco tipados** — pendiente. Est. L. Dep: U155+U156 ✅. Brief:
+- 🔶 **WP-U157 · Declaraciones `.d.ts` kits publicables BARE del grafo
+  de los cinco tipados** — en curso (orquestador / 2026-07-23 · Ola 2).
+  Rama `wp/u157-dts-grafo-cercano` · worktree
+  `C:\S_LAB\.worktrees\z\wp-u157-dts-grafo-cercano`. Est. L. Dep:
+  U155+U156 ✅. Brief:
   [REPORTES/briefs/WP-U157-dts-grafo-cercano.md](REPORTES/briefs/WP-U157-dts-grafo-cercano.md).
   Lote mínimo propuesto: view-kit, game-engine, authority-kit,
   room-client-browser, http-contract, ui-kit, app-shell, player-mcp-kit,
   socket-server. **CA:** consumer TS resuelve types; residuales listados.
-  **Eje:** IV. **Ola 2** — deps Ola 1 ✅; **bloqueado** hasta R3-Z PASS
-  (∥ U160; sin subdividir salvo nuevo GO).
+  **Eje:** IV. **Ola 2** ∥ U160 (sin subdividir salvo nuevo GO).
 
 #### WP-U158 · smoke TS desde registry + CI — ⬜
 
@@ -198,16 +193,18 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
   Re-smoke: 6/6 · IMPORTS_MCP=0. **CA:** cumplidos. **Eje:** I
   (cableado producción = U160). CI ⏳.
 
-#### WP-U160 · migrar + cortar dep en `@zeus/*` — ⬜
+#### WP-U160 · migrar + cortar dep en `@zeus/*` — 🔶
 
-- ⬜ **WP-U160 · rooms + socket-server → socket-core; cortar
-  `@alephscript/mcp-core-sdk` en packages Zeus** — pendiente. Est. M.
-  Dep: U159 ✅. Brief:
+- 🔶 **WP-U160 · rooms + socket-server → socket-core; cortar
+  `@alephscript/mcp-core-sdk` en packages Zeus** — en curso
+  (orquestador / 2026-07-23 · Ola 2). Rama
+  `wp/u160-migrar-corte-mcp-core` · worktree
+  `C:\S_LAB\.worktrees\z\wp-u160-migrar-corte-mcp-core`. Est. M. Dep:
+  U159 ✅. Brief:
   [REPORTES/briefs/WP-U160-migrar-corte-mcp-core.md](REPORTES/briefs/WP-U160-migrar-corte-mcp-core.md).
-  **CA:** `rg` mcp-core-sdk = 0 en `packages/@zeus` (residuales
+  **CA:** `rg` mcp-core-sdk = 0 en packages Zeus (residuales
   root/examples listados); definición única Socket*; tests verdes.
-  **Ejes:** I + II. **Ola 2** — deps ✅; **bloqueado** hasta R3-Z PASS
-  (∥ U157).
+  **Ejes:** I + II. **Ola 2** ∥ U157.
 
 #### WP-U161 · smoke scope solo `@zeus` + demolición residual — ⬜
 
