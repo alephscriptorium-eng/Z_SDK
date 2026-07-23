@@ -207,6 +207,12 @@ export const EXCEPTIONS = [
       'D-8: «delta» = mode/payload GAME_STATE_DELTA (state-diff genérico), no nombre de juego'
   },
   {
+    path: 'packages/engine/authority-kit/types/create-authority.d.ts',
+    rule: 'two-games',
+    reason:
+      'WP-U157/D-8: tipado events.DELTA / GAME_STATE_DELTA (state-diff genérico); espejo de create-authority.mjs'
+  },
+  {
     path: 'packages/engine/game-engine/src/map-engine.mjs',
     rule: 'two-games',
     reason:

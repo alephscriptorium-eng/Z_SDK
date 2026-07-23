@@ -9,8 +9,14 @@
     "test": "node --test test/*.mjs"
   },
   "exports": {
-    ".": "./src/index.mjs",
-    "./theme-contract": "./src/theme-contract.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./theme-contract": {
+      "types": "./types/theme-contract.d.ts",
+      "default": "./src/theme-contract.mjs"
+    }
   },
   "license": "AIPLv1",
   "zeus": {
@@ -36,6 +42,8 @@
   "files": [
     "src",
     "assets",
-    "README.md"
-  ]
+    "README.md",
+    "types"
+  ],
+  "types": "./types/index.d.ts"
 }

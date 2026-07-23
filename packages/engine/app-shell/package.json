@@ -5,11 +5,26 @@
   "type": "module",
   "main": "src/index.mjs",
   "exports": {
-    ".": "./src/index.mjs",
-    "./create-app-config": "./src/create-app-config.mjs",
-    "./create-theme-handler": "./src/create-theme-handler.mjs",
-    "./create-shell-views": "./src/create-shell-views.mjs",
-    "./ssr-view-registry": "./src/ssr-view-registry.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./create-app-config": {
+      "types": "./types/create-app-config.d.ts",
+      "default": "./src/create-app-config.mjs"
+    },
+    "./create-theme-handler": {
+      "types": "./types/create-theme-handler.d.ts",
+      "default": "./src/create-theme-handler.mjs"
+    },
+    "./create-shell-views": {
+      "types": "./types/create-shell-views.d.ts",
+      "default": "./src/create-shell-views.mjs"
+    },
+    "./ssr-view-registry": {
+      "types": "./types/ssr-view-registry.d.ts",
+      "default": "./src/ssr-view-registry.mjs"
+    }
   },
   "scripts": {
     "test": "node --test test/*.mjs"
@@ -34,6 +49,8 @@
   },
   "files": [
     "src",
-    "README.md"
-  ]
+    "README.md",
+    "types"
+  ],
+  "types": "./types/index.d.ts"
 }
