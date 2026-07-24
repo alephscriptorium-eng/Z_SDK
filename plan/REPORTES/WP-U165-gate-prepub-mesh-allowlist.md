@@ -413,3 +413,128 @@ Ninguno. Push/merge = orquestador post-✅. No declarar R11-Z PASS.
 - Fronteras: cero private · cero publish · cero changesets.
 - Merge `b550510` · tip obra `5a3c4d9`.
 - Siguiente: aviso **reintento R11-Z** (no declarar PASS).
+
+---
+
+## Addenda · corrección FAIL-REINTENTO (semver raíz) · 2026-07-24
+
+| dato | valor |
+| ---- | ----- |
+| agente | Worker-U165 (re-despacho) |
+| fecha | 2026-07-24 |
+| rama | `wp/u165-semver-root-devdep` |
+| base tip | `ae0a4a2` (main con gobierno reopen) |
+| eje(s) CA | IV + C8 |
+| estado propuesto | listo para revisión |
+| DC | DC-15 LOCAL-ONLY |
+
+### Motivo FAIL-REINTENTO
+
+`scripts/gate-publish-ready.mjs` hace `require('semver')`, pero el
+`package.json` raíz no declaraba `semver` en `devDependencies`.
+`npm ls semver --depth=0` devolvía `(empty)` / exit 1; el gate solo
+funcionaba por hoisting transitivo (no contrato). Fuente:
+`plan/REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md`.
+
+### Qué se hizo
+
+1. `npm install --save-dev semver` en la raíz del worktree.
+2. `semver` quedó en `devDependencies` del `package.json` raíz
+   (`^7.8.5`) y `package-lock.json` actualizado.
+3. Re-ejecutados P0×4, probes ×6 y `npm run gates`.
+4. Sin tocar scripts, allowlist, private, changesets ni publish.
+
+### Archivos tocados
+
+- `package.json` — `devDependencies.semver: "^7.8.5"`.
+- `package-lock.json` — lock coherente con la declaración directa.
+- `plan/REPORTES/WP-U165-gate-prepub-mesh-allowlist.md` — esta addenda.
+
+### Evidencia · `npm ls semver --depth=0`
+
+```
+$ npm ls semver --depth=0
+zeus-sdk@0.1.0 C:\S_LAB\.worktrees\z\wp-u165-semver-root-devdep
+└── semver@7.8.5
+
+npm_ls_exit=0
+```
+
+### Tabla gate / probes
+
+| chequeo | comando | exit |
+| ------- | ------- | ---- |
+| P0×4 verde | `npm run gate:publish-ready` | 0 |
+| probe star | `--fail-probe star` | 1 |
+| probe latest | `--fail-probe latest` | 1 |
+| probe git | `--fail-probe git` | 1 |
+| probe url | `--fail-probe url` | 1 |
+| probe windows-path | `--fail-probe windows-path` | 1 |
+| probe missing-version | `--fail-probe missing-version` | 1 |
+| gates | `npm run gates` | 0 |
+
+Salida literal P0×4:
+
+```
+$ npm run gate:publish-ready
+
+> zeus-sdk@0.1.0 gate:publish-ready
+> node scripts/gate-publish-ready.mjs
+
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system, @zeus/linea-firehose, @zeus/force-system, @zeus/ssb-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+PASS @zeus/linea-system manifest=packages/mesh/linea-system/package.json files=explicit pack=8 types=JS-only zeusDeps=4
+PASS @zeus/linea-firehose manifest=packages/mesh/linea-firehose/package.json files=explicit pack=6 types=JS-only zeusDeps=3
+PASS @zeus/force-system manifest=packages/mesh/force-system/package.json files=explicit pack=8 types=JS-only zeusDeps=4
+PASS @zeus/ssb-system manifest=packages/mesh/ssb-system/package.json files=explicit pack=11 types=JS-only zeusDeps=3
+gate:publish-ready: OK (4 P0 candidates)
+gate_exit=0
+```
+
+Probes (cada uno exit 1; manifests no escritos — fail-probe in-memory):
+
+```
+probe_star_exit=1
+probe_latest_exit=1
+probe_git_exit=1
+probe_url_exit=1
+probe_windows-path_exit=1
+probe_missing-version_exit=1
+```
+
+```
+$ npm run gates
+gates: OK (0 offenders)
+gates_exit=0
+```
+
+### Fronteras / allowlist
+
+```
+$ git diff --exit-code HEAD -- plan/PUBLISH-ALLOWLIST.md
+allowlist_intact=yes
+```
+
+- Allowlist solo lectura (byte-identical vs HEAD).
+- Cero private flip · cero npm publish · cero changesets de release ·
+  cero workflows publish.
+- U164 / U166 no reabiertos.
+- Scripts no tocados.
+
+### Auto-revisión CA
+
+- [x] Root declara `semver` en `devDependencies` (directo).
+- [x] `package-lock.json` actualizado con esa declaración.
+- [x] `npm ls semver --depth=0` exit 0 y lista `semver@7.8.5` bajo root.
+- [x] Re-gate P0×4 PASS (exit 0).
+- [x] Probes ×6 FAIL exit 1 cada uno.
+- [x] `npm run gates` OK.
+- [x] Diff solo `package.json` + `package-lock.json` + este reporte.
+- [x] Allowlist intacta; fronteras de publicación intactas.
+- [x] No se declara R11-Z PASS (siguiente: orquestador / reintento custodio).
+
+### Dudas / bloqueos
+
+Ninguno. Push/merge = orquestador post-✅. No declarar R11-Z PASS.
