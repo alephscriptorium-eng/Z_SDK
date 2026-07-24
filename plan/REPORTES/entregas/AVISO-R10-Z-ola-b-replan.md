@@ -57,7 +57,7 @@ ni `npm publish`.
 | dato | valor |
 | ---- | ----- |
 | Tip código Ola A (referencia) | `f46743bde5b4893763b5d56aaf417ca908233634` |
-| Tip gobierno (este aviso / replan) | `<TIP_GOBIERNO>` |
+| Tip gobierno (este aviso / replan) | `4c7154efa3859218be6ffd7e66ba915f6890be9f` |
 | Push | normal (sin force) |
 | CI / Release tip código | `30074325894` / `30074325599` success (sin cambio de código en este lote) |
 
@@ -94,7 +94,7 @@ U166: posee enmiendas allowlist/audit P1
 U164/U165/U166: ⬜ · 0 🔶 · cero workers · SIN GO
 frontera: private intacto · cero changesets de pub · cero publish
 tip código Ola A: f46743bde5b4893763b5d56aaf417ca908233634
-tip gobierno: <TIP_GOBIERNO>
+tip gobierno: 4c7154efa3859218be6ffd7e66ba915f6890be9f
 pedido: R10-Z PASS (plan Ola B) — no GO implementación
 DC-15: LOCAL-ONLY
 ```
