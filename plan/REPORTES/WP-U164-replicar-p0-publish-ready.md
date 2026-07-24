@@ -5,7 +5,7 @@
 | agente | Worker-U164 |
 | fecha | 2026-07-24 |
 | rama | `wp/u164-replicar-p0-publish-ready` |
-| commits | `89b2b5c` (feat) · `eee0528` (docs) |
+| commits | `89b2b5c` (feat) · `3d935bf` (docs) |
 | eje(s) CA | IV (segundo cliente del contrato publish-ready U163) |
 | estado propuesto | listo para revisión |
 | DC | DC-15 LOCAL-ONLY |
