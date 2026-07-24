@@ -72,7 +72,7 @@ jobs:
           - '@zeus/player-ui'
           - '@zeus/player-3d-ui'
           - '@zeus/3d-monitor'
-          - '@zeus/ping-pong-bots'
+          - '@zeus/ping-pong-bots'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -83,3 +83,18 @@ jobs:
         run: npm ci
       - name: Test workspace
         run: npm test -w "${{ matrix.workspace }}"
+
+  # WP-U158 — consumidor TS tipado desde registry real (no tarball).
+  # Skip limpio (exit 0 · ⏳) si el registry no responde — patrón U122.
+  smoke-ts-registry:
+    name: smoke TS registry (U158)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Smoke TypeScript consumer from @zeus registry
+        run: npm run smoke:ts-registry
+        env:
+          ZEUS_SMOKE_CLEANUP: '1'
