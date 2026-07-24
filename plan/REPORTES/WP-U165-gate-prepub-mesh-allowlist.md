@@ -538,3 +538,16 @@ allowlist_intact=yes
 ### Dudas / bloqueos
 
 Ninguno. Push/merge = orquestador post-✅. No declarar R11-Z PASS.
+
+## Revisión del orquestador · re-✅ FAIL-REINTENTO (semver raíz)
+
+**Aceptado ✅ · 2026-07-24 (semver root devDependency).**
+
+- CA FAIL-REINTENTO: `semver@^7.8.5` en `devDependencies` raíz;
+  lock coherente; `npm ls semver --depth=0` → `semver@7.8.5` exit 0.
+- Re-gate P0×4 PASS; probes ×6 FAIL exit 1; `npm run gates` OK.
+- ALCANCE_DIFF: solo `package.json` + `package-lock.json` + reporte;
+  allowlist intacta; scripts no tocados; U164/U166 no reabiertos.
+- Fronteras: cero private · cero publish · cero changesets.
+- Merge `289b7fe` · tip obra `1bfd9b8`.
+- Siguiente: aviso **nuevo reintento R11-Z** (no declarar PASS).

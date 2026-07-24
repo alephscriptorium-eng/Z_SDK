@@ -25,6 +25,9 @@ prose.
 - **R11-Z FAIL** → **U165 ✅** re-validado (pines semver + resolución
   registry + probes rojos). Pedido **reintento R11-Z** (no PASS). U164
   ✅ · U166 ✅ intactos.
+- **R11-Z FAIL reintento** → **U165 ✅** (`semver` devDependency raíz
+  + lock; `npm ls semver --depth=0` verde). Pedido **nuevo reintento
+  R11-Z** (no PASS). Solo U165.
 
 ---
 

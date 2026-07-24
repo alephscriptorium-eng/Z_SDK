@@ -29,17 +29,20 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · U165 🔶 reabierto · FAIL reintento / semver raíz)
+## Remate — estado swarm (2026-07-24 · U165 ✅ semver raíz · pedir reintento R11-Z)
 
-> **U165 🔶 reabierto** tras **R11-Z FAIL reintento** (bloqueo mínimo:
-> `semver` no declarado en root). Sensor pines + registry + probes ya
-> OK; falta `devDependency` raíz + lock. Gate:
+> **U165 ✅** tras corrección **R11-Z FAIL reintento** (`semver`
+> declarado como **devDependency raíz** + lock; `npm ls semver
+> --depth=0` verde). Sensor pines + registry + probes OK. Tip código:
+> `289b7fe` (obra `1bfd9b8`). **U164 ✅** · **U166 ✅** intactos. Gate
+> FAIL archivado:
 > [GATE-R11-Z-FAIL-REINTENTO.md](REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md).
-> **U164 ✅** · **U166 ✅** intactos. Tip previo corrección: `b550510`.
-> Aviso previo (obsoleto hasta nuevo): [AVISO-R11-Z-reintento-u165.md](REPORTES/entregas/AVISO-R11-Z-reintento-u165.md).
+> Pedido **nuevo reintento R11-Z** a SOL (no declarar PASS). Aviso
+> previo obsoleto:
+> [AVISO-R11-Z-reintento-u165.md](REPORTES/entregas/AVISO-R11-Z-reintento-u165.md).
 > Allowlist solo lectura. Frontera dura: **cero** flip `private` ·
 > **cero** changesets de pub · **cero** `npm publish`. FAIL sensor
-> archivado: [GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md).
+> previo: [GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md).
 > Replan: [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
 > **U162** ✅ (D-41 · no precedente). **Ola A CERRADA** · **U163 ✅ ∥
 > U167 ✅**. Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md).
@@ -107,41 +110,43 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ |
-| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ U164 · U166 · **U165 🔶** (FAIL reintento / semver raíz) |
+| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ U164 · U166 · **U165 ✅** (semver raíz post FAIL-REINTENTO) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U165** 🔶 (reapertura · FAIL reintento / semver raíz).
-**Pendiente:** corrección U165 → re-✅ → nuevo pedido **reintento R11-Z**
-(no declarar PASS).
+**En curso:** ninguno (quietud post U165 ✅ semver raíz; pedido
+reintento R11-Z).
+**Pendiente:** veredicto SOL **nuevo reintento R11-Z** (no declarar
+PASS).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U164** ✅ · **U166** ✅ · **U163** ✅ · **U167** ✅ ·
-**U162** ✅ · **U158** ✅ · **U161** ✅ · **U160** ✅ · **U157** ✅ ·
-**U159** ✅ · **U156** ✅ · **U155** ✅ · **U154** ✅ · **U153** ✅ ·
-**U151** ✅ · **U152** ✅ · **U150** ✅ · **U149** ✅ · sprints 1–5
-(ver histórico). **U165** en curso (no ✅).
+**Aceptado:** **U165** ✅ (semver raíz) · **U164** ✅ · **U166** ✅ ·
+**U163** ✅ · **U167** ✅ · **U162** ✅ · **U158** ✅ · **U161** ✅ ·
+**U160** ✅ · **U157** ✅ · **U159** ✅ · **U156** ✅ · **U155** ✅ ·
+**U154** ✅ · **U153** ✅ · **U151** ✅ · **U152** ✅ · **U150** ✅ ·
+**U149** ✅ · sprints 1–5 (ver histórico).
 **D-35** / **D-37** · **D-41** (U162 ex post acotado).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B · U165 🔶 FAIL reintento · 2026-07-24)
+## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B · U165 ✅ semver raíz · 2026-07-24)
 
 Fuente: plan U162 + allowlist + **R8-Z PASS** (Ola A) + **GO
 implementación Ola A** + **R9-Z PASS** (cierre Ola A) + **R10-Z PASS**
 + **GO implementación Ola B** (custodio) + **R11-Z FAIL** + **R11-Z
-FAIL reintento** (reabrir solo U165 · semver raíz). Detalle olas/deps:
+FAIL reintento** (corregido: semver raíz) → **U165 ✅**. Detalle
+olas/deps:
 [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
 Gates: [GATE-R11-Z-FAIL-REINTENTO.md](REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md) ·
 [GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md) ·
 [GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) ·
 [GATE-R9-Z-PASS.md](REPORTES/entregas/GATE-R9-Z-PASS.md) ·
-`vigilancia/z/GATE-R8-Z-PASS.md`. Tras corrección U165: pedir **nuevo
-reintento R11-Z** (no declarar PASS).
+`vigilancia/z/GATE-R8-Z-PASS.md`. Pedido: **nuevo reintento R11-Z**
+(no declarar PASS).
 
 **Fronteras duras (hasta GO publish aparte):** sin flip `private` ·
 sin changesets de publicación · sin `npm publish`. **No** reabre U162
@@ -150,7 +155,7 @@ como GO previo legítimo (D-41). **No** reabre U164/U166.
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U163 · U167 | U162 ✅ | U163 ∥ U167 (**✅ cerrada**) |
-| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165 🔶** (FAIL reintento / semver raíz) |
+| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165 ✅** (semver raíz) |
 | Publish | — | GO aparte | private + changesets de pub + npm publish |
 
 ### WP-U163 · POC publish-ready `@zeus/linea-system` — ✅
@@ -180,28 +185,24 @@ como GO previo legítimo (D-41). **No** reabre U164/U166.
   **Fuera:** private · publish · changesets de pub · allowlist · gate
   U165. **Eje:** IV.
 
-### WP-U165 · Gate pre-publicación mesh allowlist — 🔶
+### WP-U165 · Gate pre-publicación mesh allowlist — ✅
 
-- 🔶 **WP-U165 · Gate pre-publicación mesh allowlist** — en curso
-  (orquestador / 2026-07-24 · **reapertura** tras R11-Z FAIL
-  reintento). Motivo: `scripts/gate-publish-ready.mjs` hace
-  `require('semver')` pero root no declara `semver` →
-  `npm ls semver --depth=0` empty/exit 1 (hoisting transitivo no es
-  contrato). Est. S. Dep: **U163 ✅** + **U164 ✅** + **U166 ✅**.
-  Ola B. Rama `wp/u165-semver-root-devdep` · worktree
-  `C:\S_LAB\.worktrees\z\wp-u165-semver-root-devdep`. Brief:
+- ✅ **WP-U165 · Gate pre-publicación mesh allowlist** — aceptado
+  (orquestador / 2026-07-24 · **re-✅** tras R11-Z FAIL reintento /
+  semver raíz). Est. S. Dep: **U163 ✅** + **U164 ✅** + **U166 ✅**.
+  Ola B. Rama `wp/u165-semver-root-devdep` · tip obra `1bfd9b8` ·
+  merge `289b7fe`. Brief:
   [REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md).
   Reporte:
   [REPORTES/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/WP-U165-gate-prepub-mesh-allowlist.md).
   Gate FAIL reintento:
   [REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md](REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md).
-  Prev: tip obra `5a3c4d9` · merge `b550510` (sensor OK). **Qué
-  (esta corrección):** añadir `semver` como **devDependency raíz** +
-  actualizar lock; `npm ls semver --depth=0` verde; re-gate P0×4 +
-  probes ×6; CI. Allowlist **solo lectura**. **Fuera:** publish ·
-  changesets de pub · enmendar allowlist (dueño = U166) · tocar
-  lógica del sensor salvo si el install lo exige. **Eje:** IV + C8.
-  Tras ✅: pedir **nuevo reintento R11-Z** (no PASS).
+  Prev sensor: tip `5a3c4d9` · merge `b550510`. **Qué (esta
+  corrección):** `semver` como **devDependency raíz** + lock;
+  `npm ls semver --depth=0` → `semver@7.8.5` exit 0; re-gate P0×4 +
+  probes ×6 OK. Allowlist **solo lectura**. **Fuera:** publish ·
+  changesets de pub · enmendar allowlist (dueño = U166). **Eje:** IV
+  + C8. Pedido: **nuevo reintento R11-Z** (no PASS declarado).
 
 ### WP-U166 · Triage P1 linea-editor + console-monitor — ✅
 
