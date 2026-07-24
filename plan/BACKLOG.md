@@ -33,7 +33,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 > **U165 ✅ re-validado** tras corrección R11-Z FAIL (sensor pines +
 > registry + probes). **U164 ✅** · **U166 ✅** intactos. Tip código
-> corrección: `b550510`. Pedido **reintento R11-Z** a SOL (no declarar
+> corrección: `b550510`. Aviso: [AVISO-R11-Z-reintento-u165.md](REPORTES/entregas/AVISO-R11-Z-reintento-u165.md). Pedido **reintento R11-Z** a SOL (no declarar
 > PASS aquí). Allowlist solo lectura. Frontera dura: **cero** flip
 > `private` · **cero** changesets de pub · **cero** `npm publish`.
 > FAIL archivado:
