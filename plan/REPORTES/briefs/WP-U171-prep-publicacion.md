@@ -43,11 +43,13 @@ Reporte: plan/REPORTES/WP-U171-prep-publicacion.md
   forzar publish, ampliar allowlist
 
 ## Notas
-- Estado planificado: **⬜** · Ola C · deps **U168 ✅** + **U169 ✅**
-- Estimación: M · Eje IV
-- Contrarrevisión: obligatoria
-- Frontera mandato: **sin npm publish hasta R12-Z PASS**; este WP además
-  no publica ni con PASS (hace falta GO publish aparte).
+- Estado: **🔶** despachado (PAUSA parcial · post Ola B ✅ · 2026-07-25)
+- Estimación: M · Eje IV · Ola C · deps **U168 ✅** + **U169 ✅**
+- Contrarrevisión: obligatoria · RIESGO_REVISION=independiente
+- Frontera: **sin npm publish manual**; dry-run/checklist only; D-42
+  condiciones restantes las cierra el orquestador post-merge.
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
+- WORLD_ROOT=C:/S_LAB/z-sdk · CANONICAL_WORLD_ROOT=C:/S_LAB/z-sdk ·
+  READ_ONLY_ROOTS=["C:/S_LAB/.worktrees"] · DOWNSTREAM_PATTERNS=[".worktrees/*"]
 - DC-15 LOCAL-ONLY
 - No editar `plan/BACKLOG.md` (solo orquestador)
