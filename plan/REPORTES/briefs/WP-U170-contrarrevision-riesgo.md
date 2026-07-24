@@ -39,8 +39,11 @@ Reporte: plan/REPORTES/WP-U170-contrarrevision-riesgo.md
 - **Prohibido:** `packages/**`, scripts de gate, publish, BACKLOG
 
 ## Notas
-- Estado planificado: **⬜** · Ola A (∥ U168)
-- Estimación: S · Eje IV (proceso)
+- Estado: **🔶** despachado (PAUSA parcial · GO impl. U168–U171 · 2026-07-25)
+- Estimación: S · Eje IV (proceso) · Ola A (∥ U168)
+- RIESGO_REVISION=normal (proceso; revisión ligera orquestador)
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
+- WORLD_ROOT=C:/S_LAB/z-sdk · CANONICAL_WORLD_ROOT=C:/S_LAB/z-sdk ·
+  READ_ONLY_ROOTS=["C:/S_LAB/.worktrees"] · DOWNSTREAM_PATTERNS=[".worktrees/*"]
 - DC-15 LOCAL-ONLY
 - No editar `plan/BACKLOG.md` (solo orquestador)

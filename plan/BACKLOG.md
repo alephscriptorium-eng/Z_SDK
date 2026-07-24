@@ -35,21 +35,25 @@ sin impl./despacho/publish).
 
 ---
 
-## Remate — estado swarm (2026-07-24 · **PAUSA** · **reintento R13-Z emitido** · **R12-Z PASS · 0.10.0 adoptado**)
+## Remate — estado swarm (2026-07-25 · **PAUSA parcial U168–U171** · **R12 GO impl.** · **R13 intacto**)
 
-> **PAUSA / CORTE TÉCNICO** (custodio). Todos los workers: **pausar** obra
-> en curso; si demoler → **pausar** (no continuar demoliciones). **No**
-> despachar workers · **no** merge/publish salvo emergencia documentada.
-> Aviso: [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md)
-> (espejo `vigilancia/z/`). Higiene al emitir: `C:\S_LAB\.worktrees\z`
-> vacío · `wp/*` 0 · 0 🔶 · sin workers activos.
+> **PAUSA PARCIAL** (TICK custodio · 2026-07-25). Obra autorizada **solo**
+> **U168–U171** (Sprint 9 / R12 · major-band + contrarrevisión + prep pub).
+> Resto del corte técnico **sigue en PAUSA**: R13 · U172–U178 · U73 ·
+> demoliciones · publish real. Aviso:
+> [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md)
+> (espejo `vigilancia/z/`). Corte global de origen:
+> [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md).
 >
-> **Reintento R13-Z emitido · PAUSA · sin 🔶.** Pedido a SOL:
-> [AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md)
-> (**R13-Z PASS (reintento)** tras FAIL documental; gate de
-> **planificación**; no GO implementación). Anclas literales base
-> `b348c59` + sello `8dec15e`. **0 🔶 · 0 workers · 0 despacho · 0
-> publish.** No commitear `.claude/skills/`.
+> **GO implementación U168–U171** (TICK) + **R12-Z PASS** vigente.
+> Olas: **A** `U168 ∥ U170` → **B** `U169` → **C** `U171`. **Sin**
+> `npm publish` manual · **sin** flip `private` hasta cumplir D-42
+> completo. Replan:
+> [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
+>
+> **R13-Z PASS** de planificación vigente (espejo
+> `vigilancia/z/GATE-R13-Z-PASS.md`; remate tip `4090dab`) — **no** es GO
+> implementación R13. **R13 intacto**: **0** despacho U172–U177/U73.
 >
 > **R12-Z PASS · skills-scriptorium 0.10.0 adoptado.** R12-Z PASS de
 > planificación vigente (`f2aab3f` + sello `2ef0d79` · remate
@@ -57,16 +61,14 @@ sin impl./despacho/publish).
 > Node raíz **`engines.node >=22.0.0`** — tip adopción **`b348c59`** ·
 > CI **`30128202345`** · Docs **`30128202336`** (PASS).
 >
-> Contexto previo (congelado hasta reanudación): **R11-Z PASS** —
+> Contexto: **R11-Z PASS** —
 > [GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md). **Sprint 8
 > CERRADO**. **U165 ✅** no reabrir. Tip Sprint 8: `289b7fe`. IDLE previo:
-> [AVISO-IDLE-Z.md](REPORTES/entregas/AVISO-IDLE-Z.md). Cola R12-Z
-> **U168–U171** ⬜ sin avance durante el corte. Replan:
-> [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
-> Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **U162** ✅
-> (D-41 · no precedente). **DC-15 LOCAL-ONLY** por defecto; **D-44**
-> excepción acotada solo Issues **#16–#53** + `plan/.sync-map.json` de
-> `46c3e5c` (conservar; sin Issues nuevos). Aviso adopción engines:
+> [AVISO-IDLE-Z.md](REPORTES/entregas/AVISO-IDLE-Z.md). Allowlist:
+> [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **U162** ✅ (D-41 · no
+> precedente). **DC-15 LOCAL-ONLY** por defecto; **D-44** excepción
+> acotada solo Issues **#16–#53** + `plan/.sync-map.json` de `46c3e5c`
+> (conservar; sin Issues nuevos). Aviso adopción engines:
 > [AVISO-ADOPCION-0.10-engines-node22.md](REPORTES/entregas/AVISO-ADOPCION-0.10-engines-node22.md).
 >
 > **GO publish condicionado P0×4 asentado (D-42):** el publish real de
@@ -78,17 +80,14 @@ sin impl./despacho/publish).
 > Hasta entonces **cero publish / cero flip `private`**. Fuente:
 > [ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md).
 > `linea-editor` = WP publish-ready **separado U178** ⬜ (no mezclar con
-> P0×4). Clases privadas **por decisión de producto = excluidas**
-> (allowlist §4 · D-42).
+> P0×4; sigue en PAUSA). Clases privadas **por decisión de producto =
+> excluidas** (allowlist §4 · D-42).
 >
 > **Tercer frente Dramaturgo + Zigurat (D-43 · DA-S21 asentada ·
 > `2eb4784`):** cola **R13-Z** — épica **U73** ⬜ + **U172–U177** ⬜.
-> HOLD de autoridad **levantado**. Hold **operativo** = **PAUSA** +
-> **reintento R13-Z emitido** + **sin despacho**. Tramos «R12 pedido /
-> no pedir R13» = **histórico/superado** (ver D-43 +
-> [AVISO-R13-Z-plan-hold.md](REPORTES/entregas/AVISO-R13-Z-plan-hold.md)).
-> **Bloqueado** abrir implementación hasta GO impl. R12 + **R13-Z PASS**
-> + GO implementación R13 aparte. Replan:
+> HOLD de autoridad **levantado**. Hold **operativo** = **PAUSA** (fuera
+> de U168–U171) + **sin GO implementación R13**. **R13 intacto** en esta
+> secuencia. Replan:
 > [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
 > Fuente:
 > [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md).
@@ -155,25 +154,19 @@ sin impl./despacho/publish).
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ · **CERRADO** |
 | **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ · **CERRADO** (R11-Z PASS) |
-| **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | ⬜ planificación (sin 🔶) |
-| **Cola publish P1** — publish-ready `linea-editor` (D-42) | **U178** | ⬜ (tras U168+U169; GO impl. propio) |
-| **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ planificación · **reintento R13 emitido** · PAUSA · sin despacho (R13-Z PASS + GO impl. para abrir) |
+| **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | **GO impl.** · Ola A **U168 🔶 ∥ U170 🔶** |
+| **Cola publish P1** — publish-ready `linea-editor` (D-42) | **U178** | ⬜ · **PAUSA** (tras U168+U169; GO impl. propio) |
+| **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ · **PAUSA** · R13-Z PASS planificación · **sin GO impl. R13** · intacto |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (**PAUSA** · 0 🔶 · sin workers · sin despacho).
-**Pendiente:** reanudación explícita + GO implementación custodio
-sobre U168–U171 ⬜ (**R12-Z PASS** ya vigente; adopción **0.10.0**
-cerrada con `engines.node >=22.0.0` · tip `b348c59`). **No** `npm
-publish` hasta cumplir D-42; publish real P0×4 = **GO condicionado
-D-42**. **U178** (publish-ready `linea-editor`) ⬜ aparte.
-**R13-Z**: **reintento R13-Z PASS emitido** (aviso
-[AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md);
-base `b348c59` + sello `8dec15e`). HOLD autoridad levantado (DA-S21 ·
-`2eb4784`); hold operativo = **PAUSA** + **sin despacho** · **sin 🔶**.
-Tercer frente **sin abrir** hasta GO impl. R12 + R13-Z PASS + GO impl.
-R13. **No** demoler / merge / despachar durante el corte.
+**En curso:** Ola A **U168 🔶 ∥ U170 🔶** (PAUSA parcial · solo
+U168–U171). **Pendiente ola:** B `U169` → C `U171`. **No** `npm
+publish` manual; publish real P0×4 = **GO condicionado D-42** al
+cumplir condiciones. **U178** ⬜ en PAUSA. **R13** intacto (sin
+despacho U172–U177/U73). Adopción **0.10.0** + `engines.node >=22.0.0`
+· tip `b348c59`.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -188,22 +181,21 @@ economía CI) — ver triage U142.
 
 ---
 
-## Sprint 9 / R12-Z — major-band P0×4 · contrarrevisión · prep pub (**PAUSA / CORTE TÉCNICO** · 2026-07-24)
+## Sprint 9 / R12-Z — major-band P0×4 · contrarrevisión · prep pub (**PAUSA parcial · GO impl. · 2026-07-25**)
 
-Fuente: **R11-Z PASS** + **GO planificación R12-Z** (custodio) +
+Fuente: **R11-Z PASS** + **R12-Z PASS** + **GO implementación U168–U171**
+(TICK custodio · PAUSA parcial) +
 [ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md](REPORTES/entregas/ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md).
 Detalle: [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
-Pedido SOL: [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
-Pausa: [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md).
+Pedido SOL (histórico plan): [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
+PAUSA parcial: [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md).
 
-**Estado:** **PAUSA / CORTE TÉCNICO** — WPs **⬜** · **0 🔶** ·
-**cero workers** · sin avance hasta reanudación. **No** reabre Sprint 8
-ni U165.
+**Estado:** **GO implementación** · Ola A en curso (**U168 🔶 ∥ U170 🔶**).
+**No** reabre Sprint 8 ni U165. **No** abre R13 / U172–U178 / U73.
 
-**Fronteras duras:** sin `npm publish` hasta **R12-Z PASS** · sin Release
-publish efectivo · sin flip `private` / changesets de pub efectivos hasta
-cumplir **todas** las condiciones del **GO publish condicionado D-42** ·
-sin despacho hasta GO implementación post-PASS.
+**Fronteras duras:** sin `npm publish` manual · sin Release publish
+efectivo · sin flip `private` / changesets de pub efectivos hasta
+cumplir **todas** las condiciones del **GO publish condicionado D-42**.
 
 **GO publish condicionado (D-42):** asentado en DECISIONES + allowlist
 §3; la fase Publish de la tabla se activa **sin nuevo GO** solo al
@@ -217,10 +209,12 @@ conserva el orquestador).
 | **C** | U171 | U168 ✅ + U169 ✅ | prep pub (sin publish real) |
 | Publish | — | **GO condicionado D-42** (condiciones completas) | flip private + changesets + npm publish P0×4 |
 
-### WP-U168 · Migrar P0×4 a major-band — ⬜
+### WP-U168 · Migrar P0×4 a major-band — 🔶
 
-- ⬜ **WP-U168 · Migrar P0×4 a major-band** — pendiente. Est. M. Dep:
-  Sprint 8 ✅ · R12-Z PASS + GO implementación. Ola A. Brief:
+- 🔶 **WP-U168 · Migrar P0×4 a major-band** — en curso (orquestador /
+  2026-07-25). Est. M. Dep: Sprint 8 ✅ · R12-Z PASS + GO implementación.
+  Ola A. Rama `wp/u168-major-band-p0`. Worktree
+  `C:\S_LAB\.worktrees\z\wp-u168-major-band-p0`. Brief:
   [REPORTES/briefs/WP-U168-major-band-p0.md](REPORTES/briefs/WP-U168-major-band-p0.md).
   **Qué:** sustituir pines exactos `@zeus/*` en
   `linea-system` · `linea-firehose` · `force-system` · `ssb-system` por
@@ -239,11 +233,12 @@ conserva el orquestador).
   **Fuera:** publish · flip private · reabrir U165. **Contrarrevisión**
   obligatoria. **Eje:** IV + C8.
 
-### WP-U170 · Contrarrevisión WPs de riesgo — ⬜
+### WP-U170 · Contrarrevisión WPs de riesgo — 🔶
 
-- ⬜ **WP-U170 · Persistir contrarrevisión independiente** — pendiente.
-  Est. S. Dep: Sprint 8 ✅ · R12-Z PASS + GO implementación (∥ U168).
-  Ola A. Brief:
+- 🔶 **WP-U170 · Persistir contrarrevisión independiente** — en curso
+  (orquestador / 2026-07-25). Est. S. Dep: Sprint 8 ✅ · R12-Z PASS + GO
+  implementación (∥ U168). Ola A. Rama `wp/u170-contrarrevision-riesgo`.
+  Worktree `C:\S_LAB\.worktrees\z\wp-u170-contrarrevision-riesgo`. Brief:
   [REPORTES/briefs/WP-U170-contrarrevision-riesgo.md](REPORTES/briefs/WP-U170-contrarrevision-riesgo.md).
   **Qué:** regla en PRACTICAS + checklist CA (quién/qué revisa; SOL
   handoff read-only). Aplica a U168/U169/U171. **Fuera:** implementar

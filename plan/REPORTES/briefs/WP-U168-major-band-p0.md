@@ -48,9 +48,11 @@ Reporte: plan/REPORTES/WP-U168-major-band-p0.md
   release, reabrir U165 / Sprint 8
 
 ## Notas
-- Estado planificado: **⬜** (no despachar hasta R12-Z PASS + GO impl.)
+- Estado: **🔶** despachado (PAUSA parcial · GO impl. U168–U171 · 2026-07-25)
 - Estimación: M · Eje IV · Ola A (∥ U170)
-- Contrarrevisión: obligatoria (ADDENDA-R12 / U170)
+- Contrarrevisión: obligatoria (ADDENDA-R12 / U170) · RIESGO_REVISION=independiente
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
+- WORLD_ROOT=C:/S_LAB/z-sdk · CANONICAL_WORLD_ROOT=C:/S_LAB/z-sdk ·
+  READ_ONLY_ROOTS=["C:/S_LAB/.worktrees"] · DOWNSTREAM_PATTERNS=[".worktrees/*"]
 - DC-15 LOCAL-ONLY
 - No editar `plan/BACKLOG.md` (solo orquestador)
