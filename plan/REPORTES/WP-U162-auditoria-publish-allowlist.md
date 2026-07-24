@@ -309,4 +309,16 @@ Ninguno para cerrar U162. Implementación P0/P1 y publish = GO posterior.
 
 ## Revisión del orquestador
 
-_(pendiente)_
+**PASS · 2026-07-24.**
+
+- Diff revisado `854ed4e...f750577`: solo `plan/`, script de auditoría y
+  una entrada en `package.json`; 0 cambios en `packages/**/package.json`,
+  workflows o changesets.
+- Reproducción independiente:
+  `npm run gates` → `gates: OK (0 offenders)`;
+  `npm run audit:publish-allowlist -- --measure` → exit 0,
+  49 únicos = 29 publicados + 7 candidatos + 13 privados, con
+  `npm pack --dry-run` verde para los siete candidatos.
+- CA1–CA6: **cumplidos**. Frontera: cero flip `private`, cero publish.
+- Aceptable para merge. Los U163–U167 son propuestas y no quedan
+  autorizados ni encolados por este cierre.
