@@ -30,7 +30,7 @@ decida.
 | Verificación pre-aviso | HEAD = `origin/main` = `3b09213` (**sin divergencia**) |
 | Enmienda DA-S21 | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
 | Tip aviso (cuerpo) | `0e297a3` |
-| Tip gobierno (HEAD tras este aviso) | `<pendiente tip-fill>` |
+| Tip gobierno (HEAD tras este aviso) | `44af4fe` |
 
 ## PAUSA / frontera (literal)
 
