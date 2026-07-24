@@ -65,7 +65,6 @@ publish-ready. **No** basta quitar `private`.
 | paquete | path |
 | ------- | ---- |
 | `@zeus/linea-editor` | `packages/mesh/linea-editor` |
-| `@zeus/console-monitor` | `packages/mesh/console-monitor` |
 
 Cualquier otro mesh no listado aquí = clase **D/E/G** → **mantener privado**.
 
@@ -84,6 +83,12 @@ visores, Angular, monitores visuales, demos y harnesses — p. ej.
 | paquete | path | justificación |
 | ------- | ---- | ------------- |
 | `@zeus/blobstore-client` | `packages/mesh/blobstore-client` | Hermano producto/harness de U100/U101: dep runtime de `@zeus/blob-sync-harness` (clase **E**, E404 en registry); tarball incluye `fixture-sidecar` / `run-fixture` / `test/`; live sidecar `ZEUS_BLOB_*` **diferido D-22**. No es candidato clase **C** mientras el plano ops no exista y el acoplamiento a harness persista. Re-evaluación = enmienda explícita aquí + WP publish-ready + GO (no ampliar P0 por analogía). |
+
+### Democión documentada (WP-U166)
+
+| paquete | path | justificación |
+| ------- | ---- | ------------- |
+| `@zeus/console-monitor` | `packages/mesh/console-monitor` | Producto **clase D** (monitor visual / TUI TOP + MCP de estación): contrato runtime contra `@zeus/player-ui` `/deck-io` (`createSessionClient` exige origin player-ui; `player-ui` = mantener privado / E404). Sin `exports` (solo `main`); tarball incluye `test/`. No es SDK/API importable clase **C** independiente del Tablero ALEPH privado. Gap `exports` **no** se cierra aquí — queda fuera de §3; re-evaluación = enmienda explícita + API desacoplada de player-ui + WP publish-ready + GO. |
 
 Para mover un paquete de «mantener privado» a candidato o publicable:
 
