@@ -5,7 +5,7 @@
 | agente | Worker-U162 |
 | fecha | 2026-07-24 |
 | rama | `wp/u162-auditoria-publish-allowlist` |
-| commit(s) | `3342e8b` (feat) · `db7402b` (allowlist) · `584bed1` (reporte) |
+| commit(s) | `3342e8b` (feat) · `db7402b` (allowlist) · `584bed1` (reporte) · tip `241b7ad` |
 | eje(s) CA | IV (gobierno paquetes) + C8 (canal registry) |
 | estado propuesto | listo para revisión |
 | DC | DC-15 LOCAL-ONLY |
