@@ -30,10 +30,10 @@ audita dos anclas estables:
 | ancla | SHA / significado |
 | ----- | ----------------- |
 | **Base auditada** | `f2aab3f` = `f2aab3f570e96ebecf95555ed0827691de1684e4` — tip estable de `origin/main` **previo** a D-44 / este aviso corregido |
-| **Commit sello** | `«PENDIENTE-SELLO»` — commit de gobierno que asienta **D-44** + este aviso (segundo reintento); se fija en remate inmediato **sin** reclamar que el tip del remate sea el objeto auditado |
+| **Commit sello** | `2ef0d79` = `2ef0d791d4d0329186af1a6d80de2b4350d03cf5` — asienta **D-44** + este aviso (segundo reintento). El remate siguiente solo documenta este SHA; **no** es tip autorreferencial |
 
-Tras el remate del sello: verificar `origin/main` reachable; el **sello**
-es el commit de D-44 (no el commit cosmético que solo rellena el SHA).
+Verificar `origin/main` reachable tras push. El **objeto auditado** es
+**base** `f2aab3f` + **sello** `2ef0d79` (no el tip del remate de SHA).
 
 ### Materialización conservada (D-44)
 
@@ -125,7 +125,7 @@ patrón.
 REPLAN R13 + D-43: frase «editor legado» presente; conteo patrón en esos
 textos de planificación = **0** (excl. línea de definición en addenda).
 
-## Rango exacto `f2aab3f..«PENDIENTE-SELLO»`
+## Rango exacto `f2aab3f..2ef0d79`
 
 Base auditada = `f2aab3f` (previo a D-44). El sello cierra la
 ratificación + este aviso. Un remate posterior que solo rellene el SHA
@@ -144,10 +144,10 @@ f3a574c plan(gobierno): tip SHA HEAD R12-Z reintento PASS
 46c3e5c plan(gobierno): sync-map post-apply · refresh proyección issues (alcance=todos, #16-#53)
 ```
 
-### Log del sello (tras commit; se completa en remate)
+### Log del sello (`f2aab3f..2ef0d79`)
 
 ```text
-«PENDIENTE-SELLO» plan(gobierno): D-44 · ratificación #16–#53 · R12-Z segundo reintento PASS
+2ef0d79 plan(gobierno): D-44 · ratificación #16–#53 · R12-Z segundo reintento PASS
 ```
 
 ### Temático (sin rewrite)
@@ -192,7 +192,8 @@ orquestador · no pedir R13 · no crear Issues nuevos.
 Pedido: R12-Z PASS (segundo reintento)
 Patrón: base auditada + commit sello (sin tip autorreferencial)
 base auditada: f2aab3f (= origin/main previo a D-44)
-commit sello: «PENDIENTE-SELLO» (asienta D-44 + este aviso; remate solo rellena SHA)
+commit sello: 2ef0d79 = 2ef0d791d4d0329186af1a6d80de2b4350d03cf5
+  (asienta D-44 + este aviso; remate solo documenta SHA · no tip-loop)
 D-44: conservar Issues #16–#53 + plan/.sync-map.json de 46c3e5c
 DC-15: excepción solo #16–#53 · LOCAL-ONLY por defecto · sin Issues nuevos
 DA-S21: 2eb4784 asentada · HOLD autoridad R13 levantado
