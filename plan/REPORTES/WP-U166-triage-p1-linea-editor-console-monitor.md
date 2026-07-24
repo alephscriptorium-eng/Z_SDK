@@ -233,4 +233,15 @@ Ninguno para cerrar U166. Listo para revisión.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅ · 2026-07-24.**
+
+- ALCANCE_DIFF: allowlist + audit + reporte; conforme a la vía B.
+- Decisiones explícitas: `console-monitor` → mantener privado;
+  `linea-editor` → candidato P1 medido.
+- Posesión U166 respetada: enmienda §3/§4 y `CANDIDATES.P1`
+  coherentes.
+- Re-gate independiente: `npm run audit:publish-allowlist` exit 0
+  (49 paquetes; 5 candidatos = P0×4 + P1×1) y `npm run gates` OK.
+- Packs independientes: console-monitor 18 ficheros; linea-editor 12.
+- Fronteras: `private: true` intacto ×2; sin publish, changesets, P0,
+  blobstore, BACKLOG ni gate U165.
