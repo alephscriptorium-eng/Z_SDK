@@ -268,4 +268,15 @@ momento de la evidencia; si el registry bumba antes del merge, re-correr
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅ · 2026-07-24.**
+
+- ALCANCE_DIFF: 3 manifests P0 + este reporte; conforme.
+- Fronteras: `private: true` intacto ×3; sin allowlist, changesets,
+  workflow de release ni publish.
+- Re-gate independiente: `npm run gates` → `gates: OK (0 offenders)`.
+- Tests tras `npm ci`: linea-firehose 1/1, force-system 2/2,
+  ssb-system 4/4.
+- Pack independiente: 6 / 8 / 11 ficheros; `ssb-system` sin
+  fixtures/tests.
+- Ruido EOL producido por `npm ci` en tres binarios fuera de alcance:
+  restaurado antes de aceptar; worktree limpio.
