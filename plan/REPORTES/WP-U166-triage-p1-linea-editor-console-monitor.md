@@ -5,7 +5,7 @@
 | agente | worker swarm (WP-U166) |
 | fecha | 2026-07-24 |
 | rama | `wp/u166-triage-p1-linea-editor-console-monitor` |
-| commits | `b3d99b7` · `8dfb9ce` |
+| commits | `b3d99b7` · `8dfb9ce` · `3a87b22` |
 | eje(s) CA | IV |
 | estado propuesto | listo para revisión |
 | DC | DC-15 LOCAL-ONLY |
