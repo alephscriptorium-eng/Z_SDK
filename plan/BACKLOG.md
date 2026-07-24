@@ -37,8 +37,9 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > `289b7fe` (obra `1bfd9b8`). **U164 ✅** · **U166 ✅** intactos. Gate
 > FAIL archivado:
 > [GATE-R11-Z-FAIL-REINTENTO.md](REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md).
-> Pedido **nuevo reintento R11-Z** a SOL (no declarar PASS). Aviso
-> previo obsoleto:
+> Pedido **nuevo reintento R11-Z** a SOL (no declarar PASS). Aviso:
+> [AVISO-R11-Z-reintento-u165-semver.md](REPORTES/entregas/AVISO-R11-Z-reintento-u165-semver.md)
+> (espejo `vigilancia/z/`). Aviso previo obsoleto:
 > [AVISO-R11-Z-reintento-u165.md](REPORTES/entregas/AVISO-R11-Z-reintento-u165.md).
 > Allowlist solo lectura. Frontera dura: **cero** flip `private` ·
 > **cero** changesets de pub · **cero** `npm publish`. FAIL sensor
