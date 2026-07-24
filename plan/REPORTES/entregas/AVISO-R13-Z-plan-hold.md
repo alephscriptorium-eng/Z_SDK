@@ -81,5 +81,5 @@ anotar cascada en el aviso del despacho. Esta pasada de planificación:
 | dato | valor |
 | ---- | ----- |
 | Tip base pre-lote | `1cf1318` (AVISO PAUSA) |
-| Tip planificación R13/D-42 | `<pendiente de commit — tip-fill>` |
+| Tip planificación R13/D-42 | `0ae4692` |
 | Push | normal (sin force) |
