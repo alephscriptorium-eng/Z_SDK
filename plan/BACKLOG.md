@@ -27,13 +27,16 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO/IDLE · U162 🔶)
+## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO/IDLE · U162 ✅)
 
 > **R6-Z PASS** (`vigilancia/z/GATE-R6-Z-PASS.md`). **Sprint 7 CERRADO /
 > IDLE:** U155–U161 ✅ (tip código U158 `e62a990` · CI `30071337545` ·
-> registry `89412677473`). **Post-cierre en curso:** **U162** 🔶
-> (GO implementación custodio · 2026-07-24). Brief:
+> registry `89412677473`). **Post-cierre:** **U162** ✅ — inventario
+> 49/49 (29 publicados · 7 candidatos · 13 mantener privados), allowlist
+> explícita y plan U163–U167 propuesto; merge `696ffff`. Brief:
 > [WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
+> Reporte:
+> [WP-U162-auditoria-publish-allowlist.md](REPORTES/WP-U162-auditoria-publish-allowlist.md).
 > Fuente:
 > [ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md).
 > Frontera: **cero** npm publish · **cero** flip `private` en U162.
@@ -102,17 +105,17 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | ✅ |
 | **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U158 · CERRADO |
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
-| **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | 🔶 |
+| **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U162** 🔶 (worker · 2026-07-24 · GO custodio).
-**Pendiente:** ninguno del frente U162 (Sprint 7 sigue IDLE/cerrado).
+**En curso:** ninguno — Sprint 7 y frente U162 **IDLE**; 0 🔶.
+**Pendiente:** ninguno autorizado; U163–U167 son propuestas sin GO.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U158** ✅ · **U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ ·
+**Aceptado:** **U162** ✅ · **U158** ✅ · **U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ ·
 **U156** ✅ · **U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ ·
 **U152** ✅ · **U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico).
 **D-35** / **D-37**.
@@ -242,7 +245,7 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
 
 ---
 
-## Post-Sprint 7 — auditoría publish (U162 🔶 · GO custodio)
+## Post-Sprint 7 — auditoría publish (U162 ✅ · 2026-07-24)
 
 Fuente (archivada en repo; espejo vigilancia):
 [ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md)
@@ -253,27 +256,24 @@ permanece CERRADO / IDLE** — no reabre U155–U161. **GO implementación
 U162** (custodio · 2026-07-24). Frontera dura del WP: **cero** flip
 `private` · **cero** npm publish. DC-15 LOCAL-ONLY.
 
-### WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus — 🔶
+### WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus — ✅
 
-- 🔶 **WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus** —
-  en curso (worker · 2026-07-24 · GO custodio). Est. L. Dep: post-U158 ✅ ·
-  Sprint 7 IDLE · R6-Z PASS. Rama
-  `wp/u162-auditoria-publish-allowlist` · worktree
-  `C:\S_LAB\.worktrees\z\wp-u162-auditoria-publish-allowlist`. Fuente:
+- ✅ **WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus** —
+  aceptado (orquestador · 2026-07-24 · GO custodio). Tip rama
+  `891379d` · merge `696ffff`. Est. L. Dep: post-U158 ✅ · Sprint 7 IDLE ·
+  R6-Z PASS. Fuente:
   [REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md).
   Brief:
   [REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
   Reporte:
   [REPORTES/WP-U162-auditoria-publish-allowlist.md](REPORTES/WP-U162-auditoria-publish-allowlist.md)
-  (worker). **Qué:** (1) fijar en fuente única qué clases de mesh pueden
-  publicarse; (2) cotejar los 49 paquetes contra registry; (3) clasificar
-  `mantener privado | candidato | ya publicado`; (4) para cada candidato
-  medir `publishConfig`, `files`, exports/types, dependencias internas,
-  changeset, workflow y C8; (5) partir la implementación posterior en WPs
-  pequeños. **CA:** inventario 49/49 reproducible; `npm view` literal por
-  candidato; allowlist explícita; tarball/contents y tipos medidos;
-  **cero** cambios `private` y **cero** publish; plan de WPs con deps y
-  estimación. **Demolición:** n/a. **Eje:** IV.
+  (PASS). Fuente única:
+  [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **Resultado:** inventario
+  reproducible 49/49 = 29 publicados + 7 candidatos + 13 privados;
+  `npm view` y `npm pack --dry-run` medidos para P0/P1; gates OK.
+  Plan sugerido U163–U167 queda **sin GO / no encolado**. **CA:**
+  cumplidos. **Frontera:** cero cambios `private`, cero publish, cero
+  workflows/changesets de release. **Demolición:** n/a. **Eje:** IV.
 
 ---
 
