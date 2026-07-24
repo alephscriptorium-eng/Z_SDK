@@ -27,19 +27,18 @@ U171; solo tras cumplir D-42 completo + tip con runners verdes.
       `packages/engine/**`; P0×4 mesh → pack dry-run ×4)
 - [x] Flip `private: false` deliberado en tip `b717123` (solo P0×4)
 
-## Secuencia GO publish (GO FINAL activo · 2026-07-25)
+## Secuencia GO publish (GO FINAL **DONE** · 2026-07-25)
 
-1. Tip limpio = `origin/main`; higiene worktrees.
-2. Flip `private: false` **solo** en los cuatro P0 (commit dedicado) — hecho `b717123`.
-3. Crear changesets de release para los cuatro (bump patch/minor según
-   política); **no** mezclar con U178 ni clases excluidas — hecho.
-4. Push a `main` → workflow **Release** (paths `.changeset/**` +
-   `packages/**`) → Version PR / publish automático del pipeline.
-5. **No** `npm publish` manual en workstation.
-6. Verificar C8: `npm view @zeus/<pkg> version --registry
-   https://npm.scriptorium.escrivivir.co` ×4.
-7. Documentar run-ids CI + Release + versiones publicadas.
-8. Pedir sello Rn-Z / gate online post-publish si el custodio lo exige.
+1. [x] Tip limpio = `origin/main`; higiene worktrees.
+2. [x] Flip `private: false` **solo** en los cuatro P0 — `b717123`.
+3. [x] Changesets de release P0×4 — `e873376` (+ relanzar `64175cb`).
+4. [x] Release → Version PR **#54** (`30134377681`) → merge `e8c5ac2` →
+   publish Release **`30134579637`** · CI **`30134579623`**.
+5. [x] **No** `npm publish` manual.
+6. [x] C8: `npm view` ×4 → **0.1.1** (registry propio).
+7. [x] Run-ids + versiones en
+   [AVISO-PUBLISH-FINAL-P0-DONE.md](entregas/AVISO-PUBLISH-FINAL-P0-DONE.md).
+8. [ ] Sello Rn-Z / gate online post-publish — si el custodio lo exige.
 
 ## Fuera de alcance
 

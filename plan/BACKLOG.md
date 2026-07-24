@@ -35,41 +35,39 @@ sin impl./despacho/publish).
 
 ---
 
-## Remate — estado swarm (2026-07-25 · **R14-Z PASS** · **PAUSA publish FINAL** · **PAUSA parcial (resto)**)
+## Remate — estado swarm (2026-07-25 · **R14-Z PASS** · **PUBLISH FINAL P0×4 DONE** · **PAUSA parcial (resto)**)
 
-> **PAUSA INMEDIATA publish FINAL** (orden custodio · «Manda pausar al
-> R14PASS» · 2026-07-25): **detenido** todo flip/changeset/Release/
-> `npm publish` adicional. Tip al corte: **`7420772`**. Release
-> `30133867581` **cancelled** antes de «Create Release PR or publish».
-> Registry P0×4 sigue **E404** (sin publish efectivo). Aviso:
+> **PUBLISH FINAL P0×4 DONE** (relanzar post-pausa · orden custodio ·
+> 2026-07-25): tip **`e8c5ac2`**. Versiones registry **0.1.1** ×4
+> (dejan E404). Changeset `d42-go-publish-p0x4` **consumido**. Aviso:
+> [AVISO-PUBLISH-FINAL-P0-DONE.md](REPORTES/entregas/AVISO-PUBLISH-FINAL-P0-DONE.md)
+> (espejo `vigilancia/z/`). Pausa histórica:
 > [AVISO-PAUSA-PUBLISH-FINAL-R14.md](REPORTES/entregas/AVISO-PAUSA-PUBLISH-FINAL-R14.md).
-> Esperar nueva orden explícita del custodio. **R13 intacto**.
+> **R13 intacto** (sin abrir U172–U178 / U73).
+>
+> Cadena Release: relanzar `64175cb` → Version PR Release
+> **`30134377681`** (success · PR **#54**) → merge `e8c5ac2` → publish
+> Release **`30134579637`** (success) · CI tip **`30134579623`**
+> (success). Cancelado histórico: `30133867581`. Flip
+> `private:false` P0×4 (`b717123`) · bump `3b6eb2f` → **0.1.1**.
+> `gate:publish-ready` post-publish **OK**.
 >
 > **R14-Z PASS** (vigía Z · Dionisos / gorro de SOL · 2026-07-25):
 > [GATE-R14-Z-PASS.md](REPORTES/entregas/GATE-R14-Z-PASS.md)
 > (espejo `vigilancia/z/GATE-R14-Z-PASS.md`). Anclas: base `4090dab` ·
 > obra `ce5b3c8` · remate obra `36393df`. U168–U171 ✅ · olas A→B→C ·
-> CI `30132311974` / `30132130125` / `30131689034` · Release
-> `30131689030` (success, sin publish efectivo pre-GO) ·
-> `gate:publish-ready` OK P0×4 · contrarrevisión PASS · U170 = mecanismo.
->
-> **GO publish FINAL P0×4 — PAUSADO** (había sido elevado con R14; no
-> avanzar). Estado residual en tip (no revertido sin orden): flip
-> `private:false` P0×4 (`b717123`) + changeset
-> `.changeset/d42-go-publish-p0x4.md` (`e873376`) ya en `origin/main`.
-> **No** merge Version PR · **no** publish. **No** abre R13 ·
-> U172–U178 · U73 ni `linea-editor`.
+> pre-GO Release `30131689030` · contrarrevisión PASS · U170 = mecanismo.
 >
 > **U168–U171 ✅** (Sprint 9 / R12 obra cerrada). Pedido gate origen:
 > [AVISO-R12-Z-obra-cerrada-pedido-gate.md](REPORTES/entregas/AVISO-R12-Z-obra-cerrada-pedido-gate.md).
-> **PAUSA PARCIAL** sigue para R13 · U172–U178 · U73 · demoliciones ·
-> publish (incluido P0×4). Aviso parcial:
+> **PAUSA PARCIAL** sigue para R13 · U172–U178 · U73 · demoliciones
+> (publish P0×4 **cerrado**). Aviso parcial:
 > [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md)
 > (espejo `vigilancia/z/`). Corte global de origen:
 > [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md).
 >
-> Olas ejecutadas: **A** `U168 ∥ U170` → **B** `U169` → **C** `U171`.
-> Fase publish D-42 **PAUSADA**. Replan:
+> Olas ejecutadas: **A** `U168 ∥ U170` → **B** `U169` → **C** `U171`
+> → **Publish** D-42 P0×4 **DONE**. Replan:
 > [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
 >
 > **R13-Z PASS** de planificación vigente (espejo
@@ -92,9 +90,8 @@ sin impl./despacho/publish).
 > (conservar; sin Issues nuevos). Aviso adopción engines:
 > [AVISO-ADOPCION-0.10-engines-node22.md](REPORTES/entregas/AVISO-ADOPCION-0.10-engines-node22.md).
 >
-> **GO publish condicionado P0×4 (D-42) → GO FINAL PAUSADO** (orden
-> custodio post-R14). Residuo tip: flip + changeset en main; Release
-> cancelado; cero publish. Fuente:
+> **GO publish condicionado P0×4 (D-42) → GO FINAL DONE** (relanzar
+> post-pausa). C8: `npm view` **0.1.1** ×4 en registry propio. Fuente:
 > [ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md)
 > · checklist
 > [CHECKLIST-GO-PUBLISH-P0.md](REPORTES/CHECKLIST-GO-PUBLISH-P0.md).
@@ -179,10 +176,10 @@ sin impl./despacho/publish).
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno. **PAUSA publish FINAL** + **PAUSA parcial**
-(R13/U172–U178/U73). U168–U171 ✅. Tip `7420772` (flip+changeset
-residual; Release `30133867581` cancelled; registry E404). **U178** ⬜
-PAUSA. **R13** intacto. Adopción **0.10.0** + `engines.node >=22.0.0`.
+**En curso:** ninguno. **PUBLISH FINAL P0×4 DONE** · **PAUSA parcial**
+(R13/U172–U178/U73). U168–U171 ✅. Tip `e8c5ac2` · Release publish
+`30134579637` · C8 **0.1.1** ×4. **U178** ⬜ PAUSA. **R13** intacto.
+Adopción **0.10.0** + `engines.node >=22.0.0`.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -206,26 +203,25 @@ Detalle: [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-
 Pedido SOL (histórico plan): [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
 PAUSA parcial: [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md).
 
-**Estado:** **U168–U171 ✅** · Sprint 9 / R12 **obra cerrada**. **No**
-reabre Sprint 8 ni U165. **No** abre R13 / U172–U178 / U73. Publish
-real P0×4 = **GO publish FINAL** activo (R14-Z PASS + custodio
-2026-07-25): flip + changesets + Release pipeline; sin `npm publish`
-manual.
+**Estado:** **U168–U171 ✅** · Sprint 9 / R12 **obra cerrada**. **GO
+publish FINAL P0×4 DONE** (tip `e8c5ac2` · **0.1.1** ×4). **No**
+reabre Sprint 8 ni U165. **No** abre R13 / U172–U178 / U73.
 
-**Fronteras duras:** sin `npm publish` manual · Release publish solo
-P0×4 bajo este GO FINAL · sin flip/changeset/publish de `linea-editor`
-ni excluidos §4 · R13/U172–U178/U73 intactos (PAUSA parcial).
+**Fronteras duras:** sin `npm publish` manual · sin flip/changeset/
+publish de `linea-editor` ni excluidos §4 · R13/U172–U178/U73 intactos
+(PAUSA parcial).
 
-**GO publish FINAL (D-42):** condiciones + R14 PASS cumplidos; secuencia
-y evidencia las conserva el orquestador (checklist
-[CHECKLIST-GO-PUBLISH-P0.md](REPORTES/CHECKLIST-GO-PUBLISH-P0.md)).
+**GO publish FINAL (D-42):** **DONE** — evidencia en
+[AVISO-PUBLISH-FINAL-P0-DONE.md](REPORTES/entregas/AVISO-PUBLISH-FINAL-P0-DONE.md)
+· checklist
+[CHECKLIST-GO-PUBLISH-P0.md](REPORTES/CHECKLIST-GO-PUBLISH-P0.md).
 
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U168 · U170 | Sprint 8 ✅ · R12-Z PASS + GO impl. | U168 ∥ U170 |
 | **B** | U169 | U168 ✅ | secuencial (posee gate) |
 | **C** | U171 | U168 ✅ + U169 ✅ | prep pub (sin publish real) |
-| Publish | — | **GO publish FINAL** (R14-Z PASS + custodio) | flip + changesets + Release pipeline P0×4 |
+| Publish | — | **DONE** (Release `30134579637`) | P0×4 @ **0.1.1** |
 
 ### WP-U168 · Migrar P0×4 a major-band — ✅
 

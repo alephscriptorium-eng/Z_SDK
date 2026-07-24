@@ -520,7 +520,12 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   **Acto 2026-07-25:** custodio eleva **GO publish FINAL** junto a
   **R14-Z PASS** (archivo
   [GATE-R14-Z-PASS.md](REPORTES/entregas/GATE-R14-Z-PASS.md)); activa
-  la fase restante D-42 solo para P0×4. **Decisión (b) — `@zeus/linea-editor` (P1):** sigue
+  la fase restante D-42 solo para P0×4.
+  **Acto 2026-07-25 (cierre):** publish FINAL P0×4 **DONE** tras relanzar
+  post-pausa — tip `e8c5ac2` · Release publish `30134579637` · C8
+  **0.1.1** ×4 · aviso
+  [AVISO-PUBLISH-FINAL-P0-DONE.md](REPORTES/entregas/AVISO-PUBLISH-FINAL-P0-DONE.md).
+  **Decisión (b) — `@zeus/linea-editor` (P1):** sigue
   candidato (no privado por producto) pero no está preparado → WP
   publish-ready **separado** (**WP-U178** ⬜); GO publish condicionado
   tras su **propio** PASS; **no** se mezcla con U171 ni con el lote P0×4.
