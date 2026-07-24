@@ -35,20 +35,19 @@ sin impl./despacho/publish).
 
 ---
 
-## Remate — estado swarm (2026-07-25 · **PAUSA parcial U168–U171** · **R12 GO impl.** · **R13 intacto**)
+## Remate — estado swarm (2026-07-25 · **U168–U171 ✅** · **PAUSA parcial (resto)** · **pedido gate pre-publish**)
 
-> **PAUSA PARCIAL** (TICK custodio · 2026-07-25). Obra autorizada **solo**
-> **U168–U171** (Sprint 9 / R12 · major-band + contrarrevisión + prep pub).
-> Resto del corte técnico **sigue en PAUSA**: R13 · U172–U178 · U73 ·
-> demoliciones · publish real. Aviso:
+> **U168–U171 ✅** (Sprint 9 / R12 obra cerrada). Pedido gate:
+> [AVISO-R12-Z-obra-cerrada-pedido-gate.md](REPORTES/entregas/AVISO-R12-Z-obra-cerrada-pedido-gate.md).
+> **PAUSA PARCIAL** sigue para R13 · U172–U178 · U73 · demoliciones ·
+> publish real. Aviso parcial:
 > [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md)
 > (espejo `vigilancia/z/`). Corte global de origen:
 > [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md).
 >
-> **GO implementación U168–U171** (TICK) + **R12-Z PASS** vigente.
-> Olas: **A** `U168 ∥ U170` → **B** `U169` → **C** `U171`. **Sin**
-> `npm publish` manual · **sin** flip `private` hasta cumplir D-42
-> completo. Replan:
+> Olas ejecutadas: **A** `U168 ∥ U170` → **B** `U169` → **C** `U171`.
+> **Sin** `npm publish` manual · **sin** flip `private` hasta completar
+> D-42 (changesets + Release + C8). Replan:
 > [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
 >
 > **R13-Z PASS** de planificación vigente (espejo
@@ -154,18 +153,19 @@ sin impl./despacho/publish).
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ · **CERRADO** |
 | **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ · **CERRADO** (R11-Z PASS) |
-| **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | Ola A ✅ · Ola B ✅ · Ola C **U171 🔶** |
+| **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | ✅ · **CERRADO** (Olas A–C) |
 | **Cola publish P1** — publish-ready `linea-editor` (D-42) | **U178** | ⬜ · **PAUSA** (tras U168+U169; GO impl. propio) |
 | **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ · **PAUSA** · R13-Z PASS planificación · **sin GO impl. R13** · intacto |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** Ola C **U171 🔶** (PAUSA parcial · solo U168–U171).
-**Ola A ✅** · **Ola B ✅**. **No** `npm publish` manual; publish real
-P0×4 = **GO condicionado D-42** al cumplir condiciones. **U178** ⬜ en
-PAUSA. **R13** intacto (sin despacho U172–U177/U73). Adopción
-**0.10.0** + `engines.node >=22.0.0` · tip `b348c59`.
+**En curso:** ninguno (U168–U171 ✅ · Sprint 9 código cerrado). **PAUSA
+parcial** sigue para R13/U172–U178/U73. **No** `npm publish` manual;
+publish real P0×4 = **GO condicionado D-42** (falta flips/changesets
+efectivos + Release + gate online/C8 post-prep). **U178** ⬜ en PAUSA.
+**R13** intacto. Adopción **0.10.0** + `engines.node >=22.0.0` · tip
+`b348c59`.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -189,9 +189,10 @@ Detalle: [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-
 Pedido SOL (histórico plan): [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
 PAUSA parcial: [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md).
 
-**Estado:** **GO implementación** · **Ola A ✅** · **Ola B ✅** · Ola C
-en curso (**U171 🔶**). **No** reabre Sprint 8 ni U165. **No** abre
-R13 / U172–U178 / U73.
+**Estado:** **U168–U171 ✅** · Sprint 9 / R12 **obra cerrada**. **No**
+reabre Sprint 8 ni U165. **No** abre R13 / U172–U178 / U73. Publish
+real = fase D-42 restante (flip + changesets + Release pipeline; sin
+`npm publish` manual).
 
 **Fronteras duras:** sin `npm publish` manual · sin Release publish
 efectivo · sin flip `private` / changesets de pub efectivos hasta
@@ -244,17 +245,18 @@ conserva el orquestador).
   [REPORTES/briefs/WP-U170-contrarrevision-riesgo.md](REPORTES/briefs/WP-U170-contrarrevision-riesgo.md).
   Aplica a U168/U169/U171. Cero `packages/**`. **Eje:** IV (proceso).
 
-### WP-U171 · Preparar publicación (sin publish) — 🔶
+### WP-U171 · Preparar publicación (sin publish) — ✅
 
-- 🔶 **WP-U171 · Preparar publicación P0×4 (checklist / changesets dry)**
-  — en curso (orquestador / 2026-07-25). Est. M. Dep: **U168 ✅** +
-  **U169 ✅**. Ola C. Rama `wp/u171-prep-publicacion`. Worktree
-  `C:\S_LAB\.worktrees\z\wp-u171-prep-publicacion`. Brief:
-  [REPORTES/briefs/WP-U171-prep-publicacion.md](REPORTES/briefs/WP-U171-prep-publicacion.md).
-  **Qué:** checklist release · dry-run changesets /
-  `release:changeset-dry` · documentar pasos GO publish. **Fuera:**
-  `npm publish` · Release publish efectivo · flip `private` sin GO
-  publish. **Contrarrevisión** obligatoria. **Eje:** IV.
+- ✅ **WP-U171 · Preparar publicación P0×4 (checklist / changesets dry)**
+  — aceptado (orquestador / 2026-07-25). Merge `90914c3`. Tip obra
+  `2388668`. Contrarrevisión PASS:
+  [REPORTES/entregas/CONTRARREVISION-U171-PASS.md](REPORTES/entregas/CONTRARREVISION-U171-PASS.md).
+  Checklist:
+  [REPORTES/CHECKLIST-GO-PUBLISH-P0.md](REPORTES/CHECKLIST-GO-PUBLISH-P0.md).
+  Reporte:
+  [REPORTES/WP-U171-prep-publicacion.md](REPORTES/WP-U171-prep-publicacion.md).
+  Dry-run sin changesets pendientes; `private: true` intacto; cero
+  publish. **Eje:** IV.
 
 ---
 
