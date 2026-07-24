@@ -49,14 +49,14 @@ Validar el plan Sprint 8 y emitir **R8-Z PASS** (o FAIL con evidencia).
 | **B** | U164 ∥ U165 ∥ U166 | U163 ✅ | tras Ola A / U163 |
 | Publish | — | GO aparte | private + changesets de pub + npm publish |
 
-## Tip gobierno (rellenar tras push)
+## Tip gobierno
 
 | dato | valor |
 | ---- | ----- |
-| Tip planificación Sprint 8 | `<TIP tras push de este aviso>` |
+| Tip planificación Sprint 8 | `ad738220444deb7e7af3d3f67cdcf4c5e13155f0` |
 | Tip base (R7-Z PASS) | `42e55b3df2436198779773631d62c030baa9364b` |
 | Push | normal (sin force) |
-| Working tree esperado | limpio tras commit |
+| Working tree esperado | limpio tras tip-fill + push |
 
 ## Quietud / frontera
 
@@ -80,7 +80,8 @@ Hechos:
 - U162 ✅ solo por D-41 (no precedente; no reabrir como GO previo)
 
 Pedir: R8-Z PASS (planificación) o FAIL con evidencia.
-Tip gobierno: <TIP tras push>
+Tip gobierno: ad738220444deb7e7af3d3f67cdcf4c5e13155f0
+(serie tip-fill → HEAD tras push)
 Replan: plan/REPORTES/entregas/REPLAN-2026-07-24-sprint8.md
 DC-15: LOCAL-ONLY
 ```
