@@ -28,7 +28,7 @@ export const CANDIDATES = Object.freeze({
     '@zeus/force-system',
     '@zeus/ssb-system'
   ],
-  P1: ['@zeus/linea-editor', '@zeus/console-monitor']
+  P1: ['@zeus/linea-editor']
 });
 
 const ALL_CANDIDATES = new Set([...CANDIDATES.P0, ...CANDIDATES.P1]);
