@@ -41,7 +41,7 @@ la estrategia posterior (olas candidatas); publish real = GO aparte.
 
 | dato | valor |
 | ---- | ----- |
-| Tip gobierno corrección | `<tip tras commit de esta entrega>` |
+| Tip gobierno corrección | ``fc4d565ea27a6ceb6ec4e708531082d01e14d08d`` |
 | Push | normal (sin force) |
 | Acta | `plan/REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md` |
 | Aviso cierre corregido | `plan/REPORTES/entregas/AVISO-U162-cierre.md` |
