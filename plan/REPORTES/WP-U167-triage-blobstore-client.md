@@ -5,7 +5,7 @@
 | agente | worker swarm (WP-U167) |
 | fecha | 2026-07-24 |
 | rama | `wp/u167-triage-blobstore-client` |
-| commits | `d96d0ba` · `dfc7e6e` |
+| commits | `d96d0ba` · `dfc7e6e` · `c7f4532` |
 | eje(s) CA | IV |
 | estado propuesto | listo para revisión |
 
