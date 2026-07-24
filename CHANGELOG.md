@@ -25,6 +25,26 @@ prose.
 
 ---
 
+## [Sprint 8 Ola A] — 2026-07-24
+
+Publish-ready mesh · R8-Z PASS + GO Ola A · **U163 ✅ ∥ U167 ✅**.
+Frontera: sin flip `private` · sin changesets de pub · sin `npm publish`.
+Ola B (U164–U166) retenida sin GO.
+
+### Added
+
+- WP-U163 — POC publish-ready `@zeus/linea-system` (plantilla P0:
+  `publishConfig.registry`, `files`, pines `@zeus/*`, JS-only, pack
+  dry-run medible).
+
+### Changed
+
+- WP-U167 — triage P1 `@zeus/blobstore-client` **vía B**: democión a
+  «mantener privado» (allowlist §3/§4 + `audit:publish-allowlist`
+  coherente; acoplamiento harness / D-22).
+
+---
+
 ## [Sprint 6] — 2026-07-20
 
 Proyección backlog→Issues (skills 0.3.3) · GO usuario · D-38.

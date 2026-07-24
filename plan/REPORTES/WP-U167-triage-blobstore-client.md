@@ -156,4 +156,16 @@ Ninguno para cerrar U167 vía B.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅** (orquestador · 2026-07-24).
+
+- Vía B cerrada con causa verificable: dependencia runtime del harness
+  privado, tarball contaminado por fixtures/tests y sidecar D-22 diferido.
+- Allowlist §3/§4 y auditor nominal coherentes: 6 candidatos
+  (P0=4, P1=2); `blobstore-client` = mantener privado.
+- Eje IV: fuente humana + sensor ejecutable alineados.
+- Fronteras verificadas: `private: true` intacto; cero `.changeset/**`,
+  workflow publish, `npm publish`, BACKLOG, P0 o paquetes U166.
+- Excepción de alcance aprobada: las líneas de
+  `scripts/audit-publish-allowlist.mjs` son el mínimo imprescindible para
+  satisfacer la CA explícita de coherencia del auditor con §3.
+- Merge post-✅ a `main` (`f46743b`).
