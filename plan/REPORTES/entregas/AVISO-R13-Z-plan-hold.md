@@ -96,5 +96,5 @@ anotar cascada en el aviso del despacho. Esta pasada de planificación:
 | Tip base pre-lote | `1cf1318` (AVISO PAUSA) |
 | Tip planificación R13/D-42 | `0ae4692` |
 | Tip aviso hold SHA | `9cdbb5a` |
-| Tip enmienda DA-S21 / HOLD autoridad | *(este commit)* |
+| Tip enmienda DA-S21 / HOLD autoridad | `c22dd65` |
 | Push | normal (sin force) |
