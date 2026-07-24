@@ -26,8 +26,8 @@ decida.
 
 | dato | valor |
 | ---- | ----- |
-| Tip canónico | `f3a574c` = `f3a574c38190b41c299d6d6d4d32d8dea88285d3` |
-| Verificación | `git rev-parse HEAD` = `git rev-parse origin/main` = tip canónico (**sin divergencia**) |
+| Tip canónico | `91fd020` = `91fd020698b600240401ec7efcadbbffbb8cc5da` |
+| Verificación | Tras push: `HEAD` = `origin/main` (**sin divergencia**). Auditar ese tip (contiene aviso + corrección). |
 | Enmienda DA-S21 (scriptorium) | `2eb4784` |
 | Enmienda gobierno DA-S21 (Z) | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
 | Nota tip | Auditar **`origin/main`**. Este tip incluye la corrección R12-Z FAIL y este aviso. |
@@ -113,7 +113,7 @@ patrón.
 REPLAN R13 + D-43: frase «editor legado» presente; conteo patrón en esos
 textos de planificación = **0** (excl. línea de definición en addenda).
 
-## Rango exacto `4604984..f3a574c`
+## Rango exacto `4604984..91fd020`
 
 Base = `origin/main` previo al tip canónico de este reintento
 (`460498455560a85a41a55c99ca37f9e46ca157ff`).
@@ -121,6 +121,7 @@ Base = `origin/main` previo al tip canónico de este reintento
 ### Log oneline
 
 ```text
+91fd020 plan(gobierno): tip canónico R12-Z = origin/main
 f3a574c plan(gobierno): tip SHA HEAD R12-Z reintento PASS
 8a6ac46 plan(gobierno): tip SHA en aviso R12-Z reintento PASS
 8996cd8 plan(gobierno): tip canónico R12-Z reintento PASS
@@ -168,7 +169,7 @@ orquestador · no pedir R13.
 
 ```text
 Pedido: R12-Z PASS (reintento)
-tip canónico: f3a574c (= origin/main · sin divergencia · incluye corrección + este aviso)
+tip canónico: 91fd020 (= origin/main · sin divergencia · incluye corrección + este aviso)
 DA-S21: 2eb4784 asentada · HOLD autoridad R13 levantado · REPLAN R13 alineado
 PAUSA vigente · sin despacho · sin publish · sin pedir R13 ahora
 
@@ -183,7 +184,8 @@ Ceguera literal (alcance §WP / secciones WP; no global HEAD):
 - conteo patrón por sección BACKLOG U168–U178/U73 = 0 cada una
 - briefs U168–U178 = 0 cada uno
 
-Rango 4604984..f3a574c:
+Rango 4604984..91fd020:
+91fd020 plan(gobierno): tip canónico R12-Z = origin/main
 f3a574c plan(gobierno): tip SHA HEAD R12-Z reintento PASS
 8a6ac46 plan(gobierno): tip SHA en aviso R12-Z reintento PASS
 8996cd8 plan(gobierno): tip canónico R12-Z reintento PASS
