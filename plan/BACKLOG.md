@@ -27,13 +27,17 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 7 · U158 🔶 · R5-Z PASS)
+## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO · pedido R6-Z)
 
 > **R5-Z PASS** (`vigilancia/z/GATE-R5-Z-PASS.md` · tip `ff2557c` · CI
 > `30070436991` · Release `30070437022`). Autoriza despacho único
-> **U158**. Ola 3 previa: U161 ✅. Ola 2 ✅ (U157/U160). Ola 1 ✅.
+> **U158**, ya ✅ en merge `e62a990`. Smoke TypeScript desde registry real
+> GREEN (local + CI); CI tip `30071337545` success, job registry
+> `89412677473` success. **Sprint 7 CERRADO:** U155–U161 ✅.
 > Replan:
 > [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
+> Acta:
+> [ACTA-CIERRE-SPRINT7-2026-07-24.md](REPORTES/entregas/ACTA-CIERRE-SPRINT7-2026-07-24.md).
 > DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear `.claude/skills/`).
 >
 > **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
@@ -93,18 +97,18 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 5** — docs: página Proyecto + back-links por tema | **U152** | ✅ |
 | **Sprint 5** — materializar estación de vigilancia | **U153** | ✅ |
 | **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | ✅ |
-| **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U157 · 🔶 U158 |
+| **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U158 · CERRADO |
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U158** 🔶 (orquestador-Z / 2026-07-24 · R5-Z PASS).
-**Pendiente:** cierre U158 → Sprint 7 cerrado → pedido **R6-Z**.
+**En curso:** ninguno — Sprint 7 cerrado; quietud OK.
+**Pendiente:** verificación custodio y **R6-Z PASS**.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ ·
+**Aceptado:** **U158** ✅ · **U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ ·
 **U156** ✅ · **U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ ·
 **U152** ✅ · **U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico).
 **D-35** / **D-37**.
@@ -113,7 +117,7 @@ economía CI) — ver triage U142.
 
 ---
 
-## Sprint 7 — ts-compat + extracción (GO · 2026-07-23 · U158 🔶 tras R5-Z)
+## Sprint 7 — ts-compat + extracción (CERRADO · 2026-07-24 · U155–U161 ✅)
 
 Fuente handoff apertura orquestador-Z (R1-Z). Detalle triage + olas:
 [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
@@ -124,7 +128,8 @@ custodio — solo **U161**; U158 tras Release verde y R5-Z PASS.
 **Gate remate U158:** `R5-Z PASS` (`vigilancia/z/GATE-R5-Z-PASS.md` ·
 tip `ff2557c`). **Ola 1:** U155 ✅ · U156 ✅ · U159 ✅. **Ola 2:**
 U157 ✅ · U160 ✅ (tip merge `53af36b`). **Ola 3:** U161 ✅.
-**Remate:** U158 🔶. DC-15 LOCAL-ONLY.
+**Remate:** U158 ✅ · merge `e62a990` · CI `30071337545` success.
+**Sprint 7 CERRADO.** Pedido: **R6-Z PASS**. DC-15 LOCAL-ONLY.
 
 ### (A) Compatibilidad TypeScript `@zeus/*`
 
@@ -169,18 +174,21 @@ U157 ✅ · U160 ✅ (tip merge `53af36b`). **Ola 3:** U161 ✅.
   cumplidos. **Eje:** IV. Residuales fans protocol / deferidos U156 →
   cola. CI ⏳.
 
-#### WP-U158 · smoke TS desde registry + CI — 🔶
+#### WP-U158 · smoke TS desde registry + CI — ✅
 
-- 🔶 **WP-U158 · Consumidor TypeScript limpio desde registry (C8) en
-  CI** — en curso (orquestador-Z / 2026-07-24 · R5-Z PASS). Est. M.
+- ✅ **WP-U158 · Consumidor TypeScript limpio desde registry (C8) en
+  CI** — aceptado (orquestador-Z / 2026-07-24 · R5-Z PASS). Est. M.
   Dep: U155+U156 ✅ (U157 refuerza; U161 publish resuelve costura).
   Brief:
   [REPORTES/briefs/WP-U158-smoke-ts-registry-ci.md](REPORTES/briefs/WP-U158-smoke-ts-registry-ci.md).
-  Rama `wp/u158-smoke-ts-registry` · worktree
-  `C:\S_LAB\.worktrees\z\wp-u158-smoke-ts-registry`. Extiende U54.
+  Rama `wp/u158-smoke-ts-registry` tip `cad90a6` · merge `e62a990`.
+  Reporte:
+  [REPORTES/WP-U158-smoke-ts-registry.md](REPORTES/WP-U158-smoke-ts-registry.md).
   **CA:** install `@zeus/*` tipados **desde registry real**
-  (`https://npm.scriptorium.escrivivir.co`); `tsc --noEmit` sin `any`
-  de escape; cableado CI. **Demolición:** N/A (añade gate).
+  (`https://npm.scriptorium.escrivivir.co`) GREEN; `tsc --noEmit` sin
+  `any` de escape exit 0; cableado CI. Run main `30071337545` success,
+  job registry `89412677473` success (no skip). **Demolición:** N/A
+  (añade gate; U54/U161 intacto).
 
 ### (B) Extracción dependencia cruzada `@alephscript/mcp-core-sdk`
 
@@ -225,7 +233,7 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
   [REPORTES/WP-U161-smoke-zeus-only.md](REPORTES/WP-U161-smoke-zeus-only.md).
   **CA:** cumplidos (smoke solo-`@zeus` exit 0; tabla demolición +
   excepciones ops `/spec` `/channels` operator-ui lock; tests+smoke).
-  **Ejes:** I + II. Pedido: **R5-Z**. U158 aún ⬜ (tras R5-Z PASS).
+  **Ejes:** I + II. U158 posterior ✅; Sprint 7 cerrado.
 
 ---
 
