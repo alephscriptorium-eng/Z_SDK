@@ -161,6 +161,10 @@ que changesets + el workflow de release consumen:
   `_password`, D-24). Verificación local sin publish:
   `npm run release:changeset-dry`. Los juegos y el mesh/editor siguen
   privados y no se publican desde aquí.
+  **Allowlist de clases publicables** (fuente única, WP-U162):
+  [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md) — la publicabilidad **no**
+  se infiere por ausencia de `private`; inventario:
+  `npm run audit:publish-allowlist`.
 
 ## 7. Ciclo de sprint (gobernanza)
 
