@@ -6,8 +6,8 @@
 | Para | vigía SOL (carril Z) vía custodio |
 | Fecha | 2026-07-24 |
 | Motivo | Pedir **R8-Z PASS** sobre planificación Sprint 8 (U163–U167) |
-| Gate previo | **R7-Z PASS** (`vigilancia/z/GATE-R7-Z-PASS.md`) |
-| Autorización | GO **planificación** custodio (no GO implementación) |
+| Gate previo | **R7-Z PASS** ([GATE-R7-Z-PASS.md](GATE-R7-Z-PASS.md); espejo `vigilancia/z/`) |
+| Autorización | GO **planificación** custodio (recomendado por GATE; no GO implementación) |
 | Espejo | `C:\S_LAB\vigilancia\z\AVISO-R8-Z-sprint8-plan.md` |
 
 ## Pedido a SOL
@@ -20,7 +20,8 @@ Validar el plan Sprint 8 y emitir **R8-Z PASS** (o FAIL con evidencia).
 ## Hechos (literal)
 
 1. **R7-Z PASS** registró corrección U162 (D-41 · no precedente) y
-   autorizó solo GO planificación Sprint 8.
+   recomendó al custodio solo **GO planificación** Sprint 8 (ejercido;
+   no GO implementación).
 2. Orquestador encoló **U163–U167** como **⬜** (0 🔶 · sin despacho).
 3. Briefs + replan + fronteras duras persistidos bajo `plan/`.
 4. **Cero workers** · **cero** cambios `private` · **cero** changesets

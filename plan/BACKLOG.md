@@ -31,8 +31,9 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ## Remate — estado swarm (2026-07-24 · Sprint 8 PLANIFICACIÓN/IDLE · R7-Z PASS · pedido R8-Z)
 
-> **R7-Z PASS** (`vigilancia/z/GATE-R7-Z-PASS.md`) · tip base
-> `42e55b3`. **GO planificación Sprint 8** (custodio): encolar
+> **R7-Z PASS** (`vigilancia/z/GATE-R7-Z-PASS.md` · copia
+> [GATE-R7-Z-PASS.md](REPORTES/entregas/GATE-R7-Z-PASS.md)) · tip base
+> `42e55b3`. **GO planificación Sprint 8** (custodio, vía GATE): encolar
 > **U163–U167** como ⬜ + briefs/deps/olas; **sin workers**, **sin**
 > cambios `private`, **sin** changesets de publicación, **sin** publish.
 > Pedido gate: [AVISO-R8-Z-sprint8-plan.md](REPORTES/entregas/AVISO-R8-Z-sprint8-plan.md)
@@ -130,7 +131,7 @@ economía CI) — ver triage U142.
 ## Sprint 8 — publish-ready mesh (PLANIFICACIÓN / IDLE · 2026-07-24 · U163–U167 ⬜)
 
 Fuente: plan U162 + allowlist + **GO planificación** custodio (vía
-`GATE-R7-Z-PASS`). Detalle olas/deps:
+[GATE-R7-Z-PASS](REPORTES/entregas/GATE-R7-Z-PASS.md)). Detalle olas/deps:
 [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
 Pedido SOL: [AVISO-R8-Z-sprint8-plan.md](REPORTES/entregas/AVISO-R8-Z-sprint8-plan.md).
 
@@ -328,8 +329,10 @@ permanece CERRADO / IDLE** — no reabre U155–U161. **U162** fue
 2026-07-24 · no precedente · no autoriza U163–U167). **R7-Z FAIL** de
 gobierno:
 [ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md).
-Frontera dura del WP: **cero** flip `private` · **cero** npm publish.
-DC-15 LOCAL-ONLY.
+Corrección registrada → **R7-Z PASS**
+([GATE-R7-Z-PASS.md](REPORTES/entregas/GATE-R7-Z-PASS.md); no GO
+implementación; no reabre U162 como GO previo). Frontera dura del WP:
+**cero** flip `private` · **cero** npm publish. DC-15 LOCAL-ONLY.
 
 ### WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus — ✅
 
