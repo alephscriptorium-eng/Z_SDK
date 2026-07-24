@@ -5,7 +5,7 @@
 | agente | Worker-U158 |
 | fecha | 2026-07-24 |
 | rama | `wp/u158-smoke-ts-registry` |
-| commit(s) | `6155bc091cca202097c5947016499306e67e5571` |
+| commit(s) | `6155bc091cca202097c5947016499306e67e5571` (feat) · tip rama `bbde6f9840edd11719f6e05b424e3be70681849f` |
 | eje(s) CA | C8 (canal real registry) + I (extracción con cableado: smoke+CI) |
 | estado propuesto | listo para revisión |
 
