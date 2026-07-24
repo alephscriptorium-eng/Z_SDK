@@ -26,10 +26,11 @@ decida.
 
 | dato | valor |
 | ---- | ----- |
-| Tip canónico | `ec0eebf` = `ec0eebffc7c0794de7052016590a93bcf50e21d7` |
-| Verificación | `HEAD` = `origin/main` = tip canónico (**sin divergencia**) |
+| Tip canónico | `TIP_SHORT` = `TIP_FULL` |
+| Verificación | `git rev-parse HEAD` = `git rev-parse origin/main` = tip canónico (**sin divergencia**) |
 | Enmienda DA-S21 (scriptorium) | `2eb4784` |
 | Enmienda gobierno DA-S21 (Z) | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
+| Nota tip | Auditar **`origin/main`**. Este tip incluye la corrección R12-Z FAIL y este aviso. |
 | FAIL previo tip solicitado | `3b09213` (aviso no estaba en ese snapshot) |
 
 ## PAUSA / frontera (literal)
@@ -112,7 +113,7 @@ patrón.
 REPLAN R13 + D-43: frase «editor legado» presente; conteo patrón en esos
 textos de planificación = **0** (excl. línea de definición en addenda).
 
-## Rango exacto `4604984..ec0eebf`
+## Rango exacto `4604984..TIP_SHORT`
 
 Base = `origin/main` previo al tip canónico de este reintento
 (`460498455560a85a41a55c99ca37f9e46ca157ff`).
@@ -120,8 +121,7 @@ Base = `origin/main` previo al tip canónico de este reintento
 ### Log oneline
 
 ```text
-ec0eebf plan(gobierno): corrección R12-Z FAIL · REPLAN DA-S21 · reintento PASS
-46c3e5c plan(gobierno): sync-map post-apply · refresh proyección issues (alcance=todos, #16-#53)
+TIP_LOG
 ```
 
 ### Temático (sin rewrite)
@@ -164,7 +164,7 @@ orquestador · no pedir R13.
 
 ```text
 Pedido: R12-Z PASS (reintento)
-tip canónico: ec0eebf (= origin/main · sin divergencia · incluye corrección + este aviso)
+tip canónico: TIP_SHORT (= origin/main · sin divergencia · incluye corrección + este aviso)
 DA-S21: 2eb4784 asentada · HOLD autoridad R13 levantado · REPLAN R13 alineado
 PAUSA vigente · sin despacho · sin publish · sin pedir R13 ahora
 
@@ -179,9 +179,8 @@ Ceguera literal (alcance §WP / secciones WP; no global HEAD):
 - conteo patrón por sección BACKLOG U168–U178/U73 = 0 cada una
 - briefs U168–U178 = 0 cada uno
 
-Rango 4604984..ec0eebf:
-ec0eebf plan(gobierno): corrección R12-Z FAIL · REPLAN DA-S21 · reintento PASS
-46c3e5c plan(gobierno): sync-map post-apply · refresh proyección issues (alcance=todos, #16-#53)
+Rango 4604984..TIP_SHORT:
+TIP_LOG
 
 Secuencia tras PASS: petición R13-Z (sin despacho hasta GO).
 Orquestador no declara PASS.
