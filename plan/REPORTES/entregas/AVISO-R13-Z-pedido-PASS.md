@@ -55,11 +55,10 @@ audita dos anclas estables:
 | ancla | SHA / significado |
 | ----- | ----------------- |
 | **Base auditada** | `b348c59` = `b348c594dbaebf5e1e5efa2d95e60cdbbb317449` — tip de `origin/main` con adopción 0.10.0 + engines Node 22 (CI/Docs verdes arriba) **previo** a este aviso |
-| **Commit sello** | `«PENDIENTE-SELLO»` — commit de gobierno que asienta este pedido R13-Z + marcas histórico/superado; se fija en remate inmediato **sin** reclamar que el tip del remate sea el objeto auditado |
+| **Commit sello** | `8dec15e` = `8dec15e5e821ae7abab0ce0aa7eb2a1e11714be8` — asienta este pedido R13-Z + marcas histórico/superado. El remate siguiente solo documenta este SHA; **no** es tip autorreferencial |
 
-Tras el remate del sello: verificar `origin/main` reachable; el **sello**
-es el commit de gobierno del pedido (no el commit cosmético que solo
-rellena el SHA).
+Verificar `origin/main` reachable tras push. El **objeto auditado** es
+**base** `b348c59` + **sello** `' + short + '` (no el tip del remate de SHA).
 
 ## PAUSA / frontera (literal)
 
@@ -133,7 +132,7 @@ patrón.
 REPLAN R13 + D-43: frase «editor legado» presente; conteo patrón en esos
 textos de planificación = **0** (excl. línea de definición en addenda).
 
-## Rango exacto `b348c59..«PENDIENTE-SELLO»`
+## Rango exacto `b348c59..8dec15e`
 
 Base auditada = `b348c59` (adopción PASS). El sello cierra el pedido
 R13-Z + marcas histórico. Un remate posterior que solo rellene el SHA
@@ -150,10 +149,10 @@ b348c59 build(engines): elevar Node raíz a >=22.0.0 (adopción 0.10)
 f2aab3f plan(gobierno): tip canónico R12-Z = origin/main (reintento)
 ```
 
-### Log del sello (tras commit; se completa en remate)
+### Log del sello (`b348c59..8dec15e`)
 
 ```text
-«PENDIENTE-SELLO» plan(gobierno): petición R13-Z PASS · D-43/HOLD históricos
+8dec15e plan(gobierno): petición R13-Z PASS · D-43/HOLD históricos post-adopción
 ```
 
 ### Temático (sin rewrite)
@@ -197,7 +196,8 @@ orquestador · no abrir tercer frente · no crear Issues nuevos.
 Pedido: R13-Z PASS (gate planificación / plan — no GO implementación)
 Patrón: base auditada + commit sello (sin tip autorreferencial)
 base auditada: b348c59 (= origin/main adopción 0.10.0 + engines Node 22)
-commit sello: «PENDIENTE-SELLO» (asienta este pedido + históricos; remate solo rellena SHA)
+commit sello: 8dec15e = 8dec15e5e821ae7abab0ce0aa7eb2a1e11714be8
+  (asienta este pedido + históricos; remate solo documenta SHA · no tip-loop)
 Evidencia adopción: tip b348c59 · CI 30128202345 success · Docs 30128202336 success
 R12-Z PASS vigente · DA-S21 2eb4784 · D-43 (secuencia histórica/superada) · D-44
 U73 + U172–U177 ⬜ · U178 ⬜ · sin workers · sin 🔶 · sin despacho · sin publish
