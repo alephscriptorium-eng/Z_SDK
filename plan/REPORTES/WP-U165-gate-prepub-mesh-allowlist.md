@@ -400,3 +400,16 @@ allowlist intact
 ### Dudas / bloqueos
 
 Ninguno. Push/merge = orquestador post-✅. No declarar R11-Z PASS.
+
+## Revisión del orquestador · re-✅ corrección R11-Z FAIL
+
+**Aceptado ✅ · 2026-07-24 (re-validado).**
+
+- CA del FAIL cubiertos: pines semver exactos; rechazo
+  latest/Git/URL/Windows; resolución registry C8 (`npm view`); probes
+  rojos ×5 + verde P0×4.
+- ALCANCE_DIFF: solo `scripts/gate-publish-ready.mjs` + reporte;
+  allowlist intacta; U164/U166 no reabiertos.
+- Fronteras: cero private · cero publish · cero changesets.
+- Merge `b550510` · tip obra `5a3c4d9`.
+- Siguiente: aviso **reintento R11-Z** (no declarar PASS).

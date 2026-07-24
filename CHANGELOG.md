@@ -22,10 +22,9 @@ prose.
   DC-24); Punto 4 (parser) sigue abierto en el mundo del paquete (su
   DC-25). Disponible pero **no cableado** aún: gate `verificar-changelog
   --role gobierno` (candidato follow-up para validar nuestro CHANGELOG).
-- **R11-Z FAIL** técnico → reapertura **U165 🔶** (corrección sensor
-  gate: pines semver + resolución registry + probes rojos). U164 ✅ ·
-  U166 ✅ intactos. Pedido R11-Z anterior invalidado hasta re-validar
-  U165.
+- **R11-Z FAIL** → **U165 ✅** re-validado (pines semver + resolución
+  registry + probes rojos). Pedido **reintento R11-Z** (no PASS). U164
+  ✅ · U166 ✅ intactos.
 
 ---
 
