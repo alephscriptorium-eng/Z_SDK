@@ -76,7 +76,7 @@ gate:publish-ready: OK (4 P0 candidates)
 | dato | valor |
 | ---- | ----- |
 | Tip código (merge U165 corrección) | `b550510f33dca98edb394fe1caa8ee8a157bd9e9` |
-| Tip gobierno (aceptación + este aviso) | `<rellenar tras commit aviso>` |
+| Tip gobierno (aceptación + este aviso) | `c0b178b7208a4d1699485ec7bca1a79ba3c9f739` |
 | Push | normal (sin force) |
 | CI | `30085114674` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30085114674 (head `1fc405a`; incluye merge código `b550510` + plan) |
 | smoke TS registry (job CI) | `89455353450` **success** |
@@ -111,7 +111,7 @@ Corrección U165 ✅:
 - verde P0×4 OK
 
 Tip código: b550510
-Tip gobierno aceptación: 1fc405a (+ aviso posterior si aplica)
+Tip gobierno (aviso): c0b178b7208a4d1699485ec7bca1a79ba3c9f739
 CI: 30085114674 success
 smoke: 89455353450 success
 
