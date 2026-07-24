@@ -1,5 +1,15 @@
 # @zeus/presets-sdk
 
+## 0.1.3
+
+### Patch Changes
+
+- 29e42cf: WP-U156: add `"types"` conditions on mesh-used subpaths (`./env`, `./paths`, `./discovery`, `./mcp`, `./volumes`, `./docs`, `./browse-core`, `./anchor-grid`).
+- Updated dependencies [6262f1d]
+- Updated dependencies [6262f1d]
+  - @zeus/http-contract@0.1.3
+  - @zeus/ui-kit@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes

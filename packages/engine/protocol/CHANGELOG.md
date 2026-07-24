@@ -1,5 +1,11 @@
 # @zeus/protocol
 
+## 0.4.1
+
+### Patch Changes
+
+- 76e183b: WP-U155: add `"types"` conditions on public JS subpath exports (`./peer-card-seat` first, then contract/roles/gates/acl/peer-card/node*) so TypeScript resolves declarations without forced `any`.
+
 ## 0.4.0
 
 ### Minor Changes

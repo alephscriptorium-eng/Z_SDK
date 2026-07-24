@@ -1,6 +1,6 @@
 {
   "name": "@zeus/game-engine",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Pure-logic gamemap engine + scenes + Alephillo/gamething specs. Browser-safe src/, served raw via express.static + import maps. Game-agnostic (D-8): consumers supply scenes/content.",
   "type": "module",
   "main": "src/index.mjs",
@@ -22,7 +22,7 @@
     "role": "lib"
   },
   "dependencies": {
-    "@zeus/protocol": "0.4.0"
+    "@zeus/protocol": "0.4.1"
   },
   "publishConfig": {
     "registry": "https://npm.scriptorium.escrivivir.co"

@@ -1,5 +1,12 @@
 # @zeus/operator-bridge
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [76e183b]
+  - @zeus/protocol@0.4.1
+
 ## 0.1.2
 
 ### Patch Changes

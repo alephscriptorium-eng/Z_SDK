@@ -1,5 +1,15 @@
 # @zeus/view-kit
 
+## 0.1.5
+
+### Patch Changes
+
+- 6262f1d: WP-U157: add root/subpath `"types"` conditions and publish `.d.ts` for the grafo-cercano lote.
+- Updated dependencies [76e183b]
+- Updated dependencies [29e42cf]
+  - @zeus/protocol@0.4.1
+  - @zeus/ui-3d-kit@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

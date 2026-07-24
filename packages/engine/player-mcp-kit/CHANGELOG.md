@@ -1,5 +1,15 @@
 # @zeus/player-mcp-kit
 
+## 0.1.4
+
+### Patch Changes
+
+- 6262f1d: WP-U157: add root/subpath `"types"` conditions and publish `.d.ts` for the grafo-cercano lote.
+- Updated dependencies [29e42cf]
+- Updated dependencies [21796ba]
+  - @zeus/presets-sdk@0.1.3
+  - @zeus/rooms@0.1.2
+
 ## 0.1.3
 
 ### Patch Changes

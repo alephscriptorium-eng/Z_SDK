@@ -1,6 +1,6 @@
 {
   "name": "@zeus/test-utils",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Shared smoke-test helpers for Zeus MCP packages",
   "type": "module",
   "main": "src/index.mjs",
@@ -15,7 +15,7 @@
     "role": "lib"
   },
   "dependencies": {
-    "@zeus/http-contract": "0.1.2",
+    "@zeus/http-contract": "0.1.3",
     "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "publishConfig": {
