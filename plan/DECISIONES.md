@@ -516,7 +516,11 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   release. Hasta cumplirlas: **cero** `npm publish` / flip `private` /
   changesets de pub efectivos. El flag `private: true` operativo **no**
   excluye un nombre presente en allowlist §3 (se mantiene hasta la fase
-  de publicación). **Decisión (b) — `@zeus/linea-editor` (P1):** sigue
+  de publicación).
+  **Acto 2026-07-25:** custodio eleva **GO publish FINAL** junto a
+  **R14-Z PASS** (archivo
+  [GATE-R14-Z-PASS.md](REPORTES/entregas/GATE-R14-Z-PASS.md)); activa
+  la fase restante D-42 solo para P0×4. **Decisión (b) — `@zeus/linea-editor` (P1):** sigue
   candidato (no privado por producto) pero no está preparado → WP
   publish-ready **separado** (**WP-U178** ⬜); GO publish condicionado
   tras su **propio** PASS; **no** se mezcla con U171 ni con el lote P0×4.
