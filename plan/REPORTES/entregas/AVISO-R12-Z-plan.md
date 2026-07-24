@@ -57,7 +57,7 @@ evidencia).
 | dato | valor |
 | ---- | ----- |
 | Tip base pre-lote | `6ad16c46fda67dcbf93248de4b0384e222dbc2a6` |
-| Tip planificación R12 | `<rellenar tras commit/push>` |
+| Tip planificación R12 | `f59cc827b639ec00c46083a04d464dfbb1ddc2f6` |
 | Push | normal (sin force) |
 | Working tree esperado | limpio tras tip-fill + push |
 
@@ -88,7 +88,7 @@ Hechos:
 - CA lock-coherence (hallazgo R11-Z PASS) en WPs que toquen manifests
 
 Pedir: R12-Z PASS (planificación) o FAIL con evidencia.
-Tip gobierno: <rellenar tras push>
+Tip gobierno: f59cc827b639ec00c46083a04d464dfbb1ddc2f6
 Replan: plan/REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md
 DC-15: LOCAL-ONLY
 ```
