@@ -31,7 +31,7 @@ decida.
 | `origin/main` | `3b0921354935c83cb58c3781d47c9cd6fef8ae69` |
 | Divergencia | **ninguna** — HEAD = `origin/main` = `3b09213` |
 | Enmienda DA-S21 | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
-| Tip aviso (este fichero) | `<pendiente tip-fill>` |
+| Tip aviso (este fichero) | `0e297a3` |
 
 ## PAUSA / frontera (literal)
 
