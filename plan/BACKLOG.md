@@ -51,6 +51,27 @@ condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
 > (D-41 · no precedente). DC-15 LOCAL-ONLY. Skills espejo `@0.8.0`
 > (no commitear `.claude/skills/`).
 >
+> **GO publish condicionado P0×4 asentado (D-42):** el publish real de
+> `linea-system` · `linea-firehose` · `force-system` · `ssb-system`
+> queda autorizado **solo** al cumplirse TODAS las condiciones D-42
+> (skills 0.10.0 validado · R12-Z PASS + GO impl. · U168–U171 ✅ ·
+> major-band + gate adaptado · contrarrevisión PASS · changesets +
+> matriz CI/Release · gate online/C8 verde · tarballs limpios/JS-only).
+> Hasta entonces **cero publish / cero flip `private`**. Fuente:
+> [ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md).
+> `linea-editor` = WP publish-ready **separado U178** ⬜ (no mezclar con
+> P0×4). Clases privadas **por decisión de producto = excluidas**
+> (allowlist §4 · D-42).
+>
+> **Tercer frente Dramaturgo + Zigurat (D-43 · GO custodio 2026-07-24 ·
+> asiento DA-S21 pendiente):** cola **R13-Z** planificada — épica
+> **U73** reactivada ⬜ + **U172–U177** ⬜. **R13-Z en HOLD** hasta el
+> commit del asiento DA-S21; **bloqueado** abrir implementación hasta
+> cerrar R12 + **R13-Z PASS** + GO implementación aparte. Replan:
+> [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
+> Fuente:
+> [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md).
+>
 > **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
 > (`1a24a60`) — proyección backlog→Issues montada y validada en
 > **dry-run local**; CA re-verificadas de facto (gate: exit 3/1/0/4;
@@ -114,6 +135,8 @@ condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ · **CERRADO** |
 | **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ · **CERRADO** (R11-Z PASS) |
 | **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | ⬜ planificación (sin 🔶) |
+| **Cola publish P1** — publish-ready `linea-editor` (D-42) | **U178** | ⬜ (tras U168+U169; GO impl. propio) |
+| **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ planificación · **HOLD** (asiento DA-S21 + R12 cerrado + R13-Z PASS + GO impl.) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -121,7 +144,11 @@ condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
 **En curso:** ninguno (**PAUSA / CORTE TÉCNICO** · 0 🔶 · sin workers).
 **Pendiente:** reanudación explícita; luego **R12-Z PASS** (planificación)
 sobre U168–U171 ⬜; luego GO implementación custodio (aparte). **No**
-`npm publish` hasta R12-Z PASS; publish real = GO publish aparte.
+`npm publish` hasta R12-Z PASS; publish real P0×4 = **GO condicionado
+D-42** (activación solo al cumplir TODAS sus condiciones; sin nuevo GO
+al cumplirlas). **U178** (publish-ready `linea-editor`) ⬜ aparte.
+**R13-Z**: cola planificada ⬜ en **HOLD** (asiento DA-S21 pendiente);
+tercer frente **sin abrir** hasta R12 cerrado + R13-Z PASS + GO impl.
 **No** demoler / merge / despachar durante el corte.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
@@ -151,14 +178,20 @@ ni U165.
 
 **Fronteras duras:** sin `npm publish` hasta **R12-Z PASS** · sin Release
 publish efectivo · sin flip `private` / changesets de pub efectivos hasta
-**GO publish** aparte · sin despacho hasta GO implementación post-PASS.
+cumplir **todas** las condiciones del **GO publish condicionado D-42** ·
+sin despacho hasta GO implementación post-PASS.
+
+**GO publish condicionado (D-42):** asentado en DECISIONES + allowlist
+§3; la fase Publish de la tabla se activa **sin nuevo GO** solo al
+cumplirse las condiciones D-42 completas (secuencia y evidencia las
+conserva el orquestador).
 
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U168 · U170 | Sprint 8 ✅ · R12-Z PASS + GO impl. | U168 ∥ U170 |
 | **B** | U169 | U168 ✅ | secuencial (posee gate) |
 | **C** | U171 | U168 ✅ + U169 ✅ | prep pub (sin publish real) |
-| Publish | — | GO publish aparte | flip private + changesets + npm publish |
+| Publish | — | **GO condicionado D-42** (condiciones completas) | flip private + changesets + npm publish P0×4 |
 
 ### WP-U168 · Migrar P0×4 a major-band — ⬜
 
@@ -201,6 +234,151 @@ publish efectivo · sin flip `private` / changesets de pub efectivos hasta
   `release:changeset-dry` · documentar pasos GO publish. **Fuera:**
   `npm publish` · Release publish efectivo · flip `private` sin GO
   publish. **Contrarrevisión** obligatoria. **Eje:** IV.
+
+---
+
+## Cola publish-ready P1 — `linea-editor` (D-42 · ⬜ · 2026-07-24)
+
+Fuente: **D-42** +
+[ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md)
+(§ P1 encolado aparte) + allowlist §3 P1. **Entrega distinta del lote
+P0×4** (no fusionar con U171 ni con la evolución funcional del paquete
+en U175). Su publish solo se activa tras el **PASS de este WP** (GO
+publish condicionado D-42 propio).
+
+### WP-U178 · Publish-ready `@zeus/linea-editor` (P1) — ⬜
+
+- ⬜ **WP-U178 · Publish-ready `@zeus/linea-editor` (P1)** — pendiente.
+  Est. M. Dep: **U168 ✅ + U169 ✅** (major-band + gate adaptado) · GO
+  implementación propio. Brief:
+  [REPORTES/briefs/WP-U178-publish-ready-linea-editor.md](REPORTES/briefs/WP-U178-publish-ready-linea-editor.md).
+  **Qué:** `publishConfig` + `files` explícito · tarball limpio medido
+  (`npm pack --dry-run`) · decisión JS-only documentada · major-band en
+  deps internas `@zeus/*` · changeset · matriz CI/Release · gate
+  online/C8. **Fuera:** flip `private` · `npm publish` (solo tras PASS
+  propio + condiciones D-42) · lote P0×4 · reabrir U166 · evolución
+  funcional (dueño U175). **Contrarrevisión** obligatoria. **Eje:** IV.
+
+---
+
+## R13-Z — tercer frente Dramaturgo + Zigurat (planificación · HOLD · D-43 · 2026-07-24)
+
+Fuente: **GO custodio 2026-07-24 · asiento DA-S21 pendiente** (**D-43**)
++ [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md)
+(espejo `vigilancia/z/`). Detalle:
+[REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
+
+**Estado:** **solo planificación** — WPs **⬜** · **0 🔶** · **cero
+workers** · cero código. **R13-Z en HOLD** hasta el commit del asiento
+DA-S21 (no pedir R13-Z PASS antes).
+
+**Bloqueo duro (tercer frente):** no abrir implementación hasta
+(1) asiento DA-S21 commiteado, (2) **R12 cerrado**, (3) **R13-Z PASS**,
+(4) **GO implementación aparte**. Sin publicación de paquetes en este
+frente.
+
+**Camino A (DRY — extender antes de crear):** absorber el dominio
+narrativo en contratos y paquetes existentes — proyección
+RouteEntry→MCP de `@zeus/http-contract` · identidad/seats existentes
+(`@zeus/protocol` / authority-kit) · `@zeus/story-board-schema` ·
+`@zeus/linea-editor` · componentes de reparto existentes · épica
+Zigurat histórica (U73). **No** reconstruir el editor legado, **no**
+duplicar schemas, **no** convertir Zigurat en capa federada completa.
+Ownership externo (sin WP en zeus): archivo del editor legado / DAS-1 /
+extensión VS Code · sidecar/pub. Rutas fuente del legado = **solo
+lectura**; ningún vocabulario ni artefacto legado al código público.
+
+| ola | WPs | deps | paralelismo |
+| --- | --- | ---- | ----------- |
+| **A** | U172 · U173 | asiento DA-S21 · R12 cerrado · R13-Z PASS + GO impl. | U172 ∥ U173 |
+| **B** | U174 | U173 ✅ | secuencial (posee schema) |
+| **C** | U175 | U172 ✅ + U173 ✅ + U174 ✅ | secuencial (posee linea-editor src) |
+| **D** | U176 | U173 ✅ + U174 ✅ | ∥ U175 posible (archivos disjuntos) |
+| **E** | U177 | contratos U173–U175 ✅ (diseño ∥) | cierre diseño épica U73 |
+
+### ÉPICA U73 · Zigurat — teatro de la capa 2 (acotada) — ⬜
+
+- ⬜ **ÉPICA U73 · Zigurat acotada (teatro de la capa 2)** — reactivada
+  desde Horizonte (D-43). **Épica paraguas, no WP asignable:** se
+  ejecuta vía U172–U177; **U177 cierra su diseño**. Acotada: identidad
+  y seats existentes; **no** capa federada completa; el puente SSB
+  L1↔L2 completo sigue como punto de extensión documentado (D-20 /
+  U93) dependiente de spikes externos. Estado **⬜** (épica; nunca 🔶).
+
+### WP-U172 · Proyector MCP de mutaciones HTTP — ⬜
+
+- ⬜ **WP-U172 · Proyectar mutaciones HTTP como herramientas MCP** —
+  pendiente. Est. M. Dep: asiento DA-S21 · R12 cerrado · R13-Z PASS +
+  GO impl. Ola A (∥ U173). Brief:
+  [REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md](REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md).
+  **Qué:** extender la proyección RouteEntry→MCP existente de
+  `@zeus/http-contract` (hoy resources/readers GET) para proyectar
+  mutaciones (POST/PUT) como **tools** MCP con validación de envelope y
+  gate visible; probes verde/rojo. **Fuera:** proyector nuevo paralelo ·
+  UI · publish. **Contrarrevisión** obligatoria (contrato). **Eje:** I.
+
+### WP-U173 · Kit de reparto y permisos de dominio — ⬜
+
+- ⬜ **WP-U173 · Kit de reparto y permisos de dominio** — pendiente.
+  Est. M. Dep: asiento DA-S21 · R12 cerrado · R13-Z PASS + GO impl.
+  Ola A (∥ U172). Brief:
+  [REPORTES/briefs/WP-U173-kit-reparto-permisos.md](REPORTES/briefs/WP-U173-kit-reparto-permisos.md).
+  **Qué:** kit de reparto (personajes/roles del dominio narrativo) +
+  permisos sobre identidad/seats **existentes** (`@zeus/protocol`
+  peer-card/seat · authority-kit), reutilizando componentes de reparto
+  existentes (view-kit); sin identidad nueva. **Fuera:** federación ·
+  identidad nueva · UI nueva · publish. **Contrarrevisión** obligatoria
+  (contrato/permisos). **Eje:** I.
+
+### WP-U174 · Personajes en story-board — ⬜
+
+- ⬜ **WP-U174 · Referencias de personajes en story-board** —
+  pendiente. Est. S/M. Dep: **U173 ✅**. Ola B. Brief:
+  [REPORTES/briefs/WP-U174-personajes-story-board.md](REPORTES/briefs/WP-U174-personajes-story-board.md).
+  **Qué:** extender `@zeus/story-board-schema` con referencias de
+  personajes (refs al reparto U173); validación AJV + fixtures; los
+  consumidores existentes siguen validando. **Fuera:** schema nuevo
+  paralelo · publish. **Contrarrevisión** obligatoria (schema).
+  **Eje:** I.
+
+### WP-U175 · Autoría gateada sobre linea-editor — ⬜
+
+- ⬜ **WP-U175 · Autoría gateada por reparto sobre `linea-editor`** —
+  pendiente. Est. M. Dep: **U172 ✅ + U173 ✅ + U174 ✅**. Ola C.
+  Brief:
+  [REPORTES/briefs/WP-U175-autoria-gateada-linea-editor.md](REPORTES/briefs/WP-U175-autoria-gateada-linea-editor.md).
+  **Qué:** extender la autoría gateada existente de
+  `@zeus/linea-editor` (gate visible / approvalToken) con permisos por
+  reparto (U173) y personajes (U174); export story-board coherente.
+  **Fuera:** publish-ready (dueño **U178** — entrega distinta, no
+  fusionar) · reconstruir el editor legado · publish. **Contrarrevisión**
+  obligatoria. **Eje:** I + IV.
+
+### WP-U176 · Importador de corpus legado (one-off) — ⬜
+
+- ⬜ **WP-U176 · Importador one-off de corpus legado** — pendiente.
+  Est. M. Dep: **U173 ✅ + U174 ✅** (∥ U175 posible; archivos
+  disjuntos). Ola D. Brief:
+  [REPORTES/briefs/WP-U176-importador-corpus-legado.md](REPORTES/briefs/WP-U176-importador-corpus-legado.md).
+  **Qué:** tooling one-off que lee las rutas fuente del legado **solo
+  lectura** y emite los formatos existentes (linea-kit / story-board +
+  reparto); prueba de ceguera obligatoria — ningún vocabulario ni
+  artefacto legado en el código público (conteo literal **0**).
+  **Fuera:** archivo del legado (ownership externo) · corpus fuente en
+  git · publish. **Contrarrevisión** obligatoria (migración + ceguera).
+  **Eje:** II (+ ceguera transversal).
+
+### WP-U177 · Contrato consumo IDE opt-in + cierre diseño Zigurat — ⬜
+
+- ⬜ **WP-U177 · Contrato de consumo IDE opt-in + cierre de diseño de
+  la épica U73** — pendiente. Est. M. Dep: contratos **U173–U175 ✅**
+  para cerrar; diseño puede avanzar ∥. Ola E. Brief:
+  [REPORTES/briefs/WP-U177-contrato-ide-cierre-zigurat.md](REPORTES/briefs/WP-U177-contrato-ide-cierre-zigurat.md).
+  **Qué:** contrato de consumo IDE **opt-in** documentado (sin
+  implementar extensión) + cierre de diseño de la épica U73 Zigurat
+  acotada (qué entra / qué no / puntos de extensión, incl. hook SSB
+  D-20). **Fuera:** implementar extensión IDE (ownership externo) ·
+  capa federada completa · publish. **Eje:** IV (diseño/contrato).
 
 ---
 
@@ -1193,8 +1371,10 @@ Evidencia ops: `npm view @zeus/protocol` → **0.2.0** registry propio.
   sobre layout inmutable (DATOS.md §5).
 - **WP-U72 · Persistencia del estado de rooms** — snapshot/ledger → colas
   files-first (D-13).
-- **WP-U73 · El teatro de la capa 2 SSB** — identidad SSB / puente L1↔L2;
-  depende spikes externos.
+- ~~**WP-U73 · El teatro de la capa 2 SSB**~~ — **reactivada** como
+  **ÉPICA U73 · Zigurat acotada** ⬜ (D-43; ver § R13-Z arriba). El
+  puente SSB L1↔L2 completo sigue dependiendo de spikes externos
+  (punto de extensión D-20/U93, fuera de la épica acotada).
 - **WP-U74 · Juego trenzado sobre forces** — myth-maker/debunker sobre
   U86 + U91/U92; candidata horizonte.
 - **(diferido U87 §5 · sin WP)** linea-aleph vivo — DECISIONES §abiertas.

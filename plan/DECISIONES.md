@@ -493,6 +493,73 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   nuevos / addendas (sin rewrite de historia). Acta:
   [REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md).
 
+- **D-42 · 2026-07-24 · GO publish condicionado P0×4 + linea-editor aparte
+  + exclusión por decisión de producto** (custodio · asentado por
+  orquestador-Z; fuente:
+  [ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md),
+  espejo `vigilancia/z/`). **Decisión (a) — lote P0×4:** el publish real de
+  `@zeus/linea-system` · `@zeus/linea-firehose` · `@zeus/force-system` ·
+  `@zeus/ssb-system` queda autorizado de forma **condicionada**. Condiciones
+  de activación (todas):
+  1. skills `0.10.0` adoptado y validado en el mundo (mecánica D-36);
+  2. **R12-Z PASS** + GO implementación del sprint;
+  3. **U168–U171 aceptados ✅**;
+  4. política **major-band** aplicada + gate semver adaptado (U168/U169);
+  5. **contrarrevisión independiente PASS** en los WPs de riesgo;
+  6. changesets creados + matriz CI/Release completa de los cuatro;
+  7. gate online/C8 pre-publicación **verde**; tarballs limpios y
+     contratos JS-only documentados.
+  Cumplidas todas, **no hace falta un nuevo GO del custodio** para el
+  publish P0×4 (retirar `private` + Release + verificación de install
+  desde registry); el orquestador conserva secuencia y evidencia de
+  release. Hasta cumplirlas: **cero** `npm publish` / flip `private` /
+  changesets de pub efectivos. El flag `private: true` operativo **no**
+  excluye un nombre presente en allowlist §3 (se mantiene hasta la fase
+  de publicación). **Decisión (b) — `@zeus/linea-editor` (P1):** sigue
+  candidato (no privado por producto) pero no está preparado → WP
+  publish-ready **separado** (**WP-U178** ⬜); GO publish condicionado
+  tras su **propio** PASS; **no** se mezcla con U171 ni con el lote P0×4.
+  **Decisión (c) — exclusión por decisión de producto:**
+  `@zeus/console-monitor`, `@zeus/blobstore-client` (demociones
+  U166/U167), UIs/visores/monitores visuales, demos/fixtures/harnesses,
+  apps editor y mesh no nominal en allowlist quedan privados **por
+  decisión de producto, no por carencia técnica accidental**: sin flip
+  `private`, sin changesets ni publish sin enmienda explícita de la
+  allowlist + nueva decisión del custodio. Consecuencias asentadas en
+  [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md) §3–§5 y BACKLOG remate.
+
+- **D-43 · 2026-07-24 · Tercer frente Dramaturgo + Zigurat — GO de
+  planificación (GO custodio 2026-07-24 · asiento DA-S21 pendiente)**
+  (fuente:
+  [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md),
+  espejo `vigilancia/z/`). Cita provisional: **«GO custodio 2026-07-24 ·
+  asiento DA-S21 pendiente»** — la decisión DA-S21 no se considera
+  consolidada hasta existir su asiento (commit) en el registro del
+  carril de origen; **el gate R13-Z queda en HOLD** hasta recibir ese
+  commit (no pedir R13-Z PASS antes). El GO recibido es **de
+  planificación**; **no** es GO de implementación. Camino A
+  ratificado: **absorber el dominio narrativo en contratos y paquetes
+  existentes** (DRY: `@zeus/http-contract` proyección RouteEntry→MCP ·
+  identidad/seats de `@zeus/protocol`/authority-kit ·
+  `@zeus/story-board-schema` · `@zeus/linea-editor` · componentes de
+  reparto existentes · épica Zigurat histórica U73), sin reconstruir el
+  editor legado. Alcance zeus: **U172–U177** ⬜ + **épica U73 reactivada
+  ⬜** (Zigurat **acotada**; no capa federada completa). **Fuera de
+  zeus** (ownership de otros carriles): archivo del editor legado,
+  DAS-1, extensión VS Code; sidecar/pub. Rutas fuente del legado = **solo
+  lectura** para diseñar el importador; ningún vocabulario ni artefacto
+  legado se copia al código público. **Secuencia obligada:** asiento
+  DA-S21 commiteado (levanta el HOLD) · cerrar planificación R12 →
+  adoptar/validar skills 0.10.0 → ejecutar y cerrar R12 → **gate R13-Z
+  PASS** → **GO implementación aparte** (solo entonces 🔶/workers/código
+  del tercer frente). Se permiten ahora (prep R13 permitida): replan,
+  briefs, dependencias, olas y entradas ⬜ — sin workers, sin 🔶, sin
+  implementación ni publicación. **Nota de runtime
+  para despachos futuros R13:** preferir modelo **Fable**; si no está
+  disponible, **GPT-5.6 Sol**; si tampoco, el mejor disponible —
+  anotar la cascada empleada en el aviso correspondiente. Replan:
+  [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un

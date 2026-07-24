@@ -66,11 +66,37 @@ publish-ready. **No** basta quitar `private`.
 | ------- | ---- |
 | `@zeus/linea-editor` | `packages/mesh/linea-editor` |
 
+**D-42:** `@zeus/linea-editor` sigue candidato (no privado por producto)
+pero aún no está preparado → su publish-ready se ejecuta en WP
+**separado** (**WP-U178** ⬜) con GO publish condicionado tras su
+**propio** PASS. **No** se mezcla con el lote P0×4 (U168–U171).
+
 Cualquier otro mesh no listado aquí = clase **D/E/G** → **mantener privado**.
+
+### GO publish condicionado P0×4 (D-42)
+
+Los cuatro P0 de §3 tienen **GO publish condicionado** (custodio ·
+[ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md)):
+cumplidas **todas** las condiciones de D-42 (skills 0.10.0 validado ·
+R12-Z PASS + GO impl. · U168–U171 ✅ · major-band + gate adaptado ·
+contrarrevisión PASS · changesets + matriz CI/Release · gate online/C8
+verde · tarballs limpios / JS-only documentado), el publish P0×4 **no
+requiere nuevo GO**; el orquestador conserva secuencia y evidencia.
+Hasta entonces: **cero publish** / **cero** flip `private`. El flag
+`private: true` operativo no excluye un nombre de §3 (se mantiene
+hasta la fase de publicación).
 
 ---
 
 ## 4. Mantener privados salvo decisión expresa
+
+**Exclusión por decisión de producto (D-42):** las clases **D/E/F/G** y
+las demociones documentadas abajo (U166/U167) permanecen privadas **por
+decisión de producto, no por carencia técnica accidental**. El GO
+publish condicionado D-42 **no** las alcanza: para cualquiera de estos
+paquetes no se retira `private`, no se preparan changesets y no se
+publica sin (1) enmienda explícita de esta allowlist y (2) nueva
+decisión del custodio.
 
 Sin enumeración exhaustiva aquí (el inventario clasifica los 49): UIs,
 visores, Angular, monitores visuales, demos y harnesses — p. ej.
