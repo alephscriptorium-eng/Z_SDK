@@ -5,7 +5,7 @@
 | agente | Worker-U158 |
 | fecha | 2026-07-24 |
 | rama | `wp/u158-smoke-ts-registry` |
-| commit(s) | `6155bc0` (feat) · `bbde6f9` · `468231f` (docs tip en reporte; tip rama = HEAD al push) |
+| commit(s) | `6155bc0` (feat) · `bbde6f9` · `468231f` · `f9675a8` (reporte) |
 | eje(s) CA | C8 (canal real registry) + I (extracción con cableado: smoke+CI) |
 | estado propuesto | listo para revisión |
 
@@ -110,13 +110,17 @@ $ rg -n "smoke:external-consumer|WP-U161" scripts/smoke-external-consumer.mjs pa
 | campo | valor |
 | ----- | ----- |
 | branch | `wp/u158-smoke-ts-registry` |
-| run_id | **\<pendiente orquestador tras push/merge\>** |
+| run_id | `30071161716` — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30071161716 |
 | workflow | CI · job `smoke-ts-registry` |
-| conclusion | **\<pendiente\>** |
+| conclusion | **success** (SHA `bbde6f9840edd11719f6e05b424e3be70681849f`) |
 
 ```
-⏳ sin verificar en tip — worker pushea la rama; orquestador completa run-id
-tras CI Actions en wp/** (paths no son solo plan/** · **.md).
+CI job 89412151423:
+registry probe: @zeus/protocol@0.4.1 → 0.4.1
+npm install from registry: exit 0
+package-lock: 7 @zeus/* resolved from registry: ok
+tsc --noEmit: exit 0
+smoke:ts-registry — GREEN (registry install + tsc --noEmit, no any-escape)
 ```
 
 Job cableado (literal en `.github/workflows/ci.yml`):
@@ -172,4 +176,12 @@ Ninguno. Run-id CI queda para el orquestador tras push.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con comentarios)_
+**Aceptado ✅ (2026-07-24).**
+
+- CA registry real: cumplido y re-smoke independiente GREEN.
+- CA TypeScript: `tsc --noEmit` strict exit 0; sin `any` de escape.
+- Cobertura: protocol + `peer-card-seat`, rooms y
+  webrtc-signaling/messages.
+- CI: `30071161716` success; job `89412151423` confirma install real
+  (no skip) + compile GREEN.
+- U54/U161 intacto; diff limitado a U158.
