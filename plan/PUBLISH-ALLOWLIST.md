@@ -132,7 +132,9 @@ Para un candidato de §3, un WP derivado debe demostrar:
 2. `files` explícito; tarball medido (`npm pack --dry-run` / pack a temp)
    sin `node_modules`, tests ni secretos.
 3. `exports` / `types` (o decisión documentada de «JS-only»).
-4. deps internas `@zeus/*` con semver pineado (no `*`) resoluble en registry.
+4. deps internas `@zeus/*` en banda major `>=M.m.p <(M+1).0.0` (rechazo de
+   `*`, tags, Git/URL, aliases y rutas locales); mínimo `M.m.p` y versión
+   resuelta existen en registry.
 5. changeset + relevancia en workflow de release (o workflow dedicado
    justificado).
 6. C8: canal de install del consumidor = registry, no tarball workspace.
