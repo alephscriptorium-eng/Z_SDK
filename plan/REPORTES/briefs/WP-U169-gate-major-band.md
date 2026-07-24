@@ -43,9 +43,11 @@ Reporte: plan/REPORTES/WP-U169-gate-major-band.md
   reabrir U165, ampliar allowlist P0/P1
 
 ## Notas
-- Estado planificado: **⬜** · Ola B · dep **U168 ✅**
-- Estimación: M · Eje IV + C8
-- Contrarrevisión: obligatoria
+- Estado: **🔶** despachado (PAUSA parcial · post Ola A ✅ · 2026-07-25)
+- Estimación: M · Eje IV + C8 · Ola B · dep **U168 ✅**
+- Contrarrevisión: obligatoria · RIESGO_REVISION=independiente
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
+- WORLD_ROOT=C:/S_LAB/z-sdk · CANONICAL_WORLD_ROOT=C:/S_LAB/z-sdk ·
+  READ_ONLY_ROOTS=["C:/S_LAB/.worktrees"] · DOWNSTREAM_PATTERNS=[".worktrees/*"]
 - DC-15 LOCAL-ONLY
 - No editar `plan/BACKLOG.md` (solo orquestador)

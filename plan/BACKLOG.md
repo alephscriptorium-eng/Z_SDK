@@ -154,19 +154,19 @@ sin impl./despacho/publish).
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ · **CERRADO** |
 | **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ · **CERRADO** (R11-Z PASS) |
-| **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | Ola A ✅ · Ola B **U169** siguiente |
+| **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | Ola A ✅ · Ola B **U169 🔶** |
 | **Cola publish P1** — publish-ready `linea-editor` (D-42) | **U178** | ⬜ · **PAUSA** (tras U168+U169; GO impl. propio) |
 | **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ · **PAUSA** · R13-Z PASS planificación · **sin GO impl. R13** · intacto |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** Ola B pendiente **U169** (PAUSA parcial · solo
-U168–U171). **Ola A ✅** (`U168 ✅ ∥ U170 ✅`). **Pendiente ola:** C
-`U171`. **No** `npm publish` manual; publish real P0×4 = **GO
-condicionado D-42** al cumplir condiciones. **U178** ⬜ en PAUSA.
-**R13** intacto (sin despacho U172–U177/U73). Adopción **0.10.0** +
-`engines.node >=22.0.0` · tip `b348c59`.
+**En curso:** Ola B **U169 🔶** (PAUSA parcial · solo U168–U171).
+**Ola A ✅** (`U168 ✅ ∥ U170 ✅`). **Pendiente ola:** C `U171`. **No**
+`npm publish` manual; publish real P0×4 = **GO condicionado D-42** al
+cumplir condiciones. **U178** ⬜ en PAUSA. **R13** intacto (sin
+despacho U172–U177/U73). Adopción **0.10.0** + `engines.node >=22.0.0`
+· tip `b348c59`.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -190,9 +190,9 @@ Detalle: [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-
 Pedido SOL (histórico plan): [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
 PAUSA parcial: [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md).
 
-**Estado:** **GO implementación** · **Ola A ✅** (`U168 ✅ ∥ U170 ✅`) ·
-siguiente **Ola B U169**. **No** reabre Sprint 8 ni U165. **No** abre
-R13 / U172–U178 / U73.
+**Estado:** **GO implementación** · **Ola A ✅** · Ola B en curso
+(**U169 🔶**). **No** reabre Sprint 8 ni U165. **No** abre R13 /
+U172–U178 / U73.
 
 **Fronteras duras:** sin `npm publish` manual · sin Release publish
 efectivo · sin flip `private` / changesets de pub efectivos hasta
@@ -223,10 +223,12 @@ conserva el orquestador).
   P0×4 en major-band; allowlist §5 alineada; `private: true` intacto;
   gate sigue midiendo pin exacto hasta U169. **Eje:** IV.
 
-### WP-U169 · Gate publish-ready major-band — ⬜
+### WP-U169 · Gate publish-ready major-band — 🔶
 
-- ⬜ **WP-U169 · Adaptar gate publish-ready a major-band** — pendiente.
-  Est. M. Dep: **U168 ✅**. Ola B. Brief:
+- 🔶 **WP-U169 · Adaptar gate publish-ready a major-band** — en curso
+  (orquestador / 2026-07-25). Est. M. Dep: **U168 ✅**. Ola B. Rama
+  `wp/u169-gate-major-band`. Worktree
+  `C:\S_LAB\.worktrees\z\wp-u169-gate-major-band`. Brief:
   [REPORTES/briefs/WP-U169-gate-major-band.md](REPORTES/briefs/WP-U169-gate-major-band.md).
   **Qué:** sensor acepta banda major (rechaza `*` / tags / git / url /
   paths); probes verde/rojo; CA lock-coherence (hallazgo R11-Z PASS).
