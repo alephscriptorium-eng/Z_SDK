@@ -128,6 +128,7 @@
     "release:publish": "changeset publish",
     "release:dry": "node scripts/release-dry.mjs",
     "release:changeset-dry": "node scripts/release-changeset-dry.mjs",
+    "audit:publish-allowlist": "node scripts/audit-publish-allowlist.mjs",
     "smoke:external-consumer": "node scripts/smoke-external-consumer.mjs",
     "smoke:ts-registry": "node scripts/smoke-ts-registry.mjs"
   },
