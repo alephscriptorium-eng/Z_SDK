@@ -29,15 +29,13 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 8 Ola B · GO · U164 ∥ U166)
+## Remate — estado swarm (2026-07-24 · Sprint 8 Ola B ✅ · pedir R11-Z)
 
-> **Ola A CERRADA** · **U163 ✅ ∥ U167 ✅** (tip código `f46743b`).
-> **R10-Z PASS** + **GO implementación Ola B** (custodio · 2026-07-24):
-> [GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) · espejo
-> `vigilancia/z/`. Secuencia: **U164 ✅** ∥ **U166 ✅** → **U165 🔶**
-> último + re-gate integrado. **U165** solo **lee** allowlist; **U166**
-> posee enmiendas P1. Frontera dura: **cero** flip `private` · **cero**
-> changesets de pub · **cero** `npm publish`. Replan:
+> **Ola A CERRADA** · **U163 ✅ ∥ U167 ✅**. **Ola B CERRADA** ·
+> **U164 ✅ ∥ U166 ✅ → U165 ✅** (último; tip código `3481838`).
+> **R10-Z PASS** + GO Ola B consumidos. Pedido **R11-Z PASS** (cierre
+> Ola B / Sprint 8). Frontera dura intacta: **cero** flip `private` ·
+> **cero** changesets de pub · **cero** `npm publish`. Replan:
 > [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
 > **U162** ✅ (D-41 · no precedente). **Sprint 7 CERRADO / IDLE.**
 > Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). DC-15 LOCAL-ONLY.
@@ -104,27 +102,28 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ |
-| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | U164 ✅ · U166 ✅ · U165 🔶 (último) |
+| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ U164 · U166 · U165 (cerrada) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U165** 🔶 desde main integrado U164+U166 (último + re-gate).
-**Pendiente:** ninguno en Ola B.
+**En curso:** ninguno (Ola B ✅ · IDLE tras quietud; pedido R11-Z).
+**Pendiente:** ninguno en Ola B / Sprint 8.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U163** ✅ · **U167** ✅ · **U162** ✅ · **U158** ✅ ·
-**U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ · **U156** ✅ ·
-**U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ · **U152** ✅ ·
-**U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico).
+**Aceptado:** **U165** ✅ · **U164** ✅ · **U166** ✅ · **U163** ✅ ·
+**U167** ✅ · **U162** ✅ · **U158** ✅ · **U161** ✅ · **U160** ✅ ·
+**U157** ✅ · **U159** ✅ · **U156** ✅ · **U155** ✅ · **U154** ✅ ·
+**U153** ✅ · **U151** ✅ · **U152** ✅ · **U150** ✅ · **U149** ✅ ·
+sprints 1–5 (ver histórico).
 **D-35** / **D-37** · **D-41** (U162 ex post acotado).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B GO · 2026-07-24)
+## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B ✅ · 2026-07-24)
 
 Fuente: plan U162 + allowlist + **R8-Z PASS** (Ola A) + **GO
 implementación Ola A** + **R9-Z PASS** (cierre Ola A) + **R10-Z PASS**
@@ -132,7 +131,7 @@ implementación Ola A** + **R9-Z PASS** (cierre Ola A) + **R10-Z PASS**
 [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
 Gates: [GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) ·
 [GATE-R9-Z-PASS.md](REPORTES/entregas/GATE-R9-Z-PASS.md) ·
-`vigilancia/z/GATE-R8-Z-PASS.md`.
+`vigilancia/z/GATE-R8-Z-PASS.md`. Pedido cierre: **R11-Z**.
 
 **Fronteras duras (hasta GO publish aparte):** sin flip `private` ·
 sin changesets de publicación · sin `npm publish`. **No** reabre U162
@@ -141,7 +140,7 @@ como GO previo legítimo (D-41).
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U163 · U167 | U162 ✅ | U163 ∥ U167 (**✅ cerrada**) |
-| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165** 🔶 último + re-gate |
+| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165 ✅** último + re-gate (**✅ cerrada**) |
 | Publish | — | GO aparte | private + changesets de pub + npm publish |
 
 ### WP-U163 · POC publish-ready `@zeus/linea-system` — ✅
@@ -171,20 +170,20 @@ como GO previo legítimo (D-41).
   **Fuera:** private · publish · changesets de pub · allowlist · gate
   U165. **Eje:** IV.
 
-### WP-U165 · Gate pre-publicación mesh allowlist — 🔶
+### WP-U165 · Gate pre-publicación mesh allowlist — ✅
 
-- 🔶 **WP-U165 · Gate pre-publicación mesh allowlist** — en curso
-  (orquestador / 2026-07-24 · base integrada U164+U166). Est. S–M. Dep:
-  **U163 ✅** + aceptación **tras U164 ✅ + U166 ✅** (merge/✅
-  **último**). Ola B. Rama `wp/u165-gate-prepub-mesh-allowlist` ·
-  worktree `C:\S_LAB\.worktrees\z\wp-u165-gate-prepub-mesh-allowlist`.
-  Brief:
+- ✅ **WP-U165 · Gate pre-publicación mesh allowlist** — aceptado
+  (orquestador / 2026-07-24 · último Ola B + re-gate integrado). Est.
+  S–M. Dep: **U163 ✅** + **U164 ✅** + **U166 ✅**. Ola B. Rama
+  `wp/u165-gate-prepub-mesh-allowlist` · tip `e10411d` · merge
+  `3481838`. Brief:
   [REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md).
-  **Qué:** script/CI — files, types, semver ≠ `*`, registry C8, dry-run
-  pack; **lee** [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md) (no edita).
-  **Re-gate** obligatorio tras integrar U164+U166. **Fuera:** publish ·
-  changesets de pub · **enmendar allowlist** (dueño = U166). **Eje:**
-  IV + C8.
+  Reporte:
+  [REPORTES/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/WP-U165-gate-prepub-mesh-allowlist.md).
+  **Qué:** `npm run gate:publish-ready` (P0×4; pack dry-run; registry
+  C8 desde `.npmrc`); allowlist solo lectura; re-gate OK sobre base
+  U164+U166. **Fuera:** publish · changesets de pub · enmendar
+  allowlist (dueño = U166). **Eje:** IV + C8.
 
 ### WP-U166 · Triage P1 linea-editor + console-monitor — ✅
 
