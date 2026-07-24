@@ -3,8 +3,8 @@
 (rol) plan/roles/README.md → WORKER
 
 WP: WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus
-Rama: wp/u162-auditoria-publish-allowlist *(propuesta — NO montar hasta GO)*
-Worktree: C:\S_LAB\.worktrees\z\wp-u162-auditoria-publish-allowlist *(NO crear hasta GO)*
+Rama: wp/u162-auditoria-publish-allowlist
+Worktree: C:\S_LAB\.worktrees\z\wp-u162-auditoria-publish-allowlist
 Reporte: plan/REPORTES/WP-U162-auditoria-publish-allowlist.md
 
 ## Lecturas
@@ -14,19 +14,22 @@ Reporte: plan/REPORTES/WP-U162-auditoria-publish-allowlist.md
   [GATE-R6-Z-PASS.md](../entregas/GATE-R6-Z-PASS.md)
 - `.npmrc` (registry canónico) · PRACTICAS C8 · política publish
   (engine publicable; mesh/editor privados por defecto)
+- Reportes previos útiles: `plan/REPORTES/WP-U50-scope-publish.md`
 
 ## Tarea
-1. Fijar en **una fuente única** (doc bajo `plan/` o PRACTICAS, según
-   hallazgo) qué clases de paquetes mesh pueden publicarse vs deben
-   permanecer privados.
+1. Fijar en **una fuente única** (doc bajo `plan/`, p. ej. PRACTICAS o
+   artefacto dedicado) qué clases de paquetes mesh pueden publicarse vs
+   deben permanecer privados.
 2. Inventario reproducible de los **49** paquetes únicos bajo
    `packages/**`; cotejar contra registry (`npm view`) y clasificar cada
-   uno: `mantener privado | candidato | ya publicado`.
+   uno: `mantener privado | candidato | ya publicado`. Preferible script
+   bajo `scripts/` (idempotente) cuya salida literal entre en el reporte.
 3. Para cada **candidato** (no para todo el monorepo): medir
    `publishConfig`, `files`, exports/types, dependencias internas
    `@zeus/*` (hoy `*` en P0), changeset, workflow de release y C8.
 4. Entregar plan de WPs pequeños derivados (con deps y estimación),
-   **sin** ejecutarlos en este WP.
+   **sin** ejecutarlos en este WP. Dejar candidatos propuestos en el
+   reporte (el orquestador encolará tras GO).
 5. **Frontera dura:** cero cambios de `private`; cero `npm publish`;
    cero edits de manifests/workflows orientados a publicar. U162 es
    auditoría + partición.
@@ -52,9 +55,18 @@ Reporte: plan/REPORTES/WP-U162-auditoria-publish-allowlist.md
 - Tarball/contents y tipos medidos antes de proponer cualquier publish.
 - Cero cambios de `private` y cero publish en el diff de U162.
 - Plan de WPs derivados con dependencias y estimación.
+- `npm run gates` OK si el diff toca código/scripts; si solo `plan/`,
+  documentar N/A U104.
+
+## ALCANCE_DIFF
+- `plan/` (fuente allowlist, reporte, inventario)
+- `scripts/` (comando inventario/audit reproducible, si aplica)
+- `package.json` solo si añade npm script del inventario
+- **Prohibido:** flip `private`, `npm publish`, changesets de release,
+  workflows de publish, tocar `packages/*/package.json` salvo lectura
 
 ## Notas
-- Dep: U158 ✅ · Sprint 7 CERRADO/IDLE · R6-Z PASS.
+- Dep: U158 ✅ · Sprint 7 CERRADO/IDLE · R6-Z PASS · **GO implementación**.
 - Estimación: L · Eje IV (gobierno paquetes).
-- **No despachar** este brief hasta GO de implementación del custodio
-  + nueva ronda SOL. DC-15 LOCAL-ONLY.
+- No editar `plan/BACKLOG.md` (solo orquestador).
+- DC-15 LOCAL-ONLY.

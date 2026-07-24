@@ -27,23 +27,19 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO/IDLE · R6-Z PASS)
+## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO/IDLE · U162 🔶)
 
-> **R6-Z PASS** (`vigilancia/z/GATE-R6-Z-PASS.md` · tip gobierno previo
-> `ea0e301` == `origin/main`). **Sprint 7 CERRADO / IDLE:** U155–U161 ✅;
-> 0 🔶; sin despacho activo. Tip código U158 `e62a990` · CI
-> `30071337545` success · job registry `89412677473` success (no skip).
-> **R5-Z PASS** (previo): tip `ff2557c` · CI `30070436991` · Release
-> `30070437022`. **Post-cierre planificado:** **U162** ⬜ (brief listo;
-> **no** 🔶 · **no** worktree · **no** publish). Fuente:
-> [ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md)
-> · brief:
+> **R6-Z PASS** (`vigilancia/z/GATE-R6-Z-PASS.md`). **Sprint 7 CERRADO /
+> IDLE:** U155–U161 ✅ (tip código U158 `e62a990` · CI `30071337545` ·
+> registry `89412677473`). **Post-cierre en curso:** **U162** 🔶
+> (GO implementación custodio · 2026-07-24). Brief:
 > [WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
-> Pedido custodio: GO implementación U162 + nueva ronda SOL —
-> [AVISO-U162-GO-implementacion.md](REPORTES/entregas/AVISO-U162-GO-implementacion.md).
+> Fuente:
+> [ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md).
+> Frontera: **cero** npm publish · **cero** flip `private` en U162.
 > Replan:
 > [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
-> Acta:
+> Acta Sprint 7:
 > [ACTA-CIERRE-SPRINT7-2026-07-24.md](REPORTES/entregas/ACTA-CIERRE-SPRINT7-2026-07-24.md).
 > DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear `.claude/skills/`).
 >
@@ -106,14 +102,13 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 6** — proyección backlog→Issues (local-only dry-run) | **U154** | ✅ |
 | **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U158 · CERRADO |
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
-| **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ⬜ |
+| **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | 🔶 |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno — Sprint 7 **IDLE**; 0 🔶.
-**Pendiente:** **U162** ⬜ (brief listo; aguarda GO implementación +
-nueva ronda SOL; **cero** publish / **cero** cambio `private` hasta GO).
+**En curso:** **U162** 🔶 (worker · 2026-07-24 · GO custodio).
+**Pendiente:** ninguno del frente U162 (Sprint 7 sigue IDLE/cerrado).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -247,47 +242,38 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
 
 ---
 
-## Post-Sprint 7 — auditoría publish (encolada · brief listo · sin despacho)
+## Post-Sprint 7 — auditoría publish (U162 🔶 · GO custodio)
 
 Fuente (archivada en repo; espejo vigilancia):
 [ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md)
-(`vigilancia/z/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md`). Gate cierre:
+(`vigilancia/z/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md`). Gate cierre Sprint 7:
 `vigilancia/z/GATE-R6-Z-PASS.md` (+ copia
 [GATE-R6-Z-PASS.md](REPORTES/entregas/GATE-R6-Z-PASS.md)). **Sprint 7
-permanece CERRADO / IDLE** — no reabre U155–U161 ni U158. U162 encolado
-y brief preparado; **no** 🔶 hasta GO implementación + nueva ronda SOL.
-Cambiar `private`/manifests/workflows o publicar **no** autorizado.
-DC-15 LOCAL-ONLY.
+permanece CERRADO / IDLE** — no reabre U155–U161. **GO implementación
+U162** (custodio · 2026-07-24). Frontera dura del WP: **cero** flip
+`private` · **cero** npm publish. DC-15 LOCAL-ONLY.
 
-### WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus — ⬜
+### WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus — 🔶
 
-- ⬜ **WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus** —
-  pendiente (encolado + brief / 2026-07-24 · R6-Z PASS; sin despacho).
-  Est. L. Dep: post-U158 ✅ · Sprint 7 IDLE. Fuente:
+- 🔶 **WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus** —
+  en curso (worker · 2026-07-24 · GO custodio). Est. L. Dep: post-U158 ✅ ·
+  Sprint 7 IDLE · R6-Z PASS. Rama
+  `wp/u162-auditoria-publish-allowlist` · worktree
+  `C:\S_LAB\.worktrees\z\wp-u162-auditoria-publish-allowlist`. Fuente:
   [REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md).
   Brief:
   [REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
-  Aviso GO:
-  [REPORTES/entregas/AVISO-U162-GO-implementacion.md](REPORTES/entregas/AVISO-U162-GO-implementacion.md).
-  **Qué:** (1) fijar en fuente única qué clases de mesh pueden publicarse;
-  (2) cotejar los 49 paquetes contra registry; (3) clasificar
+  Reporte:
+  [REPORTES/WP-U162-auditoria-publish-allowlist.md](REPORTES/WP-U162-auditoria-publish-allowlist.md)
+  (worker). **Qué:** (1) fijar en fuente única qué clases de mesh pueden
+  publicarse; (2) cotejar los 49 paquetes contra registry; (3) clasificar
   `mantener privado | candidato | ya publicado`; (4) para cada candidato
   medir `publishConfig`, `files`, exports/types, dependencias internas,
   changeset, workflow y C8; (5) partir la implementación posterior en WPs
-  pequeños. Hechos del barrido (addenda): 49 únicos · 29 publicados ·
-  20 privados/no publicados; P0
-  `linea-system` / `linea-firehose` / `force-system` / `ssb-system`; P1
-  `linea-editor` / `console-monitor` / `blobstore-client`; UIs/visores/
-  demos/harnesses privados salvo decisión expresa. **CA:** inventario
-  49/49 con comando reproducible; `npm view` literal por candidato;
-  allowlist explícita (no inferida por ausencia de `private`);
-  tarball/contents y tipos medidos antes de proponer publish; **cero**
-  cambios de `private` y **cero** publish en U162; plan de WPs con
-  dependencias y estimación. Derivación recomendada (sujeta a GO
-  posterior): POC `@zeus/linea-system` → replicación P0 restante → gate
-  pre-publicación. **Demolición:** n/a (auditoría/planificación).
-  **Eje:** IV (gobierno paquetes). **No despachar** hasta GO custodio +
-  ronda SOL.
+  pequeños. **CA:** inventario 49/49 reproducible; `npm view` literal por
+  candidato; allowlist explícita; tarball/contents y tipos medidos;
+  **cero** cambios `private` y **cero** publish; plan de WPs con deps y
+  estimación. **Demolición:** n/a. **Eje:** IV.
 
 ---
 
