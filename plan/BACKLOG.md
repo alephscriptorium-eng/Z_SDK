@@ -26,26 +26,27 @@ conservar auditoría; no precedente; no U163–U167).
 **GO Sprint 4 — ejecución diferida D-35** (usuario · 2026-07-20):
 instalación + migración skills · **U145 ∥ U146 → U147**. Procedimiento
 probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
+**GO publish condicionado P0×4:** **D-42** (activación solo al cumplir
+condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
+(tercer frente Dramaturgo + Zigurat — **solo planificación**).
 
 ---
 
-## Remate — estado swarm (2026-07-24 · IDLE Z · R11-Z PASS · Sprint 8 CERRADO · plan R12-Z)
+## Remate — estado swarm (2026-07-24 · **PAUSA / CORTE TÉCNICO** · R11-Z PASS · Sprint 8 CERRADO)
 
-> **IDLE Z** declarado. **R11-Z PASS** —
-> [GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md) (espejo
-> `vigilancia/z/`). **Sprint 8 CERRADO** (Ola A ✅ · Ola B ✅ · U163–U167
-> ✅). **U165 ✅** cerrado (semver raíz); **no reabrir**. Tip código
-> Sprint 8: `289b7fe`. Higiene: `C:\S_LAB\.worktrees\z` vacío · `wp/*`
-> 0 · 0 🔶. Aviso IDLE:
-> [AVISO-IDLE-Z.md](REPORTES/entregas/AVISO-IDLE-Z.md).
+> **PAUSA / CORTE TÉCNICO** (custodio). Todos los workers: **pausar** obra
+> en curso; si demoler → **pausar** (no continuar demoliciones). **No**
+> despachar workers · **no** merge/publish salvo emergencia documentada.
+> Aviso: [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md)
+> (espejo `vigilancia/z/`). Higiene al emitir: `C:\S_LAB\.worktrees\z`
+> vacío · `wp/*` 0 · 0 🔶 · sin workers activos.
 >
-> **GO planificación R12-Z** (custodio · prioritario): encolar **U168–U171**
-> ⬜ — major-band P0×4 · gate major-band · contrarrevisión · prep
-> publicación. **Sin** workers · **sin** 🔶 · **cero** `npm publish`
-> hasta **R12-Z PASS** (+ GO publish aparte para publish real). Replan:
+> Contexto previo (congelado hasta reanudación): **R11-Z PASS** —
+> [GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md). **Sprint 8
+> CERRADO**. **U165 ✅** no reabrir. Tip Sprint 8: `289b7fe`. IDLE previo:
+> [AVISO-IDLE-Z.md](REPORTES/entregas/AVISO-IDLE-Z.md). Cola R12-Z
+> **U168–U171** ⬜ sin avance durante el corte. Replan:
 > [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
-> Pedido SOL: [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
-> Addenda: [ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md](REPORTES/entregas/ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md).
 > Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **U162** ✅
 > (D-41 · no precedente). DC-15 LOCAL-ONLY. Skills espejo `@0.8.0`
 > (no commitear `.claude/skills/`).
@@ -117,10 +118,11 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (**IDLE Z** · 0 🔶 · sin workers).
-**Pendiente:** **R12-Z PASS** (planificación) sobre U168–U171 ⬜; luego
-GO implementación custodio (aparte). **No** `npm publish` hasta R12-Z
-PASS; publish real = GO publish aparte.
+**En curso:** ninguno (**PAUSA / CORTE TÉCNICO** · 0 🔶 · sin workers).
+**Pendiente:** reanudación explícita; luego **R12-Z PASS** (planificación)
+sobre U168–U171 ⬜; luego GO implementación custodio (aparte). **No**
+`npm publish` hasta R12-Z PASS; publish real = GO publish aparte.
+**No** demoler / merge / despachar durante el corte.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -135,15 +137,17 @@ economía CI) — ver triage U142.
 
 ---
 
-## Sprint 9 / R12-Z — major-band P0×4 · contrarrevisión · prep pub (planificación / IDLE · 2026-07-24)
+## Sprint 9 / R12-Z — major-band P0×4 · contrarrevisión · prep pub (**PAUSA / CORTE TÉCNICO** · 2026-07-24)
 
 Fuente: **R11-Z PASS** + **GO planificación R12-Z** (custodio) +
 [ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md](REPORTES/entregas/ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md).
 Detalle: [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
 Pedido SOL: [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
+Pausa: [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md).
 
-**Estado:** planificación / IDLE de obra — WPs **⬜** · **0 🔶** ·
-**cero workers**. **No** reabre Sprint 8 ni U165.
+**Estado:** **PAUSA / CORTE TÉCNICO** — WPs **⬜** · **0 🔶** ·
+**cero workers** · sin avance hasta reanudación. **No** reabre Sprint 8
+ni U165.
 
 **Fronteras duras:** sin `npm publish` hasta **R12-Z PASS** · sin Release
 publish efectivo · sin flip `private` / changesets de pub efectivos hasta
