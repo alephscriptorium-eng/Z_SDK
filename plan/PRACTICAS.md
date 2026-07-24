@@ -185,6 +185,8 @@ Detalle operativo de roles en [roles/README.md](roles/README.md).
   `main`, rellena briefs y (si hay paralelo) worktrees.
 - Un WP = un chat worker = una rama. El worker entrega reporte + evidencia;
   **Devuelto es legítimo** (REVISION → CORRECCION en la misma rama).
+- WPs de riesgo con `RIESGO_REVISION: independiente` en el brief exigen
+  **contrarrevisión** (§9) entre reporte worker y ✅ del orquestador.
 - No se cierra un sprint «en silencio» mientras queden WPs ⬜/🔶 del lote
   o reportes sin revisión.
 
@@ -279,3 +281,85 @@ re-ejecutable**. Queda como **candidata** a práctica periódica o a gate de
 `docs:build` — hoy no es gate instalado ni checklist obligatorio; C8 y C9
 sí lo son. El orquestador/vigilante puede usarla como contraste post-merge
 de WPs de docs. Formalizarla como gate = WP futuro con GO.
+
+## 9. Contrarrevisión independiente (WPs de riesgo)
+
+Barrera **read-only** entre el reporte del worker y la aceptación del
+orquestador. Intenta **refutar** los CA del WP; no sustituye la revisión
+ordinaria del orquestador ni el gate post-merge del sprint (p. ej. Rn-Z).
+Origen: ADDENDA-R12-Z; clasificación canónica en
+`skills/swarm-orquestacion/reference/revision-adversarial.md` del paquete
+`@alephscript/skills-scriptorium` (rango D-36; ver [roles/README.md](roles/README.md)).
+
+### Activación selectiva
+
+El orquestador fija `RIESGO_REVISION` en el brief (`normal` |
+`independiente`) y `MOTIVO_RIESGO`. La tabla y los cuatro campos del brief
+viven en la referencia canónica — **no se duplican aquí**.
+
+En este mundo, la contrarrevisión es **obligatoria** cuando el WP toca
+cualquiera de estas clases (el orquestador puede elevar otro caso con
+`MOTIVO_RIESGO` verificable; no puede rebajar una clase listada):
+
+| clase | ejemplos en zeus-sdk |
+| ----- | -------------------- |
+| gates / validadores / parsers | `scripts/gates/**`, `gate-publish-ready`, probes adversariales |
+| manifests / semver / publicación | `package.json` publicable, changesets, rangos major-band |
+| CI / Release / auth / seguridad | workflows, secrets, permisos de escritura |
+| contratos cruzados | dependencias entre paquetes/repos, allowlist, exports |
+
+**No aplica por defecto** a documentación rutinaria ni a WPs de proceso sin
+efecto en las clases anteriores (p. ej. U170).
+
+**Consumidores inmediatos (Sprint 9 / R12):** U168, U169, U171. Cada brief
+de riesgo debe declarar `RIESGO_REVISION: independiente`,
+`CONTRAEVIDENCIA_REQUERIDA` y `REVISOR_DISTINTO_WORKER: sí`.
+
+### Quién
+
+| rol | restricción |
+| --- | ----------- |
+| **Revisor de contrarrevisión** | Agente o persona **distinta** del worker **y** del orquestador que marca ✅. Puede ser **SOL** vía handoff. **Read-only:** no edita archivos, commits, `BACKLOG`, estados, tags ni remotas; no acepta ni mergea. |
+| **Worker** | Entrega reporte + evidencia; no se auto-contrarrevisa. |
+| **Orquestador** | Revisión ordinaria y ✅ **solo tras** `PASS` de contrarrevisión documentado en el reporte. El merge es post-✅ y lo ejecuta el orquestador, no el revisor. |
+
+### Qué revisa (checklist verificable)
+
+El revisor convierte cada CA y cada ítem de `CONTRAEVIDENCIA_REQUERIDA` en
+hipótesis refutable. Checklist mínimo — copiable desde
+[REPORTES/CHECKLIST-CONTRARREVISION.md](REPORTES/CHECKLIST-CONTRARREVISION.md):
+
+- [ ] **Falsos negativos / adversariales:** el diff no deja pasar entradas
+      inválidas ni omite casos rojos declarados en el brief.
+- [ ] **Dependencias no declaradas:** imports/runtime del script o paquete
+      tienen declaración directa (`package.json`, lock coherente con manifests).
+- [ ] **Instalación limpia:** resolución reproducible desde árbol limpio o
+      probe documentado; lock actualizado en el mismo alcance si cambian
+      manifests.
+- [ ] **Prueba vs test:** separar **prueba automatizada** (comando/probe con
+      salida literal), **evidencia manual** (inspección identificada) y
+      `⏳ sin verificar` — sin presentar manual como test.
+- [ ] **Fronteras de publicación:** allowlist, `private`, changesets y
+      ausencia de publish efectivo respetan el CA del WP y
+      [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md).
+- [ ] **Alcance:** el diff se limita al `ALCANCE_DIFF` del brief.
+
+Salida del revisor: exactamente **`PASS`** (no refutó los CA con lo
+ejecutado) o **`DEVUELTO`** (lista numerada de defectos reproducibles o
+evidencia faltante). `PASS` **no** equivale a aceptación ni autoriza merge.
+
+### Cuándo (orden obligatorio)
+
+```text
+worker (reporte + evidencia)
+    → contrarrevisión independiente (PASS | DEVUELTO)
+    → revisión ordinaria del orquestador (✅ | devuelto)
+    → merge (solo orquestador, post-✅)
+    → gate Rn-Z post-merge (verificación separada; no sustituye contrarrevisión)
+```
+
+- **Contrarrevisión:** tras reporte worker, **antes** de ✅/merge.
+- **Gate Rn-Z:** tras merge del lote; vigía/orquestador; no cuenta como
+  PASS de contrarrevisión ni sustituye la barrera pre-aceptación.
+- Si la contrarrevisión devuelve: CORRECCION en la misma rama → nuevo ciclo
+  desde reporte worker actualizado.
