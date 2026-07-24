@@ -29,6 +29,9 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 **GO publish condicionado P0×4:** **D-42** (activación solo al cumplir
 condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
 (tercer frente Dramaturgo + Zigurat — **solo planificación**).
+**Ratificación Issues #16–#53 / sync-map (`46c3e5c`):** **D-44**
+(excepción DC-15 acotada; LOCAL-ONLY por defecto; sin Issues nuevos;
+sin impl./despacho/publish).
 
 ---
 
@@ -48,8 +51,17 @@ condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
 > **U168–U171** ⬜ sin avance durante el corte. Replan:
 > [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
 > Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **U162** ✅
-> (D-41 · no precedente). DC-15 LOCAL-ONLY. Skills espejo `@0.8.0`
+> (D-41 · no precedente). **DC-15 LOCAL-ONLY** por defecto; **D-44**
+> excepción acotada solo Issues **#16–#53** + `plan/.sync-map.json` de
+> `46c3e5c` (conservar; sin Issues nuevos). Skills espejo `@0.8.0`
 > (no commitear `.claude/skills/`).
+>
+> **R12-Z · pedido PASS (segundo reintento):**
+> [AVISO-R12-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R12-Z-pedido-PASS.md)
+> · FAIL previo [GATE-R12-Z-FAIL.md](REPORTES/entregas/GATE-R12-Z-FAIL.md)
+> · patrón **base auditada** + **commit sello** (sin tip autorreferencial)
+> · **PAUSA** · **sin despacho** · **sin publish** · orquestador **no**
+> declara PASS.
 >
 > **GO publish condicionado P0×4 asentado (D-42):** el publish real de
 > `linea-system` · `linea-firehose` · `force-system` · `ssb-system`

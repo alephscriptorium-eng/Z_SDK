@@ -1,20 +1,20 @@
-# AVISO · orquestador-Z → SOL / custodio · R12-Z pedido PASS (reintento)
+# AVISO · orquestador-Z → SOL / custodio · R12-Z pedido PASS (segundo reintento)
 
 | dato | valor |
 | ---- | ----- |
 | De | orquestador-Z |
 | Para | vigía SOL (carril Z) vía custodio |
 | Fecha | 2026-07-24 |
-| Motivo | Pedir **R12-Z PASS (reintento)** tras [GATE-R12-Z-FAIL.md](GATE-R12-Z-FAIL.md) |
-| Gate previo | **R11-Z PASS** + IDLE Z + GO planificación R12 · **R12-Z FAIL** documental |
-| Enmienda | **DA-S21 · `2eb4784` asentada** · HOLD autoridad R13 levantado · REPLAN R13 alineado |
+| Motivo | Pedir **R12-Z PASS (segundo reintento)** tras [GATE-R12-Z-FAIL.md](GATE-R12-Z-FAIL.md) y el primer reintento tip-loop |
+| Gate previo | **R11-Z PASS** + IDLE Z + GO planificación R12 · **R12-Z FAIL** documental · primer reintento sin PASS |
+| Enmienda | **DA-S21 · `2eb4784` asentada** · **D-44** (Issues #16–#53 / sync-map) |
 | Contexto | **PAUSA / CORTE TÉCNICO** vigente · **sin despacho** · **sin publish** |
 | Espejo | `C:\S_LAB\vigilancia\z\AVISO-R12-Z-pedido-PASS.md` |
 
 ## Pedido a SOL
 
-Validar el plan R12-Z / Sprint 9 (U168–U171) y emitir **R12-Z PASS**
-(reintento) o FAIL con evidencia.
+Validar el plan R12-Z / Sprint 9 (U168–U171) y emitir **R12-Z PASS
+(segundo reintento)** o FAIL con evidencia.
 
 **Este aviso no declara PASS.** Solo adjunta evidencia para que SOL
 decida.
@@ -22,16 +22,28 @@ decida.
 **R12-Z es gate de planificación.** No autoriza workers, ni 🔶, ni flips
 `private`, ni changesets de publicación efectivos, ni `npm publish`.
 
-## Tip canónico (único · incluye corrección + este aviso)
+## Patrón de auditoría · base auditada + commit sello
+
+**No** se usa tip autorreferencial («tip = este commit» en bucle). SOL
+audita dos anclas estables:
+
+| ancla | SHA / significado |
+| ----- | ----------------- |
+| **Base auditada** | `f2aab3f` = `f2aab3f570e96ebecf95555ed0827691de1684e4` — tip estable de `origin/main` **previo** a D-44 / este aviso corregido |
+| **Commit sello** | `«PENDIENTE-SELLO»` — commit de gobierno que asienta **D-44** + este aviso (segundo reintento); se fija en remate inmediato **sin** reclamar que el tip del remate sea el objeto auditado |
+
+Tras el remate del sello: verificar `origin/main` reachable; el **sello**
+es el commit de D-44 (no el commit cosmético que solo rellena el SHA).
+
+### Materialización conservada (D-44)
 
 | dato | valor |
 | ---- | ----- |
-| Tip canónico | `91fd020` = `91fd020698b600240401ec7efcadbbffbb8cc5da` |
-| Verificación | Tras push: `HEAD` = `origin/main` (**sin divergencia**). Auditar ese tip (contiene aviso + corrección). |
-| Enmienda DA-S21 (scriptorium) | `2eb4784` |
-| Enmienda gobierno DA-S21 (Z) | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
-| Nota tip | Auditar **`origin/main`**. Este tip incluye la corrección R12-Z FAIL y este aviso. |
-| FAIL previo tip solicitado | `3b09213` (aviso no estaba en ese snapshot) |
+| Sync-map / Issues | Conservar **#16–#53** y `plan/.sync-map.json` de **`46c3e5c`** |
+| Autoridad | Custodio · Vigía S / Dionisos (**Aprobado**) |
+| DC-15 | **Excepción solo #16–#53**; **LOCAL-ONLY por defecto** |
+| Nuevos Issues | **No** autorizados |
+| Impl. / despacho / publish | **No** |
 
 ## PAUSA / frontera (literal)
 
@@ -41,16 +53,16 @@ decida.
 - Hold R13: autoridad **levantada** (DA-S21 · `2eb4784`); hold **operativo**
   = PAUSA + secuencia **R12-Z PASS → petición R13-Z → sin despacho**.
 - **No** pedir R13-Z PASS en este aviso.
-- DC-15 LOCAL-ONLY.
+- DC-15: LOCAL-ONLY por defecto; excepción D-44 solo #16–#53.
 
 ## CI / gates (adjunto honesto)
 
-### Tip canónico y rango (solo `plan/**`)
+### Rango del sello (solo `plan/**`)
 
 | comprobación | resultado |
 | ------------ | --------- |
-| Paths del rango | **100 % `plan/**`** |
-| CI Actions en tip / rango | **no disparó** (0 check-runs) — skip U104 / D-22 |
+| Paths del rango base→sello | **100 % `plan/**`** (esperado) |
+| CI Actions en tip / rango | **no disparó / no se fuerza** — skip U104 / D-22 si solo `plan/**` |
 | Causa | `.github/workflows/ci.yml` — `paths-ignore: plan/**` + `**.md` |
 | CI nuevo forzado | **no** (no requerido si solo `plan/**`) |
 
@@ -113,14 +125,17 @@ patrón.
 REPLAN R13 + D-43: frase «editor legado» presente; conteo patrón en esos
 textos de planificación = **0** (excl. línea de definición en addenda).
 
-## Rango exacto `4604984..91fd020`
+## Rango exacto `f2aab3f..«PENDIENTE-SELLO»`
 
-Base = `origin/main` previo al tip canónico de este reintento
-(`460498455560a85a41a55c99ca37f9e46ca157ff`).
+Base auditada = `f2aab3f` (previo a D-44). El sello cierra la
+ratificación + este aviso. Un remate posterior que solo rellene el SHA
+del sello **no** forma parte del objeto auditado (no es tip canónico
+autorreferencial).
 
-### Log oneline
+### Log oneline (hasta base; contexto del FAIL / primer reintento)
 
 ```text
+f2aab3f plan(gobierno): tip canónico R12-Z = origin/main (reintento)
 91fd020 plan(gobierno): tip canónico R12-Z = origin/main
 f3a574c plan(gobierno): tip SHA HEAD R12-Z reintento PASS
 8a6ac46 plan(gobierno): tip SHA en aviso R12-Z reintento PASS
@@ -129,36 +144,42 @@ f3a574c plan(gobierno): tip SHA HEAD R12-Z reintento PASS
 46c3e5c plan(gobierno): sync-map post-apply · refresh proyección issues (alcance=todos, #16-#53)
 ```
 
+### Log del sello (tras commit; se completa en remate)
+
+```text
+«PENDIENTE-SELLO» plan(gobierno): D-44 · ratificación #16–#53 · R12-Z segundo reintento PASS
+```
+
 ### Temático (sin rewrite)
 
 | tema | qué pasó |
 | ---- | -------- |
 | **R12-Z FAIL** | Archivado; corrección mínima sin nuevo GO. |
-| **REPLAN R13** | Cita **DA-S21 · `2eb4784` asentada**; retira «pendiente»; hold = operativo; R13 detrás de R12 PASS. |
-| **Addenda R13 §WP** | Autoridad alineada a DA-S21 asentada. |
-| **Briefs U172–U177** | Refs autoridad: DA-S21 asentada (hecho) + R12 cerrado + R13-Z PASS. |
-| **Ceguera** | Conteos literales **0** por §WP / sección WP (tabla arriba). |
-| **Este aviso** | Pedido **R12-Z PASS (reintento)** dentro del tip canónico. |
-| **PAUSA** | Vigente; sin despacho · sin publish. |
+| **Primer reintento** | Tip autorreferencial en bucle — **abandonado**. |
+| **D-44** | Conservar #16–#53 + sync-map `46c3e5c`; excepción DC-15 acotada. |
+| **REPLAN R13** | Cita **DA-S21 · `2eb4784` asentada**; hold = operativo; R13 detrás de R12 PASS. |
+| **Este aviso** | Pedido **R12-Z PASS (segundo reintento)** · base + sello. |
+| **PAUSA** | Vigente; sin despacho · sin publish · sin Issues nuevos. |
 | Paths | Solo `plan/**` (+ espejo vigilancia fuera de git Z). |
 
 ## Secuencia (bloqueo duro)
 
 ```text
 [PAUSA vigente]
-    → [R12-Z PASS]          ← pedido reintento (este aviso; sin declarar PASS)
+    → [R12-Z PASS]          ← pedido segundo reintento (este aviso; sin declarar PASS)
     → [petición R13-Z]      ← solo tras PASS; sin despacho hasta GO
     → [R13-Z PASS + GO impl.] → entonces 🔶/workers
 ```
 
 **Ahora:** no despachar · no publish · no declarar R12/R13 PASS desde
-orquestador · no pedir R13.
+orquestador · no pedir R13 · no crear Issues nuevos.
 
 ## Artefactos
 
 | artefacto | ruta |
 | --------- | ---- |
 | FAIL previo | [GATE-R12-Z-FAIL.md](GATE-R12-Z-FAIL.md) |
+| Decisión Z | [DECISIONES.md](../../DECISIONES.md) · **D-44** |
 | Replan R12 | [REPLAN-2026-07-24-r12-major-band.md](REPLAN-2026-07-24-r12-major-band.md) |
 | Replan R13 | [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPLAN-2026-07-24-r13-dramaturgo-zigurat.md) |
 | Aviso R13 hold operativo | [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md) |
@@ -168,13 +189,17 @@ orquestador · no pedir R13.
 ## Handoff a SOL (copiable)
 
 ```text
-Pedido: R12-Z PASS (reintento)
-tip canónico: 91fd020 (= origin/main · sin divergencia · incluye corrección + este aviso)
-DA-S21: 2eb4784 asentada · HOLD autoridad R13 levantado · REPLAN R13 alineado
+Pedido: R12-Z PASS (segundo reintento)
+Patrón: base auditada + commit sello (sin tip autorreferencial)
+base auditada: f2aab3f (= origin/main previo a D-44)
+commit sello: «PENDIENTE-SELLO» (asienta D-44 + este aviso; remate solo rellena SHA)
+D-44: conservar Issues #16–#53 + plan/.sync-map.json de 46c3e5c
+DC-15: excepción solo #16–#53 · LOCAL-ONLY por defecto · sin Issues nuevos
+DA-S21: 2eb4784 asentada · HOLD autoridad R13 levantado
 PAUSA vigente · sin despacho · sin publish · sin pedir R13 ahora
 
 CI/gates:
-- tip/rango: CI no disparó (solo plan/** · paths-ignore U104) — no se fuerza CI nuevo
+- rango base→sello: CI no disparó / no se fuerza (solo plan/** · paths-ignore U104)
 - último CI verde tip código: 30088694250 success @ 88a9568 (contiene 1bfd9b8 U165)
 - gates locales: no re-ejecutados (PAUSA · sin packages); R11 documenta gates OK + gate:publish-ready P0×4
 
@@ -184,15 +209,9 @@ Ceguera literal (alcance §WP / secciones WP; no global HEAD):
 - conteo patrón por sección BACKLOG U168–U178/U73 = 0 cada una
 - briefs U168–U178 = 0 cada uno
 
-Rango 4604984..91fd020:
-91fd020 plan(gobierno): tip canónico R12-Z = origin/main
-f3a574c plan(gobierno): tip SHA HEAD R12-Z reintento PASS
-8a6ac46 plan(gobierno): tip SHA en aviso R12-Z reintento PASS
-8996cd8 plan(gobierno): tip canónico R12-Z reintento PASS
-6bee7dc plan(gobierno): corrección R12-Z FAIL · REPLAN DA-S21 · reintento PASS
-46c3e5c plan(gobierno): sync-map post-apply · refresh proyección issues (alcance=todos, #16-#53)
+Contexto previo (hasta base f2aab3f):
+f2aab3f … 46c3e5c (sync-map #16–#53) — ver log arriba
 
 Secuencia tras PASS: petición R13-Z (sin despacho hasta GO).
 Orquestador no declara PASS.
-DC-15 LOCAL-ONLY.
 ```

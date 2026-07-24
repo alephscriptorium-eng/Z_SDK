@@ -560,6 +560,24 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   anotar la cascada empleada en el aviso correspondiente. Replan:
   [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
 
+- **D-44 · 2026-07-24 · Ratificación Issues #16–#53 + sync-map (excepción
+  DC-15 acotada · Custodio · Vigía S / Dionisos)**
+  (fuente: GO custodio · ratificación cerrada; materialización
+  `46c3e5c`). **Autoridad:** Custodio · Vigía S / Dionisos (**Aprobado**).
+  **Conservar** los Issues GitHub **#16–#53** y el
+  `plan/.sync-map.json` materializados en el tip/materialización
+  **`46c3e5c`** (`plan(gobierno): sync-map post-apply · refresh proyección
+  issues (alcance=todos, #16-#53)`). **Excepción a DC-15:** únicamente
+  para el conjunto ya materializado **#16–#53** (conservación; no borrado
+  ni “rollback” de esa proyección). **DC-15 sigue LOCAL-ONLY por
+  defecto** para toda proyección nueva. **Sin** autorización para
+  crear Issues nuevos. **Sin** implementación, despacho ni publish.
+  **No** es GO de proyección adicional ni de workers. **PAUSA / CORTE
+  TÉCNICO** permanece vigente. Pedido vigente a SOL: **R12-Z PASS
+  (segundo reintento)** — aviso
+  [AVISO-R12-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R12-Z-pedido-PASS.md)
+  (patrón **base auditada** + **commit sello**; sin tip autorreferencial).
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
