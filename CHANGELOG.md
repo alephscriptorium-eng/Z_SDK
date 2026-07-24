@@ -16,6 +16,11 @@ prose.
 
 ### Changed
 
+- Contrato Node raíz **`engines.node >=18.0.0 → >=22.0.0`** (GO
+  custodio tras GATE-ADOPCION-LIB-0.10-Z-FAIL). Alineado con
+  `@alephscript/skills-scriptorium@0.10.0` y CI `node-version: '22'`.
+  Remate: **R12-Z PASS · skills-scriptorium 0.10.0 adoptado** ·
+  **PAUSA** vigente · sin despacho / publish / R13.
 - Baseline de skills `@alephscript/skills-scriptorium` **0.8.0 → 0.10.0**
   (rango D-36 reconciliado a `>=0.10.0 <1.0.0`; mecánico sin WP; GO
   custodio adoptar `@0.10.0`). Lock pin exacto `0.10.0`.

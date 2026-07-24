@@ -35,7 +35,7 @@ sin impl./despacho/publish).
 
 ---
 
-## Remate — estado swarm (2026-07-24 · **PAUSA / CORTE TÉCNICO** · R11-Z PASS · Sprint 8 CERRADO)
+## Remate — estado swarm (2026-07-24 · **PAUSA** · **R12-Z PASS · skills-scriptorium 0.10.0 adoptado**)
 
 > **PAUSA / CORTE TÉCNICO** (custodio). Todos los workers: **pausar** obra
 > en curso; si demoler → **pausar** (no continuar demoliciones). **No**
@@ -43,6 +43,13 @@ sin impl./despacho/publish).
 > Aviso: [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md)
 > (espejo `vigilancia/z/`). Higiene al emitir: `C:\S_LAB\.worktrees\z`
 > vacío · `wp/*` 0 · 0 🔶 · sin workers activos.
+>
+> **R12-Z PASS · skills-scriptorium 0.10.0 adoptado.** R12-Z PASS de
+> planificación vigente (`f2aab3f` + sello `2ef0d79` · remate
+> `66c3696`). Adopción `@0.10.0` (D-36 `>=0.10.0 <1.0.0`) + contrato
+> Node raíz **`engines.node >=22.0.0`** (GO custodio tras
+> GATE-ADOPCION-LIB-0.10-Z-FAIL). **PAUSA** · **sin despacho** ·
+> **sin publish** · **sin R13**. No commitear `.claude/skills/`.
 >
 > Contexto previo (congelado hasta reanudación): **R11-Z PASS** —
 > [GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md). **Sprint 8
@@ -53,16 +60,8 @@ sin impl./despacho/publish).
 > Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **U162** ✅
 > (D-41 · no precedente). **DC-15 LOCAL-ONLY** por defecto; **D-44**
 > excepción acotada solo Issues **#16–#53** + `plan/.sync-map.json` de
-> `46c3e5c` (conservar; sin Issues nuevos). Skills espejo `@0.10.0`
-> (rango D-36 `>=0.10.0 <1.0.0`; adopción GO custodio hecha; no
-> commitear `.claude/skills/`).
->
-> **R12-Z · pedido PASS (segundo reintento):**
-> [AVISO-R12-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R12-Z-pedido-PASS.md)
-> · FAIL previo [GATE-R12-Z-FAIL.md](REPORTES/entregas/GATE-R12-Z-FAIL.md)
-> · patrón **base auditada** + **commit sello** (sin tip autorreferencial)
-> · **PAUSA** · **sin despacho** · **sin publish** · orquestador **no**
-> declara PASS.
+> `46c3e5c` (conservar; sin Issues nuevos). Aviso adopción engines:
+> [AVISO-ADOPCION-0.10-engines-node22.md](REPORTES/entregas/AVISO-ADOPCION-0.10-engines-node22.md).
 >
 > **GO publish condicionado P0×4 asentado (D-42):** el publish real de
 > `linea-system` · `linea-firehose` · `force-system` · `ssb-system`
@@ -79,10 +78,9 @@ sin impl./despacho/publish).
 > **Tercer frente Dramaturgo + Zigurat (D-43 · DA-S21 asentada ·
 > `2eb4784`):** cola **R13-Z** planificada — épica **U73** reactivada ⬜
 > + **U172–U177** ⬜. HOLD de autoridad **levantado**. Hold que queda:
-> **operativo** (PAUSA + secuencia **R12-Z → petición R13-Z → sin
-> despacho**; no pedir R13-Z PASS hasta R12-Z PASS). **Bloqueado** abrir
-> implementación hasta cerrar R12 + **R13-Z PASS** + GO implementación
-> aparte. Replan:
+> **operativo** (**PAUSA** · R12-Z PASS vigente · **sin** petición R13-Z
+> · **sin despacho**). **Bloqueado** abrir implementación hasta GO
+> impl. R12 + **R13-Z PASS** + GO implementación R13 aparte. Replan:
 > [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
 > Fuente:
 > [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md).
@@ -157,16 +155,16 @@ sin impl./despacho/publish).
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (**PAUSA / CORTE TÉCNICO** · 0 🔶 · sin workers).
-**Pendiente:** reanudación explícita; luego **R12-Z PASS** (planificación)
-sobre U168–U171 ⬜; luego GO implementación custodio (aparte). **No**
-`npm publish` hasta R12-Z PASS; publish real P0×4 = **GO condicionado
-D-42** (activación solo al cumplir TODAS sus condiciones; sin nuevo GO
-al cumplirlas). **U178** (publish-ready `linea-editor`) ⬜ aparte.
+**En curso:** ninguno (**PAUSA** · 0 🔶 · sin workers · sin despacho).
+**Pendiente:** reanudación explícita + GO implementación custodio
+sobre U168–U171 ⬜ (**R12-Z PASS** ya vigente; adopción **0.10.0**
+cerrada con `engines.node >=22.0.0`). **No** `npm publish` hasta
+cumplir D-42; publish real P0×4 = **GO condicionado D-42**. **U178**
+(publish-ready `linea-editor`) ⬜ aparte.
 **R13-Z**: cola planificada ⬜; HOLD autoridad levantado (DA-S21 ·
-`2eb4784`); hold operativo PAUSA + espera R12 (sin petición R13 aún;
-sin PASS). Tercer frente **sin abrir** hasta R12 cerrado + R13-Z PASS +
-GO impl.
+`2eb4784`); hold operativo **PAUSA** + secuencia R12 PASS → petición
+R13 → sin despacho (**no** pedir R13-Z PASS en este remate). Tercer
+frente **sin abrir** hasta GO impl. R12 + R13-Z PASS + GO impl. R13.
 **No** demoler / merge / despachar durante el corte.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
@@ -1328,8 +1326,9 @@ Candidatos de higiene; **no** abrir frente sin GO explícito del usuario.
   candidato triage
 - (U145) EOL `bin/*.mjs` reescritos por `npm install` (ruido git) —
   candidato `.gitattributes` con `eol` explícito
-- (U145) `engines.node >=22` del paquete skills vs `>=18` del raíz —
-  divergencia a vigilar (sin `engine-strict` no bloquea)
+- ~~(U145) `engines.node >=22` del paquete skills vs `>=18` del raíz~~ —
+  **RESUELTO** (GO custodio · 2026-07-24): raíz elevado a
+  `engines.node >=22.0.0` (alineado con skills-scriptorium 0.10.0)
 - (U146) `.cursor/README.md` + `.cursor/rules/*.mdc` citan prompts
   borrados de `plan/roles/` — candidato **micro-WP U148** (repuntar
   adaptador a roles/README + paquete); conviene en el lote de merge
