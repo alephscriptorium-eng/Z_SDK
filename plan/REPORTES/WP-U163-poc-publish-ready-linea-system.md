@@ -218,4 +218,16 @@ momento de la evidencia; si el registry bumba antes de U164, re-correr
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅** (orquestador · 2026-07-24).
+
+- CA de manifest: `publishConfig.registry`, `files` y pines internos
+  verificados en diff.
+- Pack re-ejecutado: 8 files, sin `test/`, fixtures ni `node_modules`.
+- `npm run gates`: `gates: OK (0 offenders)`.
+- Eje IV: plantilla reproducible y segundo cliente U164 explícitos.
+- Fronteras verificadas: `private: true` intacto; cero `.changeset/**`,
+  workflow publish, `npm publish`, BACKLOG u otros P0/P1.
+- Alcance: solo manifest de `linea-system` + este reporte.
+- Nota no bloqueante: `npm test -w @zeus/linea-system` no arrancó en el
+  worktree sin instalación (`ERR_MODULE_NOT_FOUND` para dependencias
+  workspace); el brief exigía pack + gates, ambos verdes.
