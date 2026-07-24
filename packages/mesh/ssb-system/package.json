@@ -1,6 +1,6 @@
 {
   "name": "@zeus/ssb-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SSB → VOLUMES exporter + read-only MCP loader for DISK_04/SSB (Tribes, Parliament, votes)",
   "type": "module",
   "main": "src/index.mjs",

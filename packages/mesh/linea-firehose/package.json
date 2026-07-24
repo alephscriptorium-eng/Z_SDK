@@ -1,6 +1,6 @@
 {
   "name": "@zeus/linea-firehose",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Firehose volume loader — Jetstream post schema, corpus browse, micropost preview",
   "type": "module",
   "main": "src/index.mjs",

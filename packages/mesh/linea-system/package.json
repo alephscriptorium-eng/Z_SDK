@@ -1,6 +1,6 @@
 {
   "name": "@zeus/linea-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP servers for DISK_02/LINEAS: espana trunk and wp/historia satellite",
   "type": "module",
   "main": "src/index.mjs",
