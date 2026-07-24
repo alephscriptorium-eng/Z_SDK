@@ -63,14 +63,17 @@ condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
 > P0×4). Clases privadas **por decisión de producto = excluidas**
 > (allowlist §4 · D-42).
 >
-> **Tercer frente Dramaturgo + Zigurat (D-43 · GO custodio 2026-07-24 ·
-> asiento DA-S21 pendiente):** cola **R13-Z** planificada — épica
-> **U73** reactivada ⬜ + **U172–U177** ⬜. **R13-Z en HOLD** hasta el
-> commit del asiento DA-S21; **bloqueado** abrir implementación hasta
-> cerrar R12 + **R13-Z PASS** + GO implementación aparte. Replan:
+> **Tercer frente Dramaturgo + Zigurat (D-43 · DA-S21 asentada ·
+> `2eb4784`):** cola **R13-Z** planificada — épica **U73** reactivada ⬜
+> + **U172–U177** ⬜. HOLD de autoridad **levantado**. Hold que queda:
+> **operativo** (PAUSA + secuencia **R12-Z → petición R13-Z → sin
+> despacho**; no pedir R13-Z PASS hasta R12-Z PASS). **Bloqueado** abrir
+> implementación hasta cerrar R12 + **R13-Z PASS** + GO implementación
+> aparte. Replan:
 > [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
 > Fuente:
 > [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md).
+> Aviso: [AVISO-R13-Z-plan-hold.md](REPORTES/entregas/AVISO-R13-Z-plan-hold.md).
 >
 > **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
 > (`1a24a60`) — proyección backlog→Issues montada y validada en
@@ -136,7 +139,7 @@ condiciones; sin publish antes). **DA-S21 / plan R13-Z:** **D-43**
 | **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ · **CERRADO** (R11-Z PASS) |
 | **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | ⬜ planificación (sin 🔶) |
 | **Cola publish P1** — publish-ready `linea-editor` (D-42) | **U178** | ⬜ (tras U168+U169; GO impl. propio) |
-| **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ planificación · **HOLD** (asiento DA-S21 + R12 cerrado + R13-Z PASS + GO impl.) |
+| **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ planificación · hold operativo (PAUSA · R12 → petición R13 · sin despacho; R13-Z PASS + GO impl. para abrir) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -147,8 +150,10 @@ sobre U168–U171 ⬜; luego GO implementación custodio (aparte). **No**
 `npm publish` hasta R12-Z PASS; publish real P0×4 = **GO condicionado
 D-42** (activación solo al cumplir TODAS sus condiciones; sin nuevo GO
 al cumplirlas). **U178** (publish-ready `linea-editor`) ⬜ aparte.
-**R13-Z**: cola planificada ⬜ en **HOLD** (asiento DA-S21 pendiente);
-tercer frente **sin abrir** hasta R12 cerrado + R13-Z PASS + GO impl.
+**R13-Z**: cola planificada ⬜; HOLD autoridad levantado (DA-S21 ·
+`2eb4784`); hold operativo PAUSA + espera R12 (sin petición R13 aún;
+sin PASS). Tercer frente **sin abrir** hasta R12 cerrado + R13-Z PASS +
+GO impl.
 **No** demoler / merge / despachar durante el corte.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
@@ -261,21 +266,23 @@ publish condicionado D-42 propio).
 
 ---
 
-## R13-Z — tercer frente Dramaturgo + Zigurat (planificación · HOLD · D-43 · 2026-07-24)
+## R13-Z — tercer frente Dramaturgo + Zigurat (planificación · hold operativo · D-43 · 2026-07-24)
 
-Fuente: **GO custodio 2026-07-24 · asiento DA-S21 pendiente** (**D-43**)
+Fuente: **DA-S21 asentada · `2eb4784`** (**D-43**)
 + [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md)
 (espejo `vigilancia/z/`). Detalle:
 [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
+Aviso: [AVISO-R13-Z-plan-hold.md](REPORTES/entregas/AVISO-R13-Z-plan-hold.md).
 
-**Estado:** **solo planificación** — WPs **⬜** · **0 🔶** · **cero
-workers** · cero código. **R13-Z en HOLD** hasta el commit del asiento
-DA-S21 (no pedir R13-Z PASS antes).
+**Estado:** **solo planificación** — WPs **⬜** · **0 🔶** · **0
+workers** · **0** código. HOLD de autoridad **levantado** (DA-S21
+autoriza planificar). Hold **operativo** vigente: PAUSA + secuencia
+**R12-Z → petición R13-Z → sin despacho** (no pedir R13-Z PASS hasta
+R12-Z PASS; sin PASS declarado).
 
 **Bloqueo duro (tercer frente):** no abrir implementación hasta
-(1) asiento DA-S21 commiteado, (2) **R12 cerrado**, (3) **R13-Z PASS**,
-(4) **GO implementación aparte**. Sin publicación de paquetes en este
-frente.
+(1) **R12 cerrado**, (2) **R13-Z PASS**, (3) **GO implementación
+aparte**. Sin publicación de paquetes en este frente.
 
 **Camino A (DRY — extender antes de crear):** absorber el dominio
 narrativo en contratos y paquetes existentes — proyección
@@ -290,7 +297,7 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
 
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
-| **A** | U172 · U173 | asiento DA-S21 · R12 cerrado · R13-Z PASS + GO impl. | U172 ∥ U173 |
+| **A** | U172 · U173 | R12 cerrado · R13-Z PASS + GO impl. | U172 ∥ U173 |
 | **B** | U174 | U173 ✅ | secuencial (posee schema) |
 | **C** | U175 | U172 ✅ + U173 ✅ + U174 ✅ | secuencial (posee linea-editor src) |
 | **D** | U176 | U173 ✅ + U174 ✅ | ∥ U175 posible (archivos disjuntos) |
@@ -308,7 +315,7 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
 ### WP-U172 · Proyector MCP de mutaciones HTTP — ⬜
 
 - ⬜ **WP-U172 · Proyectar mutaciones HTTP como herramientas MCP** —
-  pendiente. Est. M. Dep: asiento DA-S21 · R12 cerrado · R13-Z PASS +
+  pendiente. Est. M. Dep: R12 cerrado · R13-Z PASS +
   GO impl. Ola A (∥ U173). Brief:
   [REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md](REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md).
   **Qué:** extender la proyección RouteEntry→MCP existente de
@@ -320,7 +327,7 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
 ### WP-U173 · Kit de reparto y permisos de dominio — ⬜
 
 - ⬜ **WP-U173 · Kit de reparto y permisos de dominio** — pendiente.
-  Est. M. Dep: asiento DA-S21 · R12 cerrado · R13-Z PASS + GO impl.
+  Est. M. Dep: R12 cerrado · R13-Z PASS + GO impl.
   Ola A (∥ U172). Brief:
   [REPORTES/briefs/WP-U173-kit-reparto-permisos.md](REPORTES/briefs/WP-U173-kit-reparto-permisos.md).
   **Qué:** kit de reparto (personajes/roles del dominio narrativo) +

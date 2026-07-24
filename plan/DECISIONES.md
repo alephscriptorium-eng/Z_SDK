@@ -529,33 +529,33 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md) §3–§5 y BACKLOG remate.
 
 - **D-43 · 2026-07-24 · Tercer frente Dramaturgo + Zigurat — GO de
-  planificación (GO custodio 2026-07-24 · asiento DA-S21 pendiente)**
+  planificación (DA-S21 asentada · `2eb4784`)**
   (fuente:
   [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md),
-  espejo `vigilancia/z/`). Cita provisional: **«GO custodio 2026-07-24 ·
-  asiento DA-S21 pendiente»** — la decisión DA-S21 no se considera
-  consolidada hasta existir su asiento (commit) en el registro del
-  carril de origen; **el gate R13-Z queda en HOLD** hasta recibir ese
-  commit (no pedir R13-Z PASS antes). El GO recibido es **de
-  planificación**; **no** es GO de implementación. Camino A
-  ratificado: **absorber el dominio narrativo en contratos y paquetes
-  existentes** (DRY: `@zeus/http-contract` proyección RouteEntry→MCP ·
-  identidad/seats de `@zeus/protocol`/authority-kit ·
-  `@zeus/story-board-schema` · `@zeus/linea-editor` · componentes de
-  reparto existentes · épica Zigurat histórica U73), sin reconstruir el
-  editor legado. Alcance zeus: **U172–U177** ⬜ + **épica U73 reactivada
-  ⬜** (Zigurat **acotada**; no capa federada completa). **Fuera de
-  zeus** (ownership de otros carriles): archivo del editor legado,
-  DAS-1, extensión VS Code; sidecar/pub. Rutas fuente del legado = **solo
-  lectura** para diseñar el importador; ningún vocabulario ni artefacto
-  legado se copia al código público. **Secuencia obligada:** asiento
-  DA-S21 commiteado (levanta el HOLD) · cerrar planificación R12 →
-  adoptar/validar skills 0.10.0 → ejecutar y cerrar R12 → **gate R13-Z
-  PASS** → **GO implementación aparte** (solo entonces 🔶/workers/código
-  del tercer frente). Se permiten ahora (prep R13 permitida): replan,
-  briefs, dependencias, olas y entradas ⬜ — sin workers, sin 🔶, sin
-  implementación ni publicación. **Nota de runtime
-  para despachos futuros R13:** preferir modelo **Fable**; si no está
+  espejo `vigilancia/z/`). **DA-S21 asentada · `2eb4784`** (scriptorium)
+  — el HOLD de autoridad queda **levantado** (DA-S21 autoriza
+  planificar). El GO es **de planificación**; **no** es GO de
+  implementación. Camino A ratificado: **absorber el dominio narrativo
+  en contratos y paquetes existentes** (DRY: `@zeus/http-contract`
+  proyección RouteEntry→MCP · identidad/seats de
+  `@zeus/protocol`/authority-kit · `@zeus/story-board-schema` ·
+  `@zeus/linea-editor` · componentes de reparto existentes · épica
+  Zigurat histórica U73), sin reconstruir el editor legado. Alcance
+  zeus: **U172–U177** ⬜ + **épica U73 reactivada ⬜** (Zigurat
+  **acotada**; no capa federada completa). **Fuera de zeus** (ownership
+  de otros carriles): archivo del editor legado, DAS-1, extensión VS
+  Code; sidecar/pub. Rutas fuente del legado = **solo lectura** para
+  diseñar el importador; ningún vocabulario ni artefacto legado se
+  copia al código público (conteo literal **0**). **Secuencia
+  obligada:** **R12-Z** (pedido vigente) → **petición R13-Z** (solo
+  tras R12-Z PASS; no ahora) → **sin despacho** hasta **R13-Z PASS** +
+  **GO implementación aparte** (solo entonces 🔶/workers/código del
+  tercer frente). Hold que queda: **operativo** por **PAUSA / CORTE
+  TÉCNICO** + espera R12 — **no** hold de DA-S21. Se permiten (prep
+  R13): replan, briefs, dependencias, olas y entradas ⬜ — **0**
+  workers · **0** 🔶 · **0** implementación · **0** publicación. **No**
+  declarar R12/R13 PASS desde este asiento. **Nota de runtime para
+  despachos futuros R13:** preferir modelo **Fable**; si no está
   disponible, **GPT-5.6 Sol**; si tampoco, el mejor disponible —
   anotar la cascada empleada en el aviso correspondiente. Replan:
   [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
