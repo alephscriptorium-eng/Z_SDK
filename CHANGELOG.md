@@ -22,12 +22,10 @@ prose.
   DC-24); Punto 4 (parser) sigue abierto en el mundo del paquete (su
   DC-25). Disponible pero **no cableado** aún: gate `verificar-changelog
   --role gobierno` (candidato follow-up para validar nuestro CHANGELOG).
-- **R11-Z FAIL** → **U165 ✅** re-validado (pines semver + resolución
-  registry + probes rojos). Pedido **reintento R11-Z** (no PASS). U164
-  ✅ · U166 ✅ intactos.
-- **R11-Z FAIL reintento** → **U165 ✅** (`semver` devDependency raíz
-  + lock; `npm ls semver --depth=0` verde). Pedido **nuevo reintento
-  R11-Z** (no PASS). Solo U165.
+- **R11-Z PASS** · Sprint 8 **CERRADO** · **IDLE Z**. Remate BACKLOG
+  alineado (gobierno; no reabre U165). GO planificación **R12-Z**:
+  U168–U171 ⬜ (major-band P0×4 · gate · contrarrevisión · prep pub).
+  Pedido **R12-Z PASS**. Sin workers · sin `npm publish`.
 
 ---
 

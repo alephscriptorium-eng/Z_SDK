@@ -29,26 +29,26 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · U165 ✅ semver raíz · pedir reintento R11-Z)
+## Remate — estado swarm (2026-07-24 · IDLE Z · R11-Z PASS · Sprint 8 CERRADO · plan R12-Z)
 
-> **U165 ✅** tras corrección **R11-Z FAIL reintento** (`semver`
-> declarado como **devDependency raíz** + lock; `npm ls semver
-> --depth=0` verde). Sensor pines + registry + probes OK. Tip código:
-> `289b7fe` (obra `1bfd9b8`). **U164 ✅** · **U166 ✅** intactos. Gate
-> FAIL archivado:
-> [GATE-R11-Z-FAIL-REINTENTO.md](REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md).
-> Pedido **nuevo reintento R11-Z** a SOL (no declarar PASS). Aviso:
-> [AVISO-R11-Z-reintento-u165-semver.md](REPORTES/entregas/AVISO-R11-Z-reintento-u165-semver.md)
-> (espejo `vigilancia/z/`). Aviso previo obsoleto:
-> [AVISO-R11-Z-reintento-u165.md](REPORTES/entregas/AVISO-R11-Z-reintento-u165.md).
-> Allowlist solo lectura. Frontera dura: **cero** flip `private` ·
-> **cero** changesets de pub · **cero** `npm publish`. FAIL sensor
-> previo: [GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md).
-> Replan: [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
-> **U162** ✅ (D-41 · no precedente). **Ola A CERRADA** · **U163 ✅ ∥
-> U167 ✅**. Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md).
-> DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear
-> `.claude/skills/`).
+> **IDLE Z** declarado. **R11-Z PASS** —
+> [GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md) (espejo
+> `vigilancia/z/`). **Sprint 8 CERRADO** (Ola A ✅ · Ola B ✅ · U163–U167
+> ✅). **U165 ✅** cerrado (semver raíz); **no reabrir**. Tip código
+> Sprint 8: `289b7fe`. Higiene: `C:\S_LAB\.worktrees\z` vacío · `wp/*`
+> 0 · 0 🔶. Aviso IDLE:
+> [AVISO-IDLE-Z.md](REPORTES/entregas/AVISO-IDLE-Z.md).
+>
+> **GO planificación R12-Z** (custodio · prioritario): encolar **U168–U171**
+> ⬜ — major-band P0×4 · gate major-band · contrarrevisión · prep
+> publicación. **Sin** workers · **sin** 🔶 · **cero** `npm publish`
+> hasta **R12-Z PASS** (+ GO publish aparte para publish real). Replan:
+> [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
+> Pedido SOL: [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
+> Addenda: [ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md](REPORTES/entregas/ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md).
+> Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **U162** ✅
+> (D-41 · no precedente). DC-15 LOCAL-ONLY. Skills espejo `@0.8.0`
+> (no commitear `.claude/skills/`).
 >
 > **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
 > (`1a24a60`) — proyección backlog→Issues montada y validada en
@@ -110,48 +110,117 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U158 · CERRADO |
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
-| **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ |
-| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ U164 · U166 · **U165 ✅** (semver raíz post FAIL-REINTENTO) |
+| **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ · **CERRADO** |
+| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ · **CERRADO** (R11-Z PASS) |
+| **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | ⬜ planificación (sin 🔶) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (quietud post U165 ✅ semver raíz; pedido
-reintento R11-Z).
-**Pendiente:** veredicto SOL **nuevo reintento R11-Z** (no declarar
-PASS).
+**En curso:** ninguno (**IDLE Z** · 0 🔶 · sin workers).
+**Pendiente:** **R12-Z PASS** (planificación) sobre U168–U171 ⬜; luego
+GO implementación custodio (aparte). **No** `npm publish` hasta R12-Z
+PASS; publish real = GO publish aparte.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U165** ✅ (semver raíz) · **U164** ✅ · **U166** ✅ ·
-**U163** ✅ · **U167** ✅ · **U162** ✅ · **U158** ✅ · **U161** ✅ ·
-**U160** ✅ · **U157** ✅ · **U159** ✅ · **U156** ✅ · **U155** ✅ ·
-**U154** ✅ · **U153** ✅ · **U151** ✅ · **U152** ✅ · **U150** ✅ ·
-**U149** ✅ · sprints 1–5 (ver histórico).
+**Aceptado:** **Sprint 8** ✅ (R11-Z PASS) · **U165** ✅ · **U164** ✅ ·
+**U166** ✅ · **U163** ✅ · **U167** ✅ · **U162** ✅ · **U158** ✅ ·
+**U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ · **U156** ✅ ·
+**U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ · **U152** ✅ ·
+**U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico).
 **D-35** / **D-37** · **D-41** (U162 ex post acotado).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B · U165 ✅ semver raíz · 2026-07-24)
+## Sprint 9 / R12-Z — major-band P0×4 · contrarrevisión · prep pub (planificación / IDLE · 2026-07-24)
+
+Fuente: **R11-Z PASS** + **GO planificación R12-Z** (custodio) +
+[ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md](REPORTES/entregas/ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md).
+Detalle: [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
+Pedido SOL: [AVISO-R12-Z-plan.md](REPORTES/entregas/AVISO-R12-Z-plan.md).
+
+**Estado:** planificación / IDLE de obra — WPs **⬜** · **0 🔶** ·
+**cero workers**. **No** reabre Sprint 8 ni U165.
+
+**Fronteras duras:** sin `npm publish` hasta **R12-Z PASS** · sin Release
+publish efectivo · sin flip `private` / changesets de pub efectivos hasta
+**GO publish** aparte · sin despacho hasta GO implementación post-PASS.
+
+| ola | WPs | deps | paralelismo |
+| --- | --- | ---- | ----------- |
+| **A** | U168 · U170 | Sprint 8 ✅ · R12-Z PASS + GO impl. | U168 ∥ U170 |
+| **B** | U169 | U168 ✅ | secuencial (posee gate) |
+| **C** | U171 | U168 ✅ + U169 ✅ | prep pub (sin publish real) |
+| Publish | — | GO publish aparte | flip private + changesets + npm publish |
+
+### WP-U168 · Migrar P0×4 a major-band — ⬜
+
+- ⬜ **WP-U168 · Migrar P0×4 a major-band** — pendiente. Est. M. Dep:
+  Sprint 8 ✅ · R12-Z PASS + GO implementación. Ola A. Brief:
+  [REPORTES/briefs/WP-U168-major-band-p0.md](REPORTES/briefs/WP-U168-major-band-p0.md).
+  **Qué:** sustituir pines exactos `@zeus/*` en
+  `linea-system` · `linea-firehose` · `force-system` · `ssb-system` por
+  banda major `>=M.m.p <(M+1).0.0`; actualizar allowlist §5; lock
+  coherente en el mismo WP. **Fuera:** flip `private` · `npm publish` ·
+  changesets de pub · editar gate (dueño U169). **Contrarrevisión**
+  obligatoria antes de ✅. **Eje:** IV.
+
+### WP-U169 · Gate publish-ready major-band — ⬜
+
+- ⬜ **WP-U169 · Adaptar gate publish-ready a major-band** — pendiente.
+  Est. M. Dep: **U168 ✅**. Ola B. Brief:
+  [REPORTES/briefs/WP-U169-gate-major-band.md](REPORTES/briefs/WP-U169-gate-major-band.md).
+  **Qué:** sensor acepta banda major (rechaza `*` / tags / git / url /
+  paths); probes verde/rojo; CA lock-coherence (hallazgo R11-Z PASS).
+  **Fuera:** publish · flip private · reabrir U165. **Contrarrevisión**
+  obligatoria. **Eje:** IV + C8.
+
+### WP-U170 · Contrarrevisión WPs de riesgo — ⬜
+
+- ⬜ **WP-U170 · Persistir contrarrevisión independiente** — pendiente.
+  Est. S. Dep: Sprint 8 ✅ · R12-Z PASS + GO implementación (∥ U168).
+  Ola A. Brief:
+  [REPORTES/briefs/WP-U170-contrarrevision-riesgo.md](REPORTES/briefs/WP-U170-contrarrevision-riesgo.md).
+  **Qué:** regla en PRACTICAS + checklist CA (quién/qué revisa; SOL
+  handoff read-only). Aplica a U168/U169/U171. **Fuera:** implementar
+  obra de paquetes · aceptar/mergear otros WPs. **Eje:** IV (proceso).
+
+### WP-U171 · Preparar publicación (sin publish) — ⬜
+
+- ⬜ **WP-U171 · Preparar publicación P0×4 (checklist / changesets dry)**
+  — pendiente. Est. M. Dep: **U168 ✅** + **U169 ✅**. Ola C. Brief:
+  [REPORTES/briefs/WP-U171-prep-publicacion.md](REPORTES/briefs/WP-U171-prep-publicacion.md).
+  **Qué:** checklist release · dry-run changesets /
+  `release:changeset-dry` · documentar pasos GO publish. **Fuera:**
+  `npm publish` · Release publish efectivo · flip `private` sin GO
+  publish. **Contrarrevisión** obligatoria. **Eje:** IV.
+
+---
+
+## Sprint 8 — publish-ready mesh (CERRADO · R11-Z PASS · 2026-07-24)
 
 Fuente: plan U162 + allowlist + **R8-Z PASS** (Ola A) + **GO
 implementación Ola A** + **R9-Z PASS** (cierre Ola A) + **R10-Z PASS**
 + **GO implementación Ola B** (custodio) + **R11-Z FAIL** + **R11-Z
-FAIL reintento** (corregido: semver raíz) → **U165 ✅**. Detalle
-olas/deps:
+FAIL reintento** (corregido: semver raíz) → **U165 ✅** → **R11-Z
+PASS**. Detalle olas/deps:
 [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
-Gates: [GATE-R11-Z-FAIL-REINTENTO.md](REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md) ·
+Gates: [GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md) ·
+[GATE-R11-Z-FAIL-REINTENTO.md](REPORTES/entregas/GATE-R11-Z-FAIL-REINTENTO.md) ·
 [GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md) ·
 [GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) ·
 [GATE-R9-Z-PASS.md](REPORTES/entregas/GATE-R9-Z-PASS.md) ·
-`vigilancia/z/GATE-R8-Z-PASS.md`. Pedido: **nuevo reintento R11-Z**
-(no declarar PASS).
+`vigilancia/z/GATE-R8-Z-PASS.md`.
+
+**Sprint 8 CERRADO / IDLE de obra.** No reabrir U165 ni olas A/B.
+Siguiente frente = Sprint 9 / R12-Z (planificación arriba).
 
 **Fronteras duras (hasta GO publish aparte):** sin flip `private` ·
 sin changesets de publicación · sin `npm publish`. **No** reabre U162
-como GO previo legítimo (D-41). **No** reabre U164/U166.
+como GO previo legítimo (D-41). **No** reabre U164/U165/U166.
 
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
@@ -203,7 +272,9 @@ como GO previo legítimo (D-41). **No** reabre U164/U166.
   `npm ls semver --depth=0` → `semver@7.8.5` exit 0; re-gate P0×4 +
   probes ×6 OK. Allowlist **solo lectura**. **Fuera:** publish ·
   changesets de pub · enmendar allowlist (dueño = U166). **Eje:** IV
-  + C8. Pedido: **nuevo reintento R11-Z** (no PASS declarado).
+  + C8. Cierre: **R11-Z PASS**
+  ([GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md)) ·
+  **no reabrir**.
 
 ### WP-U166 · Triage P1 linea-editor + console-monitor — ✅
 
