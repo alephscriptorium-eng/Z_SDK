@@ -35,19 +35,33 @@ sin impl./despacho/publish).
 
 ---
 
-## Remate — estado swarm (2026-07-25 · **U168–U171 ✅** · **PAUSA parcial (resto)** · **pedido gate pre-publish**)
+## Remate — estado swarm (2026-07-25 · **R14-Z PASS** · **GO publish FINAL P0×4** · **PAUSA parcial (resto)**)
 
-> **U168–U171 ✅** (Sprint 9 / R12 obra cerrada). Pedido gate:
+> **R14-Z PASS** (vigía Z · Dionisos / gorro de SOL · 2026-07-25):
+> [GATE-R14-Z-PASS.md](REPORTES/entregas/GATE-R14-Z-PASS.md)
+> (espejo `vigilancia/z/GATE-R14-Z-PASS.md`). Anclas: base `4090dab` ·
+> obra `ce5b3c8` · remate obra `36393df`. U168–U171 ✅ · olas A→B→C ·
+> CI `30132311974` / `30132130125` / `30131689034` · Release
+> `30131689030` (success, sin publish efectivo pre-GO) ·
+> `gate:publish-ready` OK P0×4 · contrarrevisión PASS · U170 = mecanismo.
+>
+> **GO publish FINAL P0×4** (custodio · elevado junto al PASS R14):
+> autoriza **solo** el lote D-42 restante —
+> `@zeus/linea-system` · `@zeus/linea-firehose` · `@zeus/force-system` ·
+> `@zeus/ssb-system`: flip `private`→false · changesets de pub · Release
+> pipeline · C8/`npm view` post-publish. **No** `npm publish` manual
+> ad-hoc. **No** abre R13 · U172–U178 · U73 ni `linea-editor`.
+>
+> **U168–U171 ✅** (Sprint 9 / R12 obra cerrada). Pedido gate origen:
 > [AVISO-R12-Z-obra-cerrada-pedido-gate.md](REPORTES/entregas/AVISO-R12-Z-obra-cerrada-pedido-gate.md).
 > **PAUSA PARCIAL** sigue para R13 · U172–U178 · U73 · demoliciones ·
-> publish real. Aviso parcial:
+> publish fuera de P0×4. Aviso parcial:
 > [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-PARCIAL-U168-U171.md)
 > (espejo `vigilancia/z/`). Corte global de origen:
 > [AVISO-PAUSA-CORTE-TECNICO.md](REPORTES/entregas/AVISO-PAUSA-CORTE-TECNICO.md).
 >
 > Olas ejecutadas: **A** `U168 ∥ U170` → **B** `U169` → **C** `U171`.
-> **Sin** `npm publish` manual · **sin** flip `private` hasta completar
-> D-42 (changesets + Release + C8). Replan:
+> Fase publish D-42 en curso bajo este GO FINAL. Replan:
 > [REPLAN-2026-07-24-r12-major-band.md](REPORTES/entregas/REPLAN-2026-07-24-r12-major-band.md).
 >
 > **R13-Z PASS** de planificación vigente (espejo
@@ -70,14 +84,13 @@ sin impl./despacho/publish).
 > (conservar; sin Issues nuevos). Aviso adopción engines:
 > [AVISO-ADOPCION-0.10-engines-node22.md](REPORTES/entregas/AVISO-ADOPCION-0.10-engines-node22.md).
 >
-> **GO publish condicionado P0×4 asentado (D-42):** el publish real de
-> `linea-system` · `linea-firehose` · `force-system` · `ssb-system`
-> queda autorizado **solo** al cumplirse TODAS las condiciones D-42
-> (skills 0.10.0 validado · R12-Z PASS + GO impl. · U168–U171 ✅ ·
-> major-band + gate adaptado · contrarrevisión PASS · changesets +
-> matriz CI/Release · gate online/C8 verde · tarballs limpios/JS-only).
-> Hasta entonces **cero publish / cero flip `private`**. Fuente:
-> [ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md).
+> **GO publish condicionado P0×4 (D-42) → GO publish FINAL activo:**
+> condiciones D-42 + R14-Z PASS cumplidas; custodio eleva GO FINAL
+> 2026-07-25. Secuencia orquestador: flip P0×4 · changesets · Release
+> pipeline · C8 post-publish. Fuente:
+> [ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md)
+> · checklist
+> [CHECKLIST-GO-PUBLISH-P0.md](REPORTES/CHECKLIST-GO-PUBLISH-P0.md).
 > `linea-editor` = WP publish-ready **separado U178** ⬜ (no mezclar con
 > P0×4; sigue en PAUSA). Clases privadas **por decisión de producto =
 > excluidas** (allowlist §4 · D-42).
@@ -160,11 +173,11 @@ sin impl./despacho/publish).
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (U168–U171 ✅ · Sprint 9 código cerrado). **PAUSA
+**En curso:** **GO publish FINAL P0×4** (D-42 fase restante · tras
+**R14-Z PASS**). U168–U171 ✅ · Sprint 9 código cerrado. **PAUSA
 parcial** sigue para R13/U172–U178/U73. **No** `npm publish` manual;
-publish real P0×4 = **GO condicionado D-42** (falta flips/changesets
-efectivos + Release + gate online/C8 post-prep). **U178** ⬜ en PAUSA.
-**R13** intacto. Adopción **0.10.0** + `engines.node >=22.0.0` · tip
+canal = changesets + workflow Release. **U178** ⬜ en PAUSA. **R13**
+intacto. Adopción **0.10.0** + `engines.node >=22.0.0` · tip adopción
 `b348c59`.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
@@ -191,24 +204,24 @@ PAUSA parcial: [AVISO-PAUSA-PARCIAL-U168-U171.md](REPORTES/entregas/AVISO-PAUSA-
 
 **Estado:** **U168–U171 ✅** · Sprint 9 / R12 **obra cerrada**. **No**
 reabre Sprint 8 ni U165. **No** abre R13 / U172–U178 / U73. Publish
-real = fase D-42 restante (flip + changesets + Release pipeline; sin
-`npm publish` manual).
+real P0×4 = **GO publish FINAL** activo (R14-Z PASS + custodio
+2026-07-25): flip + changesets + Release pipeline; sin `npm publish`
+manual.
 
-**Fronteras duras:** sin `npm publish` manual · sin Release publish
-efectivo · sin flip `private` / changesets de pub efectivos hasta
-cumplir **todas** las condiciones del **GO publish condicionado D-42**.
+**Fronteras duras:** sin `npm publish` manual · Release publish solo
+P0×4 bajo este GO FINAL · sin flip/changeset/publish de `linea-editor`
+ni excluidos §4 · R13/U172–U178/U73 intactos (PAUSA parcial).
 
-**GO publish condicionado (D-42):** asentado en DECISIONES + allowlist
-§3; la fase Publish de la tabla se activa **sin nuevo GO** solo al
-cumplirse las condiciones D-42 completas (secuencia y evidencia las
-conserva el orquestador).
+**GO publish FINAL (D-42):** condiciones + R14 PASS cumplidos; secuencia
+y evidencia las conserva el orquestador (checklist
+[CHECKLIST-GO-PUBLISH-P0.md](REPORTES/CHECKLIST-GO-PUBLISH-P0.md)).
 
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U168 · U170 | Sprint 8 ✅ · R12-Z PASS + GO impl. | U168 ∥ U170 |
 | **B** | U169 | U168 ✅ | secuencial (posee gate) |
 | **C** | U171 | U168 ✅ + U169 ✅ | prep pub (sin publish real) |
-| Publish | — | **GO condicionado D-42** (condiciones completas) | flip private + changesets + npm publish P0×4 |
+| Publish | — | **GO publish FINAL** (R14-Z PASS + custodio) | flip + changesets + Release pipeline P0×4 |
 
 ### WP-U168 · Migrar P0×4 a major-band — ✅
 

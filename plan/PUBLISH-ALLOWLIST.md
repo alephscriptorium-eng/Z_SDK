@@ -73,18 +73,15 @@ pero aún no está preparado → su publish-ready se ejecuta en WP
 
 Cualquier otro mesh no listado aquí = clase **D/E/G** → **mantener privado**.
 
-### GO publish condicionado P0×4 (D-42)
+### GO publish condicionado P0×4 (D-42) · GO FINAL activo
 
 Los cuatro P0 de §3 tienen **GO publish condicionado** (custodio ·
-[ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md)):
-cumplidas **todas** las condiciones de D-42 (skills 0.10.0 validado ·
-R12-Z PASS + GO impl. · U168–U171 ✅ · major-band + gate adaptado ·
-contrarrevisión PASS · changesets + matriz CI/Release · gate online/C8
-verde · tarballs limpios / JS-only documentado), el publish P0×4 **no
-requiere nuevo GO**; el orquestador conserva secuencia y evidencia.
-Hasta entonces: **cero publish** / **cero** flip `private`. El flag
-`private: true` operativo no excluye un nombre de §3 (se mantiene
-hasta la fase de publicación).
+[ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md](REPORTES/entregas/ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST.md)).
+**Estado 2026-07-25:** **R14-Z PASS** + **GO publish FINAL** del
+custodio (elevado) — fase Release en curso (flip `private`→false ·
+changesets · pipeline; sin `npm publish` manual). Post-publish: pasar
+a inventario §2 vía `npm view` / `audit:publish-allowlist`.
+`linea-editor` y clases §4 siguen fuera.
 
 ---
 
