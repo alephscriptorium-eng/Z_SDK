@@ -36,9 +36,10 @@ revalidarla antes de persistir.
 ### Autoridad actual
 
 GO custodio 2026-07-24 para planificar el tercer frente Dramaturgo + Zigurat;
-asiento formal de la decisión pendiente. Se permiten replan, briefs,
-dependencias, olas y entradas ⬜. No se permiten workers, 🔶 ni código hasta
-gate de planificación y GO de implementación aparte.
+**DA-S21 · `2eb4784` asentada** (HOLD de autoridad levantado). Se permiten
+replan, briefs, dependencias, olas y entradas ⬜. No se permiten workers, 🔶
+ni código hasta **R12-Z PASS** + petición/gate R13-Z + GO de implementación
+aparte.
 
 ### Objetivo
 

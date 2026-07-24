@@ -38,8 +38,7 @@ Reporte: plan/REPORTES/WP-U174-personajes-story-board.md
   U173) · publish
 
 ## Notas
-- Estado planificado: **⬜** — NO despachar hasta: asiento DA-S21
-  commiteado + R12 cerrado + **R13-Z PASS** + GO implementación +
+- Estado planificado: **⬜** — NO despachar hasta: **DA-S21 · `2eb4784` asentada** (hecho) + R12 cerrado + **R13-Z PASS** + GO implementación +
   **U173 ✅**.
 - Estimación: S/M · Eje I · Ola B
 - Runner despacho futuro: preferir Fable; si no, GPT-5.6 Sol; si no,

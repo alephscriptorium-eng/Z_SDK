@@ -44,8 +44,7 @@ Reporte: plan/REPORTES/WP-U176-importador-corpus-legado.md
   en git · linea-editor (dueño U175) · schemas (dueño U174) · publish
 
 ## Notas
-- Estado planificado: **⬜** — NO despachar hasta: asiento DA-S21
-  commiteado + R12 cerrado + **R13-Z PASS** + GO implementación +
+- Estado planificado: **⬜** — NO despachar hasta: **DA-S21 · `2eb4784` asentada** (hecho) + R12 cerrado + **R13-Z PASS** + GO implementación +
   **U173 ✅ + U174 ✅** (∥ U175 posible; archivos disjuntos).
 - Estimación: M · Eje II (+ ceguera transversal) · Ola D
 - Runner despacho futuro: preferir Fable; si no, GPT-5.6 Sol; si no,

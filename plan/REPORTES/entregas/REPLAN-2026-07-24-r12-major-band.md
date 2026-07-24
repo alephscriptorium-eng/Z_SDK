@@ -120,4 +120,6 @@ Persistencia normativa = **U170** (PRACTICAS + checklist).
 - U168–U171 **⬜** (0 🔶 · sin despacho).
 - Briefs listos · aviso IDLE + aviso R12 persistidos.
 - **Cero workers** · **cero** `npm publish` · **cero** flip private.
-- Pedido: [AVISO-R12-Z-plan.md](AVISO-R12-Z-plan.md).
+- Pedido / reintento: [AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md).
+- **R13 detrás de R12:** petición R13-Z solo tras **R12-Z PASS**; DA-S21 ·
+  `2eb4784` asentada (autoridad); hold R13 restante = operativo (PAUSA).

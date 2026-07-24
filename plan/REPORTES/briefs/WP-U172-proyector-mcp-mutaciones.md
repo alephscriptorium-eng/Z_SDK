@@ -39,8 +39,7 @@ Reporte: plan/REPORTES/WP-U172-proyector-mcp-mutaciones.md
   story-board-schema (dueño U174) · manifests de publish · UI
 
 ## Notas
-- Estado planificado: **⬜** — NO despachar hasta: asiento DA-S21
-  commiteado + R12 cerrado + **R13-Z PASS** + GO implementación.
+- Estado planificado: **⬜** — NO despachar hasta: **DA-S21 · `2eb4784` asentada** (hecho) + R12 cerrado + **R13-Z PASS** + GO implementación.
 - Estimación: M · Eje I · Ola A (∥ U173)
 - Runner despacho futuro: preferir Fable; si no, GPT-5.6 Sol; si no,
   el mejor disponible (anotar cascada en el aviso).

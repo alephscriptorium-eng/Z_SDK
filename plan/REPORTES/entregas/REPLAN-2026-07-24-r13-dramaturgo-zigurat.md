@@ -1,23 +1,24 @@
-# REPLAN · R13-Z · tercer frente Dramaturgo + Zigurat (planificación · HOLD)
+# REPLAN · R13-Z · tercer frente Dramaturgo + Zigurat (planificación · hold operativo)
 
 | dato | valor |
 | ---- | ----- |
 | Fecha | 2026-07-24 |
 | Rol | orquestador-Z |
-| Autorización | **GO custodio 2026-07-24 · asiento DA-S21 pendiente** (**D-43**) — solo planificación |
-| Estado gate | **R13-Z en HOLD** hasta commit del asiento DA-S21 (no pedir R13-Z PASS antes) |
-| Gate previo | R12-Z **pendiente** (pedido vigente: [AVISO-R12-Z-plan.md](AVISO-R12-Z-plan.md)) · PAUSA / CORTE TÉCNICO vigente |
+| Autorización | **GO custodio 2026-07-24 · DA-S21 asentada · `2eb4784`** (**D-43**) — solo planificación |
+| Estado autoridad | **DA-S21 · `2eb4784` asentada** — HOLD de autoridad **levantado** |
+| Estado gate | **R13-Z hold operativo** — secuencia **R12-Z PASS → petición R13-Z → sin despacho**; **no** pedir R13-Z PASS antes de R12-Z PASS |
+| Gate previo | R12-Z **pedido vigente / reintento** ([AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md)) · PAUSA / CORTE TÉCNICO vigente |
 | Proyección | DC-15 **LOCAL-ONLY** |
 
 ## Mandato (fronteras duras)
 
 ```text
-GO custodio 2026-07-24 (asiento DA-S21 pendiente): planificar el tercer
+GO custodio 2026-07-24 (DA-S21 asentada · 2eb4784): planificar el tercer
 frente Dramaturgo + Zigurat. Prep permitida: replan, briefs, olas,
 entradas ⬜ y épica U73 ⬜. Sin workers, sin 🔶, sin implementación,
-sin publicación. R13-Z en HOLD hasta el asiento. Tercer frente
-bloqueado hasta: asiento DA-S21 + R12 cerrado + R13-Z PASS + GO
-implementación aparte.
+sin publicación. HOLD de autoridad levantado. Hold operativo = PAUSA +
+espera R12. Tercer frente bloqueado hasta: R12 cerrado + R13-Z PASS +
+GO implementación aparte. Petición R13-Z solo tras R12-Z PASS.
 ```
 
 ## Fuentes
@@ -49,7 +50,7 @@ fuente del legado = **solo lectura** para diseñar el importador.
 ## Olas y dependencias
 
 ```text
-[asiento DA-S21] → [R12 cerrado] → [R13-Z PASS] → [GO implementación]
+[DA-S21 · 2eb4784 asentada] → [R12 cerrado] → [R13-Z PASS] → [GO implementación]
         │                                              (no ahora)
         ▼
     ┌───┴───┐
@@ -111,10 +112,10 @@ simultáneos; U172–U177 no tocan gate ni manifests de publish.
 
 | gate | significado |
 | ---- | ----------- |
-| asiento DA-S21 | commit del asiento en el carril de origen; **levanta el HOLD** de R13-Z |
-| **R12-Z** | planificación Sprint 9 (pedido vigente; independiente) |
+| **DA-S21 · `2eb4784`** | Asentada (scriptorium) — HOLD de **autoridad** levantado |
+| **R12-Z** | planificación Sprint 9 (pedido / reintento vigente) |
 | cierre R12 | U168–U171 ✅ + gates; precondición del tercer frente |
-| **R13-Z** | SOL valida este plan — **HOLD**; se pedirá tras el asiento |
+| **R13-Z** | SOL valida este plan — hold **operativo**; petición solo tras R12-Z PASS |
 | GO implementación | custodio; habilita 🔶 + despacho del frente |
 
 ## Nota de runtime (despachos futuros R13)
@@ -126,12 +127,10 @@ de planificación se ejecutó con Fable — sin fallback.)
 
 ## Prueba de ceguera de esta pasada
 
-Textos nuevos del plan redactados con «editor legado» (sin el token
-prohibido del patrón de la addenda R13). Grep del patrón legado
-(tokens enmascarados, clase U141/D-32) sobre los ficheros nuevos de
-esta pasada (BACKLOG § R13-Z, briefs U172–U178, este replan, aviso):
-**0** coincidencias fuera de la línea de definición del patrón en la
-addenda archivada.
+Textos del plan usan la frase segura «**editor legado**». Conteo del
+patrón prohibido (definición en addenda R13 · prueba de ceguera; tokens
+enmascarados clase U141/D-32) sobre cada cara/sección §WP relevante =
+**0** (tabla en [AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md)).
 
 ## Estado orquestador tras este replan
 
@@ -139,5 +138,6 @@ addenda archivada.
   GO publish condicionado **D-42** asentado.
 - **0 🔶 · cero workers · cero publish · tercer frente sin abrir.**
 - PAUSA / CORTE TÉCNICO respetada (solo gobierno de plan).
-- R13-Z: **HOLD** — pedido a SOL diferido al asiento DA-S21.
-- Aviso: [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md).
+- R13-Z: hold **operativo** — petición a SOL **solo tras R12-Z PASS**.
+- Aviso R13: [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md).
+- Pedido R12 reintento: [AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md).

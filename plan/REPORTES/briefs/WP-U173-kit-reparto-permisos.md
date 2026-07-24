@@ -40,8 +40,7 @@ Reporte: plan/REPORTES/WP-U173-kit-reparto-permisos.md
   linea-editor (dueño U175) · story-board-schema (dueño U174) · publish
 
 ## Notas
-- Estado planificado: **⬜** — NO despachar hasta: asiento DA-S21
-  commiteado + R12 cerrado + **R13-Z PASS** + GO implementación.
+- Estado planificado: **⬜** — NO despachar hasta: **DA-S21 · `2eb4784` asentada** (hecho) + R12 cerrado + **R13-Z PASS** + GO implementación.
 - Estimación: M · Eje I · Ola A (∥ U172)
 - Runner despacho futuro: preferir Fable; si no, GPT-5.6 Sol; si no,
   el mejor disponible (anotar cascada en el aviso).

@@ -1,20 +1,20 @@
-# AVISO · orquestador-Z → SOL / custodio · R12-Z pedido PASS
+# AVISO · orquestador-Z → SOL / custodio · R12-Z pedido PASS (reintento)
 
 | dato | valor |
 | ---- | ----- |
 | De | orquestador-Z |
 | Para | vigía SOL (carril Z) vía custodio |
 | Fecha | 2026-07-24 |
-| Motivo | Pedir **R12-Z PASS** (planificación Sprint 9 / major-band) con adjuntos CI/gates · ceguera · rango `9cdbb5a..3b09213` |
-| Gate previo | **R11-Z PASS** ([GATE-R11-Z-PASS.md](GATE-R11-Z-PASS.md)) + IDLE Z + GO planificación R12 |
-| Enmienda | **DA-S21** asentada · tip enmienda `c22dd65` · HOLD autoridad R13 levantado |
+| Motivo | Pedir **R12-Z PASS (reintento)** tras [GATE-R12-Z-FAIL.md](GATE-R12-Z-FAIL.md) |
+| Gate previo | **R11-Z PASS** + IDLE Z + GO planificación R12 · **R12-Z FAIL** documental |
+| Enmienda | **DA-S21 · `2eb4784` asentada** · HOLD autoridad R13 levantado · REPLAN R13 alineado |
 | Contexto | **PAUSA / CORTE TÉCNICO** vigente · **sin despacho** · **sin publish** |
 | Espejo | `C:\S_LAB\vigilancia\z\AVISO-R12-Z-pedido-PASS.md` |
 
 ## Pedido a SOL
 
 Validar el plan R12-Z / Sprint 9 (U168–U171) y emitir **R12-Z PASS**
-(o FAIL con evidencia).
+(reintento) o FAIL con evidencia.
 
 **Este aviso no declara PASS.** Solo adjunta evidencia para que SOL
 decida.
@@ -22,36 +22,36 @@ decida.
 **R12-Z es gate de planificación.** No autoriza workers, ni 🔶, ni flips
 `private`, ni changesets de publicación efectivos, ni `npm publish`.
 
-## Tip verificado
+## Tip canónico (único · incluye corrección + este aviso)
 
 | dato | valor |
 | ---- | ----- |
-| Tip pedido (custodio) | `3b09213` = `3b0921354935c83cb58c3781d47c9cd6fef8ae69` |
-| Verificación pre-aviso | HEAD = `origin/main` = `3b09213` (**sin divergencia**) |
-| Enmienda DA-S21 | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
-| Tip aviso (cuerpo) | `0e297a3` |
-| Tip gobierno (HEAD tras este aviso) | `44af4fe` |
+| Tip canónico | `ec0eebf` = `ec0eebffc7c0794de7052016590a93bcf50e21d7` |
+| Verificación | `HEAD` = `origin/main` = tip canónico (**sin divergencia**) |
+| Enmienda DA-S21 (scriptorium) | `2eb4784` |
+| Enmienda gobierno DA-S21 (Z) | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
+| FAIL previo tip solicitado | `3b09213` (aviso no estaba en ese snapshot) |
 
 ## PAUSA / frontera (literal)
 
 - **PAUSA / CORTE TÉCNICO** vigente ([AVISO-PAUSA-CORTE-TECNICO.md](AVISO-PAUSA-CORTE-TECNICO.md)).
 - **0 🔶 · 0 workers · 0 despacho · 0 `npm publish` · 0 flip private.**
-- U168–U171 siguen **⬜** (planificación); Sprint 8 / U165 **no** reabiertos.
+- U168–U171 / U178 / U73 / U172–U177 siguen **⬜** (planificación).
 - Hold R13: autoridad **levantada** (DA-S21 · `2eb4784`); hold **operativo**
-  = PAUSA + secuencia R12 → petición R13 → sin despacho.
+  = PAUSA + secuencia **R12-Z PASS → petición R13-Z → sin despacho**.
+- **No** pedir R13-Z PASS en este aviso.
 - DC-15 LOCAL-ONLY.
 
 ## CI / gates (adjunto honesto)
 
-### Tip `3b09213` y enmienda `c22dd65`
+### Tip canónico y rango (solo `plan/**`)
 
-| commit | paths | CI Actions | Docs |
-| ------ | ----- | ---------- | ---- |
-| `3b09213` | solo `plan/**` | **no disparó** (0 check-runs; status pending vacío) | no |
-| `c22dd65` | solo `plan/**` | **no disparó** | no |
-
-Causa: `.github/workflows/ci.yml` — `paths-ignore: plan/**` + `**.md`
-(WP-U104 / D-22). Rango `9cdbb5a..3b09213` = **100 % `plan/**`**.
+| comprobación | resultado |
+| ------------ | --------- |
+| Paths del rango | **100 % `plan/**`** |
+| CI Actions en tip / rango | **no disparó** (0 check-runs) — skip U104 / D-22 |
+| Causa | `.github/workflows/ci.yml` — `paths-ignore: plan/**` + `**.md` |
+| CI nuevo forzado | **no** (no requerido si solo `plan/**`) |
 
 ### Último CI verde de tip código (referencia)
 
@@ -59,88 +59,129 @@ Causa: `.github/workflows/ci.yml` — `paths-ignore: plan/**` + `**.md`
 | ---- | ----- |
 | Run CI | `30088694250` **success** |
 | URL | https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30088694250 |
-| Head | `88a95684fa3a20234ee7e521667b03ca51bcac56` — `plan(gobierno): aceptar U165 semver root devDependency` |
-| Contiene tip código U165 | `1bfd9b8` (`fix(deps): declare semver root devDependency for gate`) reachable en main |
+| Head | `88a95684fa3a20234ee7e521667b03ca51bcac56` |
+| Contiene tip código U165 | `1bfd9b8` reachable en main |
 | Docs homólogo | `30088694310` **success** |
-| Gates locales en tip actual | **no re-ejecutados** — PAUSA + sin delta `packages/**`; evidencia de gates = [GATE-R11-Z-PASS.md](GATE-R11-Z-PASS.md) (`npm run gates` OK · `gate:publish-ready` P0×4 PASS sobre tip U165) |
+| Gates locales en tip actual | **no re-ejecutados** — PAUSA + sin delta `packages/**`; evidencia = [GATE-R11-Z-PASS.md](GATE-R11-Z-PASS.md) |
 
-## Ceguera literal
+## Ceguera literal · alcance inequívoco `§WP` / sección WP
 
-| comprobación | resultado |
-| ------------ | --------- |
-| Frase segura en docs del rango / tip R13 | «**editor legado**» (BACKLOG · DECISIONES · AVISO-R13 · REPLAN) |
-| Conteo literal tokens fuertes `novelist\|novela` (árbol plan/packages/apps/scripts; excl. línea de definición del patrón en addenda) | **0** |
-| Vocabulario/artefacto legado en código público (rango) | **0** — rango sin tocar `packages/**` / `apps/**` |
-| Cita tip | AVISO-R13-Z-plan-hold · REPLAN R13 · D-43: conteo literal **0** (persiste) |
+Alcance de esta pasada: **solo** caras `## §WP` de las addendas R12/R13 y
+secciones BACKLOG/brief de U168–U178 / U73. **No** se usa búsqueda global
+del HEAD como evidencia (evita falsos positivos en líneas de definición
+del patrón / avisos de auditoría).
 
-## Resumen de cambios `9cdbb5a..3b09213`
+Frase segura documentada: «**editor legado**».
+
+Patrón prohibido: el de la addenda R13 § «Prueba de ceguera» (tokens
+enmascarados · clase U141/D-32); **no** se repite aquí el literal del
+patrón.
+
+### Addendas · cara `§WP`
+
+| cara §WP | frase «editor legado» | conteo patrón |
+| -------- | --------------------- | ------------- |
+| ADDENDA-R12-Z-REVISION-SEMVER-IDLE `§WP` | N/A alcance R12 (frase en frente R13) | **0** |
+| ADDENDA-R12-Z-GO-PUBLICACION-ALLOWLIST `§WP` | N/A alcance publish (frase en frente R13) | **0** |
+| ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO `§WP` | **sí** (objetivo/DRY) | **0** |
+
+### BACKLOG · sección por WP
+
+| sección WP | frase «editor legado» | conteo patrón |
+| ---------- | --------------------- | ------------- |
+| U168 | no en sección (R12 major-band) | **0** |
+| U169 | no en sección (gate) | **0** |
+| U170 | no en sección (proceso) | **0** |
+| U171 | no en sección (prep pub) | **0** |
+| U178 | **sí** (contexto P1 / frontera) | **0** |
+| U73 | no en sección épica (sí en intro R13) | **0** |
+| U172 | no en sección | **0** |
+| U173 | no en sección | **0** |
+| U174 | no en sección | **0** |
+| U175 | **sí** | **0** |
+| U176 | no en sección (ceguera exigida en brief) | **0** |
+| U177 | no en sección | **0** |
+
+### Briefs · por WP
+
+| brief | frase «editor legado» | conteo patrón |
+| ----- | --------------------- | ------------- |
+| U168–U171 · U178 · U172–U174 · U176–U177 | U175 **sí**; resto N/A o frontera | **0** cada uno |
+| U175 | **sí** | **0** |
+
+REPLAN R13 + D-43: frase «editor legado» presente; conteo patrón en esos
+textos de planificación = **0** (excl. línea de definición en addenda).
+
+## Rango exacto `4604984..ec0eebf`
+
+Base = `origin/main` previo al tip canónico de este reintento
+(`460498455560a85a41a55c99ca37f9e46ca157ff`).
 
 ### Log oneline
 
 ```text
-3b09213 plan(gobierno): tip SHA en aviso R13-Z hold operativo
-c22dd65 plan(gobierno): DA-S21 asentada · levantar HOLD autoridad R13-Z
+ec0eebf plan(gobierno): corrección R12-Z FAIL · REPLAN DA-S21 · reintento PASS
+46c3e5c plan(gobierno): sync-map post-apply · refresh proyección issues (alcance=todos, #16-#53)
 ```
 
 ### Temático (sin rewrite)
 
 | tema | qué pasó |
 | ---- | -------- |
-| **DA-S21** | Asentada con commit scriptorium `2eb4784`; deja de citarse «asiento pendiente». |
-| **D-43** | Texto actualizado: HOLD de **autoridad** levantado; secuencia R12 → petición R13 → sin despacho. |
-| **AVISO-R13** | Hold renombrado a **operativo** (PAUSA / espera R12); tip SHA `3b09213`. |
-| **PAUSA** | Sigue vigente; no abre obra ni despacho. |
-| **R12** | Pedido vigente sin cambios de alcance (U168–U171 ⬜); este aviso adjunta evidencia para SOL. |
-| Paths | Solo `plan/BACKLOG.md` · `plan/DECISIONES.md` · `plan/REPORTES/entregas/AVISO-R13-Z-plan-hold.md`. |
+| **R12-Z FAIL** | Archivado; corrección mínima sin nuevo GO. |
+| **REPLAN R13** | Cita **DA-S21 · `2eb4784` asentada**; retira «pendiente»; hold = operativo; R13 detrás de R12 PASS. |
+| **Addenda R13 §WP** | Autoridad alineada a DA-S21 asentada. |
+| **Briefs U172–U177** | Refs autoridad: DA-S21 asentada (hecho) + R12 cerrado + R13-Z PASS. |
+| **Ceguera** | Conteos literales **0** por §WP / sección WP (tabla arriba). |
+| **Este aviso** | Pedido **R12-Z PASS (reintento)** dentro del tip canónico. |
+| **PAUSA** | Vigente; sin despacho · sin publish. |
+| Paths | Solo `plan/**` (+ espejo vigilancia fuera de git Z). |
 
 ## Secuencia (bloqueo duro)
 
 ```text
 [PAUSA vigente]
-    → [R12-Z PASS]          ← pedido a SOL (este aviso; sin declarar PASS)
+    → [R12-Z PASS]          ← pedido reintento (este aviso; sin declarar PASS)
     → [petición R13-Z]      ← solo tras PASS; sin despacho hasta GO
     → [R13-Z PASS + GO impl.] → entonces 🔶/workers
 ```
 
-Publish P0×4 = condiciones **D-42** completas (sin nuevo GO al
-cumplirlas). Publish real / private flip = frontera aparte.
-
 **Ahora:** no despachar · no publish · no declarar R12/R13 PASS desde
-orquestador.
+orquestador · no pedir R13.
 
-## Artefactos de planificación R12 (contexto)
+## Artefactos
 
 | artefacto | ruta |
 | --------- | ---- |
-| Pedido plan (previo) | [AVISO-R12-Z-plan.md](AVISO-R12-Z-plan.md) |
-| Replan major-band | [REPLAN-2026-07-24-r12-major-band.md](REPLAN-2026-07-24-r12-major-band.md) |
-| Addenda R12 | [ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md](ADDENDA-R12-Z-REVISION-SEMVER-IDLE.md) |
-| GATE R11 | [GATE-R11-Z-PASS.md](GATE-R11-Z-PASS.md) |
+| FAIL previo | [GATE-R12-Z-FAIL.md](GATE-R12-Z-FAIL.md) |
+| Replan R12 | [REPLAN-2026-07-24-r12-major-band.md](REPLAN-2026-07-24-r12-major-band.md) |
+| Replan R13 | [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPLAN-2026-07-24-r13-dramaturgo-zigurat.md) |
 | Aviso R13 hold operativo | [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md) |
 | PAUSA | [AVISO-PAUSA-CORTE-TECNICO.md](AVISO-PAUSA-CORTE-TECNICO.md) |
+| GATE R11 | [GATE-R11-Z-PASS.md](GATE-R11-Z-PASS.md) |
 
 ## Handoff a SOL (copiable)
 
 ```text
-Pedido: R12-Z PASS
-tip: 3b09213 (= origin/main · sin divergencia)
-enmienda DA-S21: c22dd65 (scriptorium 2eb4784 · HOLD autoridad R13 levantado)
-PAUSA vigente · sin despacho · sin publish
+Pedido: R12-Z PASS (reintento)
+tip canónico: ec0eebf (= origin/main · sin divergencia · incluye corrección + este aviso)
+DA-S21: 2eb4784 asentada · HOLD autoridad R13 levantado · REPLAN R13 alineado
+PAUSA vigente · sin despacho · sin publish · sin pedir R13 ahora
 
 CI/gates:
-- tip 3b09213 / c22dd65: CI no disparó (solo plan/** · paths-ignore U104)
+- tip/rango: CI no disparó (solo plan/** · paths-ignore U104) — no se fuerza CI nuevo
 - último CI verde tip código: 30088694250 success @ 88a9568 (contiene 1bfd9b8 U165)
 - gates locales: no re-ejecutados (PAUSA · sin packages); R11 documenta gates OK + gate:publish-ready P0×4
 
-Ceguera literal:
-- frase «editor legado» en docs rango/tip R13
-- novelist|novela = 0 (excl. definición addenda)
-- código público del rango: 0 (solo plan/)
+Ceguera literal (alcance §WP / secciones WP; no global HEAD):
+- frase «editor legado» documentada (R13 / U175 / U178 / REPLAN)
+- conteo patrón por §WP addendas = 0,0,0
+- conteo patrón por sección BACKLOG U168–U178/U73 = 0 cada una
+- briefs U168–U178 = 0 cada uno
 
-Rango 9cdbb5a..3b09213:
-3b09213 plan(gobierno): tip SHA en aviso R13-Z hold operativo
-c22dd65 plan(gobierno): DA-S21 asentada · levantar HOLD autoridad R13-Z
-Temas: DA-S21 · D-43 · AVISO-R13 hold operativo · PAUSA · R12 pedido vigente
+Rango 4604984..ec0eebf:
+ec0eebf plan(gobierno): corrección R12-Z FAIL · REPLAN DA-S21 · reintento PASS
+46c3e5c plan(gobierno): sync-map post-apply · refresh proyección issues (alcance=todos, #16-#53)
 
 Secuencia tras PASS: petición R13-Z (sin despacho hasta GO).
 Orquestador no declara PASS.

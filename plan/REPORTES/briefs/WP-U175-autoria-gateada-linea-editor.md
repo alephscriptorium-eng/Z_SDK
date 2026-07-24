@@ -39,8 +39,7 @@ Reporte: plan/REPORTES/WP-U175-autoria-gateada-linea-editor.md
   U178) · story-board-schema (dueño U174) · reparto-kit (dueño U173)
 
 ## Notas
-- Estado planificado: **⬜** — NO despachar hasta: asiento DA-S21
-  commiteado + R12 cerrado + **R13-Z PASS** + GO implementación +
+- Estado planificado: **⬜** — NO despachar hasta: **DA-S21 · `2eb4784` asentada** (hecho) + R12 cerrado + **R13-Z PASS** + GO implementación +
   **U172 ✅ + U173 ✅ + U174 ✅**.
 - **No solapar** con U178 en despacho simultáneo (mismo paquete,
   archivos distintos: coordinación de merge la fija el orquestador).

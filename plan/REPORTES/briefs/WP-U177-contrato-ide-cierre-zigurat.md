@@ -38,8 +38,7 @@ Reporte: plan/REPORTES/WP-U177-contrato-ide-cierre-zigurat.md
   editar BACKLOG
 
 ## Notas
-- Estado planificado: **⬜** — NO despachar hasta: asiento DA-S21
-  commiteado + R12 cerrado + **R13-Z PASS** + GO implementación
+- Estado planificado: **⬜** — NO despachar hasta: **DA-S21 · `2eb4784` asentada** (hecho) + R12 cerrado + **R13-Z PASS** + GO implementación
   (cierre requiere además U173–U175 ✅).
 - Estimación: M · Eje IV (diseño/contrato) · Ola E
 - Runner despacho futuro: preferir Fable; si no, GPT-5.6 Sol; si no,
