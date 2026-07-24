@@ -89,6 +89,7 @@ gate:publish-ready: OK (4 P0 candidates)
 | Tip código (merge U165 semver) | `289b7fe9c8a77e59ba747c6bc2f4f3c01aed6ad4` |
 | Tip obra | `1bfd9b8ae776cb6bf00a3f78e181685720c738ca` |
 | Tip gobierno (aceptación) | `88a95684fa3a20234ee7e521667b03ca51bcac56` |
+| Tip gobierno (este aviso) | `ee2ecbf2bbf541ea652cfb871e8cc8969e0e26d5` |
 | Push | normal (sin force) |
 | CI | `30088694250` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30088694250 (head `88a9568`; incluye merge código `289b7fe` + plan) |
 | smoke TS registry (job CI) | `89466799397` **success** |
@@ -123,6 +124,7 @@ Corrección U165 ✅:
 Tip código: 289b7fe
 Tip obra: 1bfd9b8
 Tip gobierno (aceptación): 88a9568
+Tip gobierno (aviso): ee2ecbf
 CI: 30088694250 success
 smoke: 89466799397 success
 Docs: 30088694310 success
