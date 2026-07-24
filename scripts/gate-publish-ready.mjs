@@ -2,16 +2,21 @@
 /**
  * Opt-in publish-ready gate for the P0 mesh allowlist.
  *
- * This command only inspects manifests and runs `npm pack --dry-run`; it never
- * changes `private`, creates changesets, or publishes. P1 is excluded because
- * WP-U166 intentionally left @zeus/linea-editor pending a publish-ready WP.
+ * This command only inspects manifests and runs `npm pack --dry-run` /
+ * `npm view`; it never changes `private`, creates changesets, or publishes.
+ * P1 is excluded because WP-U166 intentionally left @zeus/linea-editor
+ * pending a publish-ready WP.
  *
  * Usage:
  *   node scripts/gate-publish-ready.mjs
  *   node scripts/gate-publish-ready.mjs --root <fixture-root> --package <name>
- *   node scripts/gate-publish-ready.mjs --package <name> --fail-probe
+ *   node scripts/gate-publish-ready.mjs --package <name> --fail-probe <kind>
+ *
+ * Fail-probe kinds (memory-only injection): star|latest|git|url|windows-path|
+ * missing-version. Bare `--fail-probe` defaults to `star`.
  */
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import {
   existsSync,
   readdirSync,
@@ -22,6 +27,9 @@ import { fileURLToPath } from 'node:url';
 
 import { CANDIDATES } from './audit-publish-allowlist.mjs';
 
+const require = createRequire(import.meta.url);
+const semver = require('semver');
+
 // Reports U163/U164 document this explicit policy: P0 ships ESM runtime JS
 // exports and intentionally has no declaration files until a dedicated types WP.
 const JS_ONLY_P0 = new Set(CANDIDATES.P0);
@@ -31,6 +39,15 @@ const scriptRoot = path.resolve(
 );
 const args = process.argv.slice(2);
 
+const FAIL_PROBE_KINDS = Object.freeze({
+  star: '*',
+  latest: 'latest',
+  git: 'git+https://example.com/zeus/http-contract.git',
+  url: 'https://example.com/zeus-http-contract.tgz',
+  'windows-path': String.raw`C:\tmp\zeus-http-contract`,
+  'missing-version': '9.9.9'
+});
+
 function option(name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
@@ -38,9 +55,17 @@ function option(name) {
   return args[index + 1];
 }
 
+function parseFailProbe() {
+  const index = args.indexOf('--fail-probe');
+  if (index === -1) return null;
+  const next = args[index + 1];
+  if (!next || next.startsWith('--')) return 'star';
+  return next;
+}
+
 const root = path.resolve(option('--root') || scriptRoot);
 const selectedPackage = option('--package');
-const failProbe = args.includes('--fail-probe');
+const failProbeKind = parseFailProbe();
 const measuredCandidates = selectedPackage
   ? CANDIDATES.P0.filter((name) => name === selectedPackage)
   : CANDIDATES.P0;
@@ -50,8 +75,13 @@ if (selectedPackage && measuredCandidates.length === 0) {
     `--package must select a P0 candidate (${CANDIDATES.P0.join(', ')})`
   );
 }
-if (failProbe && !selectedPackage) {
+if (failProbeKind && !selectedPackage) {
   throw new Error('--fail-probe requires --package');
+}
+if (failProbeKind && !(failProbeKind in FAIL_PROBE_KINDS)) {
+  throw new Error(
+    `--fail-probe kind must be one of: ${Object.keys(FAIL_PROBE_KINDS).join(', ')}`
+  );
 }
 
 function normalizeRegistry(value) {
@@ -107,12 +137,88 @@ function zeusDependencies(manifest) {
   return result;
 }
 
-function isRegistryRange(version) {
-  return (
-    version !== '*' &&
-    !/^(?:workspace|file|link):/i.test(version) &&
-    !/^[./]/.test(version)
+/**
+ * Allowlist §5: internal @zeus/* deps must be a pinned exact semver that can
+ * resolve on the canonical registry. Reject tags, Git/URL, protocol aliases
+ * and POSIX/Windows paths — not merely a short denylist.
+ */
+function classifyZeusVersion(version) {
+  const value = String(version).trim();
+  if (!value) {
+    return { ok: false, reason: 'empty version' };
+  }
+  if (value === '*') {
+    return { ok: false, reason: 'wildcard *' };
+  }
+  if (/^(?:workspace|file|link|npm|portal|jsr):/i.test(value)) {
+    return { ok: false, reason: `local/protocol alias (${value.split(':')[0]}:)` };
+  }
+  if (/^(?:git\+|github:|gist:|bitbucket:|gitlab:)/i.test(value)) {
+    return { ok: false, reason: 'git/github locator' };
+  }
+  if (/^https?:\/\//i.test(value)) {
+    return { ok: false, reason: 'http(s) URL' };
+  }
+  if (/^[./]/.test(value)) {
+    return { ok: false, reason: 'relative/local path' };
+  }
+  // Absolute Windows paths: C:\..., D:/..., \\server\share
+  if (/^[A-Za-z]:[\\/]/.test(value) || /^\\\\/.test(value)) {
+    return { ok: false, reason: 'Windows/absolute path' };
+  }
+  // Dist-tags and other non-semver tokens (latest, next, …)
+  if (!semver.valid(value)) {
+    return {
+      ok: false,
+      reason: 'not an exact registry semver pin (tags/ranges rejected)'
+    };
+  }
+  return { ok: true, pin: value };
+}
+
+const registryViewCache = new Map();
+
+function npmViewPinned(name, version, registry) {
+  const key = `${name}@${version}|${registry}`;
+  if (registryViewCache.has(key)) return registryViewCache.get(key);
+
+  const result = spawnSync(
+    'npm',
+    ['view', `${name}@${version}`, 'version', '--registry', registry, '--json'],
+    {
+      cwd: root,
+      encoding: 'utf8',
+      shell: process.platform === 'win32'
+    }
   );
+  const stdout = (result.stdout || '').trim();
+  const stderr = (result.stderr || '').trim();
+  if (result.status === 0 && stdout) {
+    try {
+      const parsed = JSON.parse(stdout);
+      const resolved = typeof parsed === 'string' ? parsed : String(parsed);
+      const ok = { ok: true, version: resolved };
+      registryViewCache.set(key, ok);
+      return ok;
+    } catch {
+      const ok = { ok: true, version: stdout.replace(/^"|"$/g, '') };
+      registryViewCache.set(key, ok);
+      return ok;
+    }
+  }
+  const errText = stderr || stdout || `exit ${result.status}`;
+  const code = /E404|404|not found|no such package|No match found/i.test(
+    errText
+  )
+    ? 'E404'
+    : 'ERR';
+  const fail = {
+    ok: false,
+    code,
+    detail: errText.split('\n').slice(0, 4).join(' | ')
+  };
+  registryViewCache.set(key, fail);
+  return fail;
 }
 
 function exportedTargets(exportsField) {
@@ -203,13 +309,21 @@ function checkCandidate(name, entry, registry) {
     );
   }
 
-  const invalidDependencies = zeusDependencies(manifest).filter(
-    ({ version }) => !isRegistryRange(version)
-  );
-  for (const dependency of invalidDependencies) {
-    failures.push(
-      `${dependency.field}.${dependency.name}=${dependency.version}; expected a registry semver range, not wildcard/workspace/local`
-    );
+  const deps = zeusDependencies(manifest);
+  for (const dependency of deps) {
+    const classified = classifyZeusVersion(dependency.version);
+    if (!classified.ok) {
+      failures.push(
+        `${dependency.field}.${dependency.name}=${dependency.version}; expected exact registry semver pin (${classified.reason})`
+      );
+      continue;
+    }
+    const view = npmViewPinned(dependency.name, classified.pin, registry);
+    if (!view.ok) {
+      failures.push(
+        `${dependency.field}.${dependency.name}@${classified.pin} not resolvable on registry ${registry} (${view.code}: ${view.detail})`
+      );
+    }
   }
 
   const pack = packDryRun(path.dirname(manifestPath));
@@ -223,7 +337,7 @@ function checkCandidate(name, entry, registry) {
     failures,
     relativeManifest,
     packEntries: pack.files.length,
-    dependencyCount: zeusDependencies(manifest).length,
+    dependencyCount: deps.length,
     typeMode: hasTypes ? 'types' : 'JS-only'
   };
 }
@@ -233,7 +347,7 @@ function main() {
   const manifests = packageIndex();
   let failureCount = 0;
 
-  if (failProbe) {
+  if (failProbeKind) {
     const entry = manifests.get(selectedPackage);
     const dependency = entry && zeusDependencies(entry.manifest)[0];
     if (!dependency) {
@@ -241,9 +355,10 @@ function main() {
         `cannot inject fail probe: ${selectedPackage} has no @zeus dependency`
       );
     }
-    entry.manifest[dependency.field][dependency.name] = '*';
+    const injected = FAIL_PROBE_KINDS[failProbeKind];
+    entry.manifest[dependency.field][dependency.name] = injected;
     console.log(
-      `fail-probe (memory only): ${dependency.field}.${dependency.name}=*`
+      `fail-probe (memory only): kind=${failProbeKind} ${dependency.field}.${dependency.name}=${injected}`
     );
   }
 

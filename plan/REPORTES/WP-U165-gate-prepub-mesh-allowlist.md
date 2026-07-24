@@ -211,3 +211,192 @@ Ninguno. No se ejecutó `npm publish`, no se hizo push y no se mergeó a main.
 - Fronteras: cero edit allowlist · cero flip `private` · cero
   changesets · cero workflows publish · cero `npm publish`.
 - Merge post-✅ a `main` (último de Ola B).
+
+---
+
+## Corrección · reapertura tras R11-Z FAIL · 2026-07-24
+
+| dato | valor |
+| ---- | ----- |
+| agente | Worker-U165 (carril orquestador · corrección) |
+| fecha | 2026-07-24 |
+| rama | `wp/u165-gate-semver-registry-probes` |
+| base | tip main `98eea90` (gob. reopen) |
+| gate FAIL | `plan/REPORTES/entregas/GATE-R11-Z-FAIL.md` |
+| estado propuesto | listo para revisión (re-✅) |
+| DC | DC-15 LOCAL-ONLY |
+
+### Motivo (literal del FAIL)
+
+`isRegistryRange()` solo rechazaba `*`, `workspace:`/`file:`/`link:` y
+rutas `./` `/`. Aceptaba `latest`, Git/URL, rutas Windows y semver exacto
+inexistente en registry. Un único fail-probe cubría `*`.
+
+### Qué se corrigió
+
+- Predicado `classifyZeusVersion`: exige **pin semver exacto**
+  (`semver.valid`); rechaza wildcards, dist-tags, Git/URL, protocolos
+  locales y rutas POSIX/Windows.
+- Resolución C8: `npm view <name>@<pin> version --registry` (cache) por
+  cada dep `@zeus/*` medida.
+- `--fail-probe <kind>`: `star` · `latest` · `git` · `url` ·
+  `windows-path` · `missing-version` (inyección solo en memoria).
+- Allowlist **no tocada**; `private: true` en P0×4 intacto; cero
+  changesets / publish / workflows.
+
+### Archivos tocados (esta corrección)
+
+- `scripts/gate-publish-ready.mjs` — sensor + probes + registry view.
+- este reporte — addenda de corrección.
+
+### Tabla probes (esperado vs obtenido)
+
+| probe | esperado | obtenido |
+| ----- | -------- | -------- |
+| verde P0×4 (`npm run gate:publish-ready`) | PASS exit 0 | PASS exit 0 |
+| `--fail-probe star` (`*`) | FAIL exit 1 | FAIL exit 1 |
+| `--fail-probe latest` | FAIL exit 1 | FAIL exit 1 |
+| `--fail-probe git` | FAIL exit 1 | FAIL exit 1 |
+| `--fail-probe url` | FAIL exit 1 | FAIL exit 1 |
+| `--fail-probe windows-path` | FAIL exit 1 | FAIL exit 1 |
+| `--fail-probe missing-version` (`9.9.9`) | FAIL exit 1 (E404 registry) | FAIL exit 1 |
+
+### Evidencia literal
+
+### Re-gate P0×4 (corrección R11-Z FAIL)
+
+```
+$ git rev-parse HEAD
+98eea90c83746353065bdfc261e3563d3b8903b7
+$ npm run gate:publish-ready
+
+> zeus-sdk@0.1.0 gate:publish-ready
+> node scripts/gate-publish-ready.mjs
+
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system, @zeus/linea-firehose, @zeus/force-system, @zeus/ssb-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+PASS @zeus/linea-system manifest=packages/mesh/linea-system/package.json files=explicit pack=8 types=JS-only zeusDeps=4
+PASS @zeus/linea-firehose manifest=packages/mesh/linea-firehose/package.json files=explicit pack=6 types=JS-only zeusDeps=3
+PASS @zeus/force-system manifest=packages/mesh/force-system/package.json files=explicit pack=8 types=JS-only zeusDeps=4
+PASS @zeus/ssb-system manifest=packages/mesh/ssb-system/package.json files=explicit pack=11 types=JS-only zeusDeps=3
+gate:publish-ready: OK (4 P0 candidates)
+```
+
+#### Probe rojo `star`
+
+```
+$ node scripts/gate-publish-ready.mjs --package @zeus/linea-system --fail-probe star
+fail-probe (memory only): kind=star dependencies.@zeus/http-contract=*
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+FAIL @zeus/linea-system
+  - dependencies.@zeus/http-contract=*; expected exact registry semver pin (wildcard *)
+gate:publish-ready: FAIL (1 violation)
+fail_probe_exit=1
+```
+
+#### Probe rojo `latest`
+
+```
+$ node scripts/gate-publish-ready.mjs --package @zeus/linea-system --fail-probe latest
+fail-probe (memory only): kind=latest dependencies.@zeus/http-contract=latest
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+FAIL @zeus/linea-system
+  - dependencies.@zeus/http-contract=latest; expected exact registry semver pin (not an exact registry semver pin (tags/ranges rejected))
+gate:publish-ready: FAIL (1 violation)
+fail_probe_exit=1
+```
+
+#### Probe rojo `git`
+
+```
+$ node scripts/gate-publish-ready.mjs --package @zeus/linea-system --fail-probe git
+fail-probe (memory only): kind=git dependencies.@zeus/http-contract=git+https://example.com/zeus/http-contract.git
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+FAIL @zeus/linea-system
+  - dependencies.@zeus/http-contract=git+https://example.com/zeus/http-contract.git; expected exact registry semver pin (git/github locator)
+gate:publish-ready: FAIL (1 violation)
+fail_probe_exit=1
+```
+
+#### Probe rojo `url`
+
+```
+$ node scripts/gate-publish-ready.mjs --package @zeus/linea-system --fail-probe url
+fail-probe (memory only): kind=url dependencies.@zeus/http-contract=https://example.com/zeus-http-contract.tgz
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+FAIL @zeus/linea-system
+  - dependencies.@zeus/http-contract=https://example.com/zeus-http-contract.tgz; expected exact registry semver pin (http(s) URL)
+gate:publish-ready: FAIL (1 violation)
+fail_probe_exit=1
+```
+
+#### Probe rojo `windows-path`
+
+```
+$ node scripts/gate-publish-ready.mjs --package @zeus/linea-system --fail-probe windows-path
+fail-probe (memory only): kind=windows-path dependencies.@zeus/http-contract=C:\tmp\zeus-http-contract
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+FAIL @zeus/linea-system
+  - dependencies.@zeus/http-contract=C:\tmp\zeus-http-contract; expected exact registry semver pin (Windows/absolute path)
+gate:publish-ready: FAIL (1 violation)
+fail_probe_exit=1
+```
+
+#### Probe rojo `missing-version`
+
+```
+$ node scripts/gate-publish-ready.mjs --package @zeus/linea-system --fail-probe missing-version
+fail-probe (memory only): kind=missing-version dependencies.@zeus/http-contract=9.9.9
+gate:publish-ready (WP-U165; P0 allowlist subset)
+registry (.npmrc @zeus): https://npm.scriptorium.escrivivir.co
+measured: @zeus/linea-system
+excluded P1 (pending publish-ready WP): @zeus/linea-editor
+FAIL @zeus/linea-system
+  - dependencies.@zeus/http-contract@9.9.9 not resolvable on registry https://npm.scriptorium.escrivivir.co (E404: npm error code E404 | npm error 404 No match found for version 9.9.9 | npm error 404 | npm error 404  '@zeus/http-contract@9.9.9' is not in this registry.)
+gate:publish-ready: FAIL (1 violation)
+fail_probe_exit=1
+```
+
+
+
+### Gates / lint
+
+```
+$ npm run gates
+gates: OK (0 offenders)
+$ node --check scripts/gate-publish-ready.mjs
+(exit 0)
+$ eslint scripts/gate-publish-ready.mjs
+(exit 0)
+$ git diff --exit-code HEAD -- plan/PUBLISH-ALLOWLIST.md
+allowlist intact
+```
+
+### Auto-revisión
+
+- [x] Diff solo `scripts/gate-publish-ready.mjs` + este reporte.
+- [x] Allowlist solo lectura.
+- [x] CA R11-Z FAIL: pines + registry + probes rojos ×5 + verde.
+- [x] Frontera: cero private flip · cero publish · cero changesets.
+- [x] Re-gate P0×4 OK.
+
+### Dudas / bloqueos
+
+Ninguno. Push/merge = orquestador post-✅. No declarar R11-Z PASS.
