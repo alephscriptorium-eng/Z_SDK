@@ -5,7 +5,7 @@
 | agente | worker (Cursor) |
 | fecha | 2026-07-25 |
 | rama | `wp/u170-contrarrevision-riesgo` |
-| commit(s) | _(rellenar tras commit)_ |
+| commit(s) | `803d863` |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
