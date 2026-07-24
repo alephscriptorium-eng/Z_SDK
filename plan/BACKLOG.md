@@ -34,7 +34,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > **Ola A CERRADA** · **U163 ✅ ∥ U167 ✅** (tip código `f46743b`).
 > **R10-Z PASS** + **GO implementación Ola B** (custodio · 2026-07-24):
 > [GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) · espejo
-> `vigilancia/z/`. Secuencia: **U164 ✅** ∥ **U166** 🔶 → merge → **U165**
+> `vigilancia/z/`. Secuencia: **U164 ✅** ∥ **U166 ✅** → **U165**
 > último + re-gate integrado. **U165** solo **lee** allowlist; **U166**
 > posee enmiendas P1. Frontera dura: **cero** flip `private` · **cero**
 > changesets de pub · **cero** `npm publish`. Replan:
@@ -104,12 +104,12 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ |
-| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | U164 ✅ · U166 🔶 · U165 ⬜ (último) |
+| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | U164 ✅ · U166 ✅ · U165 ⬜ (último) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** **U166** 🔶 (Ola B · U164 ya aceptado/mergeado).
+**En curso:** ninguno; preparar U165 desde main integrado.
 **Pendiente (post-merge U164+U166):** **U165** ⬜ (último + re-gate).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
@@ -141,7 +141,7 @@ como GO previo legítimo (D-41).
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U163 · U167 | U162 ✅ | U163 ∥ U167 (**✅ cerrada**) |
-| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 🔶 → **U165** último + re-gate |
+| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165** último + re-gate |
 | Publish | — | GO aparte | private + changesets de pub + npm publish |
 
 ### WP-U163 · POC publish-ready `@zeus/linea-system` — ✅
@@ -184,15 +184,16 @@ como GO previo legítimo (D-41).
   changesets de pub · **enmendar allowlist** (dueño = U166). **Eje:**
   IV + C8.
 
-### WP-U166 · Triage P1 linea-editor + console-monitor — 🔶
+### WP-U166 · Triage P1 linea-editor + console-monitor — ✅
 
-- 🔶 **WP-U166 · Triage P1 linea-editor + console-monitor** — en curso
-  (orquestador / 2026-07-24 · GO Ola B tras R10-Z PASS). Est. M. Dep:
-  **U163 ✅** (∥ **U164**; antes de aceptar U165). Ola B. Rama
-  `wp/u166-triage-p1-linea-editor-console-monitor` · worktree
-  `C:\S_LAB\.worktrees\z\wp-u166-triage-p1-linea-editor-console-monitor`.
-  Brief:
+- ✅ **WP-U166 · Triage P1 linea-editor + console-monitor** — aceptado
+  (orquestador / 2026-07-24). Est. M. Dep: **U163 ✅** (∥ **U164**;
+  antes de aceptar U165). Ola B. Rama
+  `wp/u166-triage-p1-linea-editor-console-monitor` · tip `43169ee` ·
+  merge `25cf693`. Brief:
   [REPORTES/briefs/WP-U166-triage-p1-linea-editor-console-monitor.md](REPORTES/briefs/WP-U166-triage-p1-linea-editor-console-monitor.md).
+  Reporte:
+  [REPORTES/WP-U166-triage-p1-linea-editor-console-monitor.md](REPORTES/WP-U166-triage-p1-linea-editor-console-monitor.md).
   **Qué:** exports/console-monitor; decidir publicabilidad o deslistar;
   **posee** enmiendas allowlist/audit P1. **Fuera:** private · publish ·
   changesets de pub · gate U165 · P0. **Eje:** IV.
