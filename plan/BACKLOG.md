@@ -34,7 +34,7 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > **Ola A CERRADA** · **U163 ✅ ∥ U167 ✅** (tip código `f46743b`).
 > **R10-Z PASS** + **GO implementación Ola B** (custodio · 2026-07-24):
 > [GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) · espejo
-> `vigilancia/z/`. Secuencia: **U164 ✅** ∥ **U166 ✅** → **U165**
+> `vigilancia/z/`. Secuencia: **U164 ✅** ∥ **U166 ✅** → **U165 🔶**
 > último + re-gate integrado. **U165** solo **lee** allowlist; **U166**
 > posee enmiendas P1. Frontera dura: **cero** flip `private` · **cero**
 > changesets de pub · **cero** `npm publish`. Replan:
@@ -104,13 +104,13 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ |
-| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | U164 ✅ · U166 ✅ · U165 ⬜ (último) |
+| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | U164 ✅ · U166 ✅ · U165 🔶 (último) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno; preparar U165 desde main integrado.
-**Pendiente (post-merge U164+U166):** **U165** ⬜ (último + re-gate).
+**En curso:** **U165** 🔶 desde main integrado U164+U166 (último + re-gate).
+**Pendiente:** ninguno en Ola B.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -141,7 +141,7 @@ como GO previo legítimo (D-41).
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U163 · U167 | U162 ✅ | U163 ∥ U167 (**✅ cerrada**) |
-| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165** último + re-gate |
+| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165** 🔶 último + re-gate |
 | Publish | — | GO aparte | private + changesets de pub + npm publish |
 
 ### WP-U163 · POC publish-ready `@zeus/linea-system` — ✅
@@ -171,12 +171,14 @@ como GO previo legítimo (D-41).
   **Fuera:** private · publish · changesets de pub · allowlist · gate
   U165. **Eje:** IV.
 
-### WP-U165 · Gate pre-publicación mesh allowlist — ⬜
+### WP-U165 · Gate pre-publicación mesh allowlist — 🔶
 
-- ⬜ **WP-U165 · Gate pre-publicación mesh allowlist** — encolado
-  (orquestador / 2026-07-24 · espera merge U164+U166). Est. S–M. Dep:
+- 🔶 **WP-U165 · Gate pre-publicación mesh allowlist** — en curso
+  (orquestador / 2026-07-24 · base integrada U164+U166). Est. S–M. Dep:
   **U163 ✅** + aceptación **tras U164 ✅ + U166 ✅** (merge/✅
-  **último**). Ola B. Brief:
+  **último**). Ola B. Rama `wp/u165-gate-prepub-mesh-allowlist` ·
+  worktree `C:\S_LAB\.worktrees\z\wp-u165-gate-prepub-mesh-allowlist`.
+  Brief:
   [REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md).
   **Qué:** script/CI — files, types, semver ≠ `*`, registry C8, dry-run
   pack; **lee** [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md) (no edita).
