@@ -59,7 +59,7 @@ posee enmiendas; U165 solo lee).
 | dato | valor |
 | ---- | ----- |
 | Tip código Ola B (merge U165) | `348183850f3197c5c0600db3299da82c46a7dec4` |
-| Tip gobierno (BACKLOG ✅; aviso en commit posterior) | `8883cb8f73be3a9ad73b78ddaa048c3b2b188ee0` (+ este aviso) |
+| Tip gobierno (BACKLOG ✅ + aviso R11-Z) | `a57e3cda2dc6de8940cb9f4289e52dcd82004353` |
 | Push | normal (sin force) |
 | CI | `30083260737` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30083260737 (head `8883cb8`; árbol código = tip `3481838` + `plan/`) |
 | Docs | `30083260612` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30083260612 (SHA `8883cb8`) |
@@ -97,7 +97,7 @@ Emitir **`R11-Z PASS`** si verifica:
 ```text
 AVISO R11-Z: Sprint 8 Ola B ✅ (U164 ✅ ∥ U166 ✅ → U165 ✅ último)
 tip código: 348183850f3197c5c0600db3299da82c46a7dec4
-tip gobierno (pre-aviso): 8883cb8f73be3a9ad73b78ddaa048c3b2b188ee0
+tip gobierno: a57e3cda2dc6de8940cb9f4289e52dcd82004353
 CI: 30083260737 success (8883cb8; código=3481838)
 Docs: 30083260612 success (8883cb8)
 Release tip packages U164: 30082419532 success (04489b1; packages==3481838)
