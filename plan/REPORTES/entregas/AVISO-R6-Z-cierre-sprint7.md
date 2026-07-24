@@ -15,6 +15,7 @@
 | dato | valor |
 | ---- | ----- |
 | Tip código / merge U158 | `e62a990765fbadd895836c1efb3f7519a8e70227` |
+| Tip gobierno (BACKLOG ✅ + acta + aviso) | `4b01fccb60a76a496b20e238d15993a01af1134b` |
 | Tip rama aceptado | `cad90a6` |
 | Reporte | `plan/REPORTES/WP-U158-smoke-ts-registry.md` |
 | Acta Sprint 7 | `plan/REPORTES/entregas/ACTA-CIERRE-SPRINT7-2026-07-24.md` |
@@ -44,11 +45,14 @@ webrtc-signaling/messages. U54/U161 permanece intacto.
 | -------------- | ------ | --- | ---------- |
 | CI rama U158 | `30071161716` | `bbde6f9` | success |
 | smoke registry rama | `89412151423` | `bbde6f9` | success · GREEN real, no skip |
-| CI `main` | `30071337545` | `e62a990` | success |
-| smoke registry `main` | `89412677473` | `e62a990` | success |
+| CI tip código `main` | `30071337545` | `e62a990` | success |
+| smoke registry `main` | `89412677473` | `e62a990` | success · GREEN real, no skip |
+| CI tip gobierno `4b01fcc` | N/A U104 | `4b01fcc` | solo `plan/**` · `paths-ignore` |
 | Release | N/A U104 | — | delta sin `.changeset/**` ni `packages/**` |
 
 Último Release verde: `30070437022` success sobre `8d784c1`.
+CI del tip código (`e62a990`) es el runner verde obligatorio; el tip
+gobierno posterior solo toca `plan/` (skip legítimo U104).
 
 ## Quietud
 
@@ -72,9 +76,10 @@ Emitir **`R6-Z PASS`** si verifica:
 ```text
 AVISO R6-Z: U158 ✅ · Sprint 7 CERRADO (U155–U161 ✅)
 tip código: e62a990765fbadd895836c1efb3f7519a8e70227
+tip gobierno: 4b01fccb60a76a496b20e238d15993a01af1134b
 smoke registry real: GREEN — install exit 0 · lock 7 @zeus/* registry · tsc --noEmit exit 0
-CI main: 30071337545 success · job registry 89412677473 success (no skip)
-CI rama: 30071161716 success · job registry 89412151423 success
+CI tip código: 30071337545 success · job registry 89412677473 success (no skip)
+CI tip gobierno: N/A U104 (solo plan/) · CI rama U158 30071161716 / job 89412151423 success
 Release: N/A U104 (sin packages/changesets) · último verde 30070437022@8d784c1
 BACKLOG: U158 ✅ · Sprint 7 CERRADO
 quietud: PASS — .worktrees/z vacío; wp/* 0; stash 0; sin force
