@@ -22,14 +22,19 @@ prose.
   DC-24); Punto 4 (parser) sigue abierto en el mundo del paquete (su
   DC-25). Disponible pero **no cableado** aún: gate `verificar-changelog
   --role gobierno` (candidato follow-up para validar nuestro CHANGELOG).
+- **R11-Z FAIL** técnico → reapertura **U165 🔶** (corrección sensor
+  gate: pines semver + resolución registry + probes rojos). U164 ✅ ·
+  U166 ✅ intactos. Pedido R11-Z anterior invalidado hasta re-validar
+  U165.
 
 ---
 
 ## [Sprint 8 Ola B] — 2026-07-24
 
 Publish-ready mesh · R10-Z PASS + GO Ola B · **U164 ✅ ∥ U166 ✅ →
-U165 ✅** (último + re-gate). Frontera: sin flip `private` · sin
-changesets de pub · sin `npm publish`. Pedido **R11-Z**.
+U165** (gate inicial mergeado; **reapertura 🔶** tras R11-Z FAIL).
+Frontera: sin flip `private` · sin changesets de pub · sin
+`npm publish`.
 
 ### Added
 
@@ -37,6 +42,7 @@ changesets de pub · sin `npm publish`. Pedido **R11-Z**.
   `ssb-system`; pack sin fixtures/tests en ssb).
 - WP-U165 — gate opt-in `npm run gate:publish-ready` (P0×4; registry
   C8; fail-probe; allowlist solo lectura; re-gate integrado OK).
+  *Corrección post-R11-Z FAIL en curso.*
 
 ### Changed
 

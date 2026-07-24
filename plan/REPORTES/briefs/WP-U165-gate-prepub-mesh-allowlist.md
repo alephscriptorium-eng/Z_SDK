@@ -2,58 +2,61 @@
 
 (rol) plan/roles/README.md → WORKER (skill swarm-orquestacion)
 
-WP: WP-U165 · Gate pre-publicación mesh allowlist
-Rama: wp/u165-gate-prepub-mesh-allowlist
-Worktree: C:\S_LAB\.worktrees\z\wp-u165-gate-prepub-mesh-allowlist
+WP: WP-U165 · Gate pre-publicación mesh allowlist (**reapertura** ·
+corrección tras R11-Z FAIL; no WP nuevo)
+Rama: wp/u165-gate-semver-registry-probes
+Worktree: C:\S_LAB\.worktrees\z\wp-u165-gate-semver-registry-probes
 Reporte: plan/REPORTES/WP-U165-gate-prepub-mesh-allowlist.md
+Gate FAIL: plan/REPORTES/entregas/GATE-R11-Z-FAIL.md
 
 ## Lecturas
 - plan/PUBLISH-ALLOWLIST.md §3 · §5 (**solo lectura** — no editar)
-- `scripts/audit-publish-allowlist.mjs` (U162)
-- plan/REPORTES/entregas/REPLAN-2026-07-24-sprint8.md
+- plan/REPORTES/entregas/GATE-R11-Z-FAIL.md (motivos + CA faltantes)
+- `scripts/gate-publish-ready.mjs` (sensor defectuoso)
+- `scripts/audit-publish-allowlist.mjs` (U162 · patrón `npm view`)
+- plan/REPORTES/WP-U165-gate-prepub-mesh-allowlist.md (entrega previa)
 - plan/PRACTICAS.md §6 · C8
-- Opcional: `npm run release:changeset-dry` (solo lectura / extensión)
 
-## Tarea
-1. Añadir **gate/script** (CI o npm script) que verifique candidatos
-   allowlist (o subset P0 listo) contra condiciones publish-ready:
-   - `files` / pack dry-run limpio
-   - types o decisión JS-only documentada
-   - deps internas `@zeus/*` ≠ `*`
-   - `publishConfig.registry` = registry C8 de `.npmrc`
-2. Integrar de forma opt-in o job CI acotado (sin disparar publish).
-3. Documentar cómo fallar en rojo ante regresión (evidencia literal).
-4. Opcional: extender `release:dry` / audit existente — justificar en
-   reporte.
+## Tarea (corrección R11-Z FAIL)
+1. Endurecer validación de deps internas `@zeus/*`:
+   - aceptar solo **semver pineado** (versión exacta válida);
+   - rechazar `*`, dist-tags (`latest`, …), Git/URL, alias/protocolos
+     locales (`workspace:`, `file:`, `link:`, …) y rutas POSIX/Windows.
+2. Comprobar que cada `@zeus/*@versión` medida sea **resoluble** en el
+   registry canónico de `.npmrc` (`npm view` / equivalente sin
+   workspace).
+3. Añadir **probes rojos** (deben fallar, sin escribir manifests) para:
+   `*`, `latest`, Git/URL, ruta Windows, versión inexistente; mantener
+   **probe verde** (P0×4 PASS).
+4. Re-ejecutar P0×4 + gates + lint; evidencia literal en reporte.
 5. **No** publish, **no** flip `private`, **no** changesets de
    publicación, **no** editar `plan/PUBLISH-ALLOWLIST.md`.
 
 ## CA
-- Comando reproducible (salida literal en reporte) que falla si un
-  candidato medido viola §5.
-- C8: registry canónico comprobado, no tarball workspace.
-- Cableado CI o npm script documentado; sin job de publish.
-- Frontera: cero private / cero publish / cero changesets de pub.
+- Predicado de rango/pin demuestra «registry semver» (no solo denylist
+  parcial); mensaje alineado con la propiedad comprobada.
+- Resolución C8 real por cada pin `@zeus/*` medido (o fallo explícito).
+- Probes rojos documentados: `*` · `latest` · Git/URL · `C:\…` ·
+  versión inexistente → exit ≠ 0.
+- Probe verde: `npm run gate:publish-ready` → P0×4 OK.
+- Allowlist byte-identical (solo lectura); cero private / publish /
+  changesets de pub.
 - `npm run gates` OK si toca `scripts/`.
-- **Re-gate integrado (obligatorio antes de ✅):** tras merge de
-  **U164 + U166** en `main`, rebase/integrar esa base y **re-ejecutar**
-  el gate sobre el resultado conjunto; evidencia literal en reporte.
-  Sin ese re-gate → no aceptar U165 ni cerrar Ola B.
+- **Re-gate P0×4** post-fix con evidencia en reporte.
 
 ## ALCANCE_DIFF
-- `scripts/**` (gate nuevo o extensión audit)
-- `package.json` (npm script)
+- `scripts/**` (gate / probes)
+- `package.json` (npm script solo si hace falta)
 - `.github/workflows/**` solo si añade check **sin** publish
 - `plan/REPORTES/` (reporte)
 - **Prohibido:** `plan/PUBLISH-ALLOWLIST.md` (solo lectura; enmiendas =
-  **U166**), flips `private`, `.changeset/**` de release, `npm publish`
+  **U166**), flips `private`, `.changeset/**` de release, `npm publish`,
+  reabrir U164/U166
 
 ## Notas
-- Estado: **⬜** · Ola B · deps: **U163 ✅** + **aceptación tras
-  U164 ✅ + U166 ✅** (merge/✅ **último** de Ola B)
-- Orden Ola B: despacho/obra `U164 ∥ U166` primero → luego **U165**
-  (secuencial al final) + re-gate integrado
-- **NO DESPACHAR** hasta **R10-Z PASS** + GO implementación Ola B
-- Estimación: S–M · Eje IV + C8
+- Estado: **🔶** · corrección dentro del CA U165 ya autorizado (custodio:
+  no GO nuevo).
+- U164 ✅ · U166 ✅ intactos.
+- Estimación: S · Eje IV + C8
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
 - DC-15 LOCAL-ONLY

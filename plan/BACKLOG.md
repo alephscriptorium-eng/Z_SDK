@@ -29,17 +29,23 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 8 Ola B ✅ · pedir R11-Z)
+## Remate — estado swarm (2026-07-24 · R11-Z FAIL · U165 🔶 reapertura)
 
-> **Ola A CERRADA** · **U163 ✅ ∥ U167 ✅**. **Ola B CERRADA** ·
-> **U164 ✅ ∥ U166 ✅ → U165 ✅** (último; tip código `3481838`).
-> **R10-Z PASS** + GO Ola B consumidos. Pedido **R11-Z PASS** (cierre
-> Ola B / Sprint 8). Frontera dura intacta: **cero** flip `private` ·
+> **R11-Z FAIL técnico**
+> ([GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md) · espejo
+> `vigilancia/z/GATE-R11-Z-FAIL.md`). **U164 ✅** y **U166 ✅** se
+> conservan. **U165 🔶** — reapertura (corrección del mismo WP; **no**
+> WP nuevo; **no** GO nuevo). Motivo: `isRegistryRange` aceptaba
+> `latest`/Git/URL/rutas Windows y no comprobaba resolubilidad en
+> registry; faltaban probes rojos (§5 pines + C8). Allowlist **solo
+> lectura** (U166 posee enmiendas). Pedido R11-Z anterior **invalidado**
+> hasta re-validar U165. Frontera dura: **cero** flip `private` ·
 > **cero** changesets de pub · **cero** `npm publish`. Replan:
 > [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
-> **U162** ✅ (D-41 · no precedente). **Sprint 7 CERRADO / IDLE.**
-> Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). DC-15 LOCAL-ONLY.
-> Skills espejo `@0.8.0` (no commitear `.claude/skills/`).
+> **U162** ✅ (D-41 · no precedente). **Ola A CERRADA** · **U163 ✅ ∥
+> U167 ✅**. Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md).
+> DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear
+> `.claude/skills/`).
 >
 > **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
 > (`1a24a60`) — proyección backlog→Issues montada y validada en
@@ -102,45 +108,49 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ |
-| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ U164 · U166 · U165 (cerrada) |
+| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ U164 · U166 · **U165 🔶** (reapertura R11-Z FAIL) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (Ola B ✅ · IDLE tras quietud; pedido R11-Z).
-**Pendiente:** ninguno en Ola B / Sprint 8.
+**En curso:** **U165** 🔶 (orquestador-Z · 2026-07-24 · corrección
+sensor gate tras R11-Z FAIL).
+**Pendiente:** re-gate U165 + pedido reintento R11-Z (no declarar PASS).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
-**Aceptado:** **U165** ✅ · **U164** ✅ · **U166** ✅ · **U163** ✅ ·
-**U167** ✅ · **U162** ✅ · **U158** ✅ · **U161** ✅ · **U160** ✅ ·
-**U157** ✅ · **U159** ✅ · **U156** ✅ · **U155** ✅ · **U154** ✅ ·
-**U153** ✅ · **U151** ✅ · **U152** ✅ · **U150** ✅ · **U149** ✅ ·
-sprints 1–5 (ver histórico).
+**Aceptado:** **U164** ✅ · **U166** ✅ · **U163** ✅ · **U167** ✅ ·
+**U162** ✅ · **U158** ✅ · **U161** ✅ · **U160** ✅ · **U157** ✅ ·
+**U159** ✅ · **U156** ✅ · **U155** ✅ · **U154** ✅ · **U153** ✅ ·
+**U151** ✅ · **U152** ✅ · **U150** ✅ · **U149** ✅ · sprints 1–5
+(ver histórico). **U165** pendiente re-✅ tras corrección.
 **D-35** / **D-37** · **D-41** (U162 ex post acotado).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
 
 ---
 
-## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B ✅ · 2026-07-24)
+## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B · U165 🔶 · 2026-07-24)
 
 Fuente: plan U162 + allowlist + **R8-Z PASS** (Ola A) + **GO
 implementación Ola A** + **R9-Z PASS** (cierre Ola A) + **R10-Z PASS**
-+ **GO implementación Ola B** (custodio). Detalle olas/deps:
++ **GO implementación Ola B** (custodio) + **R11-Z FAIL** (reabrir solo
+U165). Detalle olas/deps:
 [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
-Gates: [GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) ·
+Gates: [GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md) ·
+[GATE-R10-Z-PASS.md](REPORTES/entregas/GATE-R10-Z-PASS.md) ·
 [GATE-R9-Z-PASS.md](REPORTES/entregas/GATE-R9-Z-PASS.md) ·
-`vigilancia/z/GATE-R8-Z-PASS.md`. Pedido cierre: **R11-Z**.
+`vigilancia/z/GATE-R8-Z-PASS.md`. Tras corrección U165: pedir
+**reintento R11-Z** (no declarar PASS).
 
 **Fronteras duras (hasta GO publish aparte):** sin flip `private` ·
 sin changesets de publicación · sin `npm publish`. **No** reabre U162
-como GO previo legítimo (D-41).
+como GO previo legítimo (D-41). **No** reabre U164/U166.
 
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U163 · U167 | U162 ✅ | U163 ∥ U167 (**✅ cerrada**) |
-| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165 ✅** último + re-gate (**✅ cerrada**) |
+| **B** | U164 · U166 · U165 | U163 ✅ | U164 ✅ · U166 ✅ → **U165 🔶** (reapertura R11-Z FAIL) |
 | Publish | — | GO aparte | private + changesets de pub + npm publish |
 
 ### WP-U163 · POC publish-ready `@zeus/linea-system` — ✅
@@ -170,20 +180,24 @@ como GO previo legítimo (D-41).
   **Fuera:** private · publish · changesets de pub · allowlist · gate
   U165. **Eje:** IV.
 
-### WP-U165 · Gate pre-publicación mesh allowlist — ✅
+### WP-U165 · Gate pre-publicación mesh allowlist — 🔶
 
-- ✅ **WP-U165 · Gate pre-publicación mesh allowlist** — aceptado
-  (orquestador / 2026-07-24 · último Ola B + re-gate integrado). Est.
-  S–M. Dep: **U163 ✅** + **U164 ✅** + **U166 ✅**. Ola B. Rama
-  `wp/u165-gate-prepub-mesh-allowlist` · tip `e10411d` · merge
-  `3481838`. Brief:
+- 🔶 **WP-U165 · Gate pre-publicación mesh allowlist** — en curso
+  (orquestador-Z / 2026-07-24 · **reapertura** tras R11-Z FAIL; sin WP
+  nuevo). Est. S–M. Dep: **U163 ✅** + **U164 ✅** + **U166 ✅**. Ola
+  B. Rama `wp/u165-gate-semver-registry-probes` · worktree
+  `C:\S_LAB\.worktrees\z\wp-u165-gate-semver-registry-probes`. Brief:
   [REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md).
-  Reporte:
+  Reporte previo:
   [REPORTES/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/WP-U165-gate-prepub-mesh-allowlist.md).
-  **Qué:** `npm run gate:publish-ready` (P0×4; pack dry-run; registry
-  C8 desde `.npmrc`); allowlist solo lectura; re-gate OK sobre base
-  U164+U166. **Fuera:** publish · changesets de pub · enmendar
-  allowlist (dueño = U166). **Eje:** IV + C8.
+  Gate FAIL:
+  [REPORTES/entregas/GATE-R11-Z-FAIL.md](REPORTES/entregas/GATE-R11-Z-FAIL.md).
+  **Qué (corrección):** validar semver/pines reales; resolución
+  `@zeus/*@versión` en registry C8; probes rojos `*` · `latest` ·
+  Git/URL · ruta Windows · versión inexistente; probe verde + re-gate
+  P0×4. Allowlist **solo lectura**. **Fuera:** publish · changesets de
+  pub · enmendar allowlist (dueño = U166) · reabrir U164/U166. **Eje:**
+  IV + C8.
 
 ### WP-U166 · Triage P1 linea-editor + console-monitor — ✅
 
