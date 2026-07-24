@@ -53,8 +53,9 @@ sin impl./despacho/publish).
 > Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **U162** ✅
 > (D-41 · no precedente). **DC-15 LOCAL-ONLY** por defecto; **D-44**
 > excepción acotada solo Issues **#16–#53** + `plan/.sync-map.json` de
-> `46c3e5c` (conservar; sin Issues nuevos). Skills espejo `@0.8.0`
-> (no commitear `.claude/skills/`).
+> `46c3e5c` (conservar; sin Issues nuevos). Skills espejo `@0.10.0`
+> (rango D-36 `>=0.10.0 <1.0.0`; adopción GO custodio hecha; no
+> commitear `.claude/skills/`).
 >
 > **R12-Z · pedido PASS (segundo reintento):**
 > [AVISO-R12-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R12-Z-pedido-PASS.md)

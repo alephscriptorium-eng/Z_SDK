@@ -12,7 +12,7 @@ Sprint 4 — WP-U146.)
 | dato | valor |
 | ---- | ----- |
 | paquete | `@alephscript/skills-scriptorium` |
-| versión | rango **`0.x`** (pin solo de major; la efectiva la fija `package-lock.json`) |
+| versión | rango **`>=0.10.0 <1.0.0`** (D-36; la efectiva la fija `package-lock.json`) |
 | skills | `skills/swarm-orquestacion` (SKILL.md + `reference/roles/` + plantilla de reporte) · `skills/vigilancia` (estación read-only) |
 | registry | `https://npm.scriptorium.escrivivir.co` |
 
@@ -20,11 +20,11 @@ Consulta / instalación (resoluble por registry, sin copiar los prompts):
 
 ```bash
 # comprobar qué versiones resuelve el rango
-npm view @alephscript/skills-scriptorium@0.x \
+npm view "@alephscript/skills-scriptorium@>=0.10.0 <1.0.0" \
   --registry=https://npm.scriptorium.escrivivir.co version
 
 # traer el paquete a un runner
-npm install @alephscript/skills-scriptorium@0.x \
+npm install "@alephscript/skills-scriptorium@>=0.10.0 <1.0.0" \
   --registry=https://npm.scriptorium.escrivivir.co
 ```
 

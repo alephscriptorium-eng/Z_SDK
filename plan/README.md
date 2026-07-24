@@ -39,9 +39,10 @@ ambos en un mismo WP.
 
 El protocolo genérico (prompts ORQUESTADOR, WORKER, REVISION, CORRECCION,
 BRIEF y plantilla de reporte) **no se copia en este árbol**: se referencia el
-paquete versionado `@alephscript/skills-scriptorium@0.x` (rango; registry propio,
-resoluble por `npm view` — C8). El plan queda **autocontenido vía referencia
-versionada**: este árbol + el paquete en su versión fijada bastan. En
+paquete versionado `@alephscript/skills-scriptorium` rango
+`>=0.10.0 <1.0.0` (D-36; registry propio, resoluble por `npm view` — C8).
+El plan queda **autocontenido vía referencia versionada**: este árbol + el
+paquete en su versión fijada bastan. En
 [roles/](roles/README.md) viven la referencia y la **calibración local** de
 zeus (dos backlogs separados, adaptador de evidencia CI `gh`/U104, límites
 Actions, dónde vive el estado).

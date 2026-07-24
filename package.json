@@ -135,7 +135,7 @@
   },
   "devDependencies": {
     "@alephscript/mcp-core-sdk": "^1.5.0",
-    "@alephscript/skills-scriptorium": "0.8.0",
+    "@alephscript/skills-scriptorium": ">=0.10.0 <1.0.0",
     "@asyncapi/cli": "^4.1.1",
     "@asyncapi/html-template": "^3.3.0",
     "@changesets/cli": "^2.31.1",

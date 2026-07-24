@@ -399,21 +399,22 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   queda fuera de esta decisión — requiere GO + WP aparte. **CA:**
   decisión registrada; nada más cambia (sin worker, sin migración).
 
-- **D-36 · 2026-07-20 · Versionado del paquete skills: rango `0.x`, pin
-  solo de major** (GO **usuario**, orden directa en sesión; formalización
-  delegada al orquestador). **Decisión:** la dependencia
-  `@alephscript/skills-scriptorium` se declara con rango **`0.x`**
-  (cualquier `0.x.x`; la versión efectiva la fija `package-lock.json`).
-  **Deroga** el «pin exacto 0.3.0» que D-35 daba por doctrina.
-  Motivación: la librería prepara `0.3.1` (mejora de docs solicitada por
-  este mundo) y el consumidor quiere adoptarla sin WP por release.
-  **Consecuencias ya ejecutadas (Sprint 4 + amend):** `package.json`
-  raíz en `0.x` · prosa «versión fijada» → «rango» en
-  `roles/README.md` / `README.md` / `PRACTICAS.md` · adopción de una
-  nueva 0.x = `npm update @alephscript/skills-scriptorium` +
-  `npm run skills:sync` (sin WP; si un update rompe CA, se abre WP).
-  **CA:** decisión registrada; refleja lo mergeado en Sprint 4
-  (CI `29733452662` success).
+- **D-36 · 2026-07-20 · Versionado del paquete skills: rango
+  `>=0.10.0 <1.0.0`, pin solo de major** (GO **usuario**, orden directa
+  en sesión; formalización delegada al orquestador). **Decisión:** la
+  dependencia `@alephscript/skills-scriptorium` se declara con rango
+  **`>=0.10.0 <1.0.0`** (cualquier `0.y.z` con `y≥10`; la versión
+  efectiva la fija `package-lock.json`). **Deroga** el «pin exacto
+  0.3.0» que D-35 daba por doctrina. Motivación original (2026-07-20):
+  adoptar sin WP por release dentro del major 0. **Reconciliación
+  2026-07-24 (GO custodio · adoptar `@0.10.0`):** el rango vivo pasa de
+  `0.x` a **`>=0.10.0 <1.0.0`** (piso 0.10.0; sin `latest`; sin
+  cherry-pick). **Consecuencias:** `package.json` raíz en ese rango ·
+  prosa alineada en `roles/README.md` / `README.md` / `PRACTICAS.md` /
+  `ESTACION.md` · adopción = `npm update @alephscript/skills-scriptorium`
+  + `npm run skills:sync` (sin WP; si un update rompe CA, se abre WP).
+  **CA:** decisión registrada; lock pin exacto `0.10.0` tras adopción
+  GO 2026-07-24.
 
 - **D-37 · 2026-07-20 · Adoptar 0.3.1 como baseline + «a partir de ahora
   con el sistema nuevo»** (GO **usuario**). El rango `0.x` (D-36) ya

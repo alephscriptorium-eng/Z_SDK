@@ -16,12 +16,13 @@ prose.
 
 ### Changed
 
-- Baseline de skills `@alephscript/skills-scriptorium` **0.3.3 → 0.3.4**
-  (rango `0.x`, D-36; mecánico sin WP). 0.3.4 resuelve 3/4 puntos del
-  handoff de zeus (semver DC-22, gate gobierno DC-23, back-links tema
-  DC-24); Punto 4 (parser) sigue abierto en el mundo del paquete (su
-  DC-25). Disponible pero **no cableado** aún: gate `verificar-changelog
-  --role gobierno` (candidato follow-up para validar nuestro CHANGELOG).
+- Baseline de skills `@alephscript/skills-scriptorium` **0.8.0 → 0.10.0**
+  (rango D-36 reconciliado a `>=0.10.0 <1.0.0`; mecánico sin WP; GO
+  custodio adoptar `@0.10.0`). Lock pin exacto `0.10.0`.
+- Baseline histórica **0.3.3 → 0.3.4** (rango `0.x` previo; mecánico).
+  0.3.4 resolvió 3/4 puntos del handoff (semver DC-22, gate gobierno
+  DC-23, back-links tema DC-24); Punto 4 (parser) sigue en el mundo del
+  paquete (DC-25).
 - **R11-Z PASS** · Sprint 8 **CERRADO** · **IDLE Z**. Remate BACKLOG
   alineado (gobierno; no reabre U165). GO planificación **R12-Z**:
   U168–U171 ⬜ (major-band P0×4 · gate · contrarrevisión · prep pub).
