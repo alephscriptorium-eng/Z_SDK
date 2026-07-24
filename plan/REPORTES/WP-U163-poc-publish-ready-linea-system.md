@@ -5,7 +5,7 @@
 | agente | Worker-U163 |
 | fecha | 2026-07-24 |
 | rama | `wp/u163-poc-publish-ready-linea-system` |
-| commits | `1818180` (feat) · _(docs = este reporte)_ |
+| commits | `1818180` (feat) · `d3788e0` (docs) |
 | eje(s) CA | IV (plantilla P0 como contrato; segundo cliente = U164) |
 | estado propuesto | listo para revisión |
 | DC | DC-15 LOCAL-ONLY |
