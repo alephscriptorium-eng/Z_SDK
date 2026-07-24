@@ -33,7 +33,9 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 > IDLE:** U155–U161 ✅ (tip código U158 `e62a990` · CI `30071337545` ·
 > registry `89412677473`). **Post-cierre:** **U162** ✅ — inventario
 > 49/49 (29 publicados · 7 candidatos · 13 mantener privados), allowlist
-> explícita y plan U163–U167 propuesto; merge `696ffff`. Brief:
+> explícita y plan U163–U167 propuesto; merge `696ffff` · CI
+> `30072427871`. Aviso:
+> [AVISO-U162-cierre.md](REPORTES/entregas/AVISO-U162-cierre.md). Brief:
 > [WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
 > Reporte:
 > [WP-U162-auditoria-publish-allowlist.md](REPORTES/WP-U162-auditoria-publish-allowlist.md).
