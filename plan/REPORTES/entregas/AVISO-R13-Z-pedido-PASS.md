@@ -1,19 +1,21 @@
-# AVISO · orquestador-Z → SOL / custodio · R13-Z pedido PASS
+# AVISO · orquestador-Z → SOL / custodio · R13-Z pedido PASS (reintento)
 
 | dato | valor |
 | ---- | ----- |
 | De | orquestador-Z |
 | Para | vigía SOL (carril Z) vía custodio |
 | Fecha | 2026-07-24 |
-| Motivo | Pedir **R13-Z PASS** (gate de planificación / plan) tras R12-Z PASS + adopción 0.10.0 |
-| Gate previo | **R12-Z PASS** vigente · adopción `@alephscript/skills-scriptorium@0.10.0` · DA-S21 · D-43 (histórico secuencia) · D-44 |
-| Contexto | **PAUSA / CORTE TÉCNICO** vigente · **sin despacho** · **sin publish** · **sin 🔶** |
+| Motivo | Pedir **R13-Z PASS (reintento)** tras FAIL documental (residuo plantilla sello) |
+| Gate previo | **R12-Z PASS** vigente · adopción `@alephscript/skills-scriptorium@0.10.0` · DA-S21 · D-43 (histórico secuencia) · D-44 · **R13-Z FAIL** documental (remate `5c62f25`) |
+| Contexto | **PAUSA / CORTE TÉCNICO** vigente · **sin despacho** · **sin publish** · **sin 🔶** · **sin GO implementación** |
 | Espejo | `C:\S_LAB\vigilancia\z\AVISO-R13-Z-pedido-PASS.md` |
+| FAIL previo | `C:\S_LAB\vigilancia\z\GATE-R13-Z-FAIL.md` |
 
 ## Pedido a SOL
 
 Validar el plan R13-Z (tercer frente Dramaturgo + Zigurat: épica **U73**
-⬜ + **U172–U177** ⬜) y emitir **R13-Z PASS** o FAIL con evidencia.
+⬜ + **U172–U177** ⬜) y emitir **R13-Z PASS (reintento)** o FAIL con
+evidencia.
 
 **Este aviso no declara PASS.** Solo adjunta evidencia para que SOL
 decida.
@@ -22,6 +24,13 @@ decida.
 despacho, ni flips `private`, ni changesets de publicación efectivos,
 ni `npm publish`. GO de implementación del tercer frente = acto aparte
 del custodio tras PASS.
+
+## Corrección del FAIL documental
+
+Bloqueante en el pedido previo (remate `5c62f25`): residuo de plantilla
+en el ancla del sello (`sello ' + short + '`) — no reproducible.
+Este reintento cita **base** y **sello** como SHAs **literales**
+(`b348c59` / `8dec15e`). Sin tip autorreferencial del tip de este aviso.
 
 ## Evidencia adopción 0.10.0 (precondición)
 
@@ -41,7 +50,7 @@ del custodio tras PASS.
 | **R12-Z PASS** | vigente (base `f2aab3f` + sello `2ef0d79` · remate `66c3696`) |
 | **DA-S21** | asentada · `2eb4784` · HOLD autoridad R13 **levantado** |
 | **D-43** | GO planificación R13 · tramos «R12 pedido / no pedir R13» = **histórico/superado** |
-| **D-44** | Issues #16–#53 + sync-map `46c3e5c` · DC-15 LOCAL-ONLY por defecto |
+| **D-44** | Issues #16–#53 + sync-map `46c3e5c` · DC-15 LOCAL-ONLY por defecto · conservación (no exige cierre GH) |
 | **U73 · U172–U178** | ⬜ (planificación; U178 = cola publish P1 aparte) |
 | Hold histórico | [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md) (**superado**) |
 | Replan | [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPLAN-2026-07-24-r13-dramaturgo-zigurat.md) |
@@ -54,11 +63,12 @@ audita dos anclas estables:
 
 | ancla | SHA / significado |
 | ----- | ----------------- |
-| **Base auditada** | `b348c59` = `b348c594dbaebf5e1e5efa2d95e60cdbbb317449` — tip de `origin/main` con adopción 0.10.0 + engines Node 22 (CI/Docs verdes arriba) **previo** a este aviso |
-| **Commit sello** | `8dec15e` = `8dec15e5e821ae7abab0ce0aa7eb2a1e11714be8` — asienta este pedido R13-Z + marcas histórico/superado. El remate siguiente solo documenta este SHA; **no** es tip autorreferencial |
+| **Base auditada** | `b348c59` = `b348c594dbaebf5e1e5efa2d95e60cdbbb317449` — tip de `origin/main` con adopción 0.10.0 + engines Node 22 (CI/Docs verdes arriba) **previo** al sello del pedido |
+| **Commit sello** | `8dec15e` = `8dec15e5e821ae7abab0ce0aa7eb2a1e11714be8` — asienta el pedido R13-Z + marcas histórico/superado. Remates posteriores solo documentan / corrigen prosa; **no** son tip autorreferencial ni sustituyen el sello |
 
 Verificar `origin/main` reachable tras push. El **objeto auditado** es
-**base** `b348c59` + **sello** `' + short + '` (no el tip del remate de SHA).
+**base** `b348c59` + **sello** `8dec15e` (no el tip del remate de SHA
+ni el tip de este reintento).
 
 ## PAUSA / frontera (literal)
 
@@ -66,9 +76,9 @@ Verificar `origin/main` reachable tras push. El **objeto auditado** es
 - **0 🔶 · 0 workers · 0 despacho · 0 `npm publish` · 0 flip private.**
 - U73 / U172–U177 / U178 / U168–U171 siguen **⬜** (planificación).
 - Hold R13: autoridad **levantada** (DA-S21); hold **operativo** =
-  PAUSA + petición emitida + **sin despacho** hasta R13-Z PASS + GO impl.
+  PAUSA + petición reintento emitida + **sin despacho** hasta R13-Z PASS + GO impl.
 - DC-15: LOCAL-ONLY por defecto; excepción D-44 solo #16–#53.
-- **Sin workers · sin publish · sin implementación de packages.**
+- **Sin workers · sin publish · sin implementación de packages · sin GO implementación.**
 
 ## CI / gates (adjunto honesto)
 
@@ -135,9 +145,9 @@ textos de planificación = **0** (excl. línea de definición en addenda).
 ## Rango exacto `b348c59..8dec15e`
 
 Base auditada = `b348c59` (adopción PASS). El sello cierra el pedido
-R13-Z + marcas histórico. Un remate posterior que solo rellene el SHA
-del sello **no** forma parte del objeto auditado (no es tip canónico
-autorreferencial).
+R13-Z + marcas histórico. Remates posteriores (incluye el que dejó el
+residuo `5c62f25` y este reintento documental) **no** forman parte del
+objeto auditado (no son tip canónico autorreferencial).
 
 ### Log oneline (hasta base; contexto adopción)
 
@@ -162,8 +172,9 @@ f2aab3f plan(gobierno): tip canónico R12-Z = origin/main (reintento)
 | **R12-Z PASS** | Vigente; no se revoca. |
 | **Adopción 0.10.0** | Tip `b348c59` · CI/Docs verdes. |
 | **D-43 / HOLD / REPLAN** | Tramos «R12 pedido» marcados **histórico/superado**. |
-| **Este aviso** | Pedido **R13-Z PASS** · base + sello. |
-| **PAUSA** | Vigente; sin despacho · sin publish · sin 🔶 · sin workers. |
+| **FAIL documental** | Remate `5c62f25` dejó residuo `' + short + '`; no PASS. |
+| **Este aviso** | Pedido **R13-Z PASS (reintento)** · base + sello literales. |
+| **PAUSA** | Vigente; sin despacho · sin publish · sin 🔶 · sin workers · sin GO impl. |
 | Paths | Solo `plan/**` (+ espejo vigilancia fuera de git Z). |
 
 ## Secuencia (bloqueo duro)
@@ -172,12 +183,14 @@ f2aab3f plan(gobierno): tip canónico R12-Z = origin/main (reintento)
 [PAUSA vigente]
     → [R12-Z PASS]                 ← hecho
     → [adopción 0.10.0 PASS]       ← tip b348c59 · CI/Docs verdes
-    → [petición R13-Z]             ← este aviso (sin declarar PASS)
+    → [petición R13-Z]             ← sello 8dec15e (FAIL documental en remate)
+    → [reintento R13-Z]            ← este aviso (sin declarar PASS)
     → [R13-Z PASS + GO impl.]      → entonces 🔶/workers
 ```
 
 **Ahora:** no despachar · no publish · no declarar R13 PASS desde
-orquestador · no abrir tercer frente · no crear Issues nuevos.
+orquestador · no abrir tercer frente · no crear Issues nuevos · no GO
+implementación.
 
 ## Artefactos
 
@@ -187,21 +200,23 @@ orquestador · no abrir tercer frente · no crear Issues nuevos.
 | Replan R13 | [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPLAN-2026-07-24-r13-dramaturgo-zigurat.md) |
 | Hold histórico | [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md) |
 | Pedido R12 (histórico) | [AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md) |
+| FAIL R13 | `C:\S_LAB\vigilancia\z\GATE-R13-Z-FAIL.md` |
 | Adopción | [AVISO-ADOPCION-0.10-engines-node22.md](AVISO-ADOPCION-0.10-engines-node22.md) |
 | PAUSA | [AVISO-PAUSA-CORTE-TECNICO.md](AVISO-PAUSA-CORTE-TECNICO.md) |
 
 ## Handoff a SOL (copiable)
 
 ```text
-Pedido: R13-Z PASS (gate planificación / plan — no GO implementación)
+Pedido: R13-Z PASS (reintento) (gate planificación / plan — no GO implementación)
 Patrón: base auditada + commit sello (sin tip autorreferencial)
 base auditada: b348c59 (= origin/main adopción 0.10.0 + engines Node 22)
 commit sello: 8dec15e = 8dec15e5e821ae7abab0ce0aa7eb2a1e11714be8
-  (asienta este pedido + históricos; remate solo documenta SHA · no tip-loop)
+  (asienta pedido + históricos; remates solo documentan/corrigen · no tip-loop)
+Corrección FAIL: residuo «sello ' + short + '» eliminado · literales limpios
 Evidencia adopción: tip b348c59 · CI 30128202345 success · Docs 30128202336 success
 R12-Z PASS vigente · DA-S21 2eb4784 · D-43 (secuencia histórica/superada) · D-44
 U73 + U172–U177 ⬜ · U178 ⬜ · sin workers · sin 🔶 · sin despacho · sin publish
-PAUSA / CORTE TÉCNICO vigente
+PAUSA / CORTE TÉCNICO vigente · sin GO implementación
 
 CI/gates:
 - tip adopción: CI 30128202345 + Docs 30128202336 success @ b348c59
