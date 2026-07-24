@@ -196,4 +196,18 @@ Ninguno. No se ejecutó `npm publish`, no se hizo push y no se mergeó a main.
 
 ## Revisión del orquestador
 
-_(la rellena el orquestador: aceptado ✅ / devuelto con lista numerada)_
+**Aceptado ✅ · 2026-07-24.**
+
+- ALCANCE_DIFF: `scripts/gate-publish-ready.mjs` + import seguro del
+  audit + script npm + este reporte; allowlist byte-identical vs
+  `bab3ad5` (solo lectura).
+- Re-gate integrado obligatorio sobre base U164+U166: ancestros
+  `6a2a409` (U164) y `25cf693` (U166) alcanzables; `npm run
+  gate:publish-ready` → OK P0×4; `npm run gates` → OK.
+- Fail-probe independiente: `--package @zeus/linea-system --fail-probe`
+  → exit 1 (dep `*` en memoria; sin escritura de manifests).
+- Eje IV + C8: registry canónico desde `.npmrc`; P1 excluido con causa
+  documentada (U166 / publish-ready pendiente).
+- Fronteras: cero edit allowlist · cero flip `private` · cero
+  changesets · cero workflows publish · cero `npm publish`.
+- Merge post-✅ a `main` (último de Ola B).
