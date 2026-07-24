@@ -138,10 +138,25 @@ function zeusDependencies(manifest) {
 }
 
 /**
- * Allowlist §5: internal @zeus/* deps must be a pinned exact semver that can
- * resolve on the canonical registry. Reject tags, Git/URL, protocol aliases
- * and POSIX/Windows paths — not merely a short denylist.
+ * Allowlist §5 (post-U168/U169): internal @zeus/* deps must be either
+ * (a) an exact registry semver, or (b) a canonical major-band
+ * `>=M.m.p <(M+1).0.0`. Reject `*`, tags, Git/URL, protocol aliases and
+ * POSIX/Windows paths — not merely a short denylist. Registry resolution
+ * always probes the minimum `M.m.p`.
  */
+function parseMajorBand(value) {
+  const match = String(value)
+    .trim()
+    .match(/^>=\s*(\d+)\.(\d+)\.(\d+)\s+<\s*(\d+)\.0\.0$/);
+  if (!match) return null;
+  const major = Number(match[1]);
+  const upperMajor = Number(match[4]);
+  if (upperMajor !== major + 1) return null;
+  const min = `${match[1]}.${match[2]}.${match[3]}`;
+  if (!semver.valid(min)) return null;
+  return { min, major, range: `>=${min} <${upperMajor}.0.0` };
+}
+
 function classifyZeusVersion(version) {
   const value = String(version).trim();
   if (!value) {
@@ -166,14 +181,24 @@ function classifyZeusVersion(version) {
   if (/^[A-Za-z]:[\\/]/.test(value) || /^\\\\/.test(value)) {
     return { ok: false, reason: 'Windows/absolute path' };
   }
-  // Dist-tags and other non-semver tokens (latest, next, …)
-  if (!semver.valid(value)) {
+  if (semver.valid(value)) {
+    return { ok: true, pin: value, mode: 'exact' };
+  }
+  const band = parseMajorBand(value);
+  if (band) {
     return {
-      ok: false,
-      reason: 'not an exact registry semver pin (tags/ranges rejected)'
+      ok: true,
+      pin: band.min,
+      mode: 'major-band',
+      range: band.range
     };
   }
-  return { ok: true, pin: value };
+  // Dist-tags and other non-canonical ranges (^, ~, ||, …)
+  return {
+    ok: false,
+    reason:
+      'not exact semver nor canonical major-band (>=M.m.p <(M+1).0.0); tags/other ranges rejected'
+  };
 }
 
 const registryViewCache = new Map();
@@ -314,14 +339,14 @@ function checkCandidate(name, entry, registry) {
     const classified = classifyZeusVersion(dependency.version);
     if (!classified.ok) {
       failures.push(
-        `${dependency.field}.${dependency.name}=${dependency.version}; expected exact registry semver pin (${classified.reason})`
+        `${dependency.field}.${dependency.name}=${dependency.version}; expected exact semver or major-band >=M.m.p <(M+1).0.0 (${classified.reason})`
       );
       continue;
     }
     const view = npmViewPinned(dependency.name, classified.pin, registry);
     if (!view.ok) {
       failures.push(
-        `${dependency.field}.${dependency.name}@${classified.pin} not resolvable on registry ${registry} (${view.code}: ${view.detail})`
+        `${dependency.field}.${dependency.name}@${classified.pin} (min of ${classified.mode}) not resolvable on registry ${registry} (${view.code}: ${view.detail})`
       );
     }
   }
@@ -362,7 +387,7 @@ function main() {
     );
   }
 
-  console.log('gate:publish-ready (WP-U165; P0 allowlist subset)');
+  console.log('gate:publish-ready (WP-U169; P0 allowlist · major-band)');
   console.log(`registry (.npmrc @zeus): ${registry}`);
   console.log(`measured: ${measuredCandidates.join(', ')}`);
   console.log(
