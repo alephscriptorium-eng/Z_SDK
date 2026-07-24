@@ -1,6 +1,6 @@
 {
   "name": "@zeus/force-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for DISK_03/FORCES: read-only force:// resources (registry, cards, scenes)",
   "type": "module",
   "main": "src/index.mjs",
