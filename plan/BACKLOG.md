@@ -19,6 +19,8 @@ Sprint 2 (ADDENDA + CAPA):
 canónicas en `WEBS/ENTREGA-CAPA/` (no copiar a `plan/`).
 **GO Sprint 3 / I50:** **D-33** · §Nota recibida · recepción **U142** ✅.
 **GO implementación U143 ∥ U144:** **D-34**.
+**Ratificación ex post U162 (acotada):** **D-41** (despachado sin GO;
+conservar auditoría; no precedente; no U163–U167).
 **Skills referencia versionada:** **D-35** (adoptar
 `@alephscript/skills-scriptorium@0.3.0`; `plan/roles/` copia operativa).
 **GO Sprint 4 — ejecución diferida D-35** (usuario · 2026-07-20):
@@ -27,14 +29,21 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO/IDLE · U162 ✅)
+## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO/IDLE · U162 ✅ · R7-Z FAIL)
 
 > **R6-Z PASS** (`vigilancia/z/GATE-R6-Z-PASS.md`). **Sprint 7 CERRADO /
 > IDLE:** U155–U161 ✅ (tip código U158 `e62a990` · CI `30071337545` ·
 > registry `89412677473`). **Post-cierre:** **U162** ✅ — inventario
 > 49/49 (29 publicados · 7 candidatos · 13 mantener privados), allowlist
 > explícita y plan U163–U167 propuesto; merge `696ffff` · CI
-> `30072427871`. Aviso:
+> `30072427871`. **Proceso:** U162 fue **despachado sin GO** de ronda;
+> custodio **ratifica ex post (acotado)** solo para conservar la auditoría
+> (**D-41** · no precedente · no autoriza U163–U167). **R7-Z FAIL** de
+> gobierno — acta
+> [ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md)
+> · reintento
+> [AVISO-R7-Z-reintento.md](REPORTES/entregas/AVISO-R7-Z-reintento.md).
+> Aviso cierre:
 > [AVISO-U162-cierre.md](REPORTES/entregas/AVISO-U162-cierre.md). Brief:
 > [WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
 > Reporte:
@@ -247,34 +256,40 @@ tipos en `@zeus/webrtc-signaling`. Paquete destino: **`@zeus/socket-core`**.
 
 ---
 
-## Post-Sprint 7 — auditoría publish (U162 ✅ · 2026-07-24)
+## Post-Sprint 7 — auditoría publish (U162 ✅ · despachado sin GO → ratificado ex post · 2026-07-24)
 
 Fuente (archivada en repo; espejo vigilancia):
 [ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md)
 (`vigilancia/z/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md`). Gate cierre Sprint 7:
 `vigilancia/z/GATE-R6-Z-PASS.md` (+ copia
 [GATE-R6-Z-PASS.md](REPORTES/entregas/GATE-R6-Z-PASS.md)). **Sprint 7
-permanece CERRADO / IDLE** — no reabre U155–U161. **GO implementación
-U162** (custodio · 2026-07-24). Frontera dura del WP: **cero** flip
-`private` · **cero** npm publish. DC-15 LOCAL-ONLY.
+permanece CERRADO / IDLE** — no reabre U155–U161. **U162** fue
+**despachado sin GO** de ronda (`854ed4e` afirmó GO inexistente); custodio
+**ratifica ex post (acotado)** solo para conservar la auditoría (**D-41** ·
+2026-07-24 · no precedente · no autoriza U163–U167). **R7-Z FAIL** de
+gobierno:
+[ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md).
+Frontera dura del WP: **cero** flip `private` · **cero** npm publish.
+DC-15 LOCAL-ONLY.
 
 ### WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus — ✅
 
 - ✅ **WP-U162 · Auditoría publish-ready y allowlist de paquetes Zeus** —
-  aceptado (orquestador · 2026-07-24 · GO custodio). Tip rama
-  `891379d` · merge `696ffff`. Est. L. Dep: post-U158 ✅ · Sprint 7 IDLE ·
-  R6-Z PASS. Fuente:
+  aceptado (orquestador · 2026-07-24 · **despachado sin GO → ratificado
+  ex post acotado D-41**). Tip rama `891379d` · merge `696ffff`. Est. L.
+  Dep: post-U158 ✅ · Sprint 7 IDLE · R6-Z PASS. Fuente:
   [REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md).
   Brief:
   [REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
   Reporte:
   [REPORTES/WP-U162-auditoria-publish-allowlist.md](REPORTES/WP-U162-auditoria-publish-allowlist.md)
-  (PASS). Fuente única:
+  (PASS técnico). Fuente única:
   [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **Resultado:** inventario
   reproducible 49/49 = 29 publicados + 7 candidatos + 13 privados;
   `npm view` y `npm pack --dry-run` medidos para P0/P1; gates OK.
-  Plan sugerido U163–U167 queda **sin GO / no encolado**. **CA:**
-  cumplidos. **Frontera:** cero cambios `private`, cero publish, cero
+  Plan sugerido U163–U167 queda **sin GO / no encolado**. **CA
+  técnicos:** cumplidos. **Proceso:** en falta admitida (R7-Z FAIL).
+  **Frontera:** cero cambios `private`, cero publish, cero
   workflows/changesets de release. **Demolición:** n/a. **Eje:** IV.
 
 ---

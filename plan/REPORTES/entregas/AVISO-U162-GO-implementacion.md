@@ -55,3 +55,14 @@ NO despachado · NO worktree · NO npm publish
 pedido custodio: GO implementación U162 + nueva ronda SOL
 DC-15: LOCAL-ONLY
 ```
+
+---
+
+## ADDENDA · incidente (2026-07-24 · no reescribe el pedido)
+
+Este aviso **pedía** GO; **no** lo otorgaba. El despacho posterior
+(`854ed4e` · “U162 🔶 GO implementación”) trató como GO un mensaje de chat
+**irregular / no válido** como GO previo de ronda SOL. Custodio ratifica
+ex post **solo** U162 (conservar auditoría) — ver
+[ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md)
+y **D-41**. No autoriza U163–U167.

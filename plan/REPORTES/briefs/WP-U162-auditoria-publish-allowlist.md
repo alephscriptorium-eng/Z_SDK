@@ -66,7 +66,13 @@ Reporte: plan/REPORTES/WP-U162-auditoria-publish-allowlist.md
   workflows de publish, tocar `packages/*/package.json` salvo lectura
 
 ## Notas
-- Dep: U158 ✅ · Sprint 7 CERRADO/IDLE · R6-Z PASS · **GO implementación**.
+- Dep: U158 ✅ · Sprint 7 CERRADO/IDLE · R6-Z PASS.
+- **Proceso (addenda 2026-07-24):** este WP fue **despachado sin GO** de
+  ronda; el “GO implementación” del chat / commit `854ed4e` **no** fue GO
+  previo legítimo. Custodio **ratifica ex post (acotado)** solo para
+  conservar la auditoría (**D-41** · no precedente · no autoriza
+  U163–U167). Ver
+  [ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](../entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md).
 - Estimación: L · Eje IV (gobierno paquetes).
 - No editar `plan/BACKLOG.md` (solo orquestador).
 - DC-15 LOCAL-ONLY.

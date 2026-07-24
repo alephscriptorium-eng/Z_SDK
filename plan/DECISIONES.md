@@ -484,6 +484,15 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   conector v0. Consecuencia: residual U93 de cola viva → cerrado;
   peercards a terceros pavimentados a nivel contrato.
 
+- **D-41 · 2026-07-24 · Ratificación ex post acotada U162 (no GO previo)**
+  (custodio). Tras **R7-Z FAIL** de gobierno: U162 fue despachado sin GO
+  de ronda válido (`854ed4e` afirmó GO inexistente). El custodio
+  **RATIFICA ex post U162 exclusivamente** para conservar la auditoría
+  ya realizada (merge `696ffff`). **No** es GO previo retroactivo; **no**
+  sienta precedente; **no** autoriza U163–U167. Correcciones = commits
+  nuevos / addendas (sin rewrite de historia). Acta:
+  [REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md).
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
