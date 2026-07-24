@@ -44,9 +44,10 @@ Reporte: plan/REPORTES/WP-U167-triage-blobstore-client.md
   console-monitor
 
 ## Notas
-- Estado: **⬜** · Ola A · deps: U162 ✅ (∥ U163)
-- **NO DESPACHAR** hasta R8-Z PASS + GO implementación custodio
+- Estado: **🔶** · Ola A · deps: U162 ✅ (∥ U163) · R8-Z PASS + GO Ola A
 - Estimación: M · Eje IV
 - Sidecar/blob live U100/U101 sigue diferido D-22 — no reabrir aquí
+- Frontera: sin flip `private` / sin changesets de pub / sin publish
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
 - DC-15 LOCAL-ONLY
+- No editar `plan/BACKLOG.md` (solo orquestador)

@@ -41,11 +41,9 @@ Reporte: plan/REPORTES/WP-U163-poc-publish-ready-linea-system.md
   `release.yml`, tocar otros candidatos P0/P1
 
 ## Notas
-- Estado: **⬜** · Ola A · deps: U162 ✅
-- **NO DESPACHAR** hasta R8-Z PASS + GO implementación custodio
+- Estado: **🔶** · Ola A · deps: U162 ✅ · R8-Z PASS + GO Ola A
 - Estimación: M · Eje IV
-- Frontera Sprint 8 planificación: sin workers / sin private / sin
-  changesets de pub / sin publish
+- Frontera: sin flip `private` / sin changesets de pub / sin publish
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
 - DC-15 LOCAL-ONLY
 - No editar `plan/BACKLOG.md` (solo orquestador)
