@@ -35,5 +35,5 @@
   "files": [
     "src"
   ],
-  "private": true
+  "private": false
 }
