@@ -66,7 +66,6 @@ publish-ready. **No** basta quitar `private`.
 | ------- | ---- |
 | `@zeus/linea-editor` | `packages/mesh/linea-editor` |
 | `@zeus/console-monitor` | `packages/mesh/console-monitor` |
-| `@zeus/blobstore-client` | `packages/mesh/blobstore-client` |
 
 Cualquier otro mesh no listado aquí = clase **D/E/G** → **mantener privado**.
 
@@ -79,6 +78,12 @@ visores, Angular, monitores visuales, demos y harnesses — p. ej.
 `player-ui`, `editor-ui`, `operator-ui`, `threejs-ui-lib`,
 `webrtc-viewer`, `3d-monitor`, `blob-sync-harness`, `cache-browser`,
 `firehose-browser`, `player-3d-ui`, `oasis-webrtc`, y fixtures.
+
+### Democión documentada (WP-U167)
+
+| paquete | path | justificación |
+| ------- | ---- | ------------- |
+| `@zeus/blobstore-client` | `packages/mesh/blobstore-client` | Hermano producto/harness de U100/U101: dep runtime de `@zeus/blob-sync-harness` (clase **E**, E404 en registry); tarball incluye `fixture-sidecar` / `run-fixture` / `test/`; live sidecar `ZEUS_BLOB_*` **diferido D-22**. No es candidato clase **C** mientras el plano ops no exista y el acoplamiento a harness persista. Re-evaluación = enmienda explícita aquí + WP publish-ready + GO (no ampliar P0 por analogía). |
 
 Para mover un paquete de «mantener privado» a candidato o publicable:
 
