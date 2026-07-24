@@ -39,7 +39,7 @@ Preparación de publicación P0×4 **sin** publish real:
 $ npm run release:changeset-dry
 release:changeset-dry — no publish, restore after verify
 No pending changesets under .changeset/*.md
-exit 0
+# exit 1 sin changesets pendientes = esperado (U171 no crea changesets de pub)
 ```
 
 ### Estado P0×4 (manifests)
