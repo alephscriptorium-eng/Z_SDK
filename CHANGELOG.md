@@ -16,6 +16,9 @@ prose.
 
 ### Changed
 
+- Sprint 8 Ola B — corrección de planificación post-R9-Z: U165 solo lee
+  allowlist; U166 posee enmiendas P1; orden `U164 ∥ U166` → U165 último
+  + re-gate; U164–U166 siguen ⬜ (pedido R10-Z; sin GO implementación).
 - Baseline de skills `@alephscript/skills-scriptorium` **0.3.3 → 0.3.4**
   (rango `0.x`, D-36; mecánico sin WP). 0.3.4 resuelve 3/4 puntos del
   handoff de zeus (semver DC-22, gate gobierno DC-23, back-links tema

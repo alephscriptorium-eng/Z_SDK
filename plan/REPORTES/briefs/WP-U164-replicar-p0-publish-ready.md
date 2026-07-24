@@ -8,7 +8,7 @@ Worktree: C:\S_LAB\.worktrees\z\wp-u164-replicar-p0-publish-ready
 Reporte: plan/REPORTES/WP-U164-replicar-p0-publish-ready.md
 
 ## Lecturas
-- plan/PUBLISH-ALLOWLIST.md §3 P0 · §5
+- plan/PUBLISH-ALLOWLIST.md §3 P0 · §5 (**lectura**; no enmendar §3)
 - Brief + reporte U163 (plantilla POC)
 - plan/REPORTES/entregas/REPLAN-2026-07-24-sprint8.md
 - `packages/mesh/{linea-firehose,force-system,ssb-system}/package.json`
@@ -22,7 +22,7 @@ Reporte: plan/REPORTES/WP-U164-replicar-p0-publish-ready.md
    (o heredar patrón U163 con justificación).
 4. Tabla de evidencia pack dry-run ×3 en el reporte.
 5. **No** flip `private`, **no** publish, **no** changesets de
-   publicación, **no** `release.yml`.
+   publicación, **no** `release.yml`, **no** editar allowlist.
 
 ## CA
 - Tres paquetes con checklist §5 medido (pack dry-run literal).
@@ -36,13 +36,15 @@ Reporte: plan/REPORTES/WP-U164-replicar-p0-publish-ready.md
 - `packages/mesh/force-system/**`
 - `packages/mesh/ssb-system/**`
 - reporte `plan/REPORTES/`
-- **Prohibido:** private flip, publish, changesets de pub, P1, linea-system
+- **Prohibido:** private flip, publish, changesets de pub, P1,
+  allowlist/enmiendas (**U166**), gate pre-pub (**U165**), linea-system
   (salvo lectura)
 
 ## Notas
-- Estado: **⬜** · Ola B · deps: **U163**
-- **NO DESPACHAR** hasta R8-Z PASS + GO implementación + U163 ✅
+- Estado: **⬜** · Ola B · deps: **U163 ✅** (∥ **U166**; **antes** de
+  aceptar U165)
+- Orden Ola B: `U164 ∥ U166` primero → luego U165 (último + re-gate)
+- **NO DESPACHAR** hasta **R10-Z PASS** + GO implementación Ola B
 - Estimación: M · Eje IV
-- Paralelo con U165 ∥ U166 tras U163
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
 - DC-15 LOCAL-ONLY

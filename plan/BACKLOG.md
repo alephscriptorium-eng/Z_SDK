@@ -29,16 +29,18 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 8 Ola A ✅ · pedir R9-Z)
+## Remate — estado swarm (2026-07-24 · Sprint 8 Ola A ✅ · pedir R10-Z)
 
-> **Ola A CERRADA** · **U163 ✅ ∥ U167 ✅** (merge + gobierno; tip código
-> `f46743b`). Aviso R9-Z:
-> [AVISO-R9-Z-ola-a-cerrada.md](REPORTES/entregas/AVISO-R9-Z-ola-a-cerrada.md)
-> · espejo `vigilancia/z/`. **R8-Z PASS** autorizó solo Ola A; GO
-> implementación Ola A ejercido y cerrado. Frontera dura intacta: **cero**
-> flip `private` · **cero** changesets de publicación · **cero**
-> `npm publish`. **U164–U166** ⬜ **sin GO** (Ola B retenida hasta R9-Z
-> PASS + GO). Replan:
+> **Ola A CERRADA** · **U163 ✅ ∥ U167 ✅** (tip código `f46743b`).
+> **R9-Z PASS** archivado:
+> [GATE-R9-Z-PASS.md](REPORTES/entregas/GATE-R9-Z-PASS.md) · espejo
+> `vigilancia/z/`. Corrección plan Ola B aplicada (sin workers): **U165**
+> solo **lee** allowlist; **U166** posee enmiendas P1; orden
+> `U164 ∥ U166` → **U165** último + re-gate tras integrar U164+U166.
+> Pedido: [AVISO-R10-Z-ola-b-replan.md](REPORTES/entregas/AVISO-R10-Z-ola-b-replan.md).
+> Frontera dura intacta: **cero** flip `private` · **cero** changesets
+> de pub · **cero** `npm publish`. **U164–U166** ⬜ **sin GO** (0 🔶;
+> retenidos hasta **R10-Z PASS** + GO Ola B). Replan:
 > [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
 > **U162** ✅ (D-41 · no precedente). **Sprint 7 CERRADO / IDLE.**
 > Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). DC-15 LOCAL-ONLY.
@@ -105,13 +107,14 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
 | **Sprint 8 A** — publish-ready mesh (Ola A) | **U163 ∥ U167** | ✅ |
-| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ⬜ · sin GO |
+| **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ⬜ · sin GO · pedir R10-Z |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno (Ola A cerrada; 0 🔶).
-**Pendiente (sin GO):** **U164–U166** ⬜ (Ola B retenida hasta R9-Z + GO).
+**En curso:** ninguno (Ola A cerrada; corrección plan Ola B; 0 🔶).
+**Pendiente (sin GO):** **U164–U166** ⬜ (Ola B retenida hasta R10-Z +
+GO).
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -125,22 +128,24 @@ economía CI) — ver triage U142.
 
 ---
 
-## Sprint 8 — publish-ready mesh (Ola A ✅ · 2026-07-24 · U163 ∥ U167)
+## Sprint 8 — publish-ready mesh (Ola A ✅ · Ola B plan corregido · 2026-07-24)
 
-Fuente: plan U162 + allowlist + **R8-Z PASS** (solo Ola A) + **GO
-implementación Ola A** custodio (2026-07-24). Detalle olas/deps:
+Fuente: plan U162 + allowlist + **R8-Z PASS** (Ola A) + **GO
+implementación Ola A** + **R9-Z PASS** (cierre Ola A) + corrección plan
+Ola B (custodio). Detalle olas/deps:
 [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
-Gate previo: `vigilancia/z/GATE-R8-Z-PASS.md`. Pedido cierre:
-[AVISO-R9-Z-ola-a-cerrada.md](REPORTES/entregas/AVISO-R9-Z-ola-a-cerrada.md).
+Gates: [GATE-R9-Z-PASS.md](REPORTES/entregas/GATE-R9-Z-PASS.md) ·
+`vigilancia/z/GATE-R8-Z-PASS.md`. Pedido: **R10-Z**
+([AVISO-R10-Z-ola-b-replan.md](REPORTES/entregas/AVISO-R10-Z-ola-b-replan.md)).
 
 **Fronteras duras (hasta GO publish aparte):** sin flip `private` ·
-sin changesets de publicación · sin `npm publish`. **U164–U166** sin GO.
-**No** reabre U162 como GO previo legítimo (D-41).
+sin changesets de publicación · sin `npm publish`. **U164–U166** sin GO
+(0 🔶 · cero workers). **No** reabre U162 como GO previo legítimo (D-41).
 
 | ola | WPs | deps | paralelismo |
 | --- | --- | ---- | ----------- |
 | **A** | U163 · U167 | U162 ✅ | U163 ∥ U167 (**✅ cerrada**) |
-| **B** | U164 · U165 · U166 | U163 ✅ | U164 ∥ U165 ∥ U166 (**sin GO**) |
+| **B** | U164 · U166 · U165 | U163 ✅ | `U164 ∥ U166` → **U165** último + re-gate (**sin GO**) |
 | Publish | — | GO aparte | private + changesets de pub + npm publish |
 
 ### WP-U163 · POC publish-ready `@zeus/linea-system` — ✅
@@ -159,31 +164,36 @@ sin changesets de publicación · sin `npm publish`. **U164–U166** sin GO.
 ### WP-U164 · Replicar P0 (firehose / force / ssb) — ⬜
 
 - ⬜ **WP-U164 · Replicar P0: linea-firehose, force-system, ssb-system**
-  — encolado (orquestador / 2026-07-24). Est. M. Dep: **U163 ✅**. Ola B.
-  Brief:
+  — encolado (orquestador / 2026-07-24 · plan Ola B corregido). Est. M.
+  Dep: **U163 ✅** (∥ **U166**; antes de aceptar U165). Ola B. Brief:
   [REPORTES/briefs/WP-U164-replicar-p0-publish-ready.md](REPORTES/briefs/WP-U164-replicar-p0-publish-ready.md).
   **Qué:** mismo checklist POC ×3; ssb sin fixtures en tarball.
-  **Fuera:** private · publish · changesets de pub. **Eje:** IV.
-  **Sin GO** (retenido hasta R9-Z + GO Ola B).
+  **Fuera:** private · publish · changesets de pub · allowlist · gate
+  U165. **Eje:** IV. **Sin GO** (retenido hasta R10-Z + GO Ola B).
 
 ### WP-U165 · Gate pre-publicación mesh allowlist — ⬜
 
 - ⬜ **WP-U165 · Gate pre-publicación mesh allowlist** — encolado
-  (orquestador / 2026-07-24). Est. S–M. Dep: **U163 ✅**. Ola B. Brief:
+  (orquestador / 2026-07-24 · plan Ola B corregido). Est. S–M. Dep:
+  **U163 ✅** + aceptación **tras U164 ✅ + U166 ✅** (merge/✅
+  **último**). Ola B. Brief:
   [REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md).
   **Qué:** script/CI — files, types, semver ≠ `*`, registry C8, dry-run
-  pack. **Fuera:** publish · changesets de pub · ampliar §3 sin
-  enmienda. **Eje:** IV + C8. **Sin GO** (retenido).
+  pack; **lee** [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md) (no edita).
+  **Re-gate** obligatorio tras integrar U164+U166. **Fuera:** publish ·
+  changesets de pub · **enmendar allowlist** (dueño = U166). **Eje:**
+  IV + C8. **Sin GO** (retenido hasta R10-Z + GO).
 
 ### WP-U166 · Triage P1 linea-editor + console-monitor — ⬜
 
 - ⬜ **WP-U166 · Triage P1 linea-editor + console-monitor** — encolado
-  (orquestador / 2026-07-24). Est. M. Dep: **U163 ✅** (∥ U164 ∥ U165).
-  Ola B. Brief:
+  (orquestador / 2026-07-24 · plan Ola B corregido). Est. M. Dep:
+  **U163 ✅** (∥ **U164**; antes de aceptar U165). Ola B. Brief:
   [REPORTES/briefs/WP-U166-triage-p1-linea-editor-console-monitor.md](REPORTES/briefs/WP-U166-triage-p1-linea-editor-console-monitor.md).
-  **Qué:** exports/console-monitor; decidir publicabilidad o deslistar.
-  **Fuera:** private · publish · changesets de pub. **Eje:** IV.
-  **Sin GO** (retenido).
+  **Qué:** exports/console-monitor; decidir publicabilidad o deslistar;
+  **posee** enmiendas allowlist/audit P1. **Fuera:** private · publish ·
+  changesets de pub · gate U165 · P0. **Eje:** IV. **Sin GO**
+  (retenido hasta R10-Z + GO).
 
 ### WP-U167 · Triage P1 blobstore-client (o deslistar) — ✅
 

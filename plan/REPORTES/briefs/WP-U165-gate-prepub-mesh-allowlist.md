@@ -8,7 +8,7 @@ Worktree: C:\S_LAB\.worktrees\z\wp-u165-gate-prepub-mesh-allowlist
 Reporte: plan/REPORTES/WP-U165-gate-prepub-mesh-allowlist.md
 
 ## Lecturas
-- plan/PUBLISH-ALLOWLIST.md §3 · §5
+- plan/PUBLISH-ALLOWLIST.md §3 · §5 (**solo lectura** — no editar)
 - `scripts/audit-publish-allowlist.mjs` (U162)
 - plan/REPORTES/entregas/REPLAN-2026-07-24-sprint8.md
 - plan/PRACTICAS.md §6 · C8
@@ -26,7 +26,7 @@ Reporte: plan/REPORTES/WP-U165-gate-prepub-mesh-allowlist.md
 4. Opcional: extender `release:dry` / audit existente — justificar en
    reporte.
 5. **No** publish, **no** flip `private`, **no** changesets de
-   publicación, **no** ampliar §3 sin enmienda allowlist.
+   publicación, **no** editar `plan/PUBLISH-ALLOWLIST.md`.
 
 ## CA
 - Comando reproducible (salida literal en reporte) que falla si un
@@ -35,18 +35,25 @@ Reporte: plan/REPORTES/WP-U165-gate-prepub-mesh-allowlist.md
 - Cableado CI o npm script documentado; sin job de publish.
 - Frontera: cero private / cero publish / cero changesets de pub.
 - `npm run gates` OK si toca `scripts/`.
+- **Re-gate integrado (obligatorio antes de ✅):** tras merge de
+  **U164 + U166** en `main`, rebase/integrar esa base y **re-ejecutar**
+  el gate sobre el resultado conjunto; evidencia literal en reporte.
+  Sin ese re-gate → no aceptar U165 ni cerrar Ola B.
 
 ## ALCANCE_DIFF
 - `scripts/**` (gate nuevo o extensión audit)
 - `package.json` (npm script)
 - `.github/workflows/**` solo si añade check **sin** publish
-- `plan/` (reporte; allowlist solo si documenta uso del gate)
-- **Prohibido:** flips `private`, `.changeset/**` de release, `npm publish`
+- `plan/REPORTES/` (reporte)
+- **Prohibido:** `plan/PUBLISH-ALLOWLIST.md` (solo lectura; enmiendas =
+  **U166**), flips `private`, `.changeset/**` de release, `npm publish`
 
 ## Notas
-- Estado: **⬜** · Ola B · deps: **U163** (plantilla + semántica P0)
-- **NO DESPACHAR** hasta R8-Z PASS + GO implementación + U163 ✅
+- Estado: **⬜** · Ola B · deps: **U163 ✅** + **aceptación tras
+  U164 ✅ + U166 ✅** (merge/✅ **último** de Ola B)
+- Orden Ola B: despacho/obra `U164 ∥ U166` primero → luego **U165**
+  (secuencial al final) + re-gate integrado
+- **NO DESPACHAR** hasta **R10-Z PASS** + GO implementación Ola B
 - Estimación: S–M · Eje IV + C8
-- Paralelo con U164 ∥ U166 tras U163
 - MUNDO_RAIZ = C:\S_LAB\z-sdk · WORKTREE_BASE = C:\S_LAB\.worktrees\z
 - DC-15 LOCAL-ONLY
