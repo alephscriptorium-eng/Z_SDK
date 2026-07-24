@@ -45,7 +45,7 @@ publicación ni `npm publish` (GO publish aparte).
 | dato | valor |
 | ---- | ----- |
 | Tip código Ola A (merge U167) | `f46743bde5b4893763b5d56aaf417ca908233634` |
-| Tip gobierno (BACKLOG ✅ + aviso) | *(este commit / tip-fill tras push)* |
+| Tip gobierno (BACKLOG ✅ + aviso) | `969e2cae781137f381a8168f3a2289abef4ebecc` |
 | Push | normal (sin force) |
 | CI | `30074325894` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30074325894 (SHA `f46743b`) |
 | Release | `30074325599` **success** — https://github.com/alephscriptorium-eng/Z_SDK/actions/runs/30074325599 (SHA `f46743b`; job changesets: no unpublished / sin publish nuevo) |
@@ -82,7 +82,7 @@ Emitir **`R9-Z PASS`** si verifica:
 ```text
 AVISO R9-Z: Sprint 8 Ola A ✅ (U163 ✅ ∥ U167 ✅)
 tip código: f46743bde5b4893763b5d56aaf417ca908233634
-tip gobierno: (HEAD tras push del commit de este aviso)
+tip gobierno: 969e2cae781137f381a8168f3a2289abef4ebecc
 CI: 30074325894 success (f46743b)
 Release: 30074325599 success (f46743b) — no unpublished / cero publish nuevo
 smoke registry job: 89421664511 success (no skip)
