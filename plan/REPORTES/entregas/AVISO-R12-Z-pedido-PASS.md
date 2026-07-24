@@ -26,12 +26,11 @@ decida.
 
 | dato | valor |
 | ---- | ----- |
-| Tip pedido (custodio) | `3b09213` |
-| HEAD local | `3b0921354935c83cb58c3781d47c9cd6fef8ae69` |
-| `origin/main` | `3b0921354935c83cb58c3781d47c9cd6fef8ae69` |
-| Divergencia | **ninguna** — HEAD = `origin/main` = `3b09213` |
+| Tip pedido (custodio) | `3b09213` = `3b0921354935c83cb58c3781d47c9cd6fef8ae69` |
+| Verificación pre-aviso | HEAD = `origin/main` = `3b09213` (**sin divergencia**) |
 | Enmienda DA-S21 | `c22dd6569c0f291fc72991718ea5e5b5e41d9857` |
-| Tip aviso (este fichero) | `0e297a3` |
+| Tip aviso (cuerpo) | `0e297a3` |
+| Tip gobierno (HEAD tras este aviso) | `<pendiente tip-fill>` |
 
 ## PAUSA / frontera (literal)
 
