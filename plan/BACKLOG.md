@@ -29,31 +29,21 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 
 ---
 
-## Remate — estado swarm (2026-07-24 · Sprint 7 CERRADO/IDLE · U162 ✅ · R7-Z FAIL)
+## Remate — estado swarm (2026-07-24 · Sprint 8 PLANIFICACIÓN/IDLE · R7-Z PASS · pedido R8-Z)
 
-> **R6-Z PASS** (`vigilancia/z/GATE-R6-Z-PASS.md`). **Sprint 7 CERRADO /
-> IDLE:** U155–U161 ✅ (tip código U158 `e62a990` · CI `30071337545` ·
-> registry `89412677473`). **Post-cierre:** **U162** ✅ — inventario
-> 49/49 (29 publicados · 7 candidatos · 13 mantener privados), allowlist
-> explícita y plan U163–U167 propuesto; merge `696ffff` · CI
-> `30072427871`. **Proceso:** U162 fue **despachado sin GO** de ronda;
-> custodio **ratifica ex post (acotado)** solo para conservar la auditoría
-> (**D-41** · no precedente · no autoriza U163–U167). **R7-Z FAIL** de
-> gobierno — acta
-> [ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md)
-> · reintento
-> [AVISO-R7-Z-reintento.md](REPORTES/entregas/AVISO-R7-Z-reintento.md).
-> Aviso cierre:
-> [AVISO-U162-cierre.md](REPORTES/entregas/AVISO-U162-cierre.md). Brief:
-> [WP-U162-auditoria-publish-allowlist.md](REPORTES/briefs/WP-U162-auditoria-publish-allowlist.md).
-> Reporte:
-> [WP-U162-auditoria-publish-allowlist.md](REPORTES/WP-U162-auditoria-publish-allowlist.md).
-> Fuente:
-> [ADDENDA-R5-Z-AUDITORIA-PUBLISH.md](REPORTES/entregas/ADDENDA-R5-Z-AUDITORIA-PUBLISH.md).
-> Frontera: **cero** npm publish · **cero** flip `private` en U162.
-> Replan:
-> [REPLAN-2026-07-23-sprint7-ts-extraccion.md](REPORTES/entregas/REPLAN-2026-07-23-sprint7-ts-extraccion.md).
-> Acta Sprint 7:
+> **R7-Z PASS** (`vigilancia/z/GATE-R7-Z-PASS.md`) · tip base
+> `42e55b3`. **GO planificación Sprint 8** (custodio): encolar
+> **U163–U167** como ⬜ + briefs/deps/olas; **sin workers**, **sin**
+> cambios `private`, **sin** changesets de publicación, **sin** publish.
+> Pedido gate: [AVISO-R8-Z-sprint8-plan.md](REPORTES/entregas/AVISO-R8-Z-sprint8-plan.md)
+> · replan:
+> [REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
+> **No** es GO de implementación. **U162** ✅ conservado por ratificación
+> ex post acotada (**D-41** · no precedente · no GO previo legítimo).
+> **Sprint 7 CERRADO / IDLE:** U155–U161 ✅ · U162 ✅ (merge `696ffff`).
+> Acta incidente:
+> [ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md](REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md).
+> Allowlist: [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). Acta Sprint 7:
 > [ACTA-CIERRE-SPRINT7-2026-07-24.md](REPORTES/entregas/ACTA-CIERRE-SPRINT7-2026-07-24.md).
 > DC-15 LOCAL-ONLY. Skills espejo `@0.8.0` (no commitear `.claude/skills/`).
 >
@@ -117,21 +107,90 @@ probado: emmanuel `WP-I60` (activación skill, 0.2.0) adaptado a 0.3.0.
 | **Sprint 7 A** — ts-compat (types subpaths + d.ts + smoke TS) | **U155–U158** | ✅ U155–U158 · CERRADO |
 | **Sprint 7 B** — extracción `@zeus/socket-core` / corte mcp-core | **U159–U161** | ✅ U159–U161 |
 | **Post-Sprint 7** — auditoría publish-ready / allowlist | **U162** | ✅ |
+| **Sprint 8** — publish-ready mesh (planificación) | **U163–U167** | ⬜ · IDLE obra |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
 
-**En curso:** ninguno — Sprint 7 y frente U162 **IDLE**; 0 🔶.
-**Pendiente:** ninguno autorizado; U163–U167 son propuestas sin GO.
+**En curso:** ninguno — Sprint 8 **planificación / IDLE de obra**; 0 🔶;
+0 workers.
+**Pendiente (encolado, sin GO implementación):** **U163–U167** ⬜.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
 **Aceptado:** **U162** ✅ · **U158** ✅ · **U161** ✅ · **U160** ✅ · **U157** ✅ · **U159** ✅ ·
 **U156** ✅ · **U155** ✅ · **U154** ✅ · **U153** ✅ · **U151** ✅ ·
 **U152** ✅ · **U150** ✅ · **U149** ✅ · sprints 1–5 (ver histórico).
-**D-35** / **D-37**.
+**D-35** / **D-37** · **D-41** (U162 ex post acotado).
 
 **NO subir:** ramas `wp/*` mergeadas · `claude/*`.
+
+---
+
+## Sprint 8 — publish-ready mesh (PLANIFICACIÓN / IDLE · 2026-07-24 · U163–U167 ⬜)
+
+Fuente: plan U162 + allowlist + **GO planificación** custodio (vía
+`GATE-R7-Z-PASS`). Detalle olas/deps:
+[REPLAN-2026-07-24-sprint8.md](REPORTES/entregas/REPLAN-2026-07-24-sprint8.md).
+Pedido SOL: [AVISO-R8-Z-sprint8-plan.md](REPORTES/entregas/AVISO-R8-Z-sprint8-plan.md).
+
+**Fronteras duras (esta ronda y hasta GO implementación + GO publish):**
+sin workers / no despachar · sin flip `private` · sin changesets de
+publicación · sin `npm publish`. **No** reabre U162 como GO previo
+legítimo (D-41).
+
+| ola | WPs | deps | paralelismo |
+| --- | --- | ---- | ----------- |
+| **A** | U163 · U167 | U162 ✅ | U163 ∥ U167 (tras GO implementación) |
+| **B** | U164 · U165 · U166 | U163 | U164 ∥ U165 ∥ U166 |
+| Publish | — | GO aparte | private + changesets de pub + npm publish |
+
+### WP-U163 · POC publish-ready `@zeus/linea-system` — ⬜
+
+- ⬜ **WP-U163 · POC publish-ready `@zeus/linea-system`** — encolado
+  (orquestador / 2026-07-24 · GO planificación). Est. M. Dep: U162 ✅.
+  Ola A. Brief:
+  [REPORTES/briefs/WP-U163-poc-publish-ready-linea-system.md](REPORTES/briefs/WP-U163-poc-publish-ready-linea-system.md).
+  **Qué:** plantilla P0 — `publishConfig`, `files`, pinear `@zeus/*`,
+  types/JS-only, pack dry-run. **Fuera:** private · publish · changesets
+  de pub. **Eje:** IV. **No despachar** hasta R8-Z PASS + GO
+  implementación.
+
+### WP-U164 · Replicar P0 (firehose / force / ssb) — ⬜
+
+- ⬜ **WP-U164 · Replicar P0: linea-firehose, force-system, ssb-system**
+  — encolado (orquestador / 2026-07-24). Est. M. Dep: **U163**. Ola B.
+  Brief:
+  [REPORTES/briefs/WP-U164-replicar-p0-publish-ready.md](REPORTES/briefs/WP-U164-replicar-p0-publish-ready.md).
+  **Qué:** mismo checklist POC ×3; ssb sin fixtures en tarball.
+  **Fuera:** private · publish · changesets de pub. **Eje:** IV.
+
+### WP-U165 · Gate pre-publicación mesh allowlist — ⬜
+
+- ⬜ **WP-U165 · Gate pre-publicación mesh allowlist** — encolado
+  (orquestador / 2026-07-24). Est. S–M. Dep: **U163**. Ola B. Brief:
+  [REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md](REPORTES/briefs/WP-U165-gate-prepub-mesh-allowlist.md).
+  **Qué:** script/CI — files, types, semver ≠ `*`, registry C8, dry-run
+  pack. **Fuera:** publish · changesets de pub · ampliar §3 sin
+  enmienda. **Eje:** IV + C8.
+
+### WP-U166 · Triage P1 linea-editor + console-monitor — ⬜
+
+- ⬜ **WP-U166 · Triage P1 linea-editor + console-monitor** — encolado
+  (orquestador / 2026-07-24). Est. M. Dep: **U163** (∥ U164 ∥ U165).
+  Ola B. Brief:
+  [REPORTES/briefs/WP-U166-triage-p1-linea-editor-console-monitor.md](REPORTES/briefs/WP-U166-triage-p1-linea-editor-console-monitor.md).
+  **Qué:** exports/console-monitor; decidir publicabilidad o deslistar.
+  **Fuera:** private · publish · changesets de pub. **Eje:** IV.
+
+### WP-U167 · Triage P1 blobstore-client (o deslistar) — ⬜
+
+- ⬜ **WP-U167 · Triage P1 blobstore-client (o deslistar)** — encolado
+  (orquestador / 2026-07-24). Est. M. Dep: U162 ✅. Ola A (∥ U163).
+  Brief:
+  [REPORTES/briefs/WP-U167-triage-blobstore-client.md](REPORTES/briefs/WP-U167-triage-blobstore-client.md).
+  **Qué:** desacoplar harness **o** enmendar allowlist a privado.
+  **Fuera:** private · publish · changesets de pub. **Eje:** IV.
 
 ---
 
@@ -287,10 +346,11 @@ DC-15 LOCAL-ONLY.
   [PUBLISH-ALLOWLIST.md](PUBLISH-ALLOWLIST.md). **Resultado:** inventario
   reproducible 49/49 = 29 publicados + 7 candidatos + 13 privados;
   `npm view` y `npm pack --dry-run` medidos para P0/P1; gates OK.
-  Plan sugerido U163–U167 queda **sin GO / no encolado**. **CA
-  técnicos:** cumplidos. **Proceso:** en falta admitida (R7-Z FAIL).
-  **Frontera:** cero cambios `private`, cero publish, cero
-  workflows/changesets de release. **Demolición:** n/a. **Eje:** IV.
+  Plan U163–U167 → **encolado ⬜** bajo GO planificación Sprint 8
+  (no GO implementación; ver § Sprint 8). **CA técnicos:** cumplidos.
+  **Proceso:** R7-Z FAIL → corrección → **R7-Z PASS**. **Frontera U162:**
+  cero cambios `private`, cero publish, cero workflows/changesets de
+  release. **Demolición:** n/a. **Eje:** IV.
 
 ---
 
