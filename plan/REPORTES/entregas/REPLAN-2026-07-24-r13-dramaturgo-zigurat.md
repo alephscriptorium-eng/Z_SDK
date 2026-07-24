@@ -1,13 +1,21 @@
 # REPLAN · R13-Z · tercer frente Dramaturgo + Zigurat (planificación · hold operativo)
 
+> **HISTÓRICO / SUPERADO (secuencia · 2026-07-24 post-adopción):** los
+> tramos «R12 pedido / reintento vigente / no pedir R13 / espera R12» de
+> este REPLAN quedan **superados** por **R12-Z PASS** + adopción
+> `skills-scriptorium@0.10.0` (tip `b348c59` · CI `30128202345` · Docs
+> `30128202336`). El plan de WPs (U73 · U172–U177 · camino A) **sigue
+> vigente**. Acto: [AVISO-R13-Z-pedido-PASS.md](AVISO-R13-Z-pedido-PASS.md).
+> **PAUSA** · **sin despacho**.
+
 | dato | valor |
 | ---- | ----- |
 | Fecha | 2026-07-24 |
 | Rol | orquestador-Z |
 | Autorización | **GO custodio 2026-07-24 · DA-S21 asentada · `2eb4784`** (**D-43**) — solo planificación |
 | Estado autoridad | **DA-S21 · `2eb4784` asentada** — HOLD de autoridad **levantado** |
-| Estado gate | **R13-Z hold operativo** — secuencia **R12-Z PASS → petición R13-Z → sin despacho**; **no** pedir R13-Z PASS antes de R12-Z PASS |
-| Gate previo | R12-Z **pedido vigente / reintento** ([AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md)) · PAUSA / CORTE TÉCNICO vigente |
+| Estado gate | **R13-Z petición emitida** (post R12 PASS + adopción) — hold operativo = **PAUSA** + **sin despacho** hasta R13-Z PASS + GO impl. |
+| Gate previo | **R12-Z PASS** vigente + adopción 0.10.0 (`b348c59`) · (histórico: pedido/reintento [AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md)) · PAUSA vigente |
 | Proyección | DC-15 **LOCAL-ONLY** |
 
 ## Mandato (fronteras duras)
@@ -16,9 +24,11 @@
 GO custodio 2026-07-24 (DA-S21 asentada · 2eb4784): planificar el tercer
 frente Dramaturgo + Zigurat. Prep permitida: replan, briefs, olas,
 entradas ⬜ y épica U73 ⬜. Sin workers, sin 🔶, sin implementación,
-sin publicación. HOLD de autoridad levantado. Hold operativo = PAUSA +
-espera R12. Tercer frente bloqueado hasta: R12 cerrado + R13-Z PASS +
-GO implementación aparte. Petición R13-Z solo tras R12-Z PASS.
+sin publicación. HOLD de autoridad levantado.
+Hold operativo vigente = PAUSA + sin despacho (tramo «espera R12» =
+HISTÓRICO/SUPERADO tras R12-Z PASS + adopción 0.10.0).
+Tercer frente bloqueado hasta: R12 cerrado + R13-Z PASS +
+GO implementación aparte. Petición R13-Z = acto vigente post-PASS.
 ```
 
 ## Fuentes
@@ -113,9 +123,9 @@ simultáneos; U172–U177 no tocan gate ni manifests de publish.
 | gate | significado |
 | ---- | ----------- |
 | **DA-S21 · `2eb4784`** | Asentada (scriptorium) — HOLD de **autoridad** levantado |
-| **R12-Z** | planificación Sprint 9 (pedido / reintento vigente) |
-| cierre R12 | U168–U171 ✅ + gates; precondición del tercer frente |
-| **R13-Z** | SOL valida este plan — hold **operativo**; petición solo tras R12-Z PASS |
+| **R12-Z** | **PASS** vigente (planificación Sprint 9); pedido/reintento = histórico |
+| cierre R12 | U168–U171 ⬜ + gates; precondición de **implementación** del tercer frente (no bloquea pedir R13-Z PASS de plan) |
+| **R13-Z** | SOL valida este plan — **petición emitida**; hold **operativo** = PAUSA + sin despacho |
 | GO implementación | custodio; habilita 🔶 + despacho del frente |
 
 ## Nota de runtime (despachos futuros R13)
@@ -138,6 +148,7 @@ enmascarados clase U141/D-32) sobre cada cara/sección §WP relevante =
   GO publish condicionado **D-42** asentado.
 - **0 🔶 · cero workers · cero publish · tercer frente sin abrir.**
 - PAUSA / CORTE TÉCNICO respetada (solo gobierno de plan).
-- R13-Z: hold **operativo** — petición a SOL **solo tras R12-Z PASS**.
-- Aviso R13: [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md).
-- Pedido R12 reintento: [AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md).
+- R13-Z: **petición emitida** (tramo «solo tras R12» = histórico/superado).
+- Aviso hold (histórico): [AVISO-R13-Z-plan-hold.md](AVISO-R13-Z-plan-hold.md).
+- Pedido R13 vigente: [AVISO-R13-Z-pedido-PASS.md](AVISO-R13-Z-pedido-PASS.md).
+- Pedido R12 (histórico): [AVISO-R12-Z-pedido-PASS.md](AVISO-R12-Z-pedido-PASS.md).

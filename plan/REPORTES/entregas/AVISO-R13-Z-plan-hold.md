@@ -1,8 +1,17 @@
 # AVISO · orquestador-Z → custodio / SOL · plan actualizado (hold operativo · DA-S21 levantado)
 
+> **HISTÓRICO / SUPERADO (2026-07-24).** Este aviso documentaba el hold
+> operativo «no pedir R13-Z / espera R12». Queda **superado** por
+> **R12-Z PASS** vigente + adopción `skills-scriptorium@0.10.0` (tip
+> `b348c59` · CI `30128202345` · Docs `30128202336`). Acto vigente:
+> [AVISO-R13-Z-pedido-PASS.md](AVISO-R13-Z-pedido-PASS.md). **PAUSA /
+> CORTE TÉCNICO** y **sin despacho** se mantienen. No borrar: conserva
+> la historia del plan R13 bajo D-43.
+
 > Nombre de fichero histórico `AVISO-R13-Z-plan-hold.md`: el HOLD que
-> queda es **operativo** (PAUSA / espera R12), **no** hold de DA-S21.
-> HOLD de autoridad = **levantado**.
+> quedaba era **operativo** (PAUSA / espera R12), **no** hold de DA-S21.
+> HOLD de autoridad = **levantado**. Tramo «espera R12 / no pedir R13»
+> = **superado** (ver banner arriba).
 
 | dato | valor |
 | ---- | ----- |
@@ -11,8 +20,8 @@
 | Fecha | 2026-07-24 |
 | Motivo | Enmienda gobierno: DA-S21 asentada · `2eb4784` (scriptorium) · levantar solo HOLD de autoridad |
 | Estado autoridad | **DA-S21 asentada · `2eb4784`** — HOLD de autoridad **levantado** (autoriza planificar) |
-| Estado R13-Z | Hold **operativo** vigente — secuencia **R12-Z → petición R13-Z → sin despacho**; **no** pedir R13-Z PASS ahora (R12 no PASS); **sin PASS** declarado |
-| Estado R12-Z | Pedido **vigente** sin cambios ([AVISO-R12-Z-plan.md](AVISO-R12-Z-plan.md)) |
+| Estado R13-Z | **Histórico:** hold operativo «no pedir R13 / espera R12». **Vigente:** ver [AVISO-R13-Z-pedido-PASS.md](AVISO-R13-Z-pedido-PASS.md) |
+| Estado R12-Z | **Histórico** en este aviso: «pedido vigente». **Vigente:** R12-Z PASS + adopción 0.10.0 (`b348c59`) |
 | Contexto | **PAUSA / CORTE TÉCNICO** vigente (solo gobierno de plan en esta pasada) |
 | Espejo | `C:\S_LAB\vigilancia\z\AVISO-R13-Z-plan-hold.md` |
 

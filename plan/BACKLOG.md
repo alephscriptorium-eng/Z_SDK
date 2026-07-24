@@ -35,7 +35,7 @@ sin impl./despacho/publish).
 
 ---
 
-## Remate — estado swarm (2026-07-24 · **PAUSA** · **R12-Z PASS · skills-scriptorium 0.10.0 adoptado**)
+## Remate — estado swarm (2026-07-24 · **PAUSA** · **petición R13-Z emitida** · **R12-Z PASS · 0.10.0 adoptado**)
 
 > **PAUSA / CORTE TÉCNICO** (custodio). Todos los workers: **pausar** obra
 > en curso; si demoler → **pausar** (no continuar demoliciones). **No**
@@ -44,12 +44,16 @@ sin impl./despacho/publish).
 > (espejo `vigilancia/z/`). Higiene al emitir: `C:\S_LAB\.worktrees\z`
 > vacío · `wp/*` 0 · 0 🔶 · sin workers activos.
 >
+> **Petición R13-Z emitida · PAUSA · sin 🔶.** Pedido a SOL:
+> [AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md)
+> (gate de **planificación**; no GO implementación). **0 🔶 · 0 workers
+> · 0 despacho · 0 publish.** No commitear `.claude/skills/`.
+>
 > **R12-Z PASS · skills-scriptorium 0.10.0 adoptado.** R12-Z PASS de
 > planificación vigente (`f2aab3f` + sello `2ef0d79` · remate
 > `66c3696`). Adopción `@0.10.0` (D-36 `>=0.10.0 <1.0.0`) + contrato
-> Node raíz **`engines.node >=22.0.0`** (GO custodio tras
-> GATE-ADOPCION-LIB-0.10-Z-FAIL). **PAUSA** · **sin despacho** ·
-> **sin publish** · **sin R13**. No commitear `.claude/skills/`.
+> Node raíz **`engines.node >=22.0.0`** — tip adopción **`b348c59`** ·
+> CI **`30128202345`** · Docs **`30128202336`** (PASS).
 >
 > Contexto previo (congelado hasta reanudación): **R11-Z PASS** —
 > [GATE-R11-Z-PASS.md](REPORTES/entregas/GATE-R11-Z-PASS.md). **Sprint 8
@@ -76,15 +80,16 @@ sin impl./despacho/publish).
 > (allowlist §4 · D-42).
 >
 > **Tercer frente Dramaturgo + Zigurat (D-43 · DA-S21 asentada ·
-> `2eb4784`):** cola **R13-Z** planificada — épica **U73** reactivada ⬜
-> + **U172–U177** ⬜. HOLD de autoridad **levantado**. Hold que queda:
-> **operativo** (**PAUSA** · R12-Z PASS vigente · **sin** petición R13-Z
-> · **sin despacho**). **Bloqueado** abrir implementación hasta GO
-> impl. R12 + **R13-Z PASS** + GO implementación R13 aparte. Replan:
+> `2eb4784`):** cola **R13-Z** — épica **U73** ⬜ + **U172–U177** ⬜.
+> HOLD de autoridad **levantado**. Hold **operativo** = **PAUSA** +
+> **petición R13-Z emitida** + **sin despacho**. Tramos «R12 pedido /
+> no pedir R13» = **histórico/superado** (ver D-43 +
+> [AVISO-R13-Z-plan-hold.md](REPORTES/entregas/AVISO-R13-Z-plan-hold.md)).
+> **Bloqueado** abrir implementación hasta GO impl. R12 + **R13-Z PASS**
+> + GO implementación R13 aparte. Replan:
 > [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
 > Fuente:
 > [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md).
-> Aviso: [AVISO-R13-Z-plan-hold.md](REPORTES/entregas/AVISO-R13-Z-plan-hold.md).
 >
 > **Sprint 6 CERRADO** (GO usuario · 0.3.3): **U154** ✅ mergeado
 > (`1a24a60`) — proyección backlog→Issues montada y validada en
@@ -150,7 +155,7 @@ sin impl./despacho/publish).
 | **Sprint 8 B** — publish-ready mesh (Ola B) | **U164–U166** | ✅ · **CERRADO** (R11-Z PASS) |
 | **Sprint 9 / R12** — major-band + contrarrevisión + prep pub | **U168–U171** | ⬜ planificación (sin 🔶) |
 | **Cola publish P1** — publish-ready `linea-editor` (D-42) | **U178** | ⬜ (tras U168+U169; GO impl. propio) |
-| **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ planificación · hold operativo (PAUSA · R12 → petición R13 · sin despacho; R13-Z PASS + GO impl. para abrir) |
+| **R13-Z** — tercer frente Dramaturgo + Zigurat (D-43) | **U73 épica · U172–U177** | ⬜ planificación · **petición R13 emitida** · PAUSA · sin despacho (R13-Z PASS + GO impl. para abrir) |
 | Sidecar blob live U100/U101 | — | diferido D-22 |
 
 **AMEND Sprint 2:** **A ∥ B ∥ C** — lote ✅.
@@ -158,14 +163,15 @@ sin impl./despacho/publish).
 **En curso:** ninguno (**PAUSA** · 0 🔶 · sin workers · sin despacho).
 **Pendiente:** reanudación explícita + GO implementación custodio
 sobre U168–U171 ⬜ (**R12-Z PASS** ya vigente; adopción **0.10.0**
-cerrada con `engines.node >=22.0.0`). **No** `npm publish` hasta
-cumplir D-42; publish real P0×4 = **GO condicionado D-42**. **U178**
-(publish-ready `linea-editor`) ⬜ aparte.
-**R13-Z**: cola planificada ⬜; HOLD autoridad levantado (DA-S21 ·
-`2eb4784`); hold operativo **PAUSA** + secuencia R12 PASS → petición
-R13 → sin despacho (**no** pedir R13-Z PASS en este remate). Tercer
-frente **sin abrir** hasta GO impl. R12 + R13-Z PASS + GO impl. R13.
-**No** demoler / merge / despachar durante el corte.
+cerrada con `engines.node >=22.0.0` · tip `b348c59`). **No** `npm
+publish` hasta cumplir D-42; publish real P0×4 = **GO condicionado
+D-42**. **U178** (publish-ready `linea-editor`) ⬜ aparte.
+**R13-Z**: **petición R13-Z PASS emitida** (aviso
+[AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md));
+HOLD autoridad levantado (DA-S21 · `2eb4784`); hold operativo =
+**PAUSA** + **sin despacho** · **sin 🔶**. Tercer frente **sin abrir**
+hasta GO impl. R12 + R13-Z PASS + GO impl. R13. **No** demoler /
+merge / despachar durante el corte.
 **Cerrado N/A:** **U137** (premisa incorrecta; ver abajo) · ítems
 Sprint 3 ya resueltos en main (guard base · dist/ · gap paths ·
 economía CI) — ver triage U142.
@@ -283,13 +289,14 @@ Fuente: **DA-S21 asentada · `2eb4784`** (**D-43**)
 + [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md)
 (espejo `vigilancia/z/`). Detalle:
 [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
-Aviso: [AVISO-R13-Z-plan-hold.md](REPORTES/entregas/AVISO-R13-Z-plan-hold.md).
+Pedido SOL: [AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md).
+Hold histórico: [AVISO-R13-Z-plan-hold.md](REPORTES/entregas/AVISO-R13-Z-plan-hold.md).
 
 **Estado:** **solo planificación** — WPs **⬜** · **0 🔶** · **0
 workers** · **0** código. HOLD de autoridad **levantado** (DA-S21
-autoriza planificar). Hold **operativo** vigente: PAUSA + secuencia
-**R12-Z → petición R13-Z → sin despacho** (no pedir R13-Z PASS hasta
-R12-Z PASS; sin PASS declarado).
+autoriza planificar). Hold **operativo** vigente: **PAUSA** +
+**petición R13-Z emitida** + **sin despacho** (R12-Z PASS + adopción
+0.10.0 ya vigentes; orquestador **no** declara R13 PASS).
 
 **Bloqueo duro (tercer frente):** no abrir implementación hasta
 (1) **R12 cerrado**, (2) **R13-Z PASS**, (3) **GO implementación

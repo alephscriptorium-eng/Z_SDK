@@ -533,7 +533,17 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   planificación (DA-S21 asentada · `2eb4784`)**
   (fuente:
   [ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md](REPORTES/entregas/ADDENDA-R13-Z-TERCER-FRENTE-DRAMATURGO.md),
-  espejo `vigilancia/z/`). **DA-S21 asentada · `2eb4784`** (scriptorium)
+  espejo `vigilancia/z/`).
+  > **HISTÓRICO / SUPERADO (secuencia · 2026-07-24 post-adopción):** los
+  > tramos «R12 pedido vigente / no pedir R13 ahora / espera R12» de este
+  > asiento quedan **superados** por **R12-Z PASS** vigente + adopción
+  > `@alephscript/skills-scriptorium@0.10.0` (tip `b348c59` · CI
+  > `30128202345` · Docs `30128202336`). La autoridad de planificación
+  > (DA-S21 · camino A · U73 / U172–U177) **permanece vigente**. Acto
+  > siguiente: petición **R13-Z PASS** —
+  > [AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md).
+  > **PAUSA / CORTE TÉCNICO** y **sin despacho** se mantienen.
+  **DA-S21 asentada · `2eb4784`** (scriptorium)
   — el HOLD de autoridad queda **levantado** (DA-S21 autoriza
   planificar). El GO es **de planificación**; **no** es GO de
   implementación. Camino A ratificado: **absorber el dominio narrativo
@@ -548,16 +558,17 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   Code; sidecar/pub. Rutas fuente del legado = **solo lectura** para
   diseñar el importador; ningún vocabulario ni artefacto legado se
   copia al código público (conteo literal **0**). **Secuencia
-  obligada:** **R12-Z** (pedido vigente) → **petición R13-Z** (solo
-  tras R12-Z PASS; no ahora) → **sin despacho** hasta **R13-Z PASS** +
-  **GO implementación aparte** (solo entonces 🔶/workers/código del
-  tercer frente). Hold que queda: **operativo** por **PAUSA / CORTE
-  TÉCNICO** + espera R12 — **no** hold de DA-S21. Se permiten (prep
-  R13): replan, briefs, dependencias, olas y entradas ⬜ — **0**
-  workers · **0** 🔶 · **0** implementación · **0** publicación. **No**
-  declarar R12/R13 PASS desde este asiento. **Nota de runtime para
-  despachos futuros R13:** preferir modelo **Fable**; si no está
-  disponible, **GPT-5.6 Sol**; si tampoco, el mejor disponible —
+  obligada (texto histórico del asiento):** ~~**R12-Z** (pedido vigente)
+  → **petición R13-Z** (solo tras R12-Z PASS; no ahora)~~ → **sin
+  despacho** hasta **R13-Z PASS** + **GO implementación aparte** (solo
+  entonces 🔶/workers/código del tercer frente). **Estado vigente de
+  secuencia:** R12-Z PASS + adopción 0.10.0 → **petición R13-Z emitida**
+  · hold operativo = **PAUSA** + **sin despacho** (no hold de DA-S21).
+  Se permiten (prep R13): replan, briefs, dependencias, olas y entradas
+  ⬜ — **0** workers · **0** 🔶 · **0** implementación · **0**
+  publicación. **No** declarar R13 PASS desde este asiento. **Nota de
+  runtime para despachos futuros R13:** preferir modelo **Fable**; si no
+  está disponible, **GPT-5.6 Sol**; si tampoco, el mejor disponible —
   anotar la cascada empleada en el aviso correspondiente. Replan:
   [REPLAN-2026-07-24-r13-dramaturgo-zigurat.md](REPORTES/entregas/REPLAN-2026-07-24-r13-dramaturgo-zigurat.md).
 
@@ -574,9 +585,12 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   defecto** para toda proyección nueva. **Sin** autorización para
   crear Issues nuevos. **Sin** implementación, despacho ni publish.
   **No** es GO de proyección adicional ni de workers. **PAUSA / CORTE
-  TÉCNICO** permanece vigente. Pedido vigente a SOL: **R12-Z PASS
-  (segundo reintento)** — aviso
+  TÉCNICO** permanece vigente. Pedido R12 a SOL (**histórico /
+  superado**): ~~**R12-Z PASS (segundo reintento)**~~ —
   [AVISO-R12-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R12-Z-pedido-PASS.md)
+  → **R12-Z PASS vigente** + adopción 0.10.0 (`b348c59`). Pedido
+  vigente a SOL: **R13-Z PASS** —
+  [AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md)
   (patrón **base auditada** + **commit sello**; sin tip autorreferencial).
 
 ## Abiertas (bloquean lo indicado)
