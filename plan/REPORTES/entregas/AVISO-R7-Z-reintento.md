@@ -37,11 +37,12 @@ la estrategia posterior (olas candidatas); publish real = GO aparte.
 | Docs tip código | `30072427859` success |
 | Commit irregular (conservado) | `854ed4ec9133f2f11c7164d31d497010b45e7e87` |
 
-### Tip gobierno (corrección — rellenar tras push de esta entrega)
+### Tip gobierno (corrección)
 
 | dato | valor |
 | ---- | ----- |
-| Tip gobierno corrección | ``fc4d565ea27a6ceb6ec4e708531082d01e14d08d`` |
+| Tip gobierno corrección (D-41 + acta) | `fc4d565ea27a6ceb6ec4e708531082d01e14d08d` |
+| Tip aviso tip-fill | `db1decd1470b5659aec579b7bfee4f3e3e3bef34` |
 | Push | normal (sin force) |
 | Acta | `plan/REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md` |
 | Aviso cierre corregido | `plan/REPORTES/entregas/AVISO-U162-cierre.md` |
@@ -69,6 +70,8 @@ Hechos:
 - acta: plan/REPORTES/entregas/ACTA-R7-Z-INCIDENTE-despacho-sin-GO-U162.md
 
 Pedir: R7-Z PASS (o FAIL con evidencia) sobre tip gobierno de corrección.
+Tip gobierno corrección: fc4d565ea27a6ceb6ec4e708531082d01e14d08d
+(serie aviso tip-fill: db1decd… → HEAD tras push)
 U163–U167: SIN GO · NO despachados.
 DC-15: LOCAL-ONLY
 ```
