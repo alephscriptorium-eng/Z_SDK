@@ -17,9 +17,23 @@ export interface RouteEntry {
   responses: Record<string, ZodTypeAny>;
   envelope?: EnvelopeKind;
   xMcpResource?: string;
+  xMcpTool?: string;
   deprecated?: boolean;
   xStatus?: RouteStatus;
   xDegradedMode?: string;
+}
+
+export interface ProjectedMcpTool {
+  name: string;
+  title: string;
+  description: string;
+  routeId: string;
+  method: string;
+  path: string;
+  envelope: EnvelopeKind | null;
+  bodySchema: ZodTypeAny | null;
+  paramsSchema: ZodTypeAny | null;
+  xMcpTool: string | null;
 }
 
 export function defineRoutes(appId: string, entries: RouteEntry[]): RouteEntry[];
@@ -48,14 +62,21 @@ export function resolveRouteMcpUri(route: RouteEntry, opts?: Record<string, unkn
 export function projectRoutesToMcp(
   routes: RouteEntry[],
   opts?: Record<string, unknown>
-): unknown[];
+): { resources: unknown[]; templates: unknown[]; tools: ProjectedMcpTool[] };
+export function projectRouteToMcpTool(route: RouteEntry): ProjectedMcpTool;
+export const MUTATION_METHODS: Set<string>;
 export function fillExpressPath(
   path: string,
   params: Record<string, string | number>
 ): string;
 export function bindProjectedHttpReaders(
+  projected: Record<string, unknown>,
   opts: Record<string, unknown>
 ): Record<string, unknown>;
+export function bindProjectedHttpMutators(
+  projected: { tools: ProjectedMcpTool[] },
+  opts: Record<string, unknown>
+): { toolRegistry: Array<Record<string, unknown>> };
 export function renderRouteMcpCatalog(
   routes: RouteEntry[],
   opts?: Record<string, unknown>
