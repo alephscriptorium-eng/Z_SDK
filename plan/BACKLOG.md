@@ -430,15 +430,22 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   fusionar) · reconstruir el editor legado · publish. **Contrarrevisión**
   obligatoria. **Eje:** I + IV.
 
-### WP-U176 · Importador de corpus legado (one-off) — 🔶
+### WP-U176 · Importador de corpus legado (one-off) — ✅
 
-- 🔶 **WP-U176 · Importador one-off de corpus legado** — despachado
-  (vigía-emulado con claim / 2026-07-25 · **tick custodio: ∥ U175**,
-  archivos disjuntos · deps U173+U174 ✅ en main `5932a0a`). Rama
-  `wp/u176-importador-corpus-legado`. Fuentes por env del operador
-  (solo lectura, sin rutas en git — U140/D-31); ceguera reforzada
-  con evidencia enmascarada (U141/D-32). Runner: worker Opus +
-  contrarrevisión Sonnet. Est. M. Ola D. Brief:
+- ✅ **WP-U176 · Importador one-off de corpus legado** — aceptado
+  (vigía-emulado / 2026-07-25). Rama `wp/u176-importador-corpus-legado`
+  · tip obra `825486c` · merge `ad1fac8`. Tooling
+  `scripts/import-legado/` (obra→línea + story-board con personajes
+  U174 + reparto U173; IDs zeus deterministas D-19; fuentes SOLO por
+  env del operador; fixtures sintéticas). Contrarrevisión:
+  **DEVOLUCIÓN (evidencia CA1 no reproducible desde HEAD; código
+  correcto) → regeneración + forense honesto del hash (NUL-join vs
+  espacio-join, verificado empíricamente por el revisor) → PASS**.
+  Suite: 11/11 · ceguera enmascarada 0 (U141/D-32) · 0 rutas locales.
+  Ejecución real contra el corpus = tick del operador (env inyectado).
+  Follow-up de higiene del revisor: 4 citas inertes preexistentes en
+  reportes viejos, candidatas a enmascarado retroactivo (wishlist).
+  Runner: worker Opus + contrarrevisión Sonnet. Est. M. Ola D. Brief:
   [REPORTES/briefs/WP-U176-importador-corpus-legado.md](REPORTES/briefs/WP-U176-importador-corpus-legado.md).
   **Qué:** tooling one-off que lee las rutas fuente del legado **solo
   lectura** y emite los formatos existentes (linea-kit / story-board +
