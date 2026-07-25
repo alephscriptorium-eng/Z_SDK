@@ -408,10 +408,14 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   paralelo · publish. **Contrarrevisión** obligatoria (schema).
   **Eje:** I.
 
-### WP-U175 · Autoría gateada sobre linea-editor — ⬜
+### WP-U175 · Autoría gateada sobre linea-editor — 🔶
 
-- ⬜ **WP-U175 · Autoría gateada por reparto sobre `linea-editor`** —
-  pendiente. Est. M. Dep: **U172 ✅ + U173 ✅ + U174 ✅**. Ola C.
+- 🔶 **WP-U175 · Autoría gateada por reparto sobre `linea-editor`** —
+  despachado (vigía-emulado con claim / 2026-07-25 · cadena
+  anticipada custodio · deps U172+U173+U174 ✅ en main `5932a0a`).
+  Rama `wp/u175-autoria-gateada-linea-editor`. **∥ U176** (tick
+  custodio: paralelo; archivos disjuntos; sin solape con U178).
+  Runner: worker Opus + contrarrevisión Sonnet. Est. M. Ola C.
   Brief:
   [REPORTES/briefs/WP-U175-autoria-gateada-linea-editor.md](REPORTES/briefs/WP-U175-autoria-gateada-linea-editor.md).
   **Qué:** extender la autoría gateada existente de
@@ -421,11 +425,15 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   fusionar) · reconstruir el editor legado · publish. **Contrarrevisión**
   obligatoria. **Eje:** I + IV.
 
-### WP-U176 · Importador de corpus legado (one-off) — ⬜
+### WP-U176 · Importador de corpus legado (one-off) — 🔶
 
-- ⬜ **WP-U176 · Importador one-off de corpus legado** — pendiente.
-  Est. M. Dep: **U173 ✅ + U174 ✅** (∥ U175 posible; archivos
-  disjuntos). Ola D. Brief:
+- 🔶 **WP-U176 · Importador one-off de corpus legado** — despachado
+  (vigía-emulado con claim / 2026-07-25 · **tick custodio: ∥ U175**,
+  archivos disjuntos · deps U173+U174 ✅ en main `5932a0a`). Rama
+  `wp/u176-importador-corpus-legado`. Fuentes por env del operador
+  (solo lectura, sin rutas en git — U140/D-31); ceguera reforzada
+  con evidencia enmascarada (U141/D-32). Runner: worker Opus +
+  contrarrevisión Sonnet. Est. M. Ola D. Brief:
   [REPORTES/briefs/WP-U176-importador-corpus-legado.md](REPORTES/briefs/WP-U176-importador-corpus-legado.md).
   **Qué:** tooling one-off que lee las rutas fuente del legado **solo
   lectura** y emite los formatos existentes (linea-kit / story-board +
