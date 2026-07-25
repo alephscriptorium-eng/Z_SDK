@@ -23,14 +23,22 @@ export const TOOL_EXPORT_STORY_BOARD = 'export_story_board';
  *   referenciaWp?: string,
  *   overwrite?: boolean,
  *   approve?: boolean,
- *   approvalToken?: string
+ *   approvalToken?: string,
+ *   reparto?: object,
+ *   card?: object,
+ *   personajeId?: string,
+ *   now?: number
  * }} input
  */
 export function runCrearLineaGated(input) {
   const gate = requireMutationApproval({
     approve: input.approve,
     approvalToken: input.approvalToken,
-    toolName: MUTATION_TOOL_CREAR_LINEA
+    toolName: MUTATION_TOOL_CREAR_LINEA,
+    reparto: input.reparto,
+    card: input.card,
+    personajeId: input.personajeId,
+    now: input.now
   });
   if (!gate.ok) return gate;
 
@@ -84,18 +92,29 @@ export function runCrearLineaGated(input) {
 
 /**
  * Export story-board from an existing line dir (refs-first horse payload).
+ * When a reparto is supplied it gates authorship (U173) AND the emitted
+ * story-board carries `personajes` refs (U174, refs-only).
  * @param {{
  *   lineDir: string,
  *   outPath?: string,
  *   approve?: boolean,
- *   approvalToken?: string
+ *   approvalToken?: string,
+ *   reparto?: object,
+ *   repartoUri?: string,
+ *   card?: object,
+ *   personajeId?: string,
+ *   now?: number
  * }} input
  */
 export function runExportStoryBoardGated(input) {
   const gate = requireMutationApproval({
     approve: input.approve,
     approvalToken: input.approvalToken,
-    toolName: TOOL_EXPORT_STORY_BOARD
+    toolName: TOOL_EXPORT_STORY_BOARD,
+    reparto: input.reparto,
+    card: input.card,
+    personajeId: input.personajeId,
+    now: input.now
   });
   if (!gate.ok) return gate;
 
@@ -104,6 +123,8 @@ export function runExportStoryBoardGated(input) {
     outPath: input.outPath,
     approved: true,
     approvalToken_evidenced: gate.token,
-    gate: gate.gate
+    gate: gate.gate,
+    reparto: input.reparto,
+    repartoUri: input.repartoUri
   });
 }
