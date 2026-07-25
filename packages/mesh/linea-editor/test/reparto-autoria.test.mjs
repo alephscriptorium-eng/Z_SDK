@@ -34,9 +34,27 @@ import {
   AUTHORSHIP_PERMISO
 } from '../src/gate.mjs';
 import { buildPersonajesRefs, lineToStoryBoard } from '../src/export-story-board.mjs';
+import {
+  resolveRequireReparto,
+  REQUIRE_REPARTO_ENV
+} from '../src/config.mjs';
+import { editorInfo } from '../src/editor-server.mjs';
 import { validateStoryBoard, validateStoryBoardFile } from '@zeus/story-board-schema';
 
 const NOW = 1_700_000_000_000;
+
+/** Corre `fn` con la política servidor-side de reparto en on/off, restaurando env. */
+function withRequireReparto(value, fn) {
+  const prev = process.env[REQUIRE_REPARTO_ENV];
+  if (value == null) delete process.env[REQUIRE_REPARTO_ENV];
+  else process.env[REQUIRE_REPARTO_ENV] = value;
+  try {
+    return fn();
+  } finally {
+    if (prev === undefined) delete process.env[REQUIRE_REPARTO_ENV];
+    else process.env[REQUIRE_REPARTO_ENV] = prev;
+  }
+}
 
 function tmpLineas() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'linea-editor-u175-'));
@@ -115,8 +133,8 @@ test('CA1 verde: actor con personaje asignado + asiento válido PUEDE autorar (c
 
   assert.equal(res.ok, true);
   assert.equal(res.approved, true);
-  // gate único, cara reparto poblada:
-  assert.equal(res.gate.reparto_required, true);
+  // gate único, cara reparto poblada (reparto aportado en esta llamada):
+  assert.equal(res.gate.reparto_supplied, true);
   assert.equal(res.gate.reparto.motivo, 'concedido');
   assert.equal(res.gate.reparto.permiso, AUTHORSHIP_PERMISO);
   assert.equal(res.gate.reparto.actor_ssb_id, seat.ssbId);
@@ -249,8 +267,8 @@ test('gate único: la cara token se aplica ANTES que la de reparto (token_mismat
   });
   assert.equal(denied.ok, false);
   assert.equal(denied.rule, 'linea-editor.token_mismatch');
-  // aun cortando por token, el objeto gate declara que hay cara de reparto:
-  assert.equal(denied.gate.reparto_required, true);
+  // aun cortando por token, el objeto gate declara que la llamada trae reparto:
+  assert.equal(denied.gate.reparto_supplied, true);
   // no hay un segundo mecanismo: la cara reparto solo se evalúa tras el token
   assert.equal(denied.gate.reparto, undefined);
 });
@@ -262,7 +280,8 @@ test('gate único: sin reparto se comporta como el gate token-only previo (retro
     approvalToken: resolveMcpApprovalToken()
   });
   assert.equal(ok.ok, true);
-  assert.equal(ok.gate.reparto_required, false);
+  assert.equal(ok.gate.reparto_required, false); // política servidor OFF por defecto
+  assert.equal(ok.gate.reparto_supplied, false);
   assert.equal(ok.gate.reparto, undefined); // sin cara reparto cuando no se aporta
 });
 
@@ -369,4 +388,89 @@ test('U174 refs-only: buildPersonajesRefs descarta corpus; el schema rechaza ref
   // reparto vacío → sin bloque personajes (no fuerza campo):
   assert.equal(buildPersonajesRefs({ personajes: [] }, 'reparto://x'), null);
   assert.equal(buildPersonajesRefs(undefined), null);
+});
+
+// ─────────── Flag servidor-side: exigir reparto (política del despliegue) ─────
+
+test('flag OFF (default): mutación sin reparto PERMITIDA (retro-compat; llamador cooperativo)', () => {
+  withRequireReparto(undefined, () => {
+    assert.equal(resolveRequireReparto(), false);
+    const lineasRoot = tmpLineas();
+    const res = runCrearLineaGated({
+      id: 'flag-off',
+      lineasRoot,
+      approve: true,
+      approvalToken: resolveMcpApprovalToken(),
+      overwrite: true
+    });
+    assert.equal(res.ok, true);
+    assert.equal(res.gate.reparto_required, false);
+    assert.ok(fs.existsSync(path.join(lineasRoot, 'flag-off', 'manifest.json')));
+  });
+});
+
+test('flag ON: mutación sin reparto DENEGADA reparto_requerido, sin escritura en volumen', () => {
+  withRequireReparto('1', () => {
+    assert.equal(resolveRequireReparto(), true);
+    const lineasRoot = tmpLineas();
+    const token = resolveMcpApprovalToken();
+
+    // crear_linea sin reparto → denegado ANTES de escribir (check→write intacto).
+    const denied = runCrearLineaGated({
+      id: 'flag-on-sin',
+      lineasRoot,
+      approve: true,
+      approvalToken: token,
+      overwrite: true
+    });
+    assert.equal(denied.ok, false);
+    assert.equal(denied.rule, 'linea-editor.reparto_requerido');
+    assert.equal(denied.decision.motivo, 'reparto_requerido');
+    assert.equal(denied.gate.reparto_required, true);
+    assert.equal(denied.gate.reparto.motivo, 'reparto_requerido');
+    assert.ok(!fs.existsSync(path.join(lineasRoot, 'flag-on-sin')));
+
+    // export_story_board sin reparto → también denegado (misma política).
+    const expDenied = runExportStoryBoardGated({
+      lineDir: path.join(lineasRoot, 'inexistente'),
+      approve: true,
+      approvalToken: token
+    });
+    assert.equal(expDenied.ok, false);
+    assert.equal(expDenied.rule, 'linea-editor.reparto_requerido');
+  });
+});
+
+test('flag ON: mutación CON reparto válido PERMITIDA (autor autorizado) y escribe volumen', () => {
+  withRequireReparto('true', () => {
+    const lineasRoot = tmpLineas();
+    const seat = generateSeatKeyPair();
+    const okRes = runCrearLineaGated({
+      id: 'flag-on-con',
+      lineasRoot,
+      approve: true,
+      approvalToken: resolveMcpApprovalToken(),
+      reparto: repartoFijo(seat.ssbId),
+      card: signedCard(seat),
+      personajeId: 'pj-prota',
+      now: NOW,
+      overwrite: true
+    });
+    assert.equal(okRes.ok, true);
+    assert.equal(okRes.gate.reparto_required, true);
+    assert.equal(okRes.gate.reparto.motivo, 'concedido');
+    assert.ok(fs.existsSync(path.join(lineasRoot, 'flag-on-con', 'manifest.json')));
+  });
+});
+
+test('editor://info refleja el estado REAL del flag (reparto_required true|false)', () => {
+  const off = withRequireReparto(undefined, () => editorInfo({ lineasRoot: '/tmp/x' }));
+  assert.equal(off.gate.reparto_required, false);
+  assert.equal(off.gate.reparto.required, false);
+  assert.equal(off.gate.reparto_policy_env, REQUIRE_REPARTO_ENV);
+
+  const on = withRequireReparto('on', () => editorInfo({ lineasRoot: '/tmp/x' }));
+  assert.equal(on.gate.reparto_required, true);
+  assert.equal(on.gate.reparto.required, true);
+  assert.ok(on.gate.reparto.motivos_deny.includes('reparto_requerido'));
 });
