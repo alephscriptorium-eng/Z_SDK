@@ -388,10 +388,14 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   identidad nueva · UI nueva · publish. **Contrarrevisión** obligatoria
   (contrato/permisos). **Eje:** I.
 
-### WP-U174 · Personajes en story-board — ⬜
+### WP-U174 · Personajes en story-board — 🔶
 
-- ⬜ **WP-U174 · Referencias de personajes en story-board** —
-  pendiente. Est. S/M. Dep: **U173 ✅**. Ola B. Brief:
+- 🔶 **WP-U174 · Referencias de personajes en story-board** —
+  despachado (vigía-emulado con claim / 2026-07-25 · **GO Ola B
+  custodio** · deps: U173 ✅ en `7c1d8a8`). Rama
+  `wp/u174-personajes-story-board`. Runner: worker Opus +
+  contrarrevisión Sonnet (cascada del brief; Fable en orquestación).
+  Est. S/M. Ola B. Brief:
   [REPORTES/briefs/WP-U174-personajes-story-board.md](REPORTES/briefs/WP-U174-personajes-story-board.md).
   **Qué:** extender `@zeus/story-board-schema` con referencias de
   personajes (refs al reparto U173); validación AJV + fixtures; los
