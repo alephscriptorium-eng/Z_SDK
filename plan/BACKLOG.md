@@ -408,15 +408,20 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   paralelo · publish. **Contrarrevisión** obligatoria (schema).
   **Eje:** I.
 
-### WP-U175 · Autoría gateada sobre linea-editor — 🔶
+### WP-U175 · Autoría gateada sobre linea-editor — ✅
 
-- 🔶 **WP-U175 · Autoría gateada por reparto sobre `linea-editor`** —
-  despachado (vigía-emulado con claim / 2026-07-25 · cadena
-  anticipada custodio · deps U172+U173+U174 ✅ en main `5932a0a`).
-  Rama `wp/u175-autoria-gateada-linea-editor`. **∥ U176** (tick
-  custodio: paralelo; archivos disjuntos; sin solape con U178).
-  Runner: worker Opus + contrarrevisión Sonnet. Est. M. Ola C.
-  Brief:
+- ✅ **WP-U175 · Autoría gateada por reparto sobre `linea-editor`** —
+  aceptado (vigía-emulado / 2026-07-25). Rama
+  `wp/u175-autoria-gateada-linea-editor` · tip obra `039b8d1` ·
+  merge `d932efe`. Gate único extendido (dos caras) + **política
+  servidor-side `ZEUS_LINEA_EDITOR_REQUIRE_REPARTO`** (env fresco,
+  no debilitable por args; default OFF con README como advertencia
+  de seguridad; despliegues dramaturgo DEBEN activarla).
+  Contrarrevisión: **DEVOLUCIÓN (bloqueante: bypass e2e por omisión
+  de reparto) → corrección (flag servidor) → PASS** (revisor repitió
+  su ataque en ambos estados + 3 inyecciones de debilitamiento
+  denegadas). Suite en main: 21/21. Runner: worker Opus +
+  contrarrevisión Sonnet. Est. M. Ola C. Brief:
   [REPORTES/briefs/WP-U175-autoria-gateada-linea-editor.md](REPORTES/briefs/WP-U175-autoria-gateada-linea-editor.md).
   **Qué:** extender la autoría gateada existente de
   `@zeus/linea-editor` (gate visible / approvalToken) con permisos por
