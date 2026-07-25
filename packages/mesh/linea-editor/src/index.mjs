@@ -2,7 +2,10 @@ export { startAll, SERVER_NAME } from './start.mjs';
 export { createServer, buildMcp } from './editor-server.mjs';
 export {
   requireMutationApproval,
-  describeApprovalGate
+  describeApprovalGate,
+  evaluateRepartoAuthorship,
+  AUTHORSHIP_PERMISO,
+  REPARTO_GATE_LINE
 } from './gate.mjs';
 export {
   runCrearLineaGated,
@@ -13,7 +16,8 @@ export {
 export {
   exportStoryBoardFromLine,
   lineToStoryBoard,
-  buildTransmediaEvents
+  buildTransmediaEvents,
+  buildPersonajesRefs
 } from './export-story-board.mjs';
 export {
   buildLineaEditorPreset,

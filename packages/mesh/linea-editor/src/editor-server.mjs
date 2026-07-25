@@ -11,7 +11,11 @@ import {
 } from '@zeus/presets-sdk';
 import { createStandardMcpServer } from '@zeus/presets-sdk/mcp';
 import { SERVER_NAME, SERVER_VERSION } from './config.mjs';
-import { describeApprovalGate } from './gate.mjs';
+import {
+  describeApprovalGate,
+  REPARTO_GATE_LINE,
+  AUTHORSHIP_PERMISO
+} from './gate.mjs';
 import {
   MUTATION_TOOL_CREAR_LINEA,
   TOOL_EXPORT_STORY_BOARD,
@@ -27,6 +31,7 @@ function buildCardExamples(config) {
   return {
     approvalToken: token,
     gateLine,
+    repartoGateLine: REPARTO_GATE_LINE,
     lineasRoot: config.lineasRoot,
     goldenPath: {
       tool: MUTATION_TOOL_CREAR_LINEA,
@@ -36,9 +41,23 @@ function buildCardExamples(config) {
         approvalToken: token
       }
     },
+    repartoPath: {
+      tool: MUTATION_TOOL_CREAR_LINEA,
+      note:
+        'Con reparto: además del token, la peer-card (ssbId) debe poder ' +
+        `${AUTHORSHIP_PERMISO} el personajeId (asiento exigido).`,
+      args: {
+        id: 'juguete',
+        approve: true,
+        approvalToken: token,
+        personajeId: 'pj-prota',
+        reparto: 'reparto/1 (@zeus/reparto-kit)',
+        card: 'peer-card firmada (@zeus/protocol, con seatSignature)'
+      }
+    },
     mutationTools: [MUTATION_TOOL_CREAR_LINEA, TOOL_EXPORT_STORY_BOARD],
     sampleResolve: [
-      { uri: 'editor://info', expect: 'object with lineasRoot and gate' }
+      { uri: 'editor://info', expect: 'object with lineasRoot and gate (token + reparto)' }
     ]
   };
 }
@@ -51,7 +70,7 @@ function getResourceRegistry(config) {
       title: 'linea-editor info',
       mimeType: 'application/json',
       description:
-        'Fact card: volume root, visible approval gate, mutation tool names.',
+        'Fact card: volume root, visible approval gate (token + reparto), mutation tool names.',
       read: () => {
         const gate = describeApprovalGate([
           MUTATION_TOOL_CREAR_LINEA,
@@ -64,8 +83,31 @@ function getResourceRegistry(config) {
           mutationTools: [MUTATION_TOOL_CREAR_LINEA, TOOL_EXPORT_STORY_BOARD],
           gate: {
             visible: true,
+            // Cara V (siempre): token de aprobación exacto.
             token_env: 'ZEUS_MCP_APPROVAL_TOKEN',
-            gate_line: gate.gateLine
+            gate_line: gate.gateLine,
+            // Cara U173 (aditiva): autoría por reparto cuando se aporta un reparto.
+            reparto: {
+              contract: '@zeus/reparto-kit reparto/1',
+              permiso: AUTHORSHIP_PERMISO,
+              exigir_seat: true,
+              motivos_deny: [
+                'card_no_vigente',
+                'identidad_ausente',
+                'seat_invalido',
+                'seat_ausente',
+                'personaje_desconocido',
+                'personaje_no_en_reparto',
+                'rol_sin_permiso'
+              ],
+              gate_line: REPARTO_GATE_LINE,
+              engages_when: 'input trae reparto (+ card + personajeId)'
+            }
+          },
+          personajes: {
+            // U174: el export emite refs de personajes cuando el reparto las aporta.
+            schema: '@zeus/story-board-schema (campo opcional personajes, refs-only)',
+            emitted_by: TOOL_EXPORT_STORY_BOARD
           },
           frontier: {
             this_server: 'mutation + export',
@@ -125,7 +167,19 @@ export function buildMcp(server, config) {
         approve: z.boolean().describe('Must be true after human approval.'),
         approvalToken: z
           .string()
-          .describe('Exact ZEUS_MCP_APPROVAL_TOKEN value (default APROBAR).')
+          .describe('Exact ZEUS_MCP_APPROVAL_TOKEN value (default APROBAR).'),
+        reparto: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe('Optional @zeus/reparto-kit reparto/1 for authorship gate (U173).'),
+        card: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe('Signed peer-card (@zeus/protocol) whose ssbId authors the personaje.'),
+        personajeId: z
+          .string()
+          .optional()
+          .describe('Personaje the acting peer-card must be authorised to author.')
       }
     },
     async (args) =>
@@ -147,7 +201,20 @@ export function buildMcp(server, config) {
         lineDir: z.string().describe('Absolute path to an existing line folder.'),
         outPath: z.string().optional(),
         approve: z.boolean(),
-        approvalToken: z.string()
+        approvalToken: z.string(),
+        reparto: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe('Optional reparto/1: gates authorship (U173) + emits personajes refs (U174).'),
+        repartoUri: z.string().optional().describe('Pointer stored in story-board personajes.reparto.'),
+        card: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe('Signed peer-card (@zeus/protocol) whose ssbId authors the personaje.'),
+        personajeId: z
+          .string()
+          .optional()
+          .describe('Personaje the acting peer-card must be authorised to author.')
       }
     },
     async (args) => {

@@ -9,10 +9,31 @@ import { CURATION_STATUSES } from '@zeus/linea-kit/curation';
 import { validateStoryBoard } from '@zeus/story-board-schema';
 
 /**
+ * Build the optional `personajes` refs block (schema U174) from a reparto.
+ * Refs-only: every ref is `{ personajeId }` (schema `additionalProperties:false`)
+ * — never nombre/rol (that corpus lives only in the reparto). Returns null when
+ * no reparto (or an empty cast) is supplied, so a board stays retro-compatible.
+ * @param {{ personajes?: { id: string }[] } | null | undefined} reparto
+ * @param {string} [repartoUri] — optional pointer to the reparto document
+ * @returns {{ reparto?: string, refs: { personajeId: string }[] } | null}
+ */
+export function buildPersonajesRefs(reparto, repartoUri) {
+  const personajes = Array.isArray(reparto?.personajes) ? reparto.personajes : [];
+  if (personajes.length === 0) return null;
+  const refs = personajes
+    .filter((p) => p && typeof p.id === 'string' && p.id.length > 0)
+    .map((p) => ({ personajeId: p.id }));
+  if (refs.length === 0) return null;
+  return repartoUri ? { reparto: repartoUri, refs } : { refs };
+}
+
+/**
  * Map trunk nodos → acts (one act per nodo) with generic widgets.
  * @param {{ id: string, etiqueta?: string, nodos?: object[] }} lineMeta
+ * @param {{ reparto?: object, repartoUri?: string }} [opts]
+ *   When a reparto is supplied its cast is emitted as `personajes` refs (U174).
  */
-export function lineToStoryBoard(lineMeta) {
+export function lineToStoryBoard(lineMeta, opts = {}) {
   const nodos = Array.isArray(lineMeta.nodos) ? lineMeta.nodos : [];
   const acts =
     nodos.length > 0
@@ -35,7 +56,7 @@ export function lineToStoryBoard(lineMeta) {
           }
         ];
 
-  return {
+  const board = {
     version: 1,
     generated_at: new Date().toISOString(),
     title: `${lineMeta.etiqueta || lineMeta.id} — story-board`,
@@ -48,6 +69,11 @@ export function lineToStoryBoard(lineMeta) {
       )
     }
   };
+
+  const personajes = buildPersonajesRefs(opts.reparto, opts.repartoUri);
+  if (personajes) board.personajes = personajes;
+
+  return board;
 }
 
 /**
@@ -74,7 +100,9 @@ export function buildTransmediaEvents(lineaId, board) {
  *   outPath?: string,
  *   approved?: boolean,
  *   approvalToken_evidenced?: string,
- *   gate?: object
+ *   gate?: object,
+ *   reparto?: object,
+ *   repartoUri?: string
  * }} opts
  */
 export function exportStoryBoardFromLine(opts) {
@@ -112,11 +140,19 @@ export function exportStoryBoardFromLine(opts) {
       })
     : [];
 
-  const board = lineToStoryBoard({
-    id: lineaId,
-    etiqueta: manifest?.meta?.etiqueta || lineaId,
-    nodos
-  });
+  const repartoUri =
+    opts.reparto != null
+      ? opts.repartoUri || `reparto://${lineaId}/reparto.json`
+      : undefined;
+
+  const board = lineToStoryBoard(
+    {
+      id: lineaId,
+      etiqueta: manifest?.meta?.etiqueta || lineaId,
+      nodos
+    },
+    { reparto: opts.reparto, repartoUri }
+  );
 
   const validated = validateStoryBoard(board);
   if (!validated.ok) {
@@ -141,10 +177,18 @@ export function exportStoryBoardFromLine(opts) {
       linea: `linea://${lineaId}`,
       story_board: `file://${outPath.replace(/\\/g, '/')}`,
       preset: 'preset://linea-editor',
-      events: events.map((e) => e.refs)
+      events: events.map((e) => e.refs),
+      // U174: personajes as ids only (never nombre/rol corpus) when reparto aports them.
+      ...(board.personajes
+        ? {
+            reparto: repartoUri,
+            personajes: board.personajes.refs.map((r) => r.personajeId)
+          }
+        : {})
     },
     curation_chain: board.source.curation_chain,
     act_count: board.acts.length,
+    personaje_count: board.personajes ? board.personajes.refs.length : 0,
     approved: opts.approved === true,
     approvalToken_evidenced: opts.approvalToken_evidenced,
     gate: opts.gate
