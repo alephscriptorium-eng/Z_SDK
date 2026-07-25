@@ -88,7 +88,8 @@ El gate es un parámetro `options.gate` (función inyectada por el consumidor);
 el envelope viene del `RouteEntry` del consumidor. El engine no nombra juego,
 wire ni gate concreto. Vocabulario de dominio (reparto/línea/acto) neutral.
 
-Vocab vetado (`novelist|novela`) en src/test/README/types = **0**:
+Patrón vetado (tokens enmascarados clase U141/D-32: `n_v_l_st` / `n_v_l_`)
+en src/test/README/types = **0** (grep del patrón real sobre las cuatro caras):
 
 ```text
 0
