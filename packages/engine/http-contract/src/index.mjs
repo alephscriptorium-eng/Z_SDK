@@ -26,8 +26,11 @@ export {
   deriveRouteMcpUri,
   resolveRouteMcpUri,
   projectRoutesToMcp,
+  projectRouteToMcpTool,
+  MUTATION_METHODS,
   fillExpressPath,
   bindProjectedHttpReaders,
+  bindProjectedHttpMutators,
   renderRouteMcpCatalog
 } from './mcp-project.mjs';
 

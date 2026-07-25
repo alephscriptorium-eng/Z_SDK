@@ -27,6 +27,18 @@ import { expressPathToOpenApi } from './openapi.mjs';
  * @property {string} method
  * @property {string} path
  * @property {string|null} xMcpResource
+ *
+ * @typedef {object} ProjectedMcpTool
+ * @property {string} name — MCP tool name (xMcpTool override or route id)
+ * @property {string} title
+ * @property {string} description
+ * @property {string} routeId
+ * @property {string} method — mutating HTTP verb (POST/PUT/PATCH/DELETE)
+ * @property {string} path
+ * @property {import('./route.mjs').EnvelopeKind|null} envelope
+ * @property {import('zod').ZodTypeAny|null} bodySchema — request.body envelope schema
+ * @property {import('zod').ZodTypeAny|null} paramsSchema — request.params schema
+ * @property {string|null} xMcpTool
  */
 
 /**
@@ -49,20 +61,62 @@ export function resolveRouteMcpUri(route, options = {}) {
   return deriveRouteMcpUri(route, options.uriScheme ?? 'rest');
 }
 
+/** Mutating HTTP verbs projected to MCP tools (everything that is not GET). */
+export const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
 /**
- * Project GET RouteEntry manifests to MCP resources and resource-templates.
- * Mutations are skipped (MCP tools are out of this projection).
+ * Project a single mutation RouteEntry to an MCP tool descriptor.
+ * The zod schemas ride along so `bindProjectedHttpMutators` can validate the
+ * envelope at call time (same schemas the express middleware enforces).
+ * @param {import('./route.mjs').RouteEntry} route
+ * @returns {ProjectedMcpTool}
+ */
+export function projectRouteToMcpTool(route) {
+  const req = route.request || {};
+  return {
+    name: route.xMcpTool ?? route.id,
+    title: route.summary,
+    description: route.summary,
+    routeId: route.id,
+    method: String(route.method).toUpperCase(),
+    path: route.path,
+    envelope: route.envelope ?? null,
+    bodySchema: req.body ?? null,
+    paramsSchema: req.params ?? null,
+    xMcpTool: route.xMcpTool ?? null
+  };
+}
+
+/**
+ * Project RouteEntry manifests to MCP resources, resource-templates and tools.
+ * GET → resource / resource-template (unchanged). Non-GET (mutation) → tool.
  *
  * @param {import('./route.mjs').RouteEntry[]} routes
  * @param {{ uriScheme?: string }} [options]
- * @returns {{ resources: ProjectedMcpResource[], templates: ProjectedMcpTemplate[] }}
+ * @returns {{ resources: ProjectedMcpResource[], templates: ProjectedMcpTemplate[], tools: ProjectedMcpTool[] }}
  */
 export function projectRoutesToMcp(routes, options = {}) {
   const resources = [];
   const templates = [];
+  const tools = [];
+  const toolNames = new Set();
 
   for (const route of routes) {
-    if (String(route.method).toUpperCase() !== 'GET') continue;
+    const method = String(route.method).toUpperCase();
+    if (method !== 'GET') {
+      if (MUTATION_METHODS.has(method)) {
+        const tool = projectRouteToMcpTool(route);
+        if (toolNames.has(tool.name)) {
+          throw new Error(
+            `duplicate MCP tool name: ${tool.name} ` +
+              `(routes collide on id/xMcpTool: ${route.id})`
+          );
+        }
+        toolNames.add(tool.name);
+        tools.push(tool);
+      }
+      continue;
+    }
 
     const uri = resolveRouteMcpUri(route, options);
     const isTemplate = uri.includes('{');
@@ -84,7 +138,7 @@ export function projectRoutesToMcp(routes, options = {}) {
     }
   }
 
-  return { resources, templates };
+  return { resources, templates, tools };
 }
 
 /**
@@ -154,19 +208,145 @@ export function bindProjectedHttpReaders(projected, options) {
 }
 
 /**
+ * Bind projected mutation tools to HTTP callers against a live base URL.
+ *
+ * Neutral by construction (D-8): the consumer injects the approval `gate` and
+ * the RouteEntry supplies the envelope schema. The engine never names a game,
+ * a wire event or a concrete gate — it only wires the check, the zod envelope
+ * validation and the fetch. Each tool call returns a visible `gate` card on
+ * both success and failure (linea-editor pattern: gate en card/errores).
+ *
+ * Order of a `call`:
+ *   1. gate — refused when absent or when the injected gate denies.
+ *   2. envelope validation — refused when body/params fail their zod schema.
+ *   3. HTTP mutation — POST/PUT/PATCH/DELETE with a JSON body.
+ *
+ * @param {{ tools: ProjectedMcpTool[] }} projected
+ * @param {{
+ *   baseUrl: string,
+ *   fetchImpl?: typeof fetch,
+ *   gate?: (ctx: { tool: string, method: string, path: string, args: object }) =>
+ *     ({ ok: boolean, error?: string, rule?: string, gate?: object }),
+ *   validateInput?: boolean
+ * }} options
+ */
+export function bindProjectedHttpMutators(projected, options) {
+  const baseUrl = options.baseUrl.replace(/\/$/, '');
+  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  const gate = typeof options.gate === 'function' ? options.gate : null;
+  const validateInput = options.validateInput !== false;
+
+  function envelopeFailure(part, flattened, gateCard) {
+    return {
+      ok: false,
+      error: 'Validation failed',
+      code: 'VALIDATION_ERROR',
+      details: [{ part, error: flattened }],
+      gate: gateCard
+    };
+  }
+
+  const toolRegistry = (projected.tools ?? []).map((entry) => ({
+    name: entry.name,
+    title: entry.title,
+    description: entry.description,
+    method: entry.method,
+    path: entry.path,
+    call: async (args = {}) => {
+      const params = args.params ?? {};
+      const body = args.body ?? {};
+
+      // (1) gate — consumer-injected; refuse when unwired or denied.
+      const decision = gate
+        ? gate({ tool: entry.name, method: entry.method, path: entry.path, args })
+        : {
+            ok: false,
+            error: 'Mutation refused: no approval gate wired',
+            rule: 'http-contract.gate_missing'
+          };
+      const gateCard = {
+        tool: entry.name,
+        method: entry.method,
+        path: entry.path,
+        approved: decision?.ok === true,
+        ...(decision && decision.gate ? { detail: decision.gate } : {})
+      };
+      if (!decision || decision.ok !== true) {
+        return {
+          ok: false,
+          error: decision?.error ?? 'Mutation refused: gate denied',
+          rule: decision?.rule ?? 'http-contract.gate_denied',
+          gate: gateCard
+        };
+      }
+
+      // (2) envelope validation — same zod schemas as the express middleware.
+      // Forward the *parsed* payload, never the raw one: with non-strict zod
+      // schemas unknown keys pass validation, so echoing the raw body/params
+      // would leak them downstream. Sanitising here is a projector-level
+      // discipline — it does not rely on every consumer remembering `.strict()`.
+      let sendParams = params;
+      let sendBody = body;
+      if (validateInput && entry.paramsSchema) {
+        const parsed = entry.paramsSchema.safeParse(params);
+        if (!parsed.success) {
+          return envelopeFailure('params', parsed.error.flatten(), gateCard);
+        }
+        sendParams = parsed.data;
+      }
+      if (validateInput && entry.bodySchema) {
+        const parsed = entry.bodySchema.safeParse(body);
+        if (!parsed.success) {
+          return envelopeFailure('body', parsed.error.flatten(), gateCard);
+        }
+        sendBody = parsed.data;
+      }
+
+      // (3) perform mutation with the sanitised payload.
+      const filledPath = fillExpressPath(entry.path, sendParams);
+      const res = await fetchImpl(`${baseUrl}${filledPath}`, {
+        method: entry.method,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(sendBody)
+      });
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { raw: text };
+      }
+      if (!res.ok) {
+        return {
+          ok: false,
+          error: data?.error || `HTTP ${res.status}`,
+          status: res.status,
+          data,
+          gate: gateCard
+        };
+      }
+      return { ok: true, status: res.status, data, gate: gateCard };
+    }
+  }));
+
+  return { toolRegistry };
+}
+
+/**
  * Markdown table of RouteEntry → MCP projections (for specs / docs).
  * @param {import('./route.mjs').RouteEntry[]} routes
  * @param {{ uriScheme?: string }} [options]
  */
 export function renderRouteMcpCatalog(routes, options = {}) {
-  const { resources, templates } = projectRoutesToMcp(routes, options);
+  const { resources, templates, tools } = projectRoutesToMcp(routes, options);
   const lines = [
     '# RouteEntry → MCP projections',
     '',
-    'Generated from GET `RouteEntry` manifests via `projectRoutesToMcp`.',
+    'Generated from `RouteEntry` manifests via `projectRoutesToMcp` ' +
+      '(GET → resource / resource-template, mutation → tool).',
     '',
-    '| Kind | Route id | HTTP | MCP URI / template |',
-    '|------|----------|------|--------------------|'
+    '| Kind | Route id | HTTP | MCP URI / template / tool |',
+    '|------|----------|------|---------------------------|'
   ];
 
   const rows = [
@@ -181,6 +361,12 @@ export function renderRouteMcpCatalog(routes, options = {}) {
       id: t.routeId,
       http: `${t.method} ${t.path}`,
       mcp: t.uriTemplate
+    })),
+    ...tools.map((t) => ({
+      kind: 'tool',
+      id: t.routeId,
+      http: `${t.method} ${t.path}`,
+      mcp: `tool:${t.name}`
     }))
   ].sort((a, b) => a.id.localeCompare(b.id));
 
