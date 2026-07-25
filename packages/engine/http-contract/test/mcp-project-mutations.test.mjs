@@ -296,3 +296,159 @@ test('renderRouteMcpCatalog lists tool rows for mutations', () => {
   assert.match(md, /reparto\.add/);
   assert.match(md, /tool:reparto\.add/);
 });
+
+// --- Corrección tras contrarrevisión (OBS-1/2/3) ---------------------------
+
+test('RED (OBS-1): non-strict schema + extra field → sanitised body reaches endpoint', async () => {
+  const calls = [];
+  const { tools } = projectRoutesToMcp(ROUTES); // reparto.add body is non-strict
+  const { toolRegistry } = bindProjectedHttpMutators(
+    { tools },
+    {
+      baseUrl: 'http://example.test',
+      gate: makeGate(),
+      fetchImpl: async (url, init) => {
+        calls.push({ body: init.body });
+        return { ok: true, status: 201, text: async () => JSON.stringify({ ok: true }) };
+      }
+    }
+  );
+
+  const add = toolRegistry.find((t) => t.name === 'reparto.add');
+  const res = await add.call({
+    body: { nombre: 'A', acto: 1, evilExtra: 'leak' },
+    approve: true,
+    approvalToken: APPROVAL_TOKEN
+  });
+
+  assert.equal(res.ok, true);
+  const sent = JSON.parse(calls[0].body);
+  assert.deepEqual(sent, { nombre: 'A', acto: 1 });
+  assert.equal('evilExtra' in sent, false, 'unknown key must not be forwarded');
+});
+
+test('OBS-2: duplicate tool name (colliding xMcpTool) throws in projection', () => {
+  const DUP = defineRoutes('u172-dup', [
+    {
+      id: 'a.create',
+      method: 'POST',
+      path: '/api/a',
+      summary: 'A',
+      xMcpTool: 'shared_name',
+      responses: { 201: z.object({ ok: z.literal(true) }) }
+    },
+    {
+      id: 'b.create',
+      method: 'POST',
+      path: '/api/b',
+      summary: 'B',
+      xMcpTool: 'shared_name',
+      responses: { 201: z.object({ ok: z.literal(true) }) }
+    }
+  ]);
+  assert.throws(() => projectRoutesToMcp(DUP), /duplicate MCP tool name: shared_name/);
+});
+
+const RW_ROUTES = defineRoutes('u172-rw', [
+  {
+    id: 'linea.patch',
+    method: 'PATCH',
+    path: '/api/lineas/:lineaId',
+    summary: 'Patch line',
+    request: {
+      params: z.object({ lineaId: z.string() }),
+      body: z.object({ texto: z.string() })
+    },
+    responses: { 200: z.object({ ok: z.literal(true) }) },
+    envelope: 'plain'
+  },
+  {
+    id: 'linea.remove',
+    method: 'DELETE',
+    path: '/api/lineas/:lineaId',
+    summary: 'Delete line',
+    request: { params: z.object({ lineaId: z.string() }) },
+    responses: { 200: z.object({ ok: z.literal(true) }) },
+    envelope: 'plain'
+  }
+]);
+
+test('GREEN (OBS-3): PATCH round-trip gate→validate→fetch', async () => {
+  const calls = [];
+  const { tools } = projectRoutesToMcp(RW_ROUTES);
+  const { toolRegistry } = bindProjectedHttpMutators(
+    { tools },
+    {
+      baseUrl: 'http://example.test',
+      gate: makeGate(),
+      fetchImpl: async (url, init) => {
+        calls.push({ url, method: init.method, body: init.body });
+        return { ok: true, status: 200, text: async () => JSON.stringify({ ok: true }) };
+      }
+    }
+  );
+
+  const patch = toolRegistry.find((t) => t.name === 'linea.patch');
+  const res = await patch.call({
+    params: { lineaId: 'L9' },
+    body: { texto: 'nuevo' },
+    approve: true,
+    approvalToken: APPROVAL_TOKEN
+  });
+
+  assert.equal(res.ok, true);
+  assert.equal(calls[0].method, 'PATCH');
+  assert.equal(calls[0].url, 'http://example.test/api/lineas/L9');
+  assert.deepEqual(JSON.parse(calls[0].body), { texto: 'nuevo' });
+});
+
+test('GREEN (OBS-3): DELETE round-trip gate→validate→fetch', async () => {
+  const calls = [];
+  const { tools } = projectRoutesToMcp(RW_ROUTES);
+  const { toolRegistry } = bindProjectedHttpMutators(
+    { tools },
+    {
+      baseUrl: 'http://example.test',
+      gate: makeGate(),
+      fetchImpl: async (url, init) => {
+        calls.push({ url, method: init.method });
+        return { ok: true, status: 200, text: async () => JSON.stringify({ ok: true }) };
+      }
+    }
+  );
+
+  const del = toolRegistry.find((t) => t.name === 'linea.remove');
+  const res = await del.call({
+    params: { lineaId: 'L9' },
+    approve: true,
+    approvalToken: APPROVAL_TOKEN
+  });
+
+  assert.equal(res.ok, true);
+  assert.equal(calls[0].method, 'DELETE');
+  assert.equal(calls[0].url, 'http://example.test/api/lineas/L9');
+});
+
+test('RED (OBS-3): DELETE with invalid params → VALIDATION_ERROR, network never hit', async () => {
+  let fetched = false;
+  const { tools } = projectRoutesToMcp(RW_ROUTES);
+  const { toolRegistry } = bindProjectedHttpMutators(
+    { tools },
+    {
+      baseUrl: 'http://example.test',
+      gate: makeGate(),
+      fetchImpl: async () => {
+        fetched = true;
+        return { ok: true, status: 200, text: async () => '{}' };
+      }
+    }
+  );
+
+  const del = toolRegistry.find((t) => t.name === 'linea.remove');
+  const res = await del.call({ params: {}, approve: true, approvalToken: APPROVAL_TOKEN });
+
+  assert.equal(res.ok, false);
+  assert.equal(res.code, 'VALIDATION_ERROR');
+  assert.equal(res.details[0].part, 'params');
+  assert.equal(fetched, false);
+});

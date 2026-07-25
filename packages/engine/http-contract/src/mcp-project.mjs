@@ -99,11 +99,22 @@ export function projectRoutesToMcp(routes, options = {}) {
   const resources = [];
   const templates = [];
   const tools = [];
+  const toolNames = new Set();
 
   for (const route of routes) {
     const method = String(route.method).toUpperCase();
     if (method !== 'GET') {
-      if (MUTATION_METHODS.has(method)) tools.push(projectRouteToMcpTool(route));
+      if (MUTATION_METHODS.has(method)) {
+        const tool = projectRouteToMcpTool(route);
+        if (toolNames.has(tool.name)) {
+          throw new Error(
+            `duplicate MCP tool name: ${tool.name} ` +
+              `(routes collide on id/xMcpTool: ${route.id})`
+          );
+        }
+        toolNames.add(tool.name);
+        tools.push(tool);
+      }
       continue;
     }
 
@@ -270,25 +281,33 @@ export function bindProjectedHttpMutators(projected, options) {
       }
 
       // (2) envelope validation — same zod schemas as the express middleware.
+      // Forward the *parsed* payload, never the raw one: with non-strict zod
+      // schemas unknown keys pass validation, so echoing the raw body/params
+      // would leak them downstream. Sanitising here is a projector-level
+      // discipline — it does not rely on every consumer remembering `.strict()`.
+      let sendParams = params;
+      let sendBody = body;
       if (validateInput && entry.paramsSchema) {
         const parsed = entry.paramsSchema.safeParse(params);
         if (!parsed.success) {
           return envelopeFailure('params', parsed.error.flatten(), gateCard);
         }
+        sendParams = parsed.data;
       }
       if (validateInput && entry.bodySchema) {
         const parsed = entry.bodySchema.safeParse(body);
         if (!parsed.success) {
           return envelopeFailure('body', parsed.error.flatten(), gateCard);
         }
+        sendBody = parsed.data;
       }
 
-      // (3) perform mutation.
-      const filledPath = fillExpressPath(entry.path, params);
+      // (3) perform mutation with the sanitised payload.
+      const filledPath = fillExpressPath(entry.path, sendParams);
       const res = await fetchImpl(`${baseUrl}${filledPath}`, {
         method: entry.method,
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(sendBody)
       });
       const text = await res.text();
       let data;
