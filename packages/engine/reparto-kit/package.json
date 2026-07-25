@@ -1,0 +1,53 @@
+{
+  "name": "@zeus/reparto-kit",
+  "version": "0.1.0",
+  "description": "Kit de reparto del dominio narrativo (personajes/roles) y permisos de dominio, montados sobre identidad y seats existentes (peer-card/seat). Rol lib; sin identidad nueva; sin nombres de juego.",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./tipos": {
+      "types": "./types/tipos.d.ts",
+      "default": "./src/tipos.mjs"
+    },
+    "./permisos": {
+      "types": "./types/permisos.d.ts",
+      "default": "./src/permisos.mjs"
+    },
+    "./validar": {
+      "types": "./types/validar.d.ts",
+      "default": "./src/validar.mjs"
+    },
+    "./filas": {
+      "types": "./types/filas.d.ts",
+      "default": "./src/filas.mjs"
+    },
+    "./vista": {
+      "types": "./types/vista.d.ts",
+      "default": "./src/vista.mjs"
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.mjs"
+  },
+  "license": "AIPLv1",
+  "zeus": {
+    "role": "lib"
+  },
+  "dependencies": {
+    "@zeus/protocol": "0.4.1",
+    "@zeus/view-kit": "0.1.5"
+  },
+  "publishConfig": {
+    "registry": "https://npm.scriptorium.escrivivir.co"
+  },
+  "files": [
+    "src",
+    "types",
+    "README.md"
+  ],
+  "types": "./types/index.d.ts"
+}
