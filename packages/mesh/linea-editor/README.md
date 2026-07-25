@@ -17,17 +17,32 @@ Gate is **visible** (`editor://info`, server card, error payloads include
 
 ### Gate por reparto (autoría · U173)
 
-El **mismo** gate tiene una segunda cara, **aditiva**: cuando la llamada aporta
-un `reparto` (`@zeus/reparto-kit` `reparto/1`) + `card` (peer-card de
-`@zeus/protocol`, con `ssbId`) + `personajeId`, autorar exige además que la
-peer-card **pueda `reparto:interpretar`** ese personaje. Se evalúa con
-`evaluarPermiso` y `exigirSeat:true` (frontera de asiento): una card sin asiento
-deniega (`seat_ausente`) y un `ssbId` manipulado tras firmar deniega
-(`seat_invalido`). Sin `reparto` el gate se comporta como el token-only previo
-(retro-compatible). Un solo objeto `gate` lleva ambas caras (`gate.reparto`);
-**cero mecanismo paralelo**. Motivos de denegación: `card_no_vigente`,
+El **mismo** gate tiene una segunda cara: cuando la llamada aporta un `reparto`
+(`@zeus/reparto-kit` `reparto/1`) + `card` (peer-card de `@zeus/protocol`, con
+`ssbId`) + `personajeId`, autorar exige además que la peer-card **pueda
+`reparto:interpretar`** ese personaje. Se evalúa con `evaluarPermiso` y
+`exigirSeat:true` (frontera de asiento): una card sin asiento deniega
+(`seat_ausente`) y un `ssbId` manipulado tras firmar deniega (`seat_invalido`).
+Un solo objeto `gate` lleva ambas caras (`gate.reparto`); **cero mecanismo
+paralelo**. Motivos de denegación: `reparto_requerido`, `card_no_vigente`,
 `identidad_ausente`, `seat_invalido`, `seat_ausente`, `personaje_desconocido`,
 `personaje_no_en_reparto`, `rol_sin_permiso`.
+
+> **⚠️ ADVERTENCIA DE SEGURIDAD — quién exige el reparto.** La cara de reparto es
+> **aditiva por llamada**: si el llamador NO aporta `reparto`, por defecto solo se
+> aplica el token. Es decir, **con la política desactivada el control de reparto
+> solo protege frente a llamadores cooperativos** — un cliente que simplemente
+> omita `reparto` autoriza con el token a secas. Para cerrar ese bypass, la
+> exigencia es una **política servidor-side del despliegue**, no del llamador:
+>
+> - Env: **`ZEUS_LINEA_EDITOR_REQUIRE_REPARTO`** (junto a `ZEUS_LINEAS_ROOT`).
+>   Truthy (`1`/`true`/`yes`/`on`) ⇒ **toda** mutación gateada (`crear_linea`,
+>   `export_story_board`) **sin `reparto` se DENIEGA** con `reparto_requerido`
+>   **antes de escribir** en el volumen. Default **OFF** (retro-compat).
+> - **Los despliegues del flujo dramaturgo DEBEN activar el flag.** Con él OFF,
+>   quien despliega asume que confía en todos los llamadores.
+> - El estado real se refleja en `editor://info` (`gate.reparto_required`) y la
+>   server card; los payloads de deny incluyen el motivo.
 
 ### Personajes en el story-board (U174)
 

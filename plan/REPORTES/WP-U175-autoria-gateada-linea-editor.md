@@ -127,17 +127,22 @@ ok 12 - evaluateRepartoAuthorship: un reparto mal formado deniega sin lanzar →
 ok 13 - CA2 verde: export con reparto emite personajes refs y VALIDA contra U174 (AJV)
 ok 14 - CA2 retro-compat: export SIN reparto no lleva personajes y sigue validando U174
 ok 15 - U174 refs-only: buildPersonajesRefs descarta corpus; el schema rechaza refs con nombre/rol
-ok 16 - slice e2e: horse tools/call crear_linea gated → volume + kit schemas
-ok 17 - eje IV: CLI crearLinea same contract as gated tool (second client)
-1..17
-# tests 17
-# pass 17
+ok 16 - flag OFF (default): mutación sin reparto PERMITIDA (retro-compat; llamador cooperativo)
+ok 17 - flag ON: mutación sin reparto DENEGADA reparto_requerido, sin escritura en volumen
+ok 18 - flag ON: mutación CON reparto válido PERMITIDA (autor autorizado) y escribe volumen
+ok 19 - editor://info refleja el estado REAL del flag (reparto_required true|false)
+ok 20 - slice e2e: horse tools/call crear_linea gated → volume + kit schemas
+ok 21 - eje IV: CLI crearLinea same contract as gated tool (second client)
+1..21
+# tests 21
+# pass 21
 # fail 0
 # skipped 0
 # todo 0
 ```
 Runner: `node --test test/*.mjs` (convención del package: `"test": "node --test
-test/*.mjs"`).
+test/*.mjs"`). Tests 16-19 añadidos en la corrección (ver más abajo); los 17
+previos siguen verdes (renumerados 5-15 + 20-21).
 
 ## Junctions (constancia)
 
@@ -147,13 +152,54 @@ test/*.mjs"`).
 - ELIMINADO antes de terminar: `rmdir <worktree>\node_modules` (ver retorno).
 - No se creó ningún junction adicional (no se tocó `packages/engine/**`).
 
+## Corrección tras contrarrevisión (OBS-1 · bypass servidor-side)
+
+**Devolución:** el revisor confirmó end-to-end que `runCrearLineaGated`/
+`export_story_board` con `approvalToken` válido y **sin** `reparto` escribían en
+volumen: la cara reparto era **opt-in del llamador**, sin control del servidor.
+Un llamador no cooperativo omitía `reparto` y autorizaba con el token a secas.
+
+**Fix aplicado (política servidor-side, no del llamador):**
+
+1. **Flag de despliegue** `ZEUS_LINEA_EDITOR_REQUIRE_REPARTO` (convención `ZEUS_*`,
+   documentado junto a `ZEUS_LINEAS_ROOT` en `start.mjs`/README). Resuelto en
+   `config.mjs` (`resolveRequireReparto`, leído **fresco** del env, no cacheado).
+   Truthy ⇒ **toda** mutación gateada **sin `reparto` se DENIEGA** con
+   `rule: linea-editor.reparto_requerido` / `motivo: reparto_requerido`, **antes de
+   escribir** (orden check→write intacto). Lo lee el gate, **no** los `args` del
+   llamador: no es debilitable desde la llamada (mismo patrón que el token de
+   aprobación, que también se resuelve del env).
+2. **Default OFF** (retro-compat). `editor://info` expone el estado real
+   (`gate.reparto_required = resolveRequireReparto()`, `gate.reparto.required`,
+   `gate.reparto_policy_env`), y el objeto `gate` de cada llamada distingue
+   `reparto_required` (política servidor) de `reparto_supplied` (si la llamada trae
+   reparto). Payloads de deny incluyen el motivo.
+3. **README §"Gate por reparto"** reescrito como **advertencia de seguridad**
+   explícita (no nota de compat): con el flag OFF el control de reparto solo
+   protege frente a llamadores cooperativos; **los despliegues del flujo dramaturgo
+   DEBEN activar el flag**.
+4. **Tests verde/rojo del flag en ambos estados** (16-19): OFF → sin reparto
+   permitido (retro-compat); ON → sin reparto **denegado** `reparto_requerido` sin
+   volumen (crear_linea y export) + con reparto válido **permitido**; y
+   `editor://info` refleja `reparto_required` true|false. Los 17 previos siguen
+   verdes (3 asserciones de mis tests migradas de `reparto_required` per-call →
+   `reparto_supplied`, pues `reparto_required` pasa a significar la política
+   servidor).
+
+Ficheros de la corrección: `src/config.mjs` (resolver+env), `src/gate.mjs`
+(enforcement), `src/editor-server.mjs` (`editorInfo` testeable + reflejo del flag),
+`src/start.mjs` (doc env), `src/index.mjs` (exports), `README.md`,
+`test/reparto-autoria.test.mjs`.
+
 ## Supuestos / pendientes honestos
 
-- **Reparto aditivo (supuesto de diseño):** la cara reparto se activa solo cuando
-  la llamada aporta un `reparto`. Es lo que preserva la retro-compatibilidad (las
-  llamadas y tests token-only siguen igual) sin inventar un gate paralelo. Si el
-  orquestador quisiera reparto **obligatorio** para toda autoría, sería un flip de
-  política de una línea (rechazar `reparto == null`), fuera del alcance de este WP.
+- **⚠️ Reparto obligatorio = política del despliegue, no del llamador.** La cara
+  reparto se evalúa siempre que la llamada aporta un `reparto`; que sea
+  **obligatoria** lo decide el operador vía `ZEUS_LINEA_EDITOR_REQUIRE_REPARTO`
+  (default OFF). **Con el flag OFF, el control de reparto solo aplica a llamadores
+  cooperativos** (un cliente que omita `reparto` autoriza con el token): los
+  despliegues del flujo dramaturgo **deben activar el flag**. Mismo texto en el
+  README como advertencia de seguridad.
 - **Permiso de autoría = `reparto:interpretar`** (verbo del catálogo congelado de
   `@zeus/reparto-kit`, glosado allí como «actuar/autorar el personaje asignado»).
 - **`personajes.refs` = elenco completo del reparto** (todos los `personajes`),
