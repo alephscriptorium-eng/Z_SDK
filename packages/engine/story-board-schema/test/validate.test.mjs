@@ -18,6 +18,15 @@ const EDITOR_FIXTURES = path.join(
   ROOT,
   'editor/editor-ui/test/fixtures'
 );
+const LOCAL_FIXTURES = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  'fixtures'
+);
+
+/** @param {string} dir @param {string} name */
+function readBoard(dir, name) {
+  return JSON.parse(readFileSync(path.join(dir, name), 'utf8'));
+}
 
 test('loads canonical schema from package path', () => {
   const schema = loadStoryBoardSchema();
@@ -90,5 +99,78 @@ test('solve dialect hint rejects aleph-shaped board', () => {
     },
     { dialect: 'solve-inline' }
   );
+  assert.equal(r.ok, false);
+});
+
+// --- WP-U174: referencias de personajes (refs al reparto, refs-only) ---
+
+test('solve board WITH personajes refs validates (green)', () => {
+  const board = readBoard(LOCAL_FIXTURES, 'story-board-con-personajes.solve.json');
+  const r = validateStoryBoard(board);
+  assert.equal(r.ok, true, r.errors?.join('; '));
+  assert.equal(r.dialect, 'solve-inline');
+});
+
+test('aleph board WITH personajes refs validates (green, mismo contrato)', () => {
+  const board = readBoard(LOCAL_FIXTURES, 'story-board-con-personajes.aleph.json');
+  const r = validateStoryBoard(board);
+  assert.equal(r.ok, true, r.errors?.join('; '));
+  assert.equal(r.dialect, 'aleph-blocks');
+});
+
+test('solve board WITHOUT personajes still validates (retro-compat)', () => {
+  const board = readBoard(LOCAL_FIXTURES, 'story-board-sin-personajes.solve.json');
+  const r = validateStoryBoard(board);
+  assert.equal(r.ok, true, r.errors?.join('; '));
+  assert.equal(r.dialect, 'solve-inline');
+});
+
+test('previous editor fixtures still validate unchanged (no personajes field)', () => {
+  for (const [name, dialect] of [
+    ['solve-coagula-story-board.json', 'solve-inline'],
+    ['aleph-et-omega-story-board.json', 'aleph-blocks']
+  ]) {
+    const board = readBoard(EDITOR_FIXTURES, name);
+    assert.equal(board.personajes, undefined);
+    const r = validateStoryBoard(board);
+    assert.equal(r.ok, true, `${name}: ${r.errors?.join('; ')}`);
+    assert.equal(r.dialect, dialect);
+  }
+});
+
+test('invalid personaje ref is rejected — embedded corpus (refs-only) (red)', () => {
+  const board = readBoard(
+    LOCAL_FIXTURES,
+    'story-board-personaje-ref-invalida.solve.json'
+  );
+  const r = validateStoryBoard(board);
+  assert.equal(r.ok, false);
+  assert.match(
+    (r.errors || []).join('\n'),
+    /personaje|refs|additional|nombre|rol/i
+  );
+});
+
+test('personaje ref with empty personajeId is rejected (red)', () => {
+  const r = validateStoryBoard({
+    acts: [{ id: 'act-0', widgets: ['panel-elenco'] }],
+    personajes: { refs: [{ personajeId: '' }] }
+  });
+  assert.equal(r.ok, false);
+});
+
+test('personaje ref missing personajeId is rejected (red)', () => {
+  const r = validateStoryBoard({
+    acts: [{ id: 'act-0', widgets: ['panel-elenco'] }],
+    personajes: { refs: [{}] }
+  });
+  assert.equal(r.ok, false);
+});
+
+test('personajes without refs array is rejected (red)', () => {
+  const r = validateStoryBoard({
+    acts: [{ id: 'act-0', widgets: ['panel-elenco'] }],
+    personajes: { reparto: 'reparto://x' }
+  });
   assert.equal(r.ok, false);
 });

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "generated_at": "2026-07-24",
+  "title": "Board con reparto — story-board",
+  "acts": [
+    {
+      "id": "act-0",
+      "blockchain": 0,
+      "title": "Reparto",
+      "widgets": ["panel-elenco"],
+      "status": "ready"
+    }
+  ],
+  "personajes": {
+    "reparto": "reparto://linea-demo/reparto.json",
+    "refs": [
+      { "personajeId": "p-protagonista" },
+      { "personajeId": "p-antagonista" }
+    ]
+  }
+}

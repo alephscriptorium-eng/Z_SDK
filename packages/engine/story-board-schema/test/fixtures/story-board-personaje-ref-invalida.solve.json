@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "generated_at": "2026-07-24",
+  "title": "Board con ref invalida — story-board",
+  "acts": [
+    {
+      "id": "act-0",
+      "blockchain": 0,
+      "title": "Reparto",
+      "widgets": ["panel-elenco"],
+      "status": "ready"
+    }
+  ],
+  "personajes": {
+    "refs": [
+      { "personajeId": "p-protagonista", "nombre": "corpus embebido", "rol": "corpus embebido" }
+    ]
+  }
+}
