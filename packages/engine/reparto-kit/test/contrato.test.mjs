@@ -62,6 +62,20 @@ test('contrato: crearReparto rechaza asignacion a personaje inexistente', () => 
   );
 });
 
+test('contrato: crearReparto rechaza asignacion duplicada actor↔personaje (OBS-2)', () => {
+  assert.throws(
+    () =>
+      crearReparto({
+        personajes: [{ id: 'pj-1', nombre: 'Uno', rol: 'r' }],
+        asignaciones: [
+          { actorSsbId: ssb(7), personajeId: 'pj-1' },
+          { actorSsbId: ssb(7), personajeId: 'pj-1' }
+        ]
+      }),
+    /asignacion duplicada/
+  );
+});
+
 test('contrato: crearReparto rechaza permiso fuera de catálogo', () => {
   assert.throws(
     () =>

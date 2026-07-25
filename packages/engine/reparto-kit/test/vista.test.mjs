@@ -86,10 +86,24 @@ test('vista: el cast-table EXISTENTE de @zeus/view-kit renderiza nuestras filas 
 });
 
 test('vista: montarReparto (adaptador de vista) es node-inaccesible por la cadena de navegador de view-kit', async (t) => {
+  let err;
   try {
     await import('../src/vista.mjs');
-    // Si el entorno pudiera cargar el índice de view-kit, no se omite.
   } catch (e) {
-    t.skip('view-kit index solo-navegador (esperado en node): ' + e.message);
+    err = e;
   }
+  if (!err) {
+    // Si el entorno pudiera cargar el índice de view-kit, montarReparto debe existir.
+    const { montarReparto } = await import('../src/vista.mjs');
+    assert.equal(typeof montarReparto, 'function');
+    return;
+  }
+  // Solo se acepta como skip el fallo por el asset de navegador de view-kit;
+  // cualquier otro error (p.ej. de nuestro propio módulo) debe FALLAR el test.
+  assert.match(
+    err.message,
+    /room-client\.browser\.mjs|@zeus\/view-kit/,
+    `error inesperado al importar vista.mjs (no es el asset de navegador): ${err.message}`
+  );
+  t.skip('view-kit index solo-navegador (esperado en node): ' + err.message);
 });
