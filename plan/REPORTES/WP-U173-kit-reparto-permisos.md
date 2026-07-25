@@ -139,11 +139,66 @@ adaptador `montarReparto` de `src/vista.mjs` usa el import público correcto
 en node cargando el `widgets.mjs` REAL que envía view-kit (test 25). El render
 end-to-end de `montarReparto` queda **`<pendiente>` de verificación en navegador**.
 
+## Corrección tras contrarrevisión (R1)
+
+Devolución del revisor independiente atendida en la MISMA rama
+`wp/u173-kit-reparto-permisos`. Nombre `@zeus/reparto-kit` en
+`packages/engine/reparto-kit`: **CERRADO** (validado, sin colisión). Suite tras
+corrección:
+```text
+# tests 29
+# pass 28
+# fail 0
+# skipped 1
+# todo 0
+```
+
+- **OBS-1 (BLOQUEANTE) · seatSignature inválida obtenía «concedido».** Resuelto
+  con la opción **(a)** preferida: si la card trae `seatSignature`,
+  `evaluarPermiso`/`puede` (src/permisos.mjs) invocan `verifyTravelingPeerCard`
+  del protocol (SIN reimplementar cripto) y deniegan con motivo `seat_invalido`
+  (más `seatError`) si no verifica. Card **sin** `seatSignature` = comportamiento
+  documentado: por defecto acepta (llamador responsable); con `exigirSeat:true`
+  deniega `seat_ausente` (frontera de asiento opt-in). Justificación de (a) sobre
+  (b): mantiene la API ergonómica (acepta la card del protocol tal cual) sin
+  poder saltarse por accidente la verificación cuando hay asiento, y el opt-in
+  `exigirSeat` cubre el contexto de confianza estricta. Nota de frontera: la
+  verificación usa `@zeus/protocol/peer-card-seat` (`node:crypto`) → la
+  evaluación con asiento es node-side (documentado en README/index). Evidencia:
+  ```text
+  ok 17 - adversarial: ssbId manipulado post-firma NO verifica → seat_invalido (no concedido)
+  ok 18 - seat ausente: card sin seatSignature = comportamiento documentado (acepta; exigirSeat lo deniega)
+  ```
+  El test 17 replica el ataque del revisor: firma → manipula `ssbId` a otro
+  ssbId válido **asignado** al personaje → `verifyTravelingPeerCard` =
+  `{ok:false, error:'seatSignature mismatch'}` → `evaluarPermiso` deniega
+  `seat_invalido` (antes concedía).
+
+- **OBS-2 (menor) · `crearReparto` aceptaba asignaciones duplicadas.** Resuelto:
+  validación rechaza pares `actor↔personaje` duplicados (`TypeError`
+  `asignacion duplicada`). Evidencia:
+  ```text
+  ok 11 - contrato: crearReparto rechaza asignacion duplicada actor↔personaje (OBS-2)
+  ```
+
+- **OBS-3 (menor) · el catch del skip #29 tragaba cualquier excepción.**
+  Resuelto: el test solo omite si el error casa
+  `room-client.browser.mjs|@zeus/view-kit`; cualquier otro error hace `assert`
+  fallido (no skip). Evidencia: `ok 29 - ... # SKIP ...` con el mensaje del asset
+  de navegador; un fallo distinto rompería el test.
+
+- **OBS-4 (menor · deuda documentada) · consumo por `import.meta.resolve`.**
+  Documentado en README §«Consumo de view-kit (deuda aceptada)» y aquí: la
+  resolución por ruta relativa esquiva el `exports` público de view-kit
+  (`.`/`./node`) y es frágil ante refactor interno; candidato futuro = que
+  `@zeus/view-kit` exponga `./widgets` en su `exports` (NO tocado: view-kit es
+  solo lectura para este WP). El código de producción (`src/vista.mjs`) sí usa el
+  import público `@zeus/view-kit`; la resolución por ruta es solo del test node.
+
 ## Supuestos a validar en contrarrevisión
 
 1. **Nombre del paquete `@zeus/reparto-kit` / ruta `packages/engine/reparto-kit`**
-   — supuesto, NO cerrado (el brief pide validarlo en contrarrevisión). No
-   colisiona con kits existentes.
+   — **CERRADO** por la devolución R1 (validado, sin colisión).
 2. **Modelo de permisos**: permiso = f(identidad durable asignada al personaje,
    rol narrativo del personaje vía `politica`). El `rol de asiento` del peer-card
    (`player|dj|operator`) se expone como campo advisory `asiento` en la decisión
@@ -164,6 +219,9 @@ end-to-end de `montarReparto` queda **`<pendiente>` de verificación en navegado
 
 ## Pendientes honestos
 
-- Render end-to-end de `montarReparto` en navegador: `<pendiente>` (skip #26).
-- Nombre/ubicación del paquete: `<pendiente>` de cierre en contrarrevisión.
-- Contrarrevisión independiente PASS: `<pendiente>` (la ejecuta el orquestador).
+- Render end-to-end de `montarReparto` en navegador: `<pendiente>` (skip #29).
+- Deuda OBS-4: `import.meta.resolve` frágil hasta que view-kit exponga
+  `./widgets` en `exports` (fuera de alcance de este WP).
+- Nombre/ubicación del paquete: **CERRADO** (devolución R1).
+- Contrarrevisión independiente PASS de la corrección R1: `<pendiente>` (la
+  ejecuta el orquestador).
