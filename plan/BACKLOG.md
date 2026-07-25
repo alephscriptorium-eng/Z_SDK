@@ -344,14 +344,19 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   L1↔L2 completo sigue como punto de extensión documentado (D-20 /
   U93) dependiente de spikes externos. Estado **⬜** (épica; nunca 🔶).
 
-### WP-U172 · Proyector MCP de mutaciones HTTP — 🔶
+### WP-U172 · Proyector MCP de mutaciones HTTP — ✅
 
-- 🔶 **WP-U172 · Proyectar mutaciones HTTP como herramientas MCP** —
-  despachado (vigía-emulado con claim / 2026-07-25 · GO impl. R13 ·
-  deps cumplidas: R12 cerrado ✅ · R13-Z PASS ✅). Rama
-  `wp/u172-proyector-mcp-mutaciones`. Runner: cascada del brief —
-  Fable reservado a orquestación (directiva ahorro custodio) → worker
-  Opus + contrarrevisión Sonnet. Est. M. Ola A (∥ U173). Brief:
+- ✅ **WP-U172 · Proyectar mutaciones HTTP como herramientas MCP** —
+  aceptado (vigía-emulado / 2026-07-25). Rama
+  `wp/u172-proyector-mcp-mutaciones` · tip obra `35e6ea4` · merge
+  `97a504a`. Contrarrevisión independiente: **DEVOLUCIÓN (1
+  bloqueante: payload crudo vs parsed.data, repro con campo
+  inyectado; 2 menores) → corrección misma rama → PASS** (revisor
+  re-ejecutó su repro: campo extra ya no viaja). Suite en main:
+  36/36. Runner: worker Opus + contrarrevisión Sonnet (Fable en
+  orquestación · directiva ahorro custodio). Patrón gemelo
+  preexistente en middleware.mjs anotado como candidato a WP futuro.
+  Est. M. Ola A (∥ U173). Brief:
   [REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md](REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md).
   **Qué:** extender la proyección RouteEntry→MCP existente de
   `@zeus/http-contract` (hoy resources/readers GET) para proyectar
