@@ -81,11 +81,13 @@ ceguera marca un patrón presente; override `worksKey`; `IMPORT_NOW` determinist
   arriba; CLI `--check` verde contra fixtures sintéticas:
   ```
   import-legado: 2 obra(s) → líneas + story-board + reparto
-    linea-el-atlas-de-las-brumas-8eb402d9: OK
-    linea-obra-md-e3cfb387: OK
+    linea-el-atlas-de-las-brumas-5c3a3c66: OK
+    linea-obra-md-e582fc48: OK
     lineas-registry: OK
   import-legado: --check verde (sin escritura).
   ```
+  (Evidencia regenerada desde el HEAD final — ver §Corrección tras
+  contrarrevisión.)
 - **CA2 · Salida valida contra schemas existentes (AJV story-board verde +
   validador reparto).** CUMPLE. Tests 2–4 verdes: story-board contra
   `@zeus/story-board-schema` (AJV), reparto contra `@zeus/reparto-kit`
@@ -135,3 +137,23 @@ cerrar** (constancia en el retorno). No se commitea (node_modules gitignorado).
 - `año_ini` de los nodos usa el orden posicional del tramo (0,1,2…) como
   ordinal determinista: el corpus no trae años; satisface `nodo-meta` y ordena
   la línea.
+
+## Corrección tras contrarrevisión (OBS-1)
+
+La contrarrevisión independiente detectó que la evidencia de CA1 citaba IDs
+**rancios** (`…-8eb402d9` / `…-e3cfb387`): se capturaron ANTES del fix ASCII de
+`ids.mjs` y no se regeneraron. Corregido: la salida de `--check` del bloque CA1
+se reejecutó desde el HEAD final y ahora muestra los IDs reales
+(`linea-el-atlas-de-las-brumas-5c3a3c66` / `linea-obra-md-e582fc48`). Único
+bloque afectado (grep del reporte: no había más IDs hasheados citados).
+
+Matiz honesto sobre el drift: el fix ASCII (commit `18e565d`, rango combinante
+literal → escape `\u0300-\u036f`) **sí cambió la salida determinista**, al
+contrario de lo que decía el mensaje de aquel commit («sin cambio de
+comportamiento»). El blob previo (`4524bb1`) coló un NUL y marcas combinantes
+literales que perturbaban la entrada de `hash8` — verificado empíricamente: el
+blob viejo daba `hash8('linea','w-1')=8eb402d9`, el HEAD limpio da `5c3a3c66`
+para la misma llamada. El HEAD es la salida canónica correcta y sigue siendo
+**determinista** (dos corridas de `--check` + cálculo directo de `hash8`
+coinciden). El código nunca fue incorrecto; la corrupción de bytes del fichero
+sí desplazaba el hash, y el fix ASCII lo sanea.
