@@ -337,12 +337,15 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
 
 ### ÉPICA U73 · Zigurat — teatro de la capa 2 (acotada) — ⬜
 
-- ⬜ **ÉPICA U73 · Zigurat acotada (teatro de la capa 2)** — reactivada
-  desde Horizonte (D-43). **Épica paraguas, no WP asignable:** se
-  ejecuta vía U172–U177; **U177 cierra su diseño**. Acotada: identidad
-  y seats existentes; **no** capa federada completa; el puente SSB
-  L1↔L2 completo sigue como punto de extensión documentado (D-20 /
-  U93) dependiente de spikes externos. Estado **⬜** (épica; nunca 🔶).
+- ✅ **ÉPICA U73 · Zigurat acotada (teatro de la capa 2)** —
+  **CERRADA-POR-DISEÑO** (2026-07-25, con U177 ✅). Ejecutada vía
+  **U172–U177, los seis ✅** (gates R16–R20). Diseño sellado en
+  `REPORTES/CONTRATO-IDE-OPT-IN-v1.md` Parte II: qué entra
+  (mutaciones-tools · reparto/permisos · personajes en board ·
+  autoría gateada · import · contrato IDE), qué no entra (capa
+  federada completa → hook D-20/U93 · identidad nueva · extensión
+  IDE · publish U178), cinco invariantes de frontera, cuatro puntos
+  de extensión con deuda consciente registrada.
 
 ### WP-U172 · Proyector MCP de mutaciones HTTP — ✅
 
@@ -455,14 +458,20 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   git · publish. **Contrarrevisión** obligatoria (migración + ceguera).
   **Eje:** II (+ ceguera transversal).
 
-### WP-U177 · Contrato consumo IDE opt-in + cierre diseño Zigurat — 🔶
+### WP-U177 · Contrato consumo IDE opt-in + cierre diseño Zigurat — ✅
 
-- 🔶 **WP-U177 · Contrato de consumo IDE opt-in + cierre de diseño de
-  la épica U73** — despachado (2026-07-25 · **worker = el propio
-  vigía-emulado, tick custodio asentado** · cascada del brief:
-  preferir Fable → cumplida · contrarrevisión independiente Sonnet
-  obligatoria · deps U173–U175 ✅ todas en main `278f9d6`). Rama
-  `wp/u177-contrato-ide-cierre-zigurat`. Est. M. Ola E. Brief:
+- ✅ **WP-U177 · Contrato de consumo IDE opt-in + cierre de diseño de
+  la épica U73** — aceptado (2026-07-25). Worker = vigía-emulado
+  (tick custodio; cascada del brief: Fable ✓). Rama
+  `wp/u177-contrato-ide-cierre-zigurat` · tip obra `5d5289a` · merge
+  `4e970ef`. Entregable: `REPORTES/CONTRATO-IDE-OPT-IN-v1.md` (5
+  fases · tabla de verificación 11 filas contra artefactos reales ·
+  cláusulas transversales) + cierre de diseño de la épica.
+  Contrarrevisión con MANDATO DE CERO DEFERENCIA (worker=orquestador):
+  **DEVOLUCIÓN (catálogo deny 5 de 8; 2 citas imprecisas) →
+  corrección + cláusula viva (motivos_deny de editor://info manda en
+  runtime) → PASS** literal-a-literal. Ceguera 0. Est. M. Ola E.
+  Brief:
   [REPORTES/briefs/WP-U177-contrato-ide-cierre-zigurat.md](REPORTES/briefs/WP-U177-contrato-ide-cierre-zigurat.md).
   **Qué:** contrato de consumo IDE **opt-in** documentado (sin
   implementar extensión) + cierre de diseño de la épica U73 Zigurat
