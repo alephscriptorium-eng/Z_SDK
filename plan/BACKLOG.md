@@ -455,11 +455,14 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   git · publish. **Contrarrevisión** obligatoria (migración + ceguera).
   **Eje:** II (+ ceguera transversal).
 
-### WP-U177 · Contrato consumo IDE opt-in + cierre diseño Zigurat — ⬜
+### WP-U177 · Contrato consumo IDE opt-in + cierre diseño Zigurat — 🔶
 
-- ⬜ **WP-U177 · Contrato de consumo IDE opt-in + cierre de diseño de
-  la épica U73** — pendiente. Est. M. Dep: contratos **U173–U175 ✅**
-  para cerrar; diseño puede avanzar ∥. Ola E. Brief:
+- 🔶 **WP-U177 · Contrato de consumo IDE opt-in + cierre de diseño de
+  la épica U73** — despachado (2026-07-25 · **worker = el propio
+  vigía-emulado, tick custodio asentado** · cascada del brief:
+  preferir Fable → cumplida · contrarrevisión independiente Sonnet
+  obligatoria · deps U173–U175 ✅ todas en main `278f9d6`). Rama
+  `wp/u177-contrato-ide-cierre-zigurat`. Est. M. Ola E. Brief:
   [REPORTES/briefs/WP-U177-contrato-ide-cierre-zigurat.md](REPORTES/briefs/WP-U177-contrato-ide-cierre-zigurat.md).
   **Qué:** contrato de consumo IDE **opt-in** documentado (sin
   implementar extensión) + cierre de diseño de la épica U73 Zigurat
