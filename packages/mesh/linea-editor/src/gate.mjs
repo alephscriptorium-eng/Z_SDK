@@ -18,6 +18,7 @@ import {
   resolveMcpApprovalToken
 } from '@zeus/presets-sdk';
 import { evaluarPermiso, isRepartoShaped } from '@zeus/reparto-kit';
+import { resolveRequireReparto, REQUIRE_REPARTO_ENV } from './config.mjs';
 
 /** Domain verb required to AUTHOR a personaje (`interpretar` = actuar/autorar). */
 export const AUTHORSHIP_PERMISO = 'reparto:interpretar';
@@ -104,8 +105,18 @@ export function evaluateRepartoAuthorship(opts) {
 }
 
 /**
- * Enforce the single gate before mutation: approval token (eje V) and, when a
- * reparto is supplied, reparto authorship (U173).
+ * Enforce the single gate before mutation:
+ *   - eje V  · approval token (always).
+ *   - U173   · reparto authorship. Whether reparto is MANDATORY is a
+ *     **server-side deploy policy** (`resolveRequireReparto`, env
+ *     `ZEUS_LINEA_EDITOR_REQUIRE_REPARTO`), NOT a caller choice: when the flag
+ *     is on, any gated mutation without a `reparto` is denied
+ *     (`reparto_requerido`) before any write. When a reparto IS supplied it is
+ *     always evaluated (`exigirSeat:true`). The caller cannot weaken this — the
+ *     policy is read from the environment, like the approval token.
+ *
+ * `gate.reparto_required` mirrors the live server policy; `gate.reparto_supplied`
+ * whether this call carried a reparto. Error payloads carry the motivo.
  * @param {{
  *   approve?: boolean,
  *   approvalToken?: string,
@@ -120,12 +131,16 @@ export function evaluateRepartoAuthorship(opts) {
  */
 export function requireMutationApproval(opts) {
   const { token, gateLine } = describeApprovalGate(opts.toolName);
+  const requireReparto = resolveRequireReparto();
   const gate = {
     tool: opts.toolName,
     token_required: true,
     gate_line: gateLine,
     expected_token: token,
-    reparto_required: opts.reparto != null
+    // Server-side deploy policy (env), NOT caller-controlled:
+    reparto_required: requireReparto,
+    reparto_policy_env: REQUIRE_REPARTO_ENV,
+    reparto_supplied: opts.reparto != null
   };
 
   if (!opts.approve) {
@@ -146,27 +161,54 @@ export function requireMutationApproval(opts) {
     };
   }
 
-  // U173 · reparto authorship face (additive; only when a reparto is supplied).
-  if (opts.reparto != null) {
-    const { face, decision } = evaluateRepartoAuthorship({
-      reparto: opts.reparto,
-      card: opts.card,
-      personajeId: opts.personajeId,
-      permiso: opts.permiso,
-      now: opts.now
-    });
-    gate.reparto = face;
-    if (!decision.ok) {
+  // U173 · reparto authorship face.
+  if (opts.reparto == null) {
+    // Server policy may REQUIRE a reparto for every mutation (deployer decides).
+    if (requireReparto) {
+      const decision = {
+        ok: false,
+        motivo: 'reparto_requerido',
+        actorSsbId: null,
+        personajeId: opts.personajeId ?? null
+      };
+      gate.reparto = {
+        required: true,
+        supplied: false,
+        gate_line: REPARTO_GATE_LINE,
+        permiso: opts.permiso ?? AUTHORSHIP_PERMISO,
+        motivo: 'reparto_requerido'
+      };
       return {
         ok: false,
-        error: `Mutation refused: reparto authorship denied (${decision.motivo})`,
-        rule: `linea-editor.reparto_${decision.motivo}`,
+        error:
+          'Mutation refused: server policy requires a reparto ' +
+          `(${REQUIRE_REPARTO_ENV}); pass reparto + card + personajeId`,
+        rule: 'linea-editor.reparto_requerido',
         gate,
         decision
       };
     }
-    return { ok: true, token, gate, decision };
+    // Flag off: token-only path (retro-compatible).
+    return { ok: true, token, gate };
   }
 
-  return { ok: true, token, gate };
+  // Reparto supplied → always evaluate authorship (additive to the token face).
+  const { face, decision } = evaluateRepartoAuthorship({
+    reparto: opts.reparto,
+    card: opts.card,
+    personajeId: opts.personajeId,
+    permiso: opts.permiso,
+    now: opts.now
+  });
+  gate.reparto = face;
+  if (!decision.ok) {
+    return {
+      ok: false,
+      error: `Mutation refused: reparto authorship denied (${decision.motivo})`,
+      rule: `linea-editor.reparto_${decision.motivo}`,
+      gate,
+      decision
+    };
+  }
+  return { ok: true, token, gate, decision };
 }
