@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://zeus.scriptorium/schemas/story-board.schema.json",
   "title": "Zeus story-board",
-  "description": "Contrato actos→widgets (dialectos históricos vía oneOf). Fuente única @zeus/story-board-schema (WP-U117). SOLVE/plantilla = acts[].widgets; ALEPH = acts + blocks[].uichain.widgets.",
+  "description": "Contrato actos→widgets (dialectos históricos vía oneOf). Fuente única @zeus/story-board-schema (WP-U117). SOLVE/plantilla = acts[].widgets; ALEPH = acts + blocks[].uichain.widgets. Campo opcional `personajes` (WP-U174): referencias al reparto de @zeus/reparto-kit por personajeId — refs-only, nunca corpus embebido; presente en ambos dialectos, retro-compatible dentro del mismo contrato.",
   "oneOf": [
     {
       "$ref": "#/$defs/dialectSolve"
@@ -25,6 +25,40 @@
       "type": "string",
       "minLength": 1,
       "pattern": "^act-[0-9]+$"
+    },
+    "personajeId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "personajeRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "personajeId"
+      ],
+      "properties": {
+        "personajeId": {
+          "$ref": "#/$defs/personajeId"
+        }
+      }
+    },
+    "personajes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "refs"
+      ],
+      "properties": {
+        "reparto": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/personajeRef"
+          }
+        }
+      }
     },
     "dialectSolve": {
       "type": "object",
@@ -87,6 +121,9 @@
               }
             }
           }
+        },
+        "personajes": {
+          "$ref": "#/$defs/personajes"
         },
         "dual_rails": {
           "type": "array"
@@ -159,6 +196,9 @@
               }
             }
           }
+        },
+        "personajes": {
+          "$ref": "#/$defs/personajes"
         },
         "blocks": {
           "type": "array",

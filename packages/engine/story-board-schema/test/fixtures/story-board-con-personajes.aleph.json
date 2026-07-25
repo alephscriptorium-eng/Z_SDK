@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.2",
+  "game": "demo-dramaturgo",
+  "generated_at": "2026-07-24T00:00:00Z",
+  "acts": [
+    {
+      "id": "act-0",
+      "label": "Semilla",
+      "blocks": [0]
+    }
+  ],
+  "personajes": {
+    "reparto": "reparto://demo/reparto.json",
+    "refs": [
+      { "personajeId": "p-narrador" }
+    ]
+  },
+  "blocks": [
+    {
+      "n": 0,
+      "act": "act-0",
+      "title": "Bloque",
+      "uichain": {
+        "present": true,
+        "widgets": ["tablero-aleph"]
+      }
+    }
+  ]
+}
