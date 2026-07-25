@@ -66,11 +66,16 @@ el carril.
   `ZEUS_LINEA_EDITOR_REQUIRE_REPARTO`. La política es del servidor
   (env fresco, no debilitable por args); con ella activa, toda
   mutación sin reparto deniega antes de escribir.
-- Motivos de denegación que el IDE debe representar textualmente:
-  `reparto_requerido` · `personaje_no_en_reparto` · `seat_ausente` ·
-  `seat_invalido` · `rol_sin_permiso` (catálogo de
+- Motivos de denegación que el IDE debe representar textualmente —
+  el catálogo COMPLETO que publica el propio servidor en
+  `editor://info` (`gate.reparto.motivos_deny`, 8 motivos):
+  `reparto_requerido` · `card_no_vigente` · `identidad_ausente` ·
+  `seat_invalido` · `seat_ausente` · `personaje_desconocido` ·
+  `personaje_no_en_reparto` · `rol_sin_permiso` (evaluación en
   `@zeus/reparto-kit` `evaluarPermiso`/`puede`, permiso de autoría
-  `reparto:interpretar`).
+  `reparto:interpretar`). Cláusula viva: el IDE debe leer
+  `motivos_deny` de `editor://info` en runtime — la lista de arriba
+  es la vigente al sellar v1, la del servidor manda.
 - Personajes: relación **1 actor (ssbId) – N personajes** del shape
   `reparto/1`; el export de story-board emite refs-only
   (`personajes.refs[{personajeId}]`, schema U174).
@@ -98,14 +103,15 @@ el carril.
 
 | cláusula | artefacto en main |
 | -------- | ----------------- |
-| catálogo dinámico | `packages/mesh/mcp-launcher/src/catalog.mjs` · resources `launcher://*` |
+| catálogo dinámico | resources `launcher://info\|catalog\|ports` en `packages/mesh/mcp-launcher/src/launcher-server.mjs` · data declarativa de flota en `src/catalog.mjs` |
 | identidad/asiento | `packages/engine/protocol/src/peer-card.mjs` · `peer-card-seat.mjs` · `packages/engine/authority-kit` |
 | lectura | `packages/engine/http-contract/src/mcp-project.mjs` (`projectRoutesToMcp`) |
 | mutación saneada | ídem (`MUTATION_METHODS`, `bindProjectedHttpMutators`, envío de `parsed.data`) + `test/mcp-project-mutations.test.mjs` |
 | autoría gateada | `packages/mesh/linea-editor/src/gate.mjs` · `config.mjs` (`resolveRequireReparto`) · `editor-server.mjs` (`editorInfo`) |
 | permisos/motivos | `packages/engine/reparto-kit/src/permisos.mjs` · `tipos.mjs` (shape `reparto/1`) |
 | personajes en board | `packages/engine/story-board-schema/schemas/story-board.schema.json` (`$defs.personajes`) |
-| elenco visual | `packages/engine/view-kit/src/widgets.mjs` (`cast-table`) |
+| elenco visual | `packages/engine/view-kit/src/widgets.mjs` (`cast-table`, alias `panel-elenco`) |
+| filas de elenco | `packages/engine/reparto-kit/src/filas.mjs` (`filasCastDesdeReparto`) |
 | import | `scripts/import-legado/` (CLI + validar) |
 
 ---

@@ -44,6 +44,24 @@ puntos de extensión / declaración de cierre.
   R16/R17/R18/R19).
 - Sin junction: WP documental, no requiere node_modules.
 
+## Corrección tras contrarrevisión
+
+- OBS-1 (bloqueante): el catálogo de motivos de denegación citaba 5
+  de los 8 que publica `editorInfo()` (faltaban `card_no_vigente`,
+  `identidad_ausente`, `personaje_desconocido`). Corregido con el
+  catálogo completo leído del artefacto real
+  (`editor-server.mjs`, bloque `motivos_deny`) **y** con una cláusula
+  viva: el IDE debe leer `motivos_deny` de `editor://info` en
+  runtime — la lista del servidor manda sobre la del documento.
+  (La observación no solo se corrige: endurece el contrato contra
+  drift futuro del catálogo.)
+- OBS-2 (menor): fila «catálogo dinámico» recitada — resources
+  `launcher://*` viven en `launcher-server.mjs`; `catalog.mjs` es la
+  data declarativa de flota.
+- OBS-3 (menor): fila propia para `filasCastDesdeReparto`
+  (`reparto-kit/src/filas.mjs`) — trazabilidad tabla↔función
+  completa (11 filas).
+
 ## Ceguera
 
 Patrón enmascarado «n·velist|n·vela|N·velistEditor» sobre los dos
