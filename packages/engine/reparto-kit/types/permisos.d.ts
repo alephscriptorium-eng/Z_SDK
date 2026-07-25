@@ -8,6 +8,7 @@ export interface DecisionPermiso {
   rol?: string | null;
   asiento?: string | null;
   permiso?: string;
+  seatError?: string;
 }
 
 export function actorDeCard(card: unknown): string | null;
@@ -17,12 +18,12 @@ export function permisosDePersonaje(reparto: RepartoV1, personajeId: string): st
 export function evaluarPermiso(
   reparto: RepartoV1,
   card: unknown,
-  q: { personajeId: string; permiso: string; now?: number }
+  q: { personajeId: string; permiso: string; now?: number; exigirSeat?: boolean }
 ): DecisionPermiso;
 export function puede(
   reparto: RepartoV1,
   card: unknown,
   personajeId: string,
   permiso: string,
-  now?: number
+  opts?: number | { now?: number; exigirSeat?: boolean }
 ): boolean;

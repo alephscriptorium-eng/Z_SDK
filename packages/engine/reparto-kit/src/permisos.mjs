@@ -8,14 +8,26 @@
  * Decisión = f(reparto, card, personajeId, permiso):
  *   1. card vigente (TTL)                         → si no: card_no_vigente
  *   2. identidad durable presente (ssbId)         → si no: identidad_ausente
- *   3. permiso del catálogo                        → si no: permiso_desconocido
- *   4. personaje existe en el reparto              → si no: personaje_desconocido
- *   5. personaje asignado a ESTE actor             → si no: personaje_no_en_reparto
- *   6. el rol del personaje concede el permiso     → si no: rol_sin_permiso
+ *   3. asiento SSB verificado por el protocol      → si no: seat_invalido / seat_ausente
+ *   4. permiso del catálogo                        → si no: permiso_desconocido
+ *   5. personaje existe en el reparto              → si no: personaje_desconocido
+ *   6. personaje asignado a ESTE actor             → si no: personaje_no_en_reparto
+ *   7. el rol del personaje concede el permiso     → si no: rol_sin_permiso
  *   → concedido
+ *
+ * Asiento (paso 3): si la card trae `seatSignature`, se exige que verifique con
+ * `verifyTravelingPeerCard` del protocol (esto ata el `ssbId` a la firma: un
+ * `ssbId` manipulado post-firma NO verifica → `seat_invalido`). Card SIN
+ * `seatSignature` = identidad no acreditada por asiento: por defecto se acepta
+ * (el llamador es responsable de haber autenticado la card); con
+ * `exigirSeat:true` se deniega (`seat_ausente`) para forzar frontera de asiento.
  */
 
 import { isSsbId, isPeerCardFresh, roleFromPeerCard } from '@zeus/protocol';
+// Verificación de asiento SSB: se DELEGA en el protocol (node:crypto ed25519).
+// No se reimplementa cripto aquí. Esto hace que la evaluación de permisos con
+// asiento sea node-side (autoridad); el adaptador de vista (`./vista`) es aparte.
+import { verifyTravelingPeerCard } from '@zeus/protocol/peer-card-seat';
 import { PERMISOS, MOTIVOS } from './tipos.mjs';
 
 /**
@@ -73,6 +85,7 @@ export function permisosDePersonaje(reparto, personajeId) {
  * @property {string|null} [rol]           — rol narrativo del personaje
  * @property {string|null} [asiento]       — rol de asiento del peer-card (advisory)
  * @property {string} [permiso]
+ * @property {string} [seatError]          — error de verifyTravelingPeerCard si seat_invalido
  */
 
 /**
@@ -83,9 +96,14 @@ export function permisosDePersonaje(reparto, personajeId) {
  * @param {string} q.personajeId
  * @param {string} q.permiso
  * @param {number} [q.now=Date.now()]
+ * @param {boolean} [q.exigirSeat=false] — si true, deniega cards sin seatSignature
  * @returns {DecisionPermiso}
  */
-export function evaluarPermiso(reparto, card, { personajeId, permiso, now = Date.now() } = {}) {
+export function evaluarPermiso(
+  reparto,
+  card,
+  { personajeId, permiso, now = Date.now(), exigirSeat = false } = {}
+) {
   const asiento = roleFromPeerCard(card) ?? null;
   if (!isPeerCardFresh(card, now)) {
     return deny(MOTIVOS.CARD_NO_VIGENTE, { actorSsbId: actorDeCard(card), personajeId, asiento, permiso });
@@ -93,6 +111,16 @@ export function evaluarPermiso(reparto, card, { personajeId, permiso, now = Date
   const actorSsbId = actorDeCard(card);
   if (!actorSsbId) {
     return deny(MOTIVOS.IDENTIDAD_AUSENTE, { actorSsbId: null, personajeId, asiento, permiso });
+  }
+  // Paso 3: verificación de asiento SSB delegada en el protocol (sin cripto propia).
+  const tieneSeat = card != null && card.seatSignature != null && card.seatSignature !== '';
+  if (tieneSeat) {
+    const v = verifyTravelingPeerCard(card);
+    if (!v.ok) {
+      return deny(MOTIVOS.SEAT_INVALIDO, { actorSsbId, personajeId, asiento, permiso, seatError: v.error });
+    }
+  } else if (exigirSeat) {
+    return deny(MOTIVOS.SEAT_AUSENTE, { actorSsbId, personajeId, asiento, permiso });
   }
   if (!PERMISOS.includes(permiso)) {
     return deny(MOTIVOS.PERMISO_DESCONOCIDO, { actorSsbId, personajeId, asiento, permiso });
@@ -132,11 +160,12 @@ export function evaluarPermiso(reparto, card, { personajeId, permiso, now = Date
  * @param {object} card
  * @param {string} personajeId
  * @param {string} permiso
- * @param {number} [now]
+ * @param {number|{ now?: number, exigirSeat?: boolean }} [opts] — `now` (compat) u opciones
  * @returns {boolean}
  */
-export function puede(reparto, card, personajeId, permiso, now = Date.now()) {
-  return evaluarPermiso(reparto, card, { personajeId, permiso, now }).ok;
+export function puede(reparto, card, personajeId, permiso, opts = {}) {
+  const q = typeof opts === 'number' ? { now: opts } : { ...opts };
+  return evaluarPermiso(reparto, card, { personajeId, permiso, ...q }).ok;
 }
 
 /**
