@@ -20,6 +20,11 @@ function defaultLineasRoot() {
 }
 
 /**
+ * Env (deploy):
+ *   - `ZEUS_LINEAS_ROOT` — volume root for LINEAS.
+ *   - `ZEUS_LINEA_EDITOR_REQUIRE_REPARTO` — server-side policy. When truthy,
+ *     EVERY gated mutation without a `reparto` is denied (`reparto_requerido`);
+ *     the deployer, not the caller, enforces reparto authorship. Default OFF.
  * @param {{ lineasRoot?: string, port?: number }} [opts]
  */
 export async function startAll(opts = {}) {

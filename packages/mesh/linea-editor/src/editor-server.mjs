@@ -10,7 +10,12 @@ import {
   jsonContent
 } from '@zeus/presets-sdk';
 import { createStandardMcpServer } from '@zeus/presets-sdk/mcp';
-import { SERVER_NAME, SERVER_VERSION } from './config.mjs';
+import {
+  SERVER_NAME,
+  SERVER_VERSION,
+  REQUIRE_REPARTO_ENV,
+  resolveRequireReparto
+} from './config.mjs';
 import {
   describeApprovalGate,
   REPARTO_GATE_LINE,
@@ -56,9 +61,70 @@ function buildCardExamples(config) {
       }
     },
     mutationTools: [MUTATION_TOOL_CREAR_LINEA, TOOL_EXPORT_STORY_BOARD],
+    repartoRequired: resolveRequireReparto(),
+    repartoPolicyEnv: REQUIRE_REPARTO_ENV,
     sampleResolve: [
       { uri: 'editor://info', expect: 'object with lineasRoot and gate (token + reparto)' }
     ]
+  };
+}
+
+/**
+ * Fact card for `editor://info`. Reflects the LIVE server-side reparto policy
+ * (`resolveRequireReparto`) so the visible gate shows its real state.
+ * @param {{ lineasRoot: string }} config
+ */
+export function editorInfo(config) {
+  const gate = describeApprovalGate([
+    MUTATION_TOOL_CREAR_LINEA,
+    TOOL_EXPORT_STORY_BOARD
+  ]);
+  const repartoRequired = resolveRequireReparto();
+  return {
+    name: SERVER_NAME,
+    version: SERVER_VERSION,
+    lineasRoot: config.lineasRoot,
+    mutationTools: [MUTATION_TOOL_CREAR_LINEA, TOOL_EXPORT_STORY_BOARD],
+    gate: {
+      visible: true,
+      // Cara V (siempre): token de aprobación exacto.
+      token_env: 'ZEUS_MCP_APPROVAL_TOKEN',
+      gate_line: gate.gateLine,
+      // Estado REAL de la política servidor-side de reparto (env flag):
+      reparto_required: repartoRequired,
+      reparto_policy_env: REQUIRE_REPARTO_ENV,
+      // Cara U173: autoría por reparto (obligatoria si reparto_required=true).
+      reparto: {
+        contract: '@zeus/reparto-kit reparto/1',
+        permiso: AUTHORSHIP_PERMISO,
+        exigir_seat: true,
+        required: repartoRequired,
+        motivos_deny: [
+          'reparto_requerido',
+          'card_no_vigente',
+          'identidad_ausente',
+          'seat_invalido',
+          'seat_ausente',
+          'personaje_desconocido',
+          'personaje_no_en_reparto',
+          'rol_sin_permiso'
+        ],
+        gate_line: REPARTO_GATE_LINE,
+        engages_when: repartoRequired
+          ? 'SIEMPRE (política servidor exige reparto en toda mutación)'
+          : 'input trae reparto (+ card + personajeId); política off = solo llamadores cooperativos'
+      }
+    },
+    personajes: {
+      // U174: el export emite refs de personajes cuando el reparto las aporta.
+      schema: '@zeus/story-board-schema (campo opcional personajes, refs-only)',
+      emitted_by: TOOL_EXPORT_STORY_BOARD
+    },
+    frontier: {
+      this_server: 'mutation + export',
+      sibling_read: 'linea-system (read + cache)',
+      path_model: 'linea-kit/viaje (camino; read-only here)'
+    }
   };
 }
 
@@ -70,52 +136,8 @@ function getResourceRegistry(config) {
       title: 'linea-editor info',
       mimeType: 'application/json',
       description:
-        'Fact card: volume root, visible approval gate (token + reparto), mutation tool names.',
-      read: () => {
-        const gate = describeApprovalGate([
-          MUTATION_TOOL_CREAR_LINEA,
-          TOOL_EXPORT_STORY_BOARD
-        ]);
-        return {
-          name: SERVER_NAME,
-          version: SERVER_VERSION,
-          lineasRoot: config.lineasRoot,
-          mutationTools: [MUTATION_TOOL_CREAR_LINEA, TOOL_EXPORT_STORY_BOARD],
-          gate: {
-            visible: true,
-            // Cara V (siempre): token de aprobación exacto.
-            token_env: 'ZEUS_MCP_APPROVAL_TOKEN',
-            gate_line: gate.gateLine,
-            // Cara U173 (aditiva): autoría por reparto cuando se aporta un reparto.
-            reparto: {
-              contract: '@zeus/reparto-kit reparto/1',
-              permiso: AUTHORSHIP_PERMISO,
-              exigir_seat: true,
-              motivos_deny: [
-                'card_no_vigente',
-                'identidad_ausente',
-                'seat_invalido',
-                'seat_ausente',
-                'personaje_desconocido',
-                'personaje_no_en_reparto',
-                'rol_sin_permiso'
-              ],
-              gate_line: REPARTO_GATE_LINE,
-              engages_when: 'input trae reparto (+ card + personajeId)'
-            }
-          },
-          personajes: {
-            // U174: el export emite refs de personajes cuando el reparto las aporta.
-            schema: '@zeus/story-board-schema (campo opcional personajes, refs-only)',
-            emitted_by: TOOL_EXPORT_STORY_BOARD
-          },
-          frontier: {
-            this_server: 'mutation + export',
-            sibling_read: 'linea-system (read + cache)',
-            path_model: 'linea-kit/viaje (camino; read-only here)'
-          }
-        };
-      }
+        'Fact card: volume root, visible approval gate (token + reparto policy), mutation tool names.',
+      read: () => editorInfo(config)
     }
   ];
 }

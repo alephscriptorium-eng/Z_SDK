@@ -1,5 +1,6 @@
 export { startAll, SERVER_NAME } from './start.mjs';
-export { createServer, buildMcp } from './editor-server.mjs';
+export { createServer, buildMcp, editorInfo } from './editor-server.mjs';
+export { resolveRequireReparto, REQUIRE_REPARTO_ENV } from './config.mjs';
 export {
   requireMutationApproval,
   describeApprovalGate,
