@@ -364,14 +364,22 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   gate visible; probes verde/rojo. **Fuera:** proyector nuevo paralelo ·
   UI · publish. **Contrarrevisión** obligatoria (contrato). **Eje:** I.
 
-### WP-U173 · Kit de reparto y permisos de dominio — 🔶
+### WP-U173 · Kit de reparto y permisos de dominio — ✅
 
-- 🔶 **WP-U173 · Kit de reparto y permisos de dominio** — despachado
-  (vigía-emulado con claim / 2026-07-25 · GO impl. R13 · deps
-  cumplidas: R12 cerrado ✅ · R13-Z PASS ✅). Rama
-  `wp/u173-kit-reparto-permisos`. Runner: cascada del brief — Fable
-  reservado a orquestación (directiva ahorro custodio) → worker Opus +
-  contrarrevisión Sonnet. Est. M. Ola A (∥ U172). Brief:
+- ✅ **WP-U173 · Kit de reparto y permisos de dominio** — aceptado
+  (vigía-emulado / 2026-07-25). Rama `wp/u173-kit-reparto-permisos` ·
+  tip obra `2069bfb` · merge `7c1d8a8`. Paquete
+  **`@zeus/reparto-kit`** (nombre validado en contrarrevisión), shape
+  `reparto/1` congelado, 1 actor (ssbId) – N personajes.
+  Contrarrevisión independiente: **DEVOLUCIÓN (1 bloqueante:
+  seatSignature inválida obtenía «concedido», repro cripto en vivo; 3
+  menores) → corrección misma rama (verifyTravelingPeerCard del
+  protocol + exigirSeat + test réplica del ataque) → PASS** + higiene
+  pre-merge (byte NUL → escape visible, misma semántica). Suite en
+  main: 28 pass / 1 skip legítimo. Deuda documentada: consumo de
+  view-kit vía resolve interno (candidato: exponer ./widgets en
+  view-kit). Runner: worker Opus + contrarrevisión Sonnet. Est. M.
+  Ola A (∥ U172). Brief:
   [REPORTES/briefs/WP-U173-kit-reparto-permisos.md](REPORTES/briefs/WP-U173-kit-reparto-permisos.md).
   **Qué:** kit de reparto (personajes/roles del dominio narrativo) +
   permisos sobre identidad/seats **existentes** (`@zeus/protocol`
