@@ -344,11 +344,14 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   L1↔L2 completo sigue como punto de extensión documentado (D-20 /
   U93) dependiente de spikes externos. Estado **⬜** (épica; nunca 🔶).
 
-### WP-U172 · Proyector MCP de mutaciones HTTP — ⬜
+### WP-U172 · Proyector MCP de mutaciones HTTP — 🔶
 
-- ⬜ **WP-U172 · Proyectar mutaciones HTTP como herramientas MCP** —
-  pendiente. Est. M. Dep: R12 cerrado · R13-Z PASS +
-  GO impl. Ola A (∥ U173). Brief:
+- 🔶 **WP-U172 · Proyectar mutaciones HTTP como herramientas MCP** —
+  despachado (vigía-emulado con claim / 2026-07-25 · GO impl. R13 ·
+  deps cumplidas: R12 cerrado ✅ · R13-Z PASS ✅). Rama
+  `wp/u172-proyector-mcp-mutaciones`. Runner: cascada del brief —
+  Fable reservado a orquestación (directiva ahorro custodio) → worker
+  Opus + contrarrevisión Sonnet. Est. M. Ola A (∥ U173). Brief:
   [REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md](REPORTES/briefs/WP-U172-proyector-mcp-mutaciones.md).
   **Qué:** extender la proyección RouteEntry→MCP existente de
   `@zeus/http-contract` (hoy resources/readers GET) para proyectar
@@ -356,11 +359,14 @@ lectura**; ningún vocabulario ni artefacto legado al código público.
   gate visible; probes verde/rojo. **Fuera:** proyector nuevo paralelo ·
   UI · publish. **Contrarrevisión** obligatoria (contrato). **Eje:** I.
 
-### WP-U173 · Kit de reparto y permisos de dominio — ⬜
+### WP-U173 · Kit de reparto y permisos de dominio — 🔶
 
-- ⬜ **WP-U173 · Kit de reparto y permisos de dominio** — pendiente.
-  Est. M. Dep: R12 cerrado · R13-Z PASS + GO impl.
-  Ola A (∥ U172). Brief:
+- 🔶 **WP-U173 · Kit de reparto y permisos de dominio** — despachado
+  (vigía-emulado con claim / 2026-07-25 · GO impl. R13 · deps
+  cumplidas: R12 cerrado ✅ · R13-Z PASS ✅). Rama
+  `wp/u173-kit-reparto-permisos`. Runner: cascada del brief — Fable
+  reservado a orquestación (directiva ahorro custodio) → worker Opus +
+  contrarrevisión Sonnet. Est. M. Ola A (∥ U172). Brief:
   [REPORTES/briefs/WP-U173-kit-reparto-permisos.md](REPORTES/briefs/WP-U173-kit-reparto-permisos.md).
   **Qué:** kit de reparto (personajes/roles del dominio narrativo) +
   permisos sobre identidad/seats **existentes** (`@zeus/protocol`
