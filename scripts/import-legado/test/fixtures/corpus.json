@@ -1,0 +1,64 @@
+{
+  "resources": {
+    "characters": [
+      {
+        "id": "c-1",
+        "name": "Vera Lumen",
+        "description": "Cartografa de brumas",
+        "traits": ["curiosa", "tenaz"],
+        "backstory": "Crecio entre faros apagados."
+      },
+      {
+        "id": "c-2",
+        "name": "Tobias Cauce",
+        "description": "Relojero errante",
+        "traits": ["metodico"],
+        "backstory": "Perdio su taller en la crecida."
+      }
+    ],
+    "scenes": [
+      {
+        "id": "s-1",
+        "title": "El faro sin senal",
+        "description": "Noche sin luz",
+        "setting": "Acantilado",
+        "summary": "Vera busca la senal perdida.",
+        "content": "Texto sintetico de escena uno.",
+        "characters": ["c-1"]
+      },
+      {
+        "id": "s-2",
+        "title": "El engranaje mudo",
+        "description": "Taller vacio",
+        "setting": "Villa baja",
+        "summary": "Tobias repara el mecanismo.",
+        "content": "Texto sintetico de escena dos.",
+        "characters": ["c-2", "c-1"]
+      }
+    ],
+    "chapters": [
+      {
+        "id": "ch-1",
+        "title": "Bruma primera",
+        "summary": "El puerto despierta lento.",
+        "content": "Texto sintetico de capitulo uno."
+      },
+      {
+        "id": "ch-2",
+        "title": "Bruma segunda",
+        "summary": "La marea cambia de idea.",
+        "content": "Texto sintetico de capitulo dos."
+      }
+    ],
+    "obras": [
+      {
+        "id": "w-1",
+        "title": "El atlas de las brumas",
+        "description": "Una travesia menor y curada.",
+        "characters": ["c-1", "c-2"],
+        "scenes": ["s-1", "s-2"],
+        "chapters": ["ch-1", "ch-2"]
+      }
+    ]
+  }
+}

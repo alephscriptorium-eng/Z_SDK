@@ -1,0 +1,56 @@
+/**
+ * IDs zeus deterministas para el importador one-off (precedente D-19).
+ *
+ * Regla: mismo input -> mismos ids. Sin `Date.now`, sin aleatoriedad. Los ids
+ * se derivan por completo de claves estables de la fuente (id de origen, o
+ * el indice posicional cuando la fuente no trae id). El componente legible es
+ * un slug neutro; la unicidad la aporta un prefijo de hash del contenido
+ * estable, nunca del texto humano, para no filtrar vocabulario en el id.
+ */
+
+import { createHash } from 'node:crypto';
+
+/**
+ * Prefijo hex estable (8) de una lista de claves. Determinista.
+ * @param {...unknown} claves
+ * @returns {string}
+ */
+export function hash8(...claves) {
+  const blob = claves
+    .map((k) => (typeof k === 'string' ? k : JSON.stringify(k ?? null)))
+    .join(' ');
+  return createHash('sha256').update(blob, 'utf8').digest('hex').slice(0, 8);
+}
+
+/**
+ * Slug neutro: minusculas, sin diacriticos, no-alfanumerico -> guion.
+ * El rango de marcas combinantes va con escapes unicode (fichero ASCII puro).
+ * @param {string} texto
+ * @param {number} [max]
+ * @returns {string}
+ */
+export function slug(texto, max = 48) {
+  return String(texto ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, max)
+    .replace(/-+$/g, '');
+}
+
+/**
+ * Id zeus determinista: `<prefijo>-<slug(etiqueta)>-<hash8(clavesEstables)>`.
+ * Si el slug queda vacio, `<prefijo>-<hash8>`.
+ * @param {string} prefijo
+ * @param {string} etiqueta  texto humano legible (solo para el slug)
+ * @param {...unknown} clavesEstables  id de origen / indice; fija la unicidad
+ * @returns {string}
+ */
+export function zeusId(prefijo, etiqueta, ...clavesEstables) {
+  const base = clavesEstables.length ? clavesEstables : [etiqueta];
+  const h = hash8(prefijo, ...base);
+  const s = slug(etiqueta);
+  return s ? `${prefijo}-${s}-${h}` : `${prefijo}-${h}`;
+}
