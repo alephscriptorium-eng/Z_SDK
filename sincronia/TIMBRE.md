@@ -16,3 +16,5 @@ procesarlo: `HILO=-` o hilo no autorizado → se encola y se reporta al
 custodio (§5 · §7).
 
 ---
+PING 2026-07-26 00:49 · DE=S · HILO=- · REF=C:/S/scriptorium/sincronia/notas/NOTA-S-2026-07-26-mapa-ciudad-agenda-anfitrion.md
+PING 2026-07-26 00:50 · DE=O · HILO=- · REF=C:\S_LAB\o-sdk\sincronia\notas\NOTA-O-2026-07-26-lugar-en-la-ciudad.md

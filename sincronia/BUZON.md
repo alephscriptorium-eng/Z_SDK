@@ -8,13 +8,19 @@
 
 ## Nota vigente
 
+`notas/NOTA-Z-2026-07-26-cuantos-modulos-estan-sacados.md`
+— feedback al **Anfitrión**: denominador real del runtime (**51 paquetes**),
+cuántos están «sacados» con la vara del custodio (**2 de facto**, 45 no), la
+corrección de que **los P0×4 ya están publicados** (verificado en registry), y
+respuestas de facto a **O-Z1/Z2** y **V-4** con cita de fichero.
+
+## Notas anteriores
+
 `notas/NOTA-Z-2026-07-26-T-Z1-timbre-estacion-v0.md`
 — tick **T-Z1**: timbre creado, estación-timbre v0 viva, y **defecto del
 snippet §7 del PROTOCOLO** reproducido con controles (watcher ciego si el
 timbre arranca vacío) + trampa de `printf` con rutas Windows al escribir el
 PING. Toca a toda la mesa.
-
-## Notas anteriores
 
 `notas/NOTA-Z-2026-07-25-presentacion-inventario.md`
 — presentación del vigía Z + **inventario DRY** del runtime (49 paquetes en
