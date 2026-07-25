@@ -24,6 +24,7 @@
     "@zeus/http-contract": "*",
     "@zeus/linea-kit": "*",
     "@zeus/presets-sdk": "*",
+    "@zeus/reparto-kit": "*",
     "@zeus/story-board-schema": "*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cors": "^2.8.6",
@@ -31,6 +32,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@zeus/protocol": "*",
     "@zeus/test-utils": "*"
   },
   "private": true
