@@ -1,43 +1,40 @@
-# DRAFT · carril Z · **puente al backlog real**
+# DRAFT · carril Z · **puente al backlog real (fusionado)**
 
 | dato | valor |
 | ---- | ----- |
 | Dueño | vigía **Z** · `C:\S_LAB\z-sdk` |
-| Actualizado | 2026-07-26 (**F2**) |
-| Fuente normativa | `INFORME-R4` §2 |
+| Actualizado | 2026-07-26 (**cierre de sesión** — fusión ejecutada) |
+| Fuente normativa | `INFORME-R4` §2 + orden de fusión del custodio |
 
-> **Este DRAFT ya no acumula candidatos.** Por encargo F2 §5 queda como
-> puntero al backlog proyectado del `plan/` del mundo:
+> **La proyección F2 ya no está en fichero aparte: está apilada en el plan.**
 >
-> ### 👉 `C:\S_LAB\z-sdk\plan\BACKLOG-F2.md`
+> ### 👉 `plan/BACKLOG.md` → **ÉPICA F2** (D-45)
 
-## Resumen
+## Resumen (corregido en cierre)
 
 | dato | valor |
 | ---- | ----- |
-| Lanes | **8** — A superficie del runtime · B identidad/permiso · C transporte/federación · D plano de datos local-first · E canal y verdad de la doc · F Ciudad en el runtime · G observabilidad/estación · H fronteras con otros carriles |
-| WPs | **54** — P0 **16** · P1 **23** · P2 **15** |
-| Numeración | ids provisionales `F2-Z-nn`; el `U` definitivo lo asigna el orquestador |
-| Estado | **nada abierto**; todo espera aprobación o descarte del custodio |
+| Lanes | **8** — A superficie · B identidad/permiso · C transporte/federación · D datos local-first · E canal/doc · F Ciudad · G observabilidad · H fronteras |
+| WPs | **55** — P0 **16** · P1 **25** · P2 **14** *(la nota F2 decía 54/16/23/15: error aritmético, corregido)* |
+| Numeración | **U179–U231** (53 nuevos) · `F2-Z-53`=**U178** existente · `F2-Z-39`=**U71R** reencuadrado · el diferido «U87 §5 sin ID» = **U207** |
+| Estado | todo ⬜ · **GO por WP = cherry-pick del custodio** |
 
-## Trazabilidad de los DRAFT anteriores
-
-Los candidatos `Z-D1…Z-D9` de R2–R6 están **absorbidos**, no perdidos:
+## Trazabilidad Z-D* → U
 
 | antiguo | ahora |
 | ------- | ----- |
-| Z-D1 runtime + grafo | F2-Z-11 · F2-Z-01 · F2-Z-62 |
-| Z-D2 hilo peercard-reúso | F2-Z-13 |
-| Z-D3 catálogo + 17 invisibles | F2-Z-02 · F2-Z-03 · F2-Z-04 |
-| Z-D4 U93-bis | F2-Z-10 |
-| Z-D5 VOLUMES / molde | F2-Z-31 · F2-Z-37 · F2-Z-41 |
-| Z-D6 canal de packs | F2-Z-50 · F2-Z-51 · F2-Z-52 |
-| Z-D7 relay | F2-Z-20 · F2-Z-21 · F2-Z-22 |
-| Z-D8 porte one-off | F2-Z-38 |
-| Z-D9 anclaje por contenido | F2-Z-39 |
+| Z-D1 | U187 · U179 · U218 |
+| Z-D2 | U189 |
+| Z-D3 | U180 · U181 · U182 |
+| Z-D4 | U186 |
+| Z-D5 | U200 · U206 · U209 |
+| Z-D6 | U210 · U211 · U212 |
+| Z-D7 | U192 · U193 · U194 |
+| Z-D8 | U207 |
+| Z-D9 | U71R |
 
-## Compromiso de R4 con dueño Z
+## Compromiso D-45 con dueño Z
 
-`WP única C-3 + sellado-hash` → **F2-Z-30** (P0). No se parte en dos.
+`WP única C-3 + sellado-hash` → **U199** (P0). No se parte en dos.
 
 — vigía **Z**

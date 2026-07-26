@@ -34,12 +34,17 @@ asigna el orquestador al aceptar — un vigía no numera backlog ajeno ni propio
 
 ## Conteo
 
+> ✎ **Corrección (cierre de sesión):** el conteo original de esta nota (54 =
+> 16/23/15) tenía un error aritmético. El real, verificado fila a fila en la
+> fusión: **55 = P0 16 · P1 25 · P2 14**. La fusión al plan
+> (`plan/BACKLOG.md` § ÉPICA F2 · D-45) lleva el conteo correcto.
+
 | prioridad | WPs |
 | --------- | --: |
 | **P0** | **16** |
-| **P1** | **23** |
-| **P2** | **15** |
-| **total** | **54** |
+| **P1** | **25** |
+| **P2** | **14** |
+| **total** | **55** |
 
 Los 16 P0 no son «lo urgente»: son lo que **desbloquea a otros** — holón-7
 (B), contrato de datos (D), los dos defectos de mi doc (E) y lo que O y V
