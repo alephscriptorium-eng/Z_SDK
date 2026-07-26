@@ -194,6 +194,145 @@ economía CI) — ver triage U142.
 
 ---
 
+## ÉPICA F2 — mundo acabado (⬜ proyección apilada · cherry-pick del custodio · 2026-07-26 · D-45)
+
+Origen: encargo `INFORME-R4` §2 de la mesa Scriptorium («imagina tu
+WORLD_ROOT acabado; sed generosos») + **orden expresa del custodio** de
+fusionar la proyección al plan. Fuente durable: repo `scriptorium-cuadernos`
+rama `z_sdk-vigilancia`. Consenso vinculante: **D-45**.
+
+**Estado global: nada abierto.** Cada WP es ⬜ hasta GO del custodio; los P0
+son los que **desbloquean a otros carriles** (holón-7, contrato de datos,
+verdad de la doc, fronteras O/V). Ids `F2-Z-nn` conservados por trazabilidad
+con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R).
+
+> **Mundo acabado (5 invariantes):** (1) las 51 piezas se usan — nada
+> invisible; (2) se entra sin permiso y se actúa con permiso; (3) una ronda
+> arranca con la red desconectada sobre root cercado y sellado; (4) la
+> federación no crea autoridad y todo relay deja rastro de lo que cortó;
+> (5) doc, contrato y código dicen lo mismo.
+
+### Lane A · Superficie del runtime — de 2/51 a 51/51 (`core`)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| **U179** | 01 | Ficha de runtime por servicio | 8 columnas por pieza (MCP/lib · catálogo · engine/mesh · comando · puerto+cómo cambia · disco · deps · peercard). Cita de fichero por celda | ninguna celda por inferencia; el grep de la cita resuelve | **P0** |
+| **U180** | 02 | Catálogo ola 1 | entradas `socket-server` + `ciudad-lifecycle`; puerto por `presets-sdk/env`, cero literales | `health` de facto por entrada; sin literales | **P0** |
+| U181 | 03 | Catálogo ola 2 (UIs) | `editor-ui`, `player-ui`, `player-3d-ui`, `3d-monitor`, `cache-browser`, `firehose-browser` | cada UI arranca desde catálogo; puerto por env | P1 |
+| U182 | 04 | Presentar los 17 invisibles | 3 tandas (transporte · autoridad/juego · kits UI): qué resuelve y quién consume | cada pieza: consumida, documentada como lib, o propuesta a retiro | P1 |
+| U183 | 05 | Entradas sin `workspace` | las 4 `arg/pozo/solve` no lanzables: cablear spawn externo o retirar | el catálogo no ofrece nada inarrancable | P1 |
+| U184 | 06 | `deps` de arranque declaradas | hoy 14×`deps:[]`; declarar orden real donde exista | arranque en frío completo sin fallos de orden | P2 |
+| U185 | 07 | Retiro consciente | auditar piezas sin consumidor ni destino (candidato: `threejs-ui-lib`) | cada retiro con justificación; cero por silencio | P2 |
+
+### Lane B · Identidad y permiso — el cable no pide credencial (`BLOQUEA:`)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| **U186** | 10 | **U93-bis · transporte ≠ permiso** | sacar los 4 tipos de `PEER_CARD_GATED_TYPES`; sin card = sesión anónima `role:null`; rol se consulta en la acción | (1) sin card conecta · (2) card válida concede en acción · (3) **card inválida rechaza, NO degrada a anónimo** · (4) acción sin rol denegada con cable intacto | **P0** |
+| **U187** | 11 | Peercard en vivo + fila Z del grafo | `socket-server` + cliente `rooms`; `CLIENT_REGISTER` en 2 modalidades; marcar solo fila Z | log literal + id reproducible en ambas; marca con ruta de evidencia | **P0** |
+| U188 | 12 | Unificar plano peer-card | lógica en 4 sitios + `embajador-kit` con 0 consumidores: camino único | un punto de emisión/consumo; grep duplicados = 0 | P1 |
+| U189 | 13 | Reúso de card entre niveles | edificio→barrio→ciudad: ¿reemite o reúsa? con base anónima. Aporte al hilo Z·G | contrato escrito + test de que ningún relay eleva scopes | P1 |
+| U190 | 14 | `seat` y firma de asiento | cuándo `seatSignature` es obligatoria (hoy: «si viene, valida») | matriz de exigencia por acción, sin ambigüedad | P2 |
+| U191 | 15 | Revocación | card revocada pierde capacidades sin cortar transporte | revocar en caliente: sesión sigue, acciones con rol caen | P2 |
+
+### Lane C · Transporte y federación — el poder que existe, se ve (`core`)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| **U192** | 20 | Traza de lo descartado en relay | allowlist de 8 descarta sin rastro + `MAKE_MASTER` suprimido: loguear antes de tocar política | todo evento no propagado deja registro con motivo | **P0** |
+| U193 | 21 | Identidad en el puente | `scriptorium-bridge` único colapsa emisor aguas arriba: propagar origen | aguas arriba se distingue quién publicó | P1 |
+| U194 | 22 | Allowlist como contrato | los 8 eventos + `RELAY_UPSTREAM` explícitos y versionados | cambiar allowlist = cambio de contrato con test | P1 |
+| U195 | 23 | Duplicación de reemisión | `ROOM_MESSAGE` + evento desenvuelto llegan 2 veces al doble-suscriptor | no duplica, o la duplicidad es contrato documentado | P2 |
+| U196 | 24 | Zonas como ámbito real | `zones` de filtro opaco a ámbito (mismo topic × 2 zonas = 2 conversaciones) | fan-out medido; zonas no se filtran mutuamente | P1 |
+| U197 | 25 | Signaling anónimo WebRTC | tras U186: offer/answer/ICE sin card, con STUN/TURN | handshake completo entre 2 peers anónimos en LAN | P1 |
+| U198 | 26 | coturn + pub SSB de facto | runbook y DM-signaling nunca probados contra sbot vivo | evidencia de ejecución, no de documento | P2 |
+
+### Lane D · Plano de datos · adaptador local-first (`BLOQUEA:` en P0)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| **U199** | 30 | **C-3 + sellado-hash (WP única · compromiso D-45)** | `counters.mjs` deja de mutar `volumes.json`; nace `volumes.state.json`; manifiesto RO+hash; import pobla `corpora` | manifiesto hasheable estable; medir no modifica; `firehose-core` sigue derivando stats | **P0** |
+| **U200** | 31 | Resolver único · env obligatorio | unificar `presets-sdk/volumes` + resolver ascendente de `linea-kit`; env deja de ser opcional (◆5) | root no depende del cwd; un pack no secuestra la resolución | **P0** |
+| **U201** | 32 | Contrato de import v1 | formalizar `CONTRATO-IMPORT-PACK-v0`: verificar→staging→validar→fusionar→sellar→no-op→sin symlinks | 7 pasos con test; colisión de corpus aborta sin root a medias | **P0** |
+| **U202** | 33 | Driver LINEAS | `registry.yaml`, nodos, cache + **protección de curación** | import escribe lo que falta, reporta divergencia, no pisa `registro.md`/`delta.md` | **P0** |
+| U203 | 34 | Driver FORCES | `registry.json`, `force.json`, escenas, cotas; snapshot por hash | `startpack-pozo` importa entero; colisión = error | P1 |
+| U204 | 35 | Driver FIREHOSE | es flujo: definir **unidad** (cursor/clave) antes de tocar transporte; unión, nunca sobrescritura | import incremental idempotente sobre los 8.388 del censo | P1 |
+| U205 | 36 | Driver SSB | append-only por secuencia de feed; export sin claves | reimport no reordena; grep secretos = 0 | P1 |
+| **U206** | 37 | CA local-first + réplica A→B | import → **arranque sin red** → no-op → copia A→B mide igual → divergencia reportada → **corrupción falla** → cerco limpio | 7 pasos verdes con shape pozo; el 6 es el que suele faltar | **P0** |
+| **U207** | 38 | Porte one-off de la genealogía | U176 = pieza parcial; faltan adaptadores `linea-aleph` (~48 MB · 677 reg), FIREHOSE, FORCES. **Da ID al diferido «U87 §5 · linea-aleph vivo»** | `--check` verde antes de escribir; registry stale = incompleto | P1 |
+| **U71R** | 39 | Anclaje por contenido = fuente de import | **reencuadre de WP-U71** bajo cerco §10.8: git/rad/IPFS solo origen + procedencia inerte; jamás dependencia de arranque; wikimedia encaja por `oldid` | corpus anclado importa y arranca offline; 0 URLs vivas en root | P2 |
+| U208 | 40 | `cache_wikitext` acotado | materialización remota explícita válida en juego, prohibida en arranque | arranque en frío sin red no invoca fetch; herramienta viva bajo demanda | P1 |
+| U209 | 41 | Root VPS ≡ local | mismo contrato lógico, paths distintos; gitignored + fuera del contexto Docker | el mismo manifiesto valida en ambos hosts; `.dockerignore` verificado | P1 |
+
+### Lane E · Canal y verdad de la documentación (`core`)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| **U210** | 50 | Puente documental ◆4(b) | mientras G implementa 4(a): `volumesRoot` del loader = solo desarrollo; contrato de import = único camino de producto | doc sin ningún camino que apunte env a `node_modules` | **P0** |
+| **U211** | 51 | Reparar `VOLUMES/README.md` | 2 defectos propios: L24 (`npm install` → E404) + L26 (env al pack, contra cerco) | todo comando del README se ejecuta contra su canal real y resuelve (C8) | **P0** |
+| U212 | 52 | CA de canal limpio C-4 | condición ◆2c: kit npm + pack Release desde consumidor limpio | instalar capacidad por npm y sembrar datos por Release sin tocar el árbol | P1 |
+| **U178** | 53 | `linea-editor` publish-ready | **= WP-U178 existente** (cola P1 · D-42): sigue en PAUSA y es 1 de las 2 piezas realmente usadas | checklist §5 allowlist completo; GO publish aparte | P1 |
+| U213 | 54 | Allowlist como inventario vivo | `audit:publish-allowlist` contra registry en CI | desfase allowlist↔registry detectado pre-release | P2 |
+| U214 | 55 | Smoke consumidor externo ampliado | extender a las piezas que O y V declaran usar | consumidor limpio monta el conjunto sin rutas locales | P1 |
+| U215 | 56 | `DATOS.md` al día con el censo | registrar los 3 drifts (envase · registry stale · conteo FORCES) | ninguna cifra del doc contradice el censo | P2 |
+
+### Lane F · Ciudad en el runtime — dominio sin inventar dominio (`horizonte`)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| U216 | 60 | `tree.{barrio,edificio,maquinaria}` (Z12) | reservados e ignorados: activar cuando G fije qué es un barrio | el árbol refleja el modelo de G sin que Z invente semántica | P1 |
+| U217 | 61 | Barrio = ámbito, no proceso | alinear catálogo con zonas (U196) | ningún consumidor confunde barrio con servicio | P1 |
+| **U218** | 62 | Holón-7 completo | las 7 marcas del grafo con entrada real; Z sostiene el tubo | 7/7 con evidencia de log, ninguna por reporte | **P0** |
+| U219 | 63 | Story-board + reparto en ronda | conectados a ronda real, no solo fixtures | una ronda carga elenco y actos desde pack importado | P2 |
+| U220 | 64 | Dramaturgo: curación en vivo | `delta_status` operable en juego sin romper protección de curación | curar en ronda y reimportar sin pérdida humana | P2 |
+
+### Lane G · Observabilidad, gates y estación (`core`)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| U221 | 70 | Gate de arranque offline en CI | el CA local-first como gate, no como acta | CI corre una ronda sin red y falla si algo sale | P1 |
+| U222 | 71 | Falso positivo regla 15 | espejo de skills inunda `anomalias.log` (R-1); fix de método → porte del skill (L) | log sin falsos positivos; watchers reanudables | P1 |
+| U223 | 72 | Mapas `plan/MAPA-*` (#19) | el mundo no tiene mapas; crearlos para que el territorio no crezca en silencio | `verificar-territorio-mapa.sh` verde; entrada sin fila = FAIL | P2 |
+| U224 | 73 | Anomalía del segundo conductor | `CONTRARREVISION-U169-PASS.md` reescrito 25/07 21:57 tamaño idéntico, autor desconocido | causa identificada, o registro de indeterminable | P2 |
+| U225 | 74 | Nunca reconciliar por mtime/tamaño | convertir la lección U224 en regla verificable del plano de datos | test: mtime/size no deciden nada | P1 |
+| U226 | 75 | Estación reanudable | watchers parados por orden: arranque documentado con lease propio (`timbre-watch.log`) | relevo de ventana levanta estado desde bitácora sin preguntar | P2 |
+
+### Lane H · Fronteras con otros carriles (`core`)
+
+| U | F2 | WP | BRIEF | CA tentativo | prio |
+| - | -- | -- | ----- | ------------ | ---- |
+| **U227** | 80 | Env de la demo **generado** | O propone, Z valida: se genera desde `presets-sdk/env`, no se transcribe | añadir servicio actualiza el fichero sin edición manual | **P0** |
+| **U228** | 81 | Cinco datos por servicio para O | comando · puerto+cambio · disco · deps · peercard (deriva de U179) | O escribe compose con un patrón, no 17 casos | **P0** |
+| U229 | 82 | Contrato IDE opt-in v2 | `reparto_required` + payload de denegación: hoy coincidencia verificada, no contrato (duda 5 de V) | contrato fija ambos; V verifica y coincide | P1 |
+| U230 | 83 | Frontera L1/L2 desde el runtime | qué cristaliza a L1 y qué muere con la sesión, en código | dato L2 no llega a L1 sin cristalización explícita | P1 |
+| **U231** | 84 | Invariante de secretos en datos | GATE-O-CLAVES aplicado a VOLUMES: volumen que exige secreto para leerse = mal diseñado | gate falla si identidad entra en volumen o contexto de imagen | **P0** |
+
+### Conteo y dependencias
+
+**55 WPs** · P0 **16** · P1 **25** · P2 **14** *(corrige el 16/23/15=54 de la
+nota F2: error aritmético, detectado en el cierre)*.
+
+```text
+U186 (U93-bis) ──▶ U197 (signaling anónimo) ──▶ U218 (holón-7)
+U187 (peercard en vivo) ──▶ U218
+U199 (C-3+hash) ──▶ U201 (import v1) ──▶ U202–U205 (drivers) ──▶ U206 (CA local-first)
+U200 (resolver único) ──▶ U201
+U179 (ficha) ──▶ U228 (5 datos O) · U180 (catálogo ola 1)
+U210/U211 (doc) — DESBLOQUEADOS por ◆4/◆2c de R4 (ya no esperan frontera)
+U216/U217 (Ciudad) ◀── esperan que G fije qué es un barrio
+U209 (root VPS) ◀── espera ruta del volumen VPS (custodio)
+```
+
+### Registro de lo NO encolado (obra ajena · no se pierde)
+
+| qué | dueño | dónde queda |
+| --- | ----- | ----------- |
+| C-6 · P2P/réplica continua | mesa · tick nuevo | segundo acto por consenso 6/6 |
+| Cambio ◆4(a) en `startpack-kit` (banda major) | **G** | Z solo hace el puente U210 |
+| Modelo de Ciudad · federación por tramos · GATE-O-CLAVES como gate de build | mesa / **O** | Z encola solo lo derivado en su mundo |
+
+---
+
 ## Sprint 9 / R12-Z — major-band P0×4 · contrarrevisión · prep pub (**PAUSA parcial · GO impl. · 2026-07-25**)
 
 Fuente: **R11-Z PASS** + **R12-Z PASS** + **GO implementación U168–U171**
@@ -1467,8 +1606,11 @@ Evidencia ops: `npm view @zeus/protocol` → **0.2.0** registry propio.
 
 ## Horizonte (post-refundación, no tomar aún)
 
-- **WP-U71 · VOLUMES p2p** — content-addressable (IPFS candidato); transporte
-  sobre layout inmutable (DATOS.md §5).
+- ~~**WP-U71 · VOLUMES p2p**~~ — **reencuadrado** como **U71R** en la
+  ÉPICA F2 (D-45 · cerco §10.8): el ancla de contenido (git/rad/IPFS) es
+  **fuente de import + procedencia inerte**, jamás dependencia de arranque.
+  El transporte p2p continuo = **C-6, segundo acto de mesa** (sin WP hasta
+  su especificación).
 - **WP-U72 · Persistencia del estado de rooms** — snapshot/ledger → colas
   files-first (D-13).
 - ~~**WP-U73 · El teatro de la capa 2 SSB**~~ — **reactivada** como

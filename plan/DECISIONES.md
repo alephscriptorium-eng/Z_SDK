@@ -602,6 +602,40 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   [AVISO-R13-Z-pedido-PASS.md](REPORTES/entregas/AVISO-R13-Z-pedido-PASS.md)
   (patrón **base auditada** + **commit sello**; sin tip autorreferencial).
 
+- **D-45 · 2026-07-26 · Consenso mesa Scriptorium H-01 `volumes-concepto` +
+  fusión de la épica F2 al backlog (orden del custodio)**
+  (fuente: `INFORME-R4` del Anfitrión, validado por el custodio — cero ⛔ de
+  fondo en 54 votos; copia durable en repo `scriptorium-cuadernos`, rama
+  `z_sdk-vigilancia`, `sprint-CIUDAD/`; notas locales en
+  `sincronia/notas/NOTA-Z-2026-07-26-H01-*.md`). **Lo votado y validado que
+  vincula a Z:**
+  1. **C-2** namespace lógico + mounts plurales, con **env obligatorio**
+     (`ZEUS_VOLUMES_ROOT` o equivalente por contrato): la resolución de root
+     **no** puede depender del cwd ni de descubrimiento ascendente (◆5,
+     validado custodio 5/6 · disenso L registrado).
+  2. **C-3** manifiesto ≠ estado ≠ corpora: `volumes.json` pasa a RO+hash;
+     `counters.mjs` deja de mutarlo; nace estado regenerable aparte; el
+     import pobla `corpora`. **Compromiso Z = WP única** C-3 + sellado-hash
+     (→ **U199**).
+  3. **C-4** canal C1 preferente: npm = kit FOSS ligero · Release = pack
+     import-once con versión+hash; condición = CA de canal limpio (→ U212).
+  4. **C-5** shape de concepto = `startpack-pozo` + FORCES (no exclusivo).
+  5. **◆4(a)**: `volumesRoot` del loader deja de ser root consumible —
+     cambio de **G** (banda major); (b) = puente documental de Z mientras
+     tanto (→ U210).
+  6. **Cerco §10.8**: anclas vivas (git/rad/IPFS) jamás como dependencia de
+     arranque; solo fuente de import + procedencia inerte. Reencuadra
+     **WP-U71** (ver Horizonte).
+  7. **CA local-first** = tick nuevo post-COMPACTO con LECTURA renovada
+     (→ U206).
+  **Fusión F2:** por orden del custodio (cierre de sesión 2026-07-26), la
+  proyección `plan/BACKLOG-F2.md` se apila en `plan/BACKLOG.md` como
+  **ÉPICA F2** con numeración **U179–U231** (53 nuevos; `F2-Z-53` = U178
+  existente · `F2-Z-39` = U71 reencuadrado · el diferido «U87 §5 sin ID»
+  recibe ID = **U207**). Todo ⬜: **el GO por WP sigue siendo del custodio**
+  (cherry-pick). Ejecutor de la fusión: vigía Z con gorro de orquestador,
+  origen declarado = orden expresa del custodio en consola.
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un

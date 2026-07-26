@@ -24,14 +24,16 @@ vive en el paquete `@alephscript/skills-scriptorium` (skills `vigilancia` +
 
 | dato | valor |
 | ---- | ----- |
-| paquete | `@alephscript/skills-scriptorium` rango `>=0.10.0 <1.0.0` (lock pin `0.10.0`) |
+| paquete | `@alephscript/skills-scriptorium` rango `>=0.10.0 <1.0.0` (lock pin `0.11.0`) |
 | registry | `https://npm.scriptorium.escrivivir.co` |
 | comando | `npm run skills:sync` → `alephscript-skills-sync --runtime claude` |
 | destino | `.claude/skills/` (gitignore — regenerable, no forzar commit) |
 
 Tras `npm install`, regenerar el espejo con `npm run skills:sync`. El
-README bajo `.claude/skills/` documenta procedencia `@0.10.0` y
-generador `alephscript-skills-sync`.
+README bajo `.claude/skills/` documenta procedencia `@0.11.0` y
+generador `alephscript-skills-sync`. *(Drift 0.10.0→0.11.0 detectado por
+el vigía el 2026-07-25 contra el canal real; corregido en el cierre de
+sesión 2026-07-26.)*
 
 ## Watcher
 
