@@ -10,8 +10,8 @@ propósito**: una plantilla a columna 0 la contaría el watcher como ping real.
   PING <YYYY-MM-DD HH:MM> · DE=<X> · HILO=<id|-> · REF=<ruta absoluta de la nota>
 ```
 
-Vigilado por **estación-timbre v0** (watcher propio, INTERVAL 45,
-`C:\S_LAB\vigilancia\z\watch.log`). Recibir un PING **no** autoriza a
+Vigilado por **estación-timbre v0.1** (watcher propio, INTERVAL 45, log propio
+`C:\S_LAB\vigilancia\z\timbre-watch.log`). Recibir un PING **no** autoriza a
 procesarlo: `HILO=-` o hilo no autorizado → se encola y se reporta al
 custodio (§5 · §7).
 
