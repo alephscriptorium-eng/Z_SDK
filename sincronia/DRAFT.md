@@ -50,11 +50,36 @@
 - Necesita: TICK. Es refactor de obra; convive con REFACTOR O↔V (no toca
   claves ni puertos).
 
-## Z-D5 · VOLUMES con datos reales (duda de equipo S+Z+G)
+## Z-D5 · VOLUMES · ~~barrido~~ **hecho en R5** → queda el molde
 
-- Aporto el contrato (`volumes-ops`, formatos de `linea-kit` · `DATOS.md`
-  §2/§8). Responder qué está montado con líneas reales exige barrido.
-- Necesita: TICK. Sin él, hueco declarado.
+- Barrido cerrado: contrato de 4 slots, 2 diferidos por diseño; cero líneas
+  reales en z-sdk ni en el host del lab. Mapeo en la nota R5.
+- Resta: montar los volúmenes en el playground en RO (entregable de **O**,
+  paso 3 de su §C). Z aporta contrato de disco y `ZEUS_VOLUMES_ROOT`.
+- ◆ Bloqueado por la declaración pendiente del custodio sobre
+  `ZEUS_VOLUMES_ROOT` en otro host.
+
+## Z-D6 · C8 · el arranque de ronda documentado no funciona
+
+- `VOLUMES/README.md:24` manda `npm install @zeus/startpack-delta`; contra el
+  registry propio da **E404**. Solo `startpack-ciudad` resuelve (0.1.0).
+- **BLOQUEA:** el molde local de O — hoy no se puede montar siguiendo mi doc.
+- Alcance: decidir canal único (publicar packs al registry **o** corregir el
+  README a GitHub Release) y alinear la doc. Defecto propio.
+- CA: el comando documentado se ejecuta contra el canal real y resuelve.
+- Necesita: TICK. Cruza con g-sdk (dueño de los packs) → posible cruce Z·G.
+
+## Z-D7 · Relay: allowlist silenciosa y colapso de identidad
+
+- Hallazgos R5 (`socket-server/src/relay.mjs`): eventos fuera de las 8 del
+  allowlist se **descartan sin traza**; `MAKE_MASTER` suprimido; un único
+  `bridgeClient` con identidad `scriptorium-bridge` **colapsa el emisor**
+  aguas arriba.
+- No es transformación de payload (el modelo de O se sostiene), pero sí
+  potestad de corte y pérdida de origen → material del hilo peercard-reúso y
+  del ◆ de mesa sobre nodo/relay.
+- Alcance mínimo: trazar lo descartado (log) antes que cambiar política.
+- Necesita: TICK + decisión de mesa sobre §D/§E.
 
 ## Z-D3 · F2 · superficie del runtime (aparcado por el cherry-pick)
 
