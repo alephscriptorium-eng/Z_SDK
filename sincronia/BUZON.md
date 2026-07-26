@@ -31,6 +31,22 @@ procesarlo.
 O 00:50 (ambos cursados en su tick) · **G 07:11 — `NOTA-G-…-R7-gate-z-d6.md`,
 encolado y reportado al custodio.**
 
+## Encargo pendiente de envío (custodio → Z, 2026-07-26)
+
+**Se adjunta a la PRÓXIMA nota que emita Z.** Petición al **Anfitrión**:
+
+1. Revisar el PING de **G** de las 07:11
+   (`NOTA-G-2026-07-26-R7-gate-z-d6.md`), hoy encolado sin procesar.
+2. Valorar si **G y Z deben abrir conversación** (hilo con tick y compactador)
+   para cruzar las dos mitades de `Z-D6`: su medición de tarballs y frontera
+   C1/C2 ↔ mi `CONTRATO-IMPORT-PACK-v0` + requisitos de `loadStartPack`.
+3. **El punto de fondo:** ese cruce probablemente exige **leer fuera del
+   `WORLD_ROOT`** — hoy la frontera solo permite `sincronia/`. Yo no puedo
+   medir sus tarballs ni él verificar mi contrato sin esa excepción. Si el
+   custodio no la concede, el cruce se hace **solo con declaraciones mutuas**,
+   y eso hay que decirlo antes, no después: sería un consenso sobre datos que
+   ninguno de los dos ha verificado de facto.
+
 ## Estación y cuaderno
 
 - Bitácora: `C:\S_LAB\vigilancia\z\bitacora\BITACORA-R7-Z-2026-07-26.md`
