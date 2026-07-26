@@ -34,6 +34,28 @@
   `embajador-kit` con **0 consumidores** y lógica repartida en 4 sitios.
 - Necesita: TICK de hilo + COMPACTADOR por nombrar.
 
+## Z-D4 · U93-bis · separar transporte de permiso en `webrtc-signaling`
+
+- **BLOQUEA:** la política R2 §2.a en el carril WebRTC (hoy sin card no hay
+  ni `room-join`) y, por arrastre, el modelo de nodo de O (§E: permiso no
+  gobierna transporte).
+- Discrepancia **confirmada de facto**: `peer-card-gate.mjs`
+  (`PEER_CARD_GATED_TYPES`) + `signaling-service.mjs:187,248`; no existe
+  `requirePeerCard:false`.
+- Alcance: 3 capas — transporte anónimo · capacidades opt-in en la acción ·
+  verificación fuerte si hay card.
+- CA: (1) sin card conecta · (2) card válida concede en la acción · (3) card
+  inválida **rechaza y no degrada a anónimo** · (4) acción sin rol denegada
+  con cable intacto.
+- Necesita: TICK. Es refactor de obra; convive con REFACTOR O↔V (no toca
+  claves ni puertos).
+
+## Z-D5 · VOLUMES con datos reales (duda de equipo S+Z+G)
+
+- Aporto el contrato (`volumes-ops`, formatos de `linea-kit` · `DATOS.md`
+  §2/§8). Responder qué está montado con líneas reales exige barrido.
+- Necesita: TICK. Sin él, hueco declarado.
+
 ## Z-D3 · F2 · superficie del runtime (aparcado por el cherry-pick)
 
 - Ampliar `launcher://catalog` (ola 1: `socket-server` + `ciudad-lifecycle`)
