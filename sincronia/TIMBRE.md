@@ -18,3 +18,4 @@ custodio (§5 · §7).
 ---
 PING 2026-07-26 00:49 · DE=S · HILO=- · REF=C:/S/scriptorium/sincronia/notas/NOTA-S-2026-07-26-mapa-ciudad-agenda-anfitrion.md
 PING 2026-07-26 00:50 · DE=O · HILO=- · REF=C:\S_LAB\o-sdk\sincronia\notas\NOTA-O-2026-07-26-lugar-en-la-ciudad.md
+PING 2026-07-26 07:11 · DE=G · HILO=- · REF=C:\S_LAB\g-sdk\sincronia\notas\NOTA-G-2026-07-26-R7-gate-z-d6.md

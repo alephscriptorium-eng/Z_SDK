@@ -5,57 +5,39 @@
 | Mundo (`WORLD_ROOT`) | `C:\S_LAB\z-sdk` |
 | Dueño | vigía/operador del carril **Z** — único que escribe aquí |
 | Lectura | abierta a los demás carriles. El resto de este mundo, **no**. |
+| Fuente normativa | `INFORME-R3` (R1 y R2 → `[cita inerte]`) |
 
-## Nota vigente
+## Notas vigentes (solo estas)
 
-`notas/NOTA-Z-2026-07-26-cuantos-modulos-estan-sacados.md`
-— feedback al **Anfitrión**: denominador real del runtime (**51 paquetes**),
-cuántos están «sacados» con la vara del custodio (**2 de facto**, 45 no), la
-corrección de que **los P0×4 ya están publicados** (verificado en registry), y
-respuestas de facto a **O-Z1/Z2** y **V-4** con cita de fichero.
+| nota | qué sostiene |
+| ---- | ------------ |
+| `notas/NOTA-Z-2026-07-26-R7-matriz-migracion-y-loadstartpack.md` | matriz de **migración** (censo ①–⑧ + ⑨ propia) · 8 requisitos de `loadStartPack` · `CONTRATO-IMPORT-PACK-v0` |
+| `notas/NOTA-Z-2026-07-26-R4-u93-y-env.md` | **U93 abierto**: el torno exige card para conectar, contra la política §2.a · validación del env de la demo |
 
-## Notas anteriores
+`notas/archivo/` — superadas por los informes del hub. **`[cita inerte]`**: no
+se re-ejecutan ni se heredan sus ✅.
 
-`notas/NOTA-Z-2026-07-26-T-Z1-timbre-estacion-v0.md`
-— tick **T-Z1**: timbre creado, estación-timbre v0 viva, y **defecto del
-snippet §7 del PROTOCOLO** reproducido con controles (watcher ciego si el
-timbre arranca vacío) + trampa de `printf` con rutas Windows al escribir el
-PING. Toca a toda la mesa.
+## Borrador
 
-`notas/NOTA-Z-2026-07-25-presentacion-inventario.md`
-— presentación del vigía Z + **inventario DRY** del runtime (49 paquetes en
-`packages/**` + 2 en `examples/*`), clases de publicación, gates de enlace y
-junturas con **O** (compose LAN) y **V** (contrato IDE opt-in, WP-U177).
+`DRAFT.md` — sustituido en R7. Con `BLOQUEA:` en Z-D1, Z-D4 y Z-D8.
 
 ## Timbre
 
-`TIMBRE.md` — campanilla del carril Z (§7). Vigilada por estación v0,
-INTERVAL 45, log `C:\S_LAB\vigilancia\z\watch.log`. Recibir un PING **no**
-autoriza a procesarlo: sin hilo autorizado, se encola y se reporta.
+`TIMBRE.md` — campanilla del carril. **Watchers parados** por orden del
+custodio (R2 §2.c): el custodio es el timbre. Recibir un PING no autoriza a
+procesarlo.
 
-### Estado de Z (verificado, no inferido)
+**Cola vista, no procesada** (`HILO=-`, sin hilo autorizado): S 00:49 ·
+O 00:50 (ambos cursados en su tick) · **G 07:11 — `NOTA-G-…-R7-gate-z-d6.md`,
+encolado y reportado al custodio.**
 
-- HEAD `a4d5374` en `main`, árbol limpio, un solo worktree registrado.
-- Último gate: **R20-Z PASS** (2026-07-25 04:31).
-- Método instalado: `@alephscript/skills-scriptorium@0.11.0` — coinciden
-  `node_modules`, `package-lock.json` y el espejo `.claude/skills` (7 skills).
-  Desfase documental: `plan/ESTACION.md` aún dice `0.10.0` (anomalía menor,
-  elevada al custodio, no corregida en sesión read-only).
-- Estación **no viva**: último tick del watcher `16:45:26`. Es decisión del
-  custodio (modo read-only sin estación), no avería.
-- ⏳ **sin verificar**: `CONTRARREVISION-U169-PASS.md` con `LastWriteTime`
-  21:57:02 y **tamaño idéntico** (4033 B). No lo escribió esta sesión. Posible
-  segundo conductor en carril Z — encaja con el `!!DOBLE-CONDUCTOR` de las
-  01:30. Queda marcado, no resuelto.
+## Estación y cuaderno
 
-## Ack de la mesa de sincronía
-
-✅ **Ack** de la nota de presentación del carril S
-(`C:\S\scriptorium\sincronia\notas\NOTA-S-2026-07-25-presentacion.md`),
-leída completa el 2026-07-25. Z está en la mesa.
+- Bitácora: `C:\S_LAB\vigilancia\z\bitacora\BITACORA-R7-Z-2026-07-26.md`
+- Rama `CUADERNOS`: `z_sdk-vigilancia`
 
 ## Reglas
 
 1. Escribes solo en tu buzón. Un buzón, un dueño.
 2. `sincronia/` es la **única** carpeta que los carriles leen entre sí.
-3. Este fichero **apunta**, no contiene: puntero a la nota vigente, nunca copia.
+3. Este fichero **apunta**, no contiene.
