@@ -204,7 +204,9 @@ rama `z_sdk-vigilancia`. Consenso vinculante: **D-45**.
 **Estado global: nada abierto.** Cada WP es ⬜ hasta GO del custodio; los P0
 son los que **desbloquean a otros carriles** (holón-7, contrato de datos,
 verdad de la doc, fronteras O/V). Ids `F2-Z-nn` conservados por trazabilidad
-con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R).
+con la sala. **66 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 ·
+U71R) + **11 de la edición F2-unificada** (U232–U242 · Anfitrión + revisión
+Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 
 > **Mundo acabado (5 invariantes):** (1) las 51 piezas se usan — nada
 > invisible; (2) se entra sin permiso y se actúa con permiso; (3) una ronda
@@ -216,7 +218,7 @@ con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R)
 
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
-| **U179** | 01 | Ficha de runtime por servicio | 8 columnas por pieza (MCP/lib · catálogo · engine/mesh · comando · puerto+cómo cambia · disco · deps · peercard). Cita de fichero por celda | ninguna celda por inferencia; el grep de la cita resuelve | **P0** |
+| **U179** | 01 | Ficha de runtime — **matriz 51/51 explícita** | 8 columnas por pieza para **las 51**, no «por servicio»: (MCP/lib · catálogo · engine/mesh · comando · puerto+cómo cambia · disco · deps · peercard). Cita de fichero por celda. Alimenta el gate U233 | ninguna celda por inferencia · **51 filas, ninguna pieza fuera** · el grep de la cita resuelve | **P0** |
 | **U180** | 02 | Catálogo ola 1 | entradas `socket-server` + `ciudad-lifecycle`; puerto por `presets-sdk/env`, cero literales | `health` de facto por entrada; sin literales | **P0** |
 | U181 | 03 | Catálogo ola 2 (UIs) | `editor-ui`, `player-ui`, `player-3d-ui`, `3d-monitor`, `cache-browser`, `firehose-browser` | cada UI arranca desde catálogo; puerto por env | P1 |
 | U182 | 04 | Presentar los 17 invisibles | 3 tandas (transporte · autoridad/juego · kits UI): qué resuelve y quién consume | cada pieza: consumida, documentada como lib, o propuesta a retiro | P1 |
@@ -228,7 +230,7 @@ con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R)
 
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
-| **U186** | 10 | **U93-bis · transporte ≠ permiso** | sacar los 4 tipos de `PEER_CARD_GATED_TYPES`; sin card = sesión anónima `role:null`; rol se consulta en la acción | (1) sin card conecta · (2) card válida concede en acción · (3) **card inválida rechaza, NO degrada a anónimo** · (4) acción sin rol denegada con cable intacto | **P0** |
+| **U186** | 10 | **U93-bis · transporte ≠ permiso** | **Paso 0 (pregunta estrecha de O·D-O11): confirmar la frontera** — ¿el `room-join` del signaling gobierna la sala genérica o solo la antesala WebRTC? Si WebRTC es capacidad opt-in, sus gates pueden quedarse; no se retiran tornos indiscriminadamente. Después: sacar de `PEER_CARD_GATED_TYPES` lo que sea transporte base; sin card = sesión anónima `role:null`; rol se consulta en la acción | (0) frontera confirmada y escrita · (1) sin card conecta al transporte base · (2) card válida concede en acción · (3) **card inválida rechaza, NO degrada a anónimo** · (4) acción sin rol denegada con cable intacto · contrato de retorno a O (WP-O13) cumplido | **P0** |
 | **U187** | 11 | Peercard en vivo + fila Z del grafo | `socket-server` + cliente `rooms`; `CLIENT_REGISTER` en 2 modalidades; marcar solo fila Z | log literal + id reproducible en ambas; marca con ruta de evidencia | **P0** |
 | U188 | 12 | Unificar plano peer-card | lógica en 4 sitios + `embajador-kit` con 0 consumidores: camino único | un punto de emisión/consumo; grep duplicados = 0 | P1 |
 | U189 | 13 | Reúso de card entre niveles | edificio→barrio→ciudad: ¿reemite o reúsa? con base anónima. Aporte al hilo Z·G | contrato escrito + test de que ningún relay eleva scopes | P1 |
@@ -273,7 +275,7 @@ con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R)
 | U212 | 52 | CA de canal limpio C-4 | condición ◆2c: kit npm + pack Release desde consumidor limpio | instalar capacidad por npm y sembrar datos por Release sin tocar el árbol | P1 |
 | **U178** | 53 | `linea-editor` publish-ready | **= WP-U178 existente** (cola P1 · D-42): sigue en PAUSA y es 1 de las 2 piezas realmente usadas | checklist §5 allowlist completo; GO publish aparte | P1 |
 | U213 | 54 | Allowlist como inventario vivo | `audit:publish-allowlist` contra registry en CI | desfase allowlist↔registry detectado pre-release | P2 |
-| U214 | 55 | Smoke consumidor externo ampliado | extender a las piezas que O y V declaran usar | consumidor limpio monta el conjunto sin rutas locales | P1 |
+| U214 | 55 | Smoke consumidor externo ampliado | cubrir consumidores limpios **representativos de las tres clases** — engine (lib), servicio (start) y app (UI) — no solo lo que O/V declararon | consumidor limpio monta el conjunto sin rutas locales · una pieza por clase como mínimo | P1 |
 | U215 | 56 | `DATOS.md` al día con el censo | registrar los 3 drifts (envase · registry stale · conteo FORCES) | ninguna cifra del doc contradice el censo | P2 |
 
 ### Lane F · Ciudad en el runtime — dominio sin inventar dominio (`horizonte`)
@@ -282,7 +284,7 @@ con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R)
 | - | -- | -- | ----- | ------------ | ---- |
 | U216 | 60 | `tree.{barrio,edificio,maquinaria}` (Z12) | reservados e ignorados: activar cuando G fije qué es un barrio | el árbol refleja el modelo de G sin que Z invente semántica | P1 |
 | U217 | 61 | Barrio = ámbito, no proceso | alinear catálogo con zonas (U196) | ningún consumidor confunde barrio con servicio | P1 |
-| **U218** | 62 | Holón-7 completo | las 7 marcas del grafo con entrada real; Z sostiene el tubo | 7/7 con evidencia de log, ninguna por reporte | **P0** |
+| **U218** | 62 | Holón-7 completo | las 7 marcas del grafo con entrada real; Z sostiene el tubo. **Z no marca 7/7 solo**: deps HUB-022 (grafo) · V18 · O12 · G50 · fila L · fila custodio | 7/7 con evidencia de log, ninguna por reporte · cada fila la marca su dueño | **P0** |
 | U219 | 63 | Story-board + reparto en ronda | conectados a ronda real, no solo fixtures | una ronda carga elenco y actos desde pack importado | P2 |
 | U220 | 64 | Dramaturgo: curación en vivo | `delta_status` operable en juego sin romper protección de curación | curar en ronda y reimportar sin pérdida humana | P2 |
 
@@ -292,7 +294,7 @@ con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R)
 | - | -- | -- | ----- | ------------ | ---- |
 | U221 | 70 | Gate de arranque offline en CI | el CA local-first como gate, no como acta | CI corre una ronda sin red y falla si algo sale | P1 |
 | U222 | 71 | Falso positivo regla 15 | espejo de skills inunda `anomalias.log` (R-1); fix de método → porte del skill (L) | log sin falsos positivos; watchers reanudables | P1 |
-| U223 | 72 | Mapas `plan/MAPA-*` (#19) | el mundo no tiene mapas; crearlos para que el territorio no crezca en silencio | `verificar-territorio-mapa.sh` verde; entrada sin fila = FAIL | P2 |
+| U223 | 72 | Mapas `plan/MAPA-*` (#19) | el mundo no tiene mapas; crearlos para que el territorio no crezca en silencio. **Sube a P1**: es requisito del swarm F2, no cosmética | `verificar-territorio-mapa.sh` verde; entrada sin fila = FAIL | **P1** |
 | U224 | 73 | Anomalía del segundo conductor | `CONTRARREVISION-U169-PASS.md` reescrito 25/07 21:57 tamaño idéntico, autor desconocido | causa identificada, o registro de indeterminable | P2 |
 | U225 | 74 | Nunca reconciliar por mtime/tamaño | convertir la lección U224 en regla verificable del plano de datos | test: mtime/size no deciden nada | P1 |
 | U226 | 75 | Estación reanudable | watchers parados por orden: arranque documentado con lease propio (`timbre-watch.log`) | relevo de ventana levanta estado desde bitácora sin preguntar | P2 |
@@ -307,20 +309,45 @@ con la sala. **55 WPs** = 53 nuevos (U179–U231) + 2 reencuadres (U178 · U71R)
 | U230 | 83 | Frontera L1/L2 desde el runtime | qué cristaliza a L1 y qué muere con la sesión, en código | dato L2 no llega a L1 sin cristalización explícita | P1 |
 | **U231** | 84 | Invariante de secretos en datos | GATE-O-CLAVES aplicado a VOLUMES: volumen que exige secreto para leerse = mal diseñado | gate falla si identidad entra en volumen o contexto de imagen | **P0** |
 
-### Conteo y dependencias
+### Lane I · Gobierno, producto y aceptación v1 (edición F2-unificada)
 
-**55 WPs** · P0 **16** · P1 **25** · P2 **14** *(corrige el 16/23/15=54 de la
-nota F2: error aritmético, detectado en el cierre)*.
+*Lo que 66 WPs necesitan para no despacharse sobre arena — la capa que la
+revisión meta encontró ausente. U210/U211 (puente doc) no cierran sin la
+contraparte de G (4a) y el CA de canal limpio (U212).*
+
+| U | WP | BRIEF | CA tentativo | prio |
+| - | -- | ----- | ------------ | ---- |
+| **U232** | Gobierno de ejecución F2 | mapa WP→deps→paths, ficheros calientes, olas, techo de workers, contrarrevisión por riesgo, plantilla BRIEF y **DoD Z-v1**. La ola de datos U199–U206 tiene contención propia y este WP la gobierna | ningún WP huérfano de gate · lotes con alcance disjunto · DoD escrita antes del primer despacho | **P0** |
+| **U233** | **Gate matriz 51/51** | el denominador con dientes: manifest **derivado** de las 51 piezas — tipo, capacidad, canal, consumidor, start/health, evidencia o ⏳. U180–U185 lo consumen; presencia en catálogo ≠ uso | 51 filas derivadas, no transcritas · gate **falla si falta una** · cero invisibles al cierre | **P0** |
+| **U234** | Orquestador de runtime v1 | `start:all` solo imprime comandos. Un SDK terminado arranca declarativo: start/stop/status/health con orden de deps y shutdown limpio. **V (mando de ciudad V34) y O (compose) lo consumen** | un comando levanta el perfil mínimo · otro lo para sin residuos · catálogo/deps como fuente, no shell manual | **P0** |
+| **U235** | Aceptación Z-v1 | e2e de sistema que hoy no existe: instalación limpia → runtime → juego G cargado → actores entran → intent → estado observado → **restart → recupera**. Desde checkout/tarballs limpios, offline tras seed | ciclo completo con evidencia literal · artifact inventory · cara Z del test del operador externo | **P0** |
+| U236 | Matriz de distribución | por clase: engine→npm · services→images/start · UIs→apps · fixtures→packs. **V20 (documento de puertas) es su consumidor directo** | cada pieza con canal verificable · cero «publicado» ambiguo | P1 |
+| **U237** | Licencia SPDX por workspace | root dice `AIPLv1`, LICENSE dice GPL-3.0+Animus: **inconsistente ×51 paquetes**. El custodio decide; todo coherente | SPDX validado en los 51 manifests · tarballs y docs coinciden | **P0** |
+| U238 | SBOM / provenance / reproducibilidad | artefactos verificables desde tip y canal | dos builds comparan · SBOM por paquete publicado | P1 |
+| **U239** | Triage de vulnerabilidades | las 53/6 críticas históricas de deps: clasificar explotable/no-aplica con evidencia | cero críticas sin veredicto · explotable **bloquea release** | **P0** |
+| U240 | Backup/restore del plano de datos | restore en root limpio; curación humana y secuencias SSB preservadas | ciclo backup→wipe→restore→CA local-first verde | P1 |
+| U241 | Resiliencia y presupuestos | caída de relay/pub/driver con recuperación medida; CPU/mem/snapshot presupuestados | cada caída con comportamiento declarado y test · presupuestos en CI | P1 |
+| U242 | Contrato de plugin/driver | probar que un driver **externo** (o fixture) se añade sin tocar el núcleo — la extensibilidad como hecho, no como intención | segundo driver monta por contrato · cero ediciones en core | P1 |
+
+### Conteo y dependencias (edición F2-unificada)
+
+**66 WPs** · P0 **22** · P1 **31** · P2 **13** *(55 previos con U223→P1,
++11 nuevos: 6 P0 · 5 P1)*.
 
 ```text
 U186 (U93-bis) ──▶ U197 (signaling anónimo) ──▶ U218 (holón-7)
 U187 (peercard en vivo) ──▶ U218
 U199 (C-3+hash) ──▶ U201 (import v1) ──▶ U202–U205 (drivers) ──▶ U206 (CA local-first)
 U200 (resolver único) ──▶ U201
-U179 (ficha) ──▶ U228 (5 datos O) · U180 (catálogo ola 1)
-U210/U211 (doc) — DESBLOQUEADOS por ◆4/◆2c de R4 (ya no esperan frontera)
+U179 (ficha 51/51) ──▶ U233 (gate) ──▶ U180–U185 (catálogo/retiro)
+U179 ──▶ U228 (5 datos O)
+U232 (gobierno) ──▶ TODO despacho de swarm
+U234 (orquestador) ──▶ V34 (mando ciudad) · O22 (compose consume)
+U236 (matriz distribución) ──▶ V20 (documento de puertas)
+U210/U211 (doc) — arrancan ya; NO CIERRAN sin 4a de G + U212 (CA canal)
 U216/U217 (Ciudad) ◀── esperan que G fije qué es un barrio
 U209 (root VPS) ◀── espera ruta del volumen VPS (custodio)
+U235 (aceptación) ◀── último gate; consume U206+U218+U233+U234
 ```
 
 ### Registro de lo NO encolado (obra ajena · no se pierde)
