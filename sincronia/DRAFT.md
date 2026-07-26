@@ -50,24 +50,50 @@
 - Necesita: TICK. Es refactor de obra; convive con REFACTOR O↔V (no toca
   claves ni puertos).
 
-## Z-D5 · VOLUMES · ~~barrido~~ **hecho en R5** → queda el molde
+## Z-D5 · VOLUMES · matriz ✅ (R6) → queda el porte de genealogía
 
-- Barrido cerrado: contrato de 4 slots, 2 diferidos por diseño; cero líneas
-  reales en z-sdk ni en el host del lab. Mapeo en la nota R5.
-- Resta: montar los volúmenes en el playground en RO (entregable de **O**,
-  paso 3 de su §C). Z aporta contrato de disco y `ZEUS_VOLUMES_ROOT`.
-- ◆ Bloqueado por la declaración pendiente del custodio sobre
-  `ZEUS_VOLUMES_ROOT` en otro host.
+- Barrido (R5) + **matriz de 9 campos en 3 planos** (R6): INVENTARIO ≠
+  IMPORT ≠ CONTRATO DE MONTAJE. Fuente histórica declarada por el custodio.
+- Resta: (a) columna `root VPS` — ◆ dato pendiente del custodio; (b) molde
+  playground RO (entregable de **O**); (c) porte one-off de la genealogía.
+- ★ Sirve la dirección elevada: `ZEUS_VOLUMES_ROOT` único del Scriptorium,
+  `volumes.json` como contrato lógico, path por env — misma convención que
+  ya usan los puertos.
+
+## Z-D8 · Porte one-off de la genealogía (la herramienta YA existe)
+
+- **BLOQUEA:** la dirección de §2 del tick R6 y el molde con datos no-fixture.
+- `scripts/import-legado/` (WP-U176 ✅) cumple el contrato pedido: fuente RO
+  por env, validación AJV + reparto + schemas de línea, determinista, one-off,
+  salida a `IMPORT_OUT/LINEAS/`. Brief: *ejecución real = tick del operador*.
+- Alcance: ejecutar `--check` primero contra la fuente histórica declarada;
+  escribir solo tras PASS del check.
+- ⚠️ Cubre **obra → línea/story-board/reparto**. NO cubre firehose ni export
+  SSB: esos van por `feed-kit` y `ssb-system`.
+- Necesita: TICK del operador con env inyectado. Z no fija rutas.
+
+## Z-D9 · Anclaje por contenido de volúmenes (git/rad/IPFS) — O + Z
+
+- Wikimedia: **encaje natural** — snapshots inmutables por `oldid` con
+  sidecar `source_url`/`fetched_at` (`DATOS.md` §2).
+- Firehose: **caso difícil** — es flujo; hay que decidir la **unidad** de
+  anclaje (ventana temporal / bloque de N eventos) antes de tocar transporte.
+- ◆ Pregunta previa a cualquier diseño: ¿el ancla **sustituye** al volumen o
+  lo **alimenta**? El contrato de montaje actual supone lo segundo.
+- Necesita: TICK conjunto O·Z tras respuesta a esa pregunta.
 
 ## Z-D6 · C8 · el arranque de ronda documentado no funciona
 
 - `VOLUMES/README.md:24` manda `npm install @zeus/startpack-delta`; contra el
   registry propio da **E404**. Solo `startpack-ciudad` resuelve (0.1.0).
 - **BLOQUEA:** el molde local de O — hoy no se puede montar siguiendo mi doc.
-- Alcance: decidir canal único (publicar packs al registry **o** corregir el
-  README a GitHub Release) y alinear la doc. Defecto propio.
+- Dos opciones con coste evaluadas en R6: **A** publicar los 6 packs (dueño
+  **G**; voto declarado del custodio; caro y poco reversible) · **B** README →
+  Release oficial (dueño **Z**; ~1 h, reversible, coherente con anclaje por
+  contenido). ★ Z se inclina por B; decide la mesa con G.
 - CA: el comando documentado se ejecuta contra el canal real y resuelve.
-- Necesita: TICK. Cruza con g-sdk (dueño de los packs) → posible cruce Z·G.
+- Necesita: consenso con **G** — los packs viven en g-sdk; Z no puede
+  ejecutar A por su cuenta.
 
 ## Z-D7 · Relay: allowlist silenciosa y colapso de identidad
 
