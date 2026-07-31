@@ -487,14 +487,36 @@ test('ROJO: familia desconocida declarada = error ANTES de staging, root intacto
 // Cada uno reproduce el vector exacto con el que la contrarrevisión tumbó una
 // afirmación de cabecera. No son arreglos de una vez: se quedan.
 
-test('D1: la clave es INYECTIVA — un `/` en cualquier componente NO rinde clave', () => {
+/**
+ * Ejercita un vector de clave por las DOS vías cruzadas (lección de D-A: los
+ * probes de D1 usaban `withUri:false` y nunca cruzaban, mientras el material
+ * real de este mundo SÍ trae `uri` — `feed-kit/src/jetstream-sync.mjs`).
+ * Un componente inválido debe rendir `null` en las cuatro combinaciones.
+ * @param {object} fields — { did?, collection?, rkey }
+ * @param {string} etiqueta
+ */
+function assertSinClavePorAmbasVias(fields, etiqueta) {
+  const sinUri = post({ ...fields, withUri: false });
+  assert.equal(firehoseUnitKey(sinUri), null, `${etiqueta}: sin uri`);
+  // (a) con un `uri` que "arreglaría" el registro apuntando a otro sitio
+  assert.equal(
+    firehoseUnitKey(post({ ...fields, uri: `at://did:plc:alpha/${COLLECTION}/r1` })),
+    null,
+    `${etiqueta}: con uri ajeno (no puede resucitar)`
+  );
+  // (b) con un `uri` construido desde los propios campos (auto-coherente)
+  const propio = `at://${fields.did ?? 'did:plc:alpha'}/${fields.collection ?? COLLECTION}/${fields.rkey}`;
+  assert.equal(firehoseUnitKey(post({ ...fields, uri: propio })), null, `${etiqueta}: con uri propio`);
+  // (c) con `uri` presente pero basura
+  assert.equal(firehoseUnitKey(post({ ...fields, uri: 'no-soy-un-at-uri' })), null, `${etiqueta}: con uri basura`);
+}
+
+test('D1: la clave es INYECTIVA — un `/` en cualquier componente NO rinde clave (ambas vías)', () => {
   // El vector: dos registros DISTINTOS que antes colapsaban en la misma clave
   // `at://did:plc:alpha/app.bsky.feed.post/x/y`.
-  const a = post({ rkey: 'x/y', withUri: false });
-  const b = post({ rkey: 'y', collection: `${COLLECTION}/x`, withUri: false });
-  assert.equal(firehoseUnitKey(a), null, 'rkey con `/` no rinde clave');
-  assert.equal(firehoseUnitKey(b), null, 'collection con `/` no rinde clave');
-  assert.equal(firehoseUnitKey(post({ did: 'did:plc:al/pha', rkey: 'z', withUri: false })), null);
+  assertSinClavePorAmbasVias({ rkey: 'x/y' }, 'rkey con /');
+  assertSinClavePorAmbasVias({ rkey: 'y', collection: `${COLLECTION}/x` }, 'collection con /');
+  assertSinClavePorAmbasVias({ did: 'did:plc:al/pha', rkey: 'z' }, 'did con /');
 
   // Inyectividad por construcción: sin `/` en los componentes, la clave se
   // parte de forma única en exactamente 3 partes.
@@ -504,6 +526,99 @@ test('D1: la clave es INYECTIVA — un `/` en cualquier componente NO rinde clav
     COLLECTION,
     'z'
   ]);
+});
+
+test('D-A: `uri` NO es vía alternativa — no resucita lo que la terna rechaza', () => {
+  // El vector exacto de la 2.ª contrarrevisión: registro cuyo rkey es el
+  // vector D1 y cuyo `uri` apunta a OTRO registro existente.
+  const resucitador = {
+    did: 'did:plc:alpha',
+    uri: `at://did:plc:alpha/${COLLECTION}/r1`,
+    kind: 'commit',
+    commit: { collection: COLLECTION, rkey: 'x/y', record: { text: 'OTRO REGISTRO' } }
+  };
+  assert.equal(firehoseUnitKey(resucitador), null);
+
+  // `uri` presente que DISCREPA de una terna válida = material incoherente.
+  assert.equal(
+    firehoseUnitKey(post({ rkey: 'r2', uri: `at://did:plc:alpha/${COLLECTION}/r1` })),
+    null
+  );
+  // `uri` presente y coherente = corrobora, y la clave sigue siendo la derivada.
+  assert.equal(
+    firehoseUnitKey(post({ rkey: 'r2' })),
+    `at://did:plc:alpha/${COLLECTION}/r2`
+  );
+  // `uri` ausente = la terna manda igual.
+  assert.equal(
+    firehoseUnitKey(post({ rkey: 'r2', withUri: false })),
+    `at://did:plc:alpha/${COLLECTION}/r2`
+  );
+  // `uri` de tipo hostil = no corrobora = null (nunca excepción).
+  for (const uri of [42, {}, [], true, `at://did:plc:alpha/${COLLECTION}/r1/extra`]) {
+    assert.equal(firehoseUnitKey(post({ rkey: 'r2', uri })), null, `uri hostil ${JSON.stringify(uri)}`);
+  }
+
+  // Consecuencia DECLARADA: sin `rkey` ya no se keya por `uri`.
+  assert.equal(
+    firehoseUnitKey({
+      did: 'did:plc:alpha',
+      uri: `at://did:plc:alpha/${COLLECTION}/r3`,
+      commit: { collection: COLLECTION, record: { text: 'sin rkey' } }
+    }),
+    null
+  );
+});
+
+test('D-A: el resucitador no deduplica contra otro registro — importPack lo RECHAZA', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'r1' }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    const bytesR1 = fs.readFileSync(rootFile(root, 'raw/jetstream/r1.json'));
+    const manifestBefore = manifestBytes(root);
+
+    // Pack B: registro DISTINTO cuyo rkey es el vector D1 y cuyo `uri`
+    // apunta al r1 que ya vive en el destino.
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-resucitador',
+      version: '2.0.0',
+      units: [
+        // Corpus sano (si TODAS las unidades fueran malformadas el volumen no
+        // se detectaría firehose y caería al camino genérico de U201).
+        { batch: 'jetstream-2', raw: post({ rkey: 'nuevo-sano' }) },
+        {
+          batch: 'jetstream-2',
+          name: 'resucitador',
+          raw: {
+            did: 'did:plc:alpha',
+            uri: `at://did:plc:alpha/${COLLECTION}/r1`,
+            kind: 'commit',
+            commit: { collection: COLLECTION, rkey: 'x/y', record: { text: 'OTRO REGISTRO' } }
+          }
+        }
+      ]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+
+    // Antes: ok:true · moved:0 · dedup contra r1 · disco sin cambios (descarte
+    // silencioso). Ahora: rechazo explícito citando la ruta.
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'validar');
+    assert.equal(res.error, 'familia_invalida');
+    assert.match(JSON.stringify(res.results), /unidad_sin_clave: raw\/jetstream-2\/resucitador\.json/);
+
+    assert.deepEqual(fs.readFileSync(rootFile(root, 'raw/jetstream/r1.json')), bytesR1);
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream-2')));
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
 });
 
 test('D1: el par ambiguo no se descarta en silencio — importPack lo RECHAZA', () => {
@@ -539,28 +654,30 @@ test('D1: el par ambiguo no se descarta en silencio — importPack lo RECHAZA', 
   }
 });
 
-test('D1b: SIN trim — componentes con espacios se rechazan, no se normalizan', () => {
-  assert.equal(firehoseUnitKey(post({ did: '  did:plc:alpha  ', rkey: 'z', withUri: false })), null);
-  assert.equal(firehoseUnitKey(post({ rkey: ' z ', withUri: false })), null);
-  assert.equal(firehoseUnitKey(post({ rkey: 'a\tb', withUri: false })), null);
-  assert.equal(firehoseUnitKey(post({ rkey: '', withUri: false })), null);
+test('D1b: SIN trim — componentes con espacios se rechazan por AMBAS vías', () => {
+  // El `trim()` retirado se había MUDADO al fallback: `rkey:'r1 '` sin uri daba
+  // null y con uri daba clave. Las cuatro combinaciones deben dar null.
+  assertSinClavePorAmbasVias({ did: '  did:plc:alpha  ', rkey: 'z' }, 'did con espacios');
+  assertSinClavePorAmbasVias({ rkey: ' z ' }, 'rkey con espacios');
+  assertSinClavePorAmbasVias({ rkey: 'r1 ' }, 'rkey con espacio final (vector D1b)');
+  assertSinClavePorAmbasVias({ rkey: 'a\tb' }, 'rkey con tab');
+  assertSinClavePorAmbasVias({ rkey: '' }, 'rkey vacio');
 });
 
-test('D1c: el fallback `uri` exige AT-URI BIEN FORMADO', () => {
+test('D1c: `parseAtUri` solo acepta AT-URI bien formado (y solo CORROBORA)', () => {
   assert.equal(parseAtUri('no-soy-un-at-uri'), null);
   assert.equal(parseAtUri('../../etc/passwd'), null);
   assert.equal(parseAtUri('at://solo/dos'), null);
   assert.equal(parseAtUri('at://a/b/c/d'), null);
   assert.equal(parseAtUri('at:// /b/c'), null);
+  assert.equal(parseAtUri(42), null);
   assert.equal(parseAtUri(`at://did:plc:alpha/${COLLECTION}/z`), `at://did:plc:alpha/${COLLECTION}/z`);
 
-  // Con did inservible, un `uri` basura ya no viaja sellado como `unit:'at-uri'`.
-  assert.equal(firehoseUnitKey(post({ did: 42, rkey: 'z', uri: 'no-soy-un-at-uri' })), null);
-  assert.equal(firehoseUnitKey(post({ did: 42, rkey: 'z', uri: '../../etc/passwd' })), null);
-  assert.equal(
-    firehoseUnitKey(post({ did: 42, rkey: 'z', uri: `at://did:plc:beta/${COLLECTION}/z` })),
-    `at://did:plc:beta/${COLLECTION}/z`
-  );
+  // Terna inservible: NINGÚN `uri` produce ya clave (D-A). Antes, el tercero
+  // de estos rendía `at://did:plc:beta/…/z` y viajaba sellado como at-uri.
+  for (const uri of ['no-soy-un-at-uri', '../../etc/passwd', `at://did:plc:beta/${COLLECTION}/z`]) {
+    assert.equal(firehoseUnitKey(post({ did: 42, rkey: 'z', uri })), null, `uri=${uri}`);
+  }
 });
 
 test('D2: fichero de raíz NO declarado = familia_invalida (la allowlist la ejerce el driver)', () => {
@@ -687,6 +804,95 @@ test('D3: ancestro que existe como FICHERO = fallo declarado, nunca excepción a
   } finally {
     restore();
     fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D-B: enlace en el DESTINO = aborto en el pase dry, ANTES de sellar', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'u1' }) }] });
+  let planted = false;
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+
+    // Un corpus enlazado a otro disco (operación normal en Windows) con una
+    // unidad viviendo detrás: `readdirSync` no lo sigue, así que el índice por
+    // clave tendría un agujero y u2 se duplicaría.
+    const fuera = path.join(root, 'fuera-del-volumen');
+    fs.mkdirSync(fuera, { recursive: true });
+    fs.writeFileSync(
+      path.join(fuera, 'u2.json'),
+      `${JSON.stringify(post({ rkey: 'u2' }), null, 2)}\n`,
+      'utf8'
+    );
+    try {
+      fs.symlinkSync(fuera, rootFile(root, 'raw/enlazado'), 'junction');
+      planted = true;
+    } catch {
+      planted = false; // sin privilegios para enlazar: el probe no aplica
+    }
+    if (!planted) return;
+
+    const manifestBefore = manifestBytes(root);
+    const sealBefore = hashManifest().sha256;
+
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-enlace',
+      version: '2.0.0',
+      units: [{ batch: 'jetstream-2', raw: post({ rkey: 'u2' }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+
+    // Antes: moved:1 (duplicado en disco), manifiesto RESELLADO y luego
+    // ok:false en no-link — irreversible. Ahora: aborta antes de tocar nada.
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'enlace_en_destino');
+    assert.ok(res.links.includes('raw/enlazado'), JSON.stringify(res.links));
+    assert.ok(!res.steps.some((s) => s.step === 'sellar'), 'no se llegó a SELLAR');
+
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.equal(hashManifest().sha256, sealBefore);
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream-2/u2.json')));
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    if (planted) {
+      try {
+        fs.unlinkSync(rootFile(root, 'raw/enlazado'));
+      } catch {
+        /* limpieza best-effort */
+      }
+    }
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D-E: el guardián `unidad_en_raiz` SÍ es alcanzable (la allowlist es por nombre)', () => {
+  const { root, restore } = setupRoot();
+  // `triage-manifest.json` cuyo PAYLOAD es una unidad: pasa la allowlist (por
+  // nombre) y el schema real (permisivo), y aborta un paso más tarde.
+  const { packRoot } = buildFirehosePack({
+    units: [{ raw: post({ rkey: 'u1' }) }],
+    triage: post({ rkey: 'disfrazado' })
+  });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'unidad_en_raiz');
+    assert.equal(res.file, 'triage-manifest.json');
+    assert.equal(res.key, `at://did:plc:alpha/${COLLECTION}/disfrazado`);
+    // Falla cerrado: root intacto, sin staging.
+    assert.equal(manifestBytes(root), before);
+    assert.ok(!fs.existsSync(path.join(root, 'DISK_01')));
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
   }
 });
 

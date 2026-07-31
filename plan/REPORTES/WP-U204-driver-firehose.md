@@ -16,8 +16,8 @@
 
 | fichero | qué es |
 | ------- | ------ |
-| `packages/engine/volumes-ops/src/driver-firehose.mjs` (380 líneas → 524 tras la corrección de la devolución) | driver de familia FIREHOSE: `detect` / `validate` / `merge` (PLAN). Cabecera = decisión Z-D9 razonada con citas |
-| `packages/engine/volumes-ops/test/import-firehose-driver.test.mjs` (13 tests → 22 tras la corrección) | suite del WP: Z-D9 aislado, CA-1, 4 de idempotencia/unión, 4 rojos, 2 de índice, 1 de cota |
+| `packages/engine/volumes-ops/src/driver-firehose.mjs` (380 → 524 → **631** líneas tras las dos devoluciones) | driver de familia FIREHOSE: `detect` / `validate` / `merge` (PLAN). Cabecera = decisión Z-D9 razonada con citas |
+| `packages/engine/volumes-ops/test/import-firehose-driver.test.mjs` (13 → 22 → **26 tests** tras las dos devoluciones) | suite del WP: Z-D9 aislado, CA-1, 4 de idempotencia/unión, 4 rojos, 2 de índice, 1 de cota |
 
 ### Tocados
 
@@ -28,8 +28,8 @@
 | `packages/engine/volumes-ops/src/import.mjs:241-245` | pasa `volumeDir` al detect |
 | `packages/engine/volumes-ops/src/import.mjs:407-409` | `familyReports` gana `dedup` (lo deduplicado se REPORTA con la ruta donde la clave ya vivía) |
 | `packages/engine/volumes-ops/src/import.mjs:475,565` | `dedup` en el paso observable `fusionar` y en el asiento del ledger |
-| `packages/engine/volumes-ops/src/state.mjs:73-103` | **nace `recordVolumeSync`** — marca de sync vivo en `volumes.state.json` |
-| `packages/engine/volumes-ops/src/state.mjs:119-122` | `recordVolumeState` preserva marcas ajenas (medir no borra estado que no produjo) |
+| `packages/engine/volumes-ops/src/state.mjs:73-116` | **nace `recordVolumeSync`** — marca de sync vivo en `volumes.state.json` |
+| `packages/engine/volumes-ops/src/state.mjs:133-135` | `recordVolumeState` preserva marcas ajenas (medir no borra estado que no produjo) |
 | `packages/engine/volumes-ops/src/index.mjs:23-30,45` | re-exports (`FIREHOSE_*`, `firehoseUnitKey`, `recordVolumeSync`) |
 | `packages/engine/feed-kit/src/jetstream-sync.mjs:9-25,89-124,175-200,206,239,320` | **demolición** (§3) + `resolveFirehoseVolumeRoot` + `recordFirehoseSync` |
 | `packages/engine/feed-kit/src/index.mjs:20-33` | export map: fuera `ensureFirehoseVolumeLayout`, dentro los sucesores |
@@ -132,7 +132,7 @@ cambia por import**. Lo que quedó:
   apunta al import. Solo materializa los directorios de datos de los corpus
   que el manifiesto YA declara.
 - **`recordFirehoseSync`** (`jetstream-sync.mjs:189-195`) → `recordVolumeSync`
-  (`volumes-ops/src/state.mjs:91`): `syncedAt` va a `volumes.state.json`, que
+  (`volumes-ops/src/state.mjs:98`): `syncedAt` va a `volumes.state.json`, que
   nunca entra en el sello. «Sync vivo = estado» ejecutado, no prometido.
 - **Consumidor arreglado**: `getFirehoseStats().syncedAt`
   (`firehose-core/src/browse.mjs:231`) leía `volume.source?.syncedAt`; tras la
@@ -150,7 +150,7 @@ $ grep -rn "ensureFirehoseVolumeLayout" --include=*.mjs --include=*.md --include
 ./packages/engine/feed-kit/src/index.mjs:23:  // WP-U204: `ensureFirehoseVolumeLayout` (escritor legado de volumes.json
 ./packages/engine/feed-kit/src/jetstream-sync.mjs:11: * `ensureFirehoseVolumeLayout` vivía aquí y ESCRIBÍA `volumes.json` con un
 ./packages/engine/firehose-core/src/browse.mjs:20: * volumes.json by feed-kit's `ensureFirehoseVolumeLayout`, which broke the
-./packages/engine/volumes-ops/src/state.mjs:79: * defect demolished here — feed-kit `ensureFirehoseVolumeLayout` wrote
+./packages/engine/volumes-ops/src/state.mjs:80: * defect demolished here — feed-kit `ensureFirehoseVolumeLayout` wrote
 ```
 
 4 hits, **los 4 son comentarios de demolición**. Cero llamadas, cero
@@ -215,7 +215,7 @@ aditiva:
 ### Garantía estructural de la imposibilidad de sobrescribir
 
 `importPack` fusiona con `renameSync`, que **sí** pisaría. La imposibilidad no
-la da el sistema de ficheros: la da el plan. `merge` (`driver-firehose.mjs:349-353`)
+la da el sistema de ficheros: la da el plan. `merge` (`driver-firehose.mjs:594-602`)
 recorre los `moves` construidos y devuelve `sobrescritura_imposible` si alguno
 apuntase a una ruta ya existente. Los tres caminos que podrían generar un move
 sobre ruta ocupada están cerrados antes (dedup por clave, `colision_ruta`,
@@ -309,7 +309,7 @@ incremental: **viable a la escala del censo**.
    fuera de `sealManifest`. **No lo he tocado** (fuera de alcance). El patrón
    que aquí funcionó: *eliminar*, no reencaminar — el sucesor exige que el
    manifiesto ya declare el volumen y el `syncedAt` va a
-   `recordVolumeSync(volumeId, …)` (`volumes-ops/src/state.mjs:91`), ya
+   `recordVolumeSync(volumeId, …)` (`volumes-ops/src/state.mjs:98`), ya
    exportado y probado. Su lector `ssb-system/src/loader.mjs:57`
    (`manifest.syncedAt`) lee del manifiesto **del propio corpus SSB**, no del
    de volúmenes: verifica antes de mover nada.
@@ -320,7 +320,7 @@ incremental: **viable a la escala del censo**.
    (`:99`) — el `key` de SSB es un hash de mensaje; comprueba si la
    **secuencia** (`sequence` del feed) es recuperable de lo exportado, porque el
    CA de U205 es «reimport no reordena» y un hash no ordena.
-3. **`recordVolumeState` ya no pisa marcas ajenas** (`state.mjs:119-122`): si
+3. **`recordVolumeState` ya no pisa marcas ajenas** (`state.mjs:133-135`): si
    registras `syncedAt` en el estado, una remedición posterior lo conserva. No
    inviertas el orden confiando en lo contrario.
 4. **La lección de familia**: FIREHOSE **no** hereda ni el merge de LINEAS
@@ -368,7 +368,7 @@ cabecera para que el probe sea legible sin releerlo cada vez.
 - La cota es medida sintética a la cifra del censo, sobre SSD local; no predice
   el coste sobre el volumen VPS (U209, `DEFERRED`).
 - `detect` lee **hasta 64** ficheros para confirmar la familia por contenido
-  (`driver-firehose.mjs:90,205`); un volumen firehose cuyos primeros 64 `.json`
+  (`driver-firehose.mjs:176` y `:395`); un volumen firehose cuyos primeros 64 `.json`
   fueran todos no-posts no se detectaría solo (caería al camino genérico de
   U201). El tope está declarado en la cabecera y es ajustable.
 
@@ -404,7 +404,7 @@ decisión de diseño que reproduce el defecto que dice evitar no se defiende: se
 arregla.
 
 **El arreglo — inyectividad por construcción, no por confianza.** Cada
-componente debe pasar `keyComponent()` (`driver-firehose.mjs:200-208`): string
+componente debe pasar `keyComponent()` (`driver-firehose.mjs:246`): string
 no vacío, **sin `/`**, sin espacios en blanco (incluidos los unicode) y sin
 caracteres de control. Con `/` prohibido en los tres, `at://A/B/C` se parte de
 forma única en exactamente 3 partes ⇒ la aplicación (did, collection, rkey) →
@@ -418,7 +418,7 @@ llegar por red no confiada.
   distinto (`'  did:plc:alpha  '` ≡ `'did:plc:alpha'`). Un componente con
   espacios ahora se **rechaza**, no se normaliza.
 - **D1c · el fallback exige AT-URI bien formado.** Nace `parseAtUri`
-  (`driver-firehose.mjs:216-223`): `at://` + exactamente 3 componentes
+  (`driver-firehose.mjs:263`): `at://` + exactamente 3 componentes
   admisibles. `'no-soy-un-at-uri'` y `'../../etc/passwd'` ya no viajan sellados
   bajo `snapshot:{unit:'at-uri'}`. El sello deja de mentir sobre la naturaleza
   de la clave, y la ausencia de traversal pasa de suerte a diseño.
@@ -457,7 +457,7 @@ ejercía. La crítica es exacta.
 **El arreglo, en dos mitades:**
 
 1. **VALIDAR ejerce la responsabilidad**: allowlist declarada
-   `FIREHOSE_ROOT_FILES` (`driver-firehose.mjs:139`), derivada de lo que el
+   `FIREHOSE_ROOT_FILES` (`driver-firehose.mjs:170`), derivada de lo que el
    árbol declara (`presets-sdk/src/paths/firehose.mjs:8` y el validador real
    `linea-kit/src/validate.mjs:217-221`). Cualquier otro fichero de raíz =
    `fichero_de_raiz_no_declarado`; si además rinde clave, el mensaje dice que
@@ -483,7 +483,7 @@ el volumen conteniendo material que el sello no conoce. `import.mjs:19-20` dice
 colisión antes del primer rename. No la detectaba.
 
 **Arreglo en el sitio que la contrarrevisión señala** (el driver ya recorre el
-destino): `blockingAncestor` (`driver-firehose.mjs:261-270`) comprueba que
+destino): `blockingAncestor` (`driver-firehose.mjs:333`) comprueba que
 ningún ancestro del destino de un `move` exista como fichero; si lo hay, el plan
 devuelve `ruta_bloqueada_por_fichero` y `importPack` aborta limpio.
 
@@ -508,7 +508,7 @@ público nuevo `recordFirehoseSync` heredaba el agujero. Contradecía además
 promesa falsa en la pieza que sustituye al escritor demolido es exactamente el
 tipo de cosa que este WP existe para eliminar**.
 
-**Arreglo** (`state.mjs:98-116`): fallo cerrado de verdad, con el mismo patrón
+**Arreglo** (`state.mjs:98`): fallo cerrado de verdad, con el mismo patrón
 que `syncVolumeCounters` — `hashManifest()` primero (root sin manifiesto = no
 operable), luego `loadVolumesConfig()` y `Unknown volume id` si el manifiesto no
 lo declara; nada se escribe antes de esas dos puertas. De paso anota el sha256
@@ -639,3 +639,212 @@ he tocado `@zeus/feed-kit/package.json` para el major que la ruptura de API
 merece (owner U237), y **no** he cambiado la decisión Z-D9: la clave sigue
 siendo el AT-URI derivado — ahora **con la inyectividad probada**, que es
 justamente lo que le faltaba.
+
+---
+
+# 11 · Corrección de la SEGUNDA devolución (D-A · D-B · menores)
+
+Nada borrado; lo anterior queda y esto lo corrige. Commit: ver §11.7.
+
+> **Nota de método sobre las citas.** Las referencias de este reporte son
+> **anclas a la línea de declaración** del símbolo (`fichero:línea` de la
+> `function`/`const`), no rangos: un rango se desplaza en cuanto el fichero
+> crece y produce exactamente la clase de cita desfasada que la devolución
+> señaló. Todas las anclas son válidas en el **tip** de la rama.
+
+## 11.1 · D-A (BLOQUEANTE) · el fallback `uri` resucitaba lo que la terna rechaza
+
+**El vector, verificado y reproducido.** Cerré la terna y dejé abierta la
+puerta de al lado. Un registro con `rkey:'x/y'` (el vector D1 exacto) y un
+`uri` apuntando a OTRO registro keyaba **por `uri`**, deduplicaba contra ese
+otro registro y **no aterrizaba**: `ok:true · moved:0 · dedup:[{key:'…/r1',
+at:'raw/jetstream/r1.json'}]`. Es, palabra por palabra, la frase con la que
+describí el defecto que decía haber cerrado: descarte silencioso con el
+`dedup` mintiendo sobre dónde vive la clave. Y **el `trim()` no se eliminó: se
+mudó al fallback** — `key(rkey:'r1 ', sin uri) = null`, `key(rkey:'r1 ', con
+uri) = clave`.
+
+**Lo que de verdad falló fue el probe, no solo el código.** Mis tres probes de
+D1 usaban `withUri:false` y **nunca cruzaban las dos vías**, mientras el
+material real de este mundo **trae `uri`**
+(`feed-kit/src/jetstream-sync.mjs:58` `SAMPLE_POSTS`) y mi propia fixture lo
+pone por defecto. Demostré una propiedad de **un camino** y la afirmé **del
+todo**. Eso es un fallo de método y lo anoto como tal, porque es el que se
+repite si no se nombra.
+
+**El arreglo — una sola vía** (`driver-firehose.mjs:304` `firehoseUnitKey`):
+la clave sale **siempre** de la terna `did`+`collection`+`rkey`, con los tres
+pasando `keyComponent`. `uri` deja de ser vía alternativa y pasa a ser
+**corroboración**: si está presente y no coincide **exactamente** con la clave
+derivada, el material es incoherente y **no rinde clave**. `parseAtUri`
+(`:263`) sobrevive solo como parser de esa corroboración.
+
+Es **más estricto** que el arreglo mínimo que proponía la devolución («si
+discrepa, o si la terna no pasa `keyComponent`, `unidad_sin_clave`»): al
+retirar el fallback entero, la clase completa desaparece en vez de quedar
+acotada. La decisión **Z-D9 no cambia** —la clave canónica sigue siendo el
+AT-URI derivado—; lo que se retira es una vía degradada que nunca debió
+poder producir clave.
+
+**Consecuencia declarada, no efecto colateral.** Un registro **sin
+`commit.rkey`** —forma que el productor tolera: `writeJetstreamPost` cae a
+`norm.id` para NOMBRAR el fichero (`jetstream-sync.mjs:139`)— ya no se keya
+por su `uri`: se rechaza como `unidad_sin_clave` **citando su ruta**. Es §2.4
+aplicada (fallo-cerrado antes que adivinar) y es revisable con evidencia si
+ese material aparece. **Esto sustituye** al «límite del fallback» que declaré
+en §10.1 (el AT-URI por *handle*): ese caso ahora es, simplemente, material
+incoherente que se rechaza.
+
+**Probes permanentes, ya cruzados.** Nace el helper
+`assertSinClavePorAmbasVias(fields, etiqueta)`, que ejercita **cuatro**
+combinaciones por vector: sin `uri`, con `uri` ajeno, con `uri` auto-coherente
+y con `uri` basura. Lo usan D1 (los tres componentes con `/`) y D1b (espacios,
+tab, vacío y el vector `rkey:'r1 '`). Además:
+
+- `D-A: uri NO es vía alternativa…` — el resucitador; `uri` que discrepa de
+  terna válida; `uri` coherente (corrobora); `uri` ausente; cinco `uri`
+  hostiles (`42`, `{}`, `[]`, `true`, AT-URI de 4 componentes); y la
+  consecuencia declarada (sin `rkey` → `null`).
+- `D-A: el resucitador no deduplica contra otro registro — importPack lo
+  RECHAZA` — el vector de punta a punta: donde antes salía `ok:true`/`dedup`,
+  ahora sale `step:'validar'`, `error:'familia_invalida'`,
+  `unidad_sin_clave: raw/jetstream-2/resucitador.json`, con `r1` intacto byte
+  a byte, manifiesto idéntico y `raw/jetstream-2` sin crear.
+
+## 11.2 · D-B (BLOQUEANTE) · `walkRel` descartaba enlaces en silencio
+
+**El vector.** `walkRel` clasificaba con `isDirectory()/isFile()`; una junction
+de directorio no es ninguna de las dos y **se caía del walk sin decir nada** —
+justo lo contrario de `destSinClave`/`destDuplicadas`/`destUnidadesEnRaiz`, que
+sí se declaran. Con una unidad viviendo tras el enlace, el índice por clave
+tenía un agujero: `moved:1` donde tocaba `dedup:1`, **duplicado en disco**,
+**manifiesto resellado**, y luego `ok:false` en el paso NO-LINK — que corre
+**después** de SELLAR. E **irreversible**: el pack ya quedó sellado con su
+`packHash`, el reintento sin enlace es no-op y el duplicado se queda.
+
+Caían tres afirmaciones mías: que el índice «cubre **TODO** el árbol», que
+«reimportar no duplica», y el `Every failure leaves the root intact` de
+`import.mjs:19-20`. Y el escenario no es hostil: enlazar un corpus a otro
+disco para una caché que crece es operación normal en Windows.
+
+**El arreglo — la salida fuerte de las dos ofrecidas.** `walkRel`
+(`driver-firehose.mjs:201`) devuelve ahora `{ files, others }`: nada se
+descarta callando. Y `merge` (`:515`) **aborta** con `enlace_en_destino` en el
+**pase dry** —antes de mover y **antes de sellar**— en vez de limitarse a
+contar. Razón para elegir rechazar y no solo declarar: si solo se cuenta, la
+duplicación **sigue ocurriendo** y sigue siendo irreversible; una caché cuyo
+contrato es «unión aditiva, **jamás duplicar**» no puede planificar sobre un
+índice con agujeros. Además es la **doctrina que este mundo ya tiene**:
+enlaces rechazados en el pack (contrato §0.4, `import.mjs:169-172`) y en el
+árbol aterrizado (paso NO-LINK). Rechazarlos también en el destino aplica la
+misma regla **antes** de que haga daño. `validate` reporta igualmente
+`enlace_en_staging` si algo así apareciera en la copia (no debería: el staging
+lo materializa `copyFileSync`).
+
+**Probe permanente:** `D-B: enlace en el DESTINO = aborto en el pase dry, ANTES
+de sellar` — planta una junction real (`fs.symlinkSync(…, 'junction')`, sin
+privilegios de administrador) con una unidad detrás y verifica
+`step:'fusionar'`, `error:'enlace_en_destino'`, `links` citando la ruta,
+**ausencia del paso `sellar` en `steps`**, sello y manifiesto byte a byte, cero
+duplicado y staging limpio. Si el entorno no permitiera crear el enlace, el
+probe se abstiene en vez de fingir que pasó.
+
+## 11.3 · Menores
+
+- **D-C · volúmenes anidados: frase ACOTADA, resto enrutado.** Con
+  `DISK_01/FIREHOSE` y `DISK_01/FIREHOSE/raw` declarados en el mismo pack,
+  ambos se detectan firehose, el mismo fichero entra en dos planes y se
+  renombra dos veces → excepción en vez de contrato, y material sin sellar. La
+  causa está en el **bucle por volumen** de `import.mjs:357-462`, fuera del
+  alcance de cualquier driver. Mi §10.3 decía «cierra el camino de **esta
+  familia**» y eso era demasiado: **corregido en la cabecera del driver** —
+  ahora dice que la guarda cubre las colisiones **dentro de un volumen** y que
+  el caso anidado es deuda de U201. **Enrutado con dueño: U201/U242** (el
+  contrato de import y el de plugin/driver); no lo arreglo aquí.
+- **D-D · cadena de prototipos en `state.mjs:98`
+  (`config.volumes?.[volumeId]`): NO lo arreglo, lo enruto.** `constructor`,
+  `toString` o `__proto__` como `volumeId` pasan la puerta de D4. Es
+  **heredado literal** de `counters.mjs:33` (U199/U201) y la devolución
+  instruye explícitamente enrutarlo: arreglar solo mi copia dejaría las dos
+  comprobaciones divergentes, que es peor que una deuda uniforme. **Dueño:
+  U201** (o quien endurezca `volumes-ops/src/state.mjs` + `counters.mjs` a la
+  vez, p.ej. `Object.hasOwn(config.volumes, volumeId)`). Daño acotado: el
+  estado es regenerable y el manifiesto no se toca.
+- **D-E · comentario falso, corregido.** «Inalcanzable tras VALIDAR» en el
+  guardián `unidad_en_raiz` era mentira: la allowlist es por **nombre** y el
+  schema `triage-manifest` es permisivo, así que un `triage-manifest.json`
+  cuyo payload sea una unidad **pasa VALIDAR** y aborta un paso más tarde. El
+  comentario ahora dice que **sí** es alcanzable y por qué. Y como la
+  afirmación es comprobable, se prueba: `D-E: el guardián unidad_en_raiz SÍ es
+  alcanzable` verifica `step:'fusionar'`, `error:'unidad_en_raiz'`,
+  `file:'triage-manifest.json'`, la clave del payload, y root intacto. El
+  comentario gemelo de `unidad_sin_clave` (que **sí** es inalcanzable mientras
+  VALIDAR corra antes que FUSIONAR) queda explicado en lugar de afirmado.
+
+## 11.4 · Contabilidad: las cinco citas desfasadas
+
+Corregidas, y **re-ejecutada** la que era salida de comando:
+
+| cita | estaba | ahora |
+| ---- | ------ | ----- |
+| salida de PROBE 1 (§3.3) | `state.mjs:79` | **`state.mjs:80`** — grep re-ejecutado, salida pegada tal cual sale hoy |
+| «marcas ajenas sobreviven» | `state.mjs:119-122` | **`state.mjs:133`** |
+| `recordVolumeSync` | `state.mjs:91` | **`state.mjs:98`** |
+| guarda estructural de `moves` | `driver-firehose.mjs:349-353` | **`driver-firehose.mjs:594`** |
+| tope de `detect` | `driver-firehose.mjs:90,205` | **`driver-firehose.mjs:176` y `:395`** |
+
+Acepto el señalamiento de fondo: **una salida de comando citada tiene que
+poder re-ejecutarse**, o es prosa con aspecto de evidencia. Por eso este
+reporte pasa a citar **anclas de declaración** en vez de rangos (nota de
+método al principio de §11), que es lo que hace la cita estable frente a un
+fichero que crece.
+
+## 11.5 · Suites tras la segunda corrección
+
+| paquete | base | 1.ª entrega | tras D1-D4 | **tras D-A/D-B** |
+| ------- | ---- | ----------- | ---------- | ---------------- |
+| `@zeus/volumes-ops` | 27/27 | 40/40 | 49/49 | **53/53** |
+| `@zeus/feed-kit` | 9/9 | 10/10 | 10/10 | **10/10** |
+| `@zeus/firehose-core` | 11/11 | 12/12 | 12/12 | **12/12** |
+| `@zeus/linea-kit` | 36/36 | 36/36 | 36/36 | **36/36** |
+| `@zeus/presets-sdk` | 55/55 | 55/55 | 55/55 | **55/55** |
+| `@zeus/linea-firehose` | 1/1 | 1/1 | 1/1 | **1/1** |
+| `@zeus/firehose-browser` | 5/5 | 5/5 | 5/5 | **5/5** |
+
+**172/172 verdes.** La suite del driver pasa de 22 a **26 tests** (+4: D-A
+unitario, D-A de punta a punta, D-B, D-E; D1 y D1b se reescriben para cruzar
+ambas vías en vez de añadirse). eslint sobre los tres paquetes tocados: **0
+hallazgos**, sin suprimir reglas.
+
+Cota re-ejecutada a la cifra del censo tras el arreglo —que añade un
+`parseAtUri` por unidad con `uri`, y el material de prueba **sí** lo trae—:
+
+```
+# [U204·cota] unidades=8388 · import A (5032 nuevas)=24672ms · import B (5032 dedup + 3356 nuevas)=34815ms
+```
+
+Dentro de la dispersión ya publicada en §10.7 (A ∈ [21,9 · 36,8] s, B ∈ [27,0 ·
+101,4] s). Se mantiene lo que se sostiene con aserciones: 5.032 dedup, 3.356
+moved, **8.388 ficheros exactos**, `snapshot.units === 8388`, tercer pase
+`noop` con sello idéntico.
+
+## 11.6 · Qué NO he tocado (regla de cierre respetada)
+
+El alcance era **mi driver y mis probes**. Lo heredado se enruta:
+
+| deuda | dueño citado | por qué no aquí |
+| ----- | ------------ | --------------- |
+| bucle de renames sin rollback ni transacción (`import.mjs:357-462`), incluido el caso de volúmenes ANIDADOS (D-C) | **U201** (contrato de import) · **U242** (contrato de plugin/driver) | ningún driver puede coordinar dos volúmenes entre sí; el arreglo es del bucle |
+| cadena de prototipos en `state.mjs:98` y `counters.mjs:33` (D-D) | **U201** / dueño de `volumes-ops` | arreglar solo mi copia deja las dos comprobaciones divergentes |
+| `@zeus/feed-kit` en 0.3.0 con la API rota y **sin changeset** | **U237** (manifests) · gate de banda major **U168/U169** | los 48 manifests están congelados en esta ola (GOBIERNO §2) |
+| `ssb-system/src/export.mjs:173-207` (inventa manifiesto, `syncedAt` al manifiesto) | **U205** | eslabón siguiente |
+| `test-utils/src/smoke-env.mjs:52` | fuera de carril D | harness de fixtures, no camino de producto |
+| `e2e/feed-families-demo.mjs` rojo en la base | dueño de `e2e/` | secuela de U200, anterior a este WP |
+
+## 11.7 · Estado
+
+Rama `wp/u204-driver-firehose`, historia solo hacia delante (cinco commits de
+obra + los de corrección), `main` sin tocar, árbol limpio. La decisión **Z-D9
+sigue en pie y sin cambio de clave canónica**: AT-URI derivado de la terna,
+inyectivo, con **una sola vía** de producción y `uri` degradado a
+corroboración.

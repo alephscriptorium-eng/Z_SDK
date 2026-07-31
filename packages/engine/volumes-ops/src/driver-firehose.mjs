@@ -51,14 +51,24 @@
  * NO rinde clave (null) → `unidad_sin_clave`, fallo-cerrado, nunca descarte
  * silencioso. Sin `trim()`: normalizar espacios volvía a colapsar material
  * distinto (`'  d  '` y `'d'`); un componente con espacios se RECHAZA.
- * El fallback `uri` exige AT-URI bien formado (`at://` + 3 componentes que
- * casen): un string cualquiera ya no viaja sellado como `unit:'at-uri'`.
- * Límite declarado del fallback: un AT-URI que use el HANDLE en vez del DID
- * rinde clave distinta de la derivada del mismo registro — por eso la vía
- * derivada es la primaria y el fallback solo actúa cuando aquella no existe.
  * Charset: ATProto prohíbe `/` en NSID y en rkey, así que la regla no rechaza
  * material legítimo; rechaza material malformado, que es exactamente lo que
  * llega por red no confiada.
+ *
+ * ── UNA SOLA VÍA (defecto D-A de la 2.ª contrarrevisión, cerrado)
+ * Cerrar la terna dejaba abierta la puerta de al lado: mientras `uri` fue una
+ * vía ALTERNATIVA, un registro con la terna inválida (`rkey:'x/y'`) keyaba por
+ * `uri`, **deduplicaba contra OTRO registro** y se descartaba en silencio con
+ * un `dedup` que mentía sobre dónde vivía la clave — el defecto D1 exacto,
+ * resucitado. Y el `trim()` retirado se había mudado ahí (`rkey:'r1 '` sin
+ * `uri` → null; con `uri` → clave). Desde D-A la clave sale SIEMPRE de la
+ * terna y `uri` solo puede CORROBORAR: presente y discrepante = material
+ * incoherente = `unidad_sin_clave`. Ver `firehoseUnitKey` para la consecuencia
+ * declarada (un registro sin `rkey` ya no se keya por su `uri`).
+ * Lección de método, no solo de código: los probes de D1 usaban `withUri:false`
+ * y nunca cruzaban las dos vías, mientras el material real de este mundo SÍ
+ * trae `uri` (`feed-kit/src/jetstream-sync.mjs` SAMPLE_POSTS). Los probes de
+ * clave ejercitan ahora **ambas vías cruzadas**.
  *
  * ── Reglas de reconciliación (NO son las de LINEAS ni las de FORCES)
  * - clave NUEVA → aterriza (unión aditiva);
@@ -88,8 +98,26 @@
  *    `fichero_de_raiz_no_declarado`; si además rinde clave, el mensaje dice que
  *    una unidad vive bajo un corpus. El pack ya no cuela nada por la raíz.
  * 2. ÍNDICE y MERGE clasifican por CONTENIDO, no por profundidad de ruta: el
- *    índice del destino cubre TODO el árbol (incluida la raíz), así que una
- *    unidad heredada en la raíz sí deduplica y sí cuenta en `snapshot.units`.
+ *    índice del destino cubre todo el árbol RECORRIBLE (incluida la raíz), así
+ *    que una unidad heredada en la raíz sí deduplica y sí cuenta en
+ *    `snapshot.units`. «Recorrible» es literal: ver D-B.
+ *
+ * ── ENLACES EN EL DESTINO (defecto D-B de la 2.ª contrarrevisión, cerrado)
+ * `readdirSync` no sigue enlaces y el walk los descartaba **en silencio**
+ * (`isDirectory()/isFile()` deja fuera junctions), a diferencia de
+ * `destSinClave`/`destDuplicadas`/`destUnidadesEnRaiz`, que sí se declaran. Con
+ * una unidad viviendo tras un enlace el índice tenía un agujero: el pack la
+ * volvía a plantar (`moved:1` donde tocaba `dedup:1`), el volumen quedaba con
+ * el registro DUPLICADO, el sello se movía y el paso NO-LINK devolvía
+ * `ok:false` **después** de SELLAR — irreversible, porque el reintento ya es
+ * no-op por `packHash`. De las dos salidas posibles (declarar el conteo o
+ * rechazar) se toma la **fuerte**: `merge` aborta con `enlace_en_destino` en el
+ * pase dry, antes de mover y antes de sellar. Una caché cuyo contrato es
+ * «jamás duplicar» no puede planificar sobre un índice con agujeros, y el
+ * mundo ya rechaza enlaces en el pack (contrato §0.4) y en el árbol aterrizado
+ * (paso NO-LINK): rechazarlos en el destino es la misma doctrina, aplicada
+ * antes de que haga daño. `walkRel` devuelve `others` para que nada se
+ * descarte callando.
  *
  * Garantía estructural: antes de devolver el plan se verifica que ningún
  * `move` (a) apunta a una ruta ya existente → `sobrescritura_imposible`, ni
@@ -98,9 +126,12 @@
  * LANZABA `EEXIST` a mitad de los renames, modo de fallo no declarado por el
  * contrato y volumen a medias). `importPack` ejecuta con `renameSync`, que SÍ
  * pisaría: la imposibilidad la garantiza este guardián, no el sistema de
- * ficheros. Alcance honesto: la guarda protege el camino de ESTA familia; el
- * camino genérico de `importPack` (volúmenes sin driver) sigue sin rollback —
- * es deuda de U201, citada, no arreglada aquí.
+ * ficheros. **Alcance honesto (acotado tras D-C):** la guarda cubre las
+ * colisiones DENTRO de un volumen. NO cubre el caso de dos volúmenes ANIDADOS
+ * en el mismo pack (`DISK_01/FIREHOSE` y `DISK_01/FIREHOSE/raw`), donde el
+ * mismo fichero entra en dos planes y `importPack` lo renombra dos veces: eso
+ * ocurre en el bucle por volumen de `import.mjs:357-462`, fuera del alcance de
+ * cualquier driver, y sigue siendo deuda de U201 — citada, no arreglada aquí.
  *
  * ── Cursor sellado
  * `snapshot = { unit:'at-uri', units:<n>, unitsSha256:<sha256 del conjunto de
@@ -154,19 +185,34 @@ function toAbs(dir, rel) {
   return join(dir, rel.split('/').join(sep));
 }
 
-/** Files-only walk, posix rels, sorted. */
+/**
+ * Walk de un árbol: `{ files, others }`, ambos en rels posix ordenados.
+ *
+ * `others` = entradas que NO son fichero ni directorio — en la práctica
+ * symlinks y junctions (D-B de la contrarrevisión). ANTES se descartaban en
+ * silencio, que es como una unidad viviendo tras un enlace se volvía invisible
+ * al índice por clave: el pack la volvía a plantar, el volumen quedaba con el
+ * registro DUPLICADO y el sello se movía. `readdirSync` no sigue enlaces, así
+ * que lo que hay detrás nunca se recorre: por eso no se puede indexar, y por
+ * eso el driver los DECLARA en vez de tragárselos.
+ * @param {string} rootDir
+ * @returns {{ files: string[], others: string[] }}
+ */
 function walkRel(rootDir) {
   /** @type {string[]} */
-  const out = [];
+  const files = [];
+  /** @type {string[]} */
+  const others = [];
   function walk(dir, rel) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const childRel = rel ? `${rel}/${entry.name}` : entry.name;
       if (entry.isDirectory()) walk(join(dir, entry.name), childRel);
-      else if (entry.isFile()) out.push(childRel);
+      else if (entry.isFile()) files.push(childRel);
+      else others.push(childRel); // enlace/junction/socket/fifo: se declara
     }
   }
   if (existsSync(rootDir)) walk(rootDir, '');
-  return out.sort();
+  return { files: files.sort(), others: others.sort() };
 }
 
 /**
@@ -208,8 +254,9 @@ function keyComponent(value) {
 }
 
 /**
- * AT-URI bien formado, o `null` (D1c): `at://` + exactamente 3 componentes
- * admisibles. Un string cualquiera ya no pasa por clave.
+ * AT-URI bien formado, o `null`: `at://` + exactamente 3 componentes
+ * admisibles. Se usa SOLO para CORROBORAR la terna (ver `firehoseUnitKey`):
+ * desde D-A ya no es una vía alternativa para producir clave.
  * @param {any} value
  * @returns {string|null}
  */
@@ -223,11 +270,34 @@ export function parseAtUri(value) {
 }
 
 /**
- * Clave de la unidad — AT-URI canónico DERIVADO e INYECTIVO (Z-D9 + D1, ver
- * cabecera). Devuelve `null` cuando el material no permite una clave
- * inequívoca: quien llama decide (VALIDAR aborta con la ruta; el índice del
- * destino la cuenta como no indexable). Jamás se fabrica una clave a partir de
- * la ruta, y jamás se normaliza para que «encaje».
+ * Clave de la unidad — AT-URI canónico DERIVADO e INYECTIVO (Z-D9 + D1 + D-A).
+ *
+ * **UNA SOLA VÍA** (D-A): la clave sale SIEMPRE de la terna
+ * `did` + `commit.collection` + `commit.rkey`, y los tres deben pasar
+ * `keyComponent`. `uri` ya NO es una vía alternativa: cuando está presente
+ * solo puede CORROBORAR — si no coincide exactamente con la clave derivada,
+ * el material es incoherente y no rinde clave.
+ *
+ * Por qué se retiró el fallback: mientras existió, un registro con la terna
+ * inválida (p.ej. `rkey:'x/y'`) keyaba por `uri` y **deduplicaba contra otro
+ * registro**, quedando descartado en silencio con un `dedup` que mentía sobre
+ * dónde vivía la clave — el defecto D1 exacto, resucitado por la puerta de al
+ * lado. Y el `trim()` retirado en D1b se había mudado ahí: `rkey:'r1 '` sin
+ * `uri` daba `null`, con `uri` daba clave. Dos vías que no se cruzaban.
+ *
+ * Consecuencia declarada (no es efecto colateral, es decisión): un registro
+ * sin `commit.rkey` —forma que el productor tolera,
+ * `feed-kit/src/jetstream-sync.mjs:143-147` cae a `norm.id` para NOMBRAR el
+ * fichero— ya no se keya por su `uri`: se rechaza como `unidad_sin_clave`,
+ * citando su ruta. Es §2.4 aplicada: fallo-cerrado antes que adivinar. Se
+ * revisará si alguna vez aparece material real así, con la evidencia delante.
+ * Sustituye al «límite del fallback» que este driver declaraba antes (AT-URI
+ * por handle): ese caso ahora es simplemente material incoherente.
+ *
+ * Devuelve `null` cuando el material no permite una clave inequívoca: quien
+ * llama decide (VALIDAR aborta con la ruta; el índice del destino la cuenta
+ * como no indexable). Jamás se fabrica una clave a partir de la ruta, y jamás
+ * se normaliza para que «encaje».
  * @param {any} raw
  * @returns {string|null}
  */
@@ -236,11 +306,13 @@ export function firehoseUnitKey(raw) {
   const did = keyComponent(raw?.did);
   const collection = keyComponent(raw?.commit?.collection);
   const rkey = keyComponent(raw?.commit?.rkey);
-  if (did && collection && rkey) return `at://${did}/${collection}/${rkey}`;
-  // Fallback declarado: el AT-URI explícito, si el productor lo trajo BIEN
-  // FORMADO (límite conocido: un AT-URI por handle keya distinto del derivado
-  // por DID — por eso la vía derivada es la primaria).
-  return parseAtUri(raw?.uri);
+  if (!did || !collection || !rkey) return null; // sin terna válida no hay clave
+  const derived = `at://${did}/${collection}/${rkey}`;
+  const uri = raw?.uri;
+  if (uri !== undefined && uri !== null && parseAtUri(uri) !== derived) {
+    return null; // `uri` presente que no corrobora = material incoherente
+  }
+  return derived;
 }
 
 /** Lee la clave de un fichero de unidad; null si no parsea o no rinde clave. */
@@ -270,11 +342,15 @@ function blockingAncestor(destDir, rel) {
 }
 
 /**
- * Índice del destino: clave → rel, sobre TODO el árbol del volumen — incluida
- * la RAÍZ (D2): una unidad heredada fuera de corpus tiene que deduplicar y
- * contar, no ser invisible. La clasificación es por CONTENIDO, no por
- * profundidad de ruta. Lo no indexable bajo corpus se cuenta y se reporta; el
- * driver no repara el destino.
+ * Índice del destino: clave → rel, sobre TODO el árbol RECORRIBLE del volumen
+ * — incluida la RAÍZ (D2): una unidad heredada fuera de corpus tiene que
+ * deduplicar y contar, no ser invisible. La clasificación es por CONTENIDO, no
+ * por profundidad de ruta. Lo no indexable bajo corpus se cuenta y se reporta;
+ * el driver no repara el destino.
+ *
+ * «Recorrible» es literal (D-B): lo que hay tras un enlace NO se recorre, así
+ * que `links` sale aparte y `merge` lo trata como causa de aborto — un índice
+ * con agujeros no puede sostener «unión aditiva, jamás duplicar».
  * @param {string} dir
  */
 function indexByKey(dir) {
@@ -286,7 +362,8 @@ function indexByKey(dir) {
   const duplicated = [];
   /** @type {string[]} */
   const rootUnits = [];
-  for (const rel of walkRel(dir)) {
+  const { files, others } = walkRel(dir);
+  for (const rel of files) {
     const key = rel.endsWith('.json') ? keyOfFile(toAbs(dir, rel)) : null;
     if (!key) {
       // Sidecar de raíz declarado: no es unidad y no es defecto.
@@ -297,7 +374,7 @@ function indexByKey(dir) {
     if (byKey.has(key)) duplicated.push(rel);
     else byKey.set(key, rel);
   }
-  return { byKey, unkeyed, duplicated, rootUnits };
+  return { byKey, unkeyed, duplicated, rootUnits, links: others };
 }
 
 /**
@@ -338,7 +415,20 @@ function validate({ stagedDir }) {
   const seen = new Map();
   let units = 0;
 
-  for (const rel of walkRel(stagedDir)) {
+  const staged = walkRel(stagedDir);
+  // El staging es una COPIA materializada (importPack ya rechaza enlaces en el
+  // pack, contrato §0.4), así que `others` debería ser vacío; si no lo es, se
+  // dice — nunca se descarta en silencio (D-B).
+  for (const rel of staged.others) {
+    results.push({
+      ok: false,
+      schemaId: 'firehose-layout',
+      path: rel,
+      errors: [{ message: `enlace_en_staging: ${rel} no es fichero ni directorio` }]
+    });
+  }
+
+  for (const rel of staged.files) {
     const abs = toAbs(stagedDir, rel);
     const key = rel.endsWith('.json') ? keyOfFile(abs) : null;
     if (!isUnitSlot(rel)) {
@@ -415,6 +505,17 @@ function validate({ stagedDir }) {
 function merge({ stagedDir, destDir, volumeFiles }) {
   const dest = indexByKey(destDir);
 
+  // D-B · un destino con enlaces NO se puede planificar: `readdirSync` no los
+  // sigue, así que el índice por clave tiene agujeros y una unidad que viva
+  // detrás reaparecería DUPLICADA (y de forma irreversible: el pack quedaría
+  // sellado con su packHash y el reintento sería no-op). Se aborta en el pase
+  // dry — ANTES de mover y ANTES de sellar — en vez de fallar en el paso
+  // NO-LINK, que corre DESPUÉS de SELLAR. Coherente con el cerco §10.8 y con
+  // el rechazo de enlaces en el pack (contrato §0.4).
+  if (dest.links.length > 0) {
+    return { error: { code: 'enlace_en_destino', detail: { links: dest.links } } };
+  }
+
   /** @type {string[]} */
   const moves = [];
   /** @type {string[]} */
@@ -434,7 +535,9 @@ function merge({ stagedDir, destDir, volumeFiles }) {
 
     if (!key) {
       if (isUnitSlot(rel)) {
-        // Inalcanzable tras VALIDAR; guardián por si el orden cambiara.
+        // Inalcanzable mientras VALIDAR corra antes que FUSIONAR (VALIDAR
+        // rechaza todo fichero de corpus sin clave); guardián por si el
+        // orden cambiara. A diferencia de `unidad_en_raiz`, que SÍ se alcanza.
         return { error: { code: 'unidad_sin_clave', detail: { file: rel } } };
       }
       // Sidecar de raíz (índice de triage): aditivo por ruta, divergencia
@@ -451,7 +554,11 @@ function merge({ stagedDir, destDir, volumeFiles }) {
     }
 
     if (!isUnitSlot(rel)) {
-      // Inalcanzable tras VALIDAR (allowlist de raíz); guardián explícito.
+      // ALCANZABLE (D-E): la allowlist de VALIDAR es por NOMBRE, y el schema
+      // `triage-manifest` es permisivo (additionalProperties, todo opcional),
+      // así que un `triage-manifest.json` cuyo payload sea una unidad pasa
+      // VALIDAR y llega aquí. Falla cerrado: aborta en el pase dry, root
+      // intacto. (Antes este comentario decía «inalcanzable»; era falso.)
       return { error: { code: 'unidad_en_raiz', detail: { file: rel, key } } };
     }
 
