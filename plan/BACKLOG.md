@@ -219,7 +219,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
 | **U179** ✅ | 01 | Ficha de runtime — **matriz 51/51 explícita** | **`plan/MATRIZ-RUNTIME-51.md`** — 51 filas (26 engine · 1 editor · 21 mesh · 2 examples · 1 anidada `threejs-ui-lib`): **denominador reconciliado: 51 = 50 workspace + 1 anidada**; 0 `<pendiente>` (negativos con patrón grep declarado). 3 datos para U233: flota declarada > materializada (4+6 `workspace:null`) · puerto ciudad-lifecycle **fuera** de `presets-sdk/env` (server.mjs:13-16, verificado por orquestador) · el porte de peercard vive solo en el cliente `rooms`. Aceptado por el orquestador 2026-07-31 (rama `wp/u179-matriz-51`) | ninguna celda por inferencia ✓ · 51 filas ✓ (`grep -c` = 51) · citas grep-ables ✓ (muestreo 20 del worker + verificación del orquestador) | **P0** |
-| **U180** | 02 | Catálogo ola 1 | entradas `socket-server` + `ciudad-lifecycle`; puerto por `presets-sdk/env`, cero literales | `health` de facto por entrada; sin literales | **P0** |
+| **U180** 🔶 | 02 | Catálogo ola 1 | entradas `socket-server` + `ciudad-lifecycle`; puerto por `presets-sdk/env`, cero literales. **Ola 3, despachado 2026-07-31** (`wp/u180-catalogo-ola1`, worktree `wt/z-u180`): incluye re-verificar U234 con el catálogo ampliado | `health` de facto por entrada; sin literales | **P0** |
 | U181 | 03 | Catálogo ola 2 (UIs) | `editor-ui`, `player-ui`, `player-3d-ui`, `3d-monitor`, `cache-browser`, `firehose-browser` | cada UI arranca desde catálogo; puerto por env | P1 |
 | U182 | 04 | Presentar los 17 invisibles | 3 tandas (transporte · autoridad/juego · kits UI): qué resuelve y quién consume | cada pieza: consumida, documentada como lib, o propuesta a retiro | P1 |
 | U183 | 05 | Entradas sin `workspace` | las 4 `arg/pozo/solve` no lanzables: cablear spawn externo o retirar | el catálogo no ofrece nada inarrancable | P1 |
@@ -243,10 +243,10 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 | - | -- | -- | ----- | ------------ | ---- |
 | **U192** ✅ | 20 | Traza de lo descartado en relay | **Ejecutado**: ledger agregado por clave dirección\|evento\|motivo (count/first/last, consola anti-inundación 1.ª+cada 100 — 250 descartes→3 líneas, medido por revisor); 6 puntos de corte trazados; **política intacta probada** (0 ediciones a config.mjs; 23 sondas deepEqual contra base; contrarrevisión verificó equivalencia semántica línea a línea y que el test CAE ante mutación de política Y de traza). **Contrarrevisión adversarial PASS**. Hallazgo emergente: eco ping ida-y-vuelta real ahora visible (→U194/U195). Obs. a futuro: ledger sin cota de memoria (→U241) · inner truthy no-string propaga sin traza, herencia de base (→U194) · cita de base corregida ✎ (412673c era hash de otro repo → 4210b12). Aceptado 2026-07-31 (rama `wp/u192-traza-relay`) | todo lo no propagado deja registro con motivo ✓ (e2e puente real) · política sin cambio ✓ (probado, no afirmado) | **P0** |
 | U193 | 21 | Identidad en el puente | `scriptorium-bridge` único colapsa emisor aguas arriba: propagar origen | aguas arriba se distingue quién publicó | P1 |
-| U194 | 22 | Allowlist como contrato | los 8 eventos + `RELAY_UPSTREAM` explícitos y versionados | cambiar allowlist = cambio de contrato con test | P1 |
+| **U194** 🔶 | 22 | Allowlist como contrato | los 8 eventos + `RELAY_UPSTREAM` explícitos y versionados. **Ola 3, despachado 2026-07-31** (`wp/u194-allowlist-contrato`, worktree `wt/z-u194`) · **contrarrevisión obligatoria** (clase relay/allowlist): añadir y quitar un evento deben poner el test en rojo, y borrar la guarda también | cambiar allowlist = cambio de contrato con test | P1 |
 | U195 | 23 | Duplicación de reemisión | `ROOM_MESSAGE` + evento desenvuelto llegan 2 veces al doble-suscriptor | no duplica, o la duplicidad es contrato documentado | P2 |
 | U196 | 24 | Zonas como ámbito real | `zones` de filtro opaco a ámbito (mismo topic × 2 zonas = 2 conversaciones) | fan-out medido; zonas no se filtran mutuamente | P1 |
-| U197 | 25 | Signaling anónimo WebRTC | tras U186: offer/answer/ICE sin card, con STUN/TURN | handshake completo entre 2 peers anónimos en LAN | P1 |
+| **U197** 🔶 | 25 | Signaling anónimo WebRTC | tras U186: offer/answer/ICE sin card, con STUN/TURN. **Ola 3, despachado 2026-07-31** (`wp/u197-signaling-anonimo`, worktree `wt/z-u197`) · **contrarrevisión obligatoria** (clase identidad/permiso): la CA que más pesa es que el anónimo que completa handshake **no** obtenga por ello acceso a lo protegido | handshake completo entre 2 peers anónimos en LAN | P1 |
 | U198 | 26 | coturn + pub SSB de facto | runbook y DM-signaling nunca probados contra sbot vivo | evidencia de ejecución, no de documento | P2 |
 
 ### Lane D · Plano de datos · adaptador local-first (`BLOQUEA:` en P0)
@@ -330,13 +330,30 @@ contraparte de G (4a) y el CA de canal limpio (U212).*
 | U242 | Contrato de plugin/driver | probar que un driver **externo** (o fixture) se añade sin tocar el núcleo — la extensibilidad como hecho, no como intención | segundo driver monta por contrato · cero ediciones en core | P1 |
 | U243 | Spike PODs/Solid · líneas como RDF (horizonte VOLUMES) | hay PRs pendientes (zeus) que integran el mundo POD/Solid; `ZEUS_VOLUMES_ROOT` podría quedar **sobreseído** por un cluster de pods (por jugador / por servicio / por agente) modelando las líneas como RDF. Insumo externo (solo lectura, fuera del cerco): la gestión del grafo graphdb del paradigma de holones (ALEPH.instructions, OASIS) | informe de viabilidad + decisión de mesa · no toca runtime ni contratos v1 | P2 **DEFERRED** hasta U206 |
 
-| U244 | **Puntero a intake externo — campaña de tipos públicos TS** (cola B de `C:\S_LAB\s-sdk\WPS_QUEUE\QUEUE-B-ZEUS-TIPADO`) | **NO promovido**: 5 WPs candidatos (`ZT01–ZT05`: tipos de `@zeus/linea-kit`, `@zeus/acta-kit`, fachadas MCP `linea-system`/`force-system`, certificación C8) con ids **locales de la cola**, sin ocupar numeración de Z. Sus CA prometen cero cambios en runtime `src/**`, en schemas y en el carril D; su calibración observa un freeze **que ya no rige** (U204 en vuelo) y una base de worktrees distinta a la viva. Cerco y tarea de triaje: `WPS_QUEUE/ENCOLADO.md` (**T-S01**) | veredicto de ortogonalidad real contra el `main` del momento · remapeo de ids · decisión de ola · **nada se despacha sin GO** | P2 **DEFERRED** al final (tras O) |
+| U244 | **Triaje del intake externo `WPS_QUEUE` — cola A** (programa holónico LORE-HM) | **Sigue encolado, no promovido** (decisión ⑥ del custodio, 2026-07-31): programa multi-mundo que cruza `e-sdk`, `a-sdk` y Network-Engine — mundos **fuera del reparto actual**; ampliar el reparto es decisión del custodio, no consecuencia de aceptar el intake. **Solapa con U243** (PODs/Solid · líneas como RDF): al abrirlo hay que decidir si lo absorbe, lo alimenta o queda aparte. Cerco y 6 preguntas numeradas: `s-sdk/WPS_QUEUE/ENCOLADO.md` (**T-S01**) | veredicto del custodio · partición por mundo y ownership · **nada se despacha sin GO** | P2 **DEFERRED** al final (tras O) |
+
+### Cola promovida — frontera TypeScript (intake `WPS_QUEUE` cola B, 2026-07-31)
+
+**Promovida a ids canónicos por el orquestador** (autorización del custodio: «el B cuando quieras encolar»). Origen y briefs candidatos: `C:\S_LAB\s-sdk\WPS_QUEUE\QUEUE-B-ZEUS-TIPADO\` (`ZT01–ZT05` = ids locales de la cola, **ya remapeados aquí**; su calibración de worktrees y su lectura del freeze están caducadas — manda el gobierno de Z).
+
+**Ventana de despacho: después de `GD`** (carril D cerrado en U206). Razón dura: `@zeus/linea-kit` es territorio vivo del carril D (U200 y U202 editaron su `src/`), y la campaña de tipos declara *cero cambios en runtime* — despacharla ahora sería programar una colisión. `acta-kit` (U246) no comparte territorio y **puede adelantarse si hace falta hueco**.
+
+| id | ZT | WP | deps | frontera dura | CA de cierre | P |
+| -- | -- | -- | ---- | ------------- | ------------ | - |
+| U245 | ZT01 | Tipos públicos completos de `@zeus/linea-kit` (todos los subpaths) | GD | cero cambios en `src/**`, schemas y carril D | cada export JS con condición `types` resoluble bajo `NodeNext` · gate exports↔declarations que **falla** al retirar un `.d.ts` o añadir subpath sin declaración | P1 |
+| U246 | ZT02 | Tipos públicos completos de `@zeus/acta-kit` | — | íd. | íd. | P1 |
+| U247 | ZT03 | Tipos de fachada MCP `@zeus/linea-system` | U245 | íd. | íd. | P1 |
+| U248 | ZT04 | Tipos de fachada MCP `@zeus/force-system` | U245 | íd. | íd. | P1 |
+| U249 | ZT05 | Certificación C8 de los cuatro paquetes publicados | Release U245–U248 | íd. | consumidor limpio compila con `strict`/`noImplicitAny`/`tsc --noEmit`, sin `file:` ni tarball local ni `any` de escape | P1 |
+
+Transversales heredadas del intake y **ratificadas**: `unknown` donde no haya garantía verificable (nunca `any` de escape) · changeset `patch` por paquete tocado · `npm pack --dry-run` confirma que `types/**` entra en el tarball · contrarrevisión independiente que intente refutar resolución de subpaths, exactitud de firmas y frontera del diff. **Publish sigue bajo GO explícito del custodio** (decisión ③: Marketplace DEFERRED, registry nuevo).
 
 ### Conteo y dependencias (edición F2-unificada)
 
-**68 WPs** · P0 **22** · P1 **30** · P2 **16** *(F2-unificada +11; 2026-07-31:
-+U243 spike PODs/RDF · U209→P2 DEFERRED — decisión ④ · **+U244 puntero al
-intake `WPS_QUEUE` de S — encolado, no promovido**)*.
+**73 WPs** · P0 **22** · P1 **35** · P2 **16** *(F2-unificada +11; 2026-07-31:
++U243 spike PODs/RDF · U209→P2 DEFERRED — decisión ④ · +U244 triaje del
+intake `WPS_QUEUE` cola A (encolado, no promovido) · **+U245–U249 = cola B
+promovida a ids canónicos, ventana de despacho tras GD**)*.
 
 ```text
 U186 (U93-bis) ──▶ U197 (signaling anónimo) ──▶ U218 (holón-7)
