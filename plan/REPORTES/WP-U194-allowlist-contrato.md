@@ -77,6 +77,9 @@ fichero caliente de U192·U193 (olas 1 y 4), no mío.
 4. **Inmutable en caliente.** `RELAY_DOWNSTREAM_TOP.add/delete/clear`
    lanzan; `RELAY_UPSTREAM` está congelado. Nadie amplía la allowlist desde
    otro módulo sin pasar por el contrato. Ejecutado: rojo G.
+   > ✎ **FALSO cuando se escribió — devolución D2.** El sombreado de métodos
+   > sobre un `Set` no impedía `Set.prototype.add.call(allowlist, …)`.
+   > Corregido (la allowlist ya no es un `Set`) y probado en **§11**.
 
 ### Decisión de diseño que el brief dejaba abierta
 
@@ -234,6 +237,12 @@ literales de cadena del propio `relay.mjs`**: cualquier nombre de evento
 hardcodeado en el relay se convierte automáticamente en su propia sonda y
 se prueba contra la allowlist. Un nombre colado se delata a sí mismo.
 
+> ✎ **SOBREVENDIDO — devolución D1.** El corpus reconocía **una notación**
+> (comilla simple y doble), no un valor: la misma puerta trasera escrita
+> con `` `backtick` `` o con `'evento' + ':colado'` pasaba **17/17 verde**.
+> «Se delata a sí mismo» era falso. Corregido con un **censo de despacho**
+> que ancla la forma y no el nombre; los tres vectores, probados en **§11**.
+
 ### Rojo F · Allowlist SIN versión declarada (§5, hostil-omite)
 
 Mutación: `RELAY_CONTRACT_VERSION = ''`.
@@ -355,6 +364,10 @@ comportamiento. No añade una tercera lista.
 Medición de facto, no aritmética: la de «antes» se obtuvo con el árbol en
 `dc70cec` sin los ficheros de U194.
 
+> ✎ **Cifras de la 1.ª entrega.** Tras la corrección de la devolución la
+> suite es **22/22** y los tests propios son 11, no 7. Tabla actualizada en
+> **§11 · Estado tras la corrección**.
+
 | suite | antes | después |
 | ----- | ----- | ------- |
 | `@zeus/socket-server` | **10/10** verde | **17/17** verde |
@@ -401,6 +414,7 @@ Notas de robustez de los tests, por si el revisor busca el hueco:
 | **1** · 8 + `RELAY_UPSTREAM` en un solo sitio; el runtime los consume de ahí; sin segunda lista viva | ✓ | §2 inventario · §4 greps 1-3 · test 6 (identidad `===`) · test 7 (barrido de `src/`) |
 | **2** · Añadir → rojo; quitar → rojo (las dos de facto) | ✓ | Rojo A (añadir) · Rojo B (quitar) · y Rojo C (añadir re-sellando) |
 | **3** · La AUSENCIA no pasa; borrar la comprobación hace caer un test | ✓ | Rojo D (guarda borrada) · Rojo E (puerta trasera con guarda intacta) · test 10 (cierre e2e en las dos direcciones) |
+| | ✎ **D3: sin acotar era falso.** «La AUSENCIA no pasa» vale para la **vía top-level**, no para el desempaquetado del sobre. Veredicto acotado y hueco declarado en **§11**. |
 | **4** · Versión explícita y su cambio observable | ✓ | `RELAY_CONTRACT_VERSION` + entra en el sello + ancla literal (Rojo C la caza) + re-export público en `index.mjs:14-20` y `types/index.d.ts` |
 | **5** · Cero contrabando; nada de permisos/identidad | ✓ | §7 (5 ficheros, todos del paquete; `relay.mjs` 0 ediciones) |
 
@@ -482,6 +496,22 @@ U187 ola 2 lo tenía prohibido). Respetado.
    contrato.** Al vivir el gate en la carga del módulo, un contrato roto
    tiñe de rojo suites ajenas a U194. Es intencionado (fail-closed y ruidoso)
    pero conviene que U193 lo sepa antes de tocar `relay.mjs`.
+5. **HUECO ABIERTO — el sobre saltea la allowlist** (añadido en la
+   corrección de la devolución, D3; el punto 3 de arriba lo rozaba solo por
+   `inner` no-cadena). `emitDownstream` (`relay.mjs:95`) reemite
+   `payload.event` **sin consultar `RELAY_DOWNSTREAM_TOP`**: cualquier
+   nombre metido dentro de un `ROOM_MESSAGE` llega a los clientes de abajo,
+   incluidos los de la tabla de subida que la vía top-level sí corta.
+   Probado e2e en §11. El contrato de U194 gobierna la vía top-level, **no**
+   el desempaquetado. → **U193 / U195**, dueños de `relay.mjs`. Asertado sin
+   taparlo en el test «HUECO ABIERTO…»: al cerrarlo, ese test cae a
+   propósito y dice qué actualizar.
+6. **`relay.mjs` está ahora anclado por forma** (censo de despacho, D1).
+   U193: al editarlo tendrás que re-anclar `EMISIONES_ABAJO_ANCLADAS` y
+   `SELLO_DESPACHO_ANCLADO` en `test/relay-contract.test.mjs`. Es
+   deliberado — cambiar la propagación del relay es un cambio de contrato —
+   y el mensaje de fallo trae el sello nuevo. Comentarios y reformateos no
+   lo disparan (control negativo en §11).
 
 ---
 
@@ -571,6 +601,11 @@ orquestador, que es quien puede serializar:
    `packages/mesh/socket-server/`, todos ya presentes en `f8b8e42`). La pila
    debe quedar **vacía** antes de despachar la ola 4.
 
+> ✎ **Hecho por el orquestador.** La pila se drenó tras la 1.ª entrega,
+> dejando la ref `refs/rescate/u194-stash-2fbe966` como respaldo. Por eso el
+> repo tiene **dos** refs `refs/rescate/*` y este §9 declaraba una: la otra
+> no es de este worker. Ver **§11 · D6**. Ambas son temporales.
+
 ---
 
 ## 10 · Reproducir
@@ -598,5 +633,247 @@ node -e "import('./packages/mesh/socket-server/src/relay-contract.mjs').then(m =
 
 ---
 
+## 11 · Corrección de la devolución (D1–D6)
+
+Segunda entrega, misma rama, commits nuevos. Lo anterior no se borra: los
+tres puntos donde el reporte afirmaba de más quedan marcados con ✎ en su
+sitio (§1 regla 4, Rojo E, §6 CA3) y se corrigen aquí.
+
+Lo primero, sin adornos: **dos de los tres bloqueantes se probaron sin
+editar un solo fichero**. No eran fallos de implementación en el sentido
+cómodo — eran afirmaciones mías que no aguantaban una llamada de método.
+
+### D1 · El corpus reconocía una notación, no un valor · **CORREGIDO**
+
+**Reproducido.** Con la guarda de allowlist intacta, en `src/relay.mjs`:
+
+| vector | antes |
+| --- | --- |
+| `` if (event === `evento:colado`) `` | **17/17 verde** |
+| `if (event === 'evento' + ':colado')` | **17/17 verde** |
+
+El corpus de sondas extraía literales con `/'…'|"…"/`. Un backtick lo
+esquiva; una concatenación lo esquiva por construcción — **ninguna
+extracción de literales puede ver un nombre que no existe como literal**.
+Mi frase «un nombre colado se delata a sí mismo» era falsa, y con ella la
+evidencia del Rojo E.
+
+**Corrección: censo de despacho.** Se deja de perseguir el *nombre* y se
+ancla la *forma* del despacho (`test/relay-contract.test.mjs`, test
+«censo de despacho»):
+
+1. **Número de vías de emisión**: `localNs.emit(` en `src/relay.mjs`,
+   anclado a **4**. Una rama nueva que emita mueve el conteo, la escriba
+   como la escriba.
+2. **Sello de forma**: sha256 de `src/relay.mjs` normalizado — comentarios
+   fuera, líneas en blanco fuera, espacios colapsados —, anclado a
+   `51b2d8ed…`. Caza la variante que *no* añade emisión: ensanchar la
+   guarda in situ.
+3. **Presencia de las guardas del contrato** sobre la forma normalizada, de
+   modo que reformatear no las esconde.
+
+**Verificado, con los tres vectores:**
+
+```
+backtick        → not ok 8 (censo) + not ok 15 (cierre e2e)   · 20 pass / 2 fail
+concatenación   → not ok 8 (censo)                            · 21 pass / 1 fail
+guarda ensanchada in situ (mismo nº de emisiones)
+                → not ok 8 (sello de forma) + not ok 15       · 20 pass / 2 fail
+    sello anclado : 51b2d8edfefef4fdb46f10473746769b4f3503ebf95d2a4210fcaf86676346a6
+    sello actual  : a5048cd14322b4b4d170c84a4ccaa02951a1227f7dae92541b6b358bea2e099f
+```
+
+La concatenación la caza **solo** el censo — es exactamente el caso que el
+corpus no puede ver, y por eso el censo no es un adorno del corpus sino su
+sustituto como garantía.
+
+**Control negativo** (para no hostigar a U193, dueño de `relay.mjs` en la
+ola 4): comentario de línea + bloque multilínea añadidos a `relay.mjs` →
+**22/22 verde**. El sello tolera documentación y reformateo; no tolera
+despacho nuevo.
+
+El corpus de literales se conserva (ampliado a backticks) como red barata
+de primera pasada, **ya no como la garantía**. Dicho en el propio fichero.
+
+### D2 · «Inmutable en runtime» era falso para la bajada · **CORREGIDO**
+
+**Reproducido, 0 ediciones:**
+
+```
+add via prototype: NO LANZA
+has(evento:colado) = true | size = 9
+clear via prototype: NO LANZA -> size = 0
+```
+
+`Object.freeze` no toca el slot interno `[[SetData]]` de un `Set`. Sombrear
+`add`/`delete`/`clear` en la instancia solo tapa la puerta de delante.
+
+**Corrección: la allowlist deja de ser un `Set`.** El conjunto real vive en
+el closure de `listaSellada` y lo publicado es un objeto congelado que solo
+sabe responder (`has`, `size`, `values`, `keys`, `forEach`, `toJSON`,
+`Symbol.iterator`, y `add`/`delete`/`clear` que deniegan). Al no ser un
+`Set`, `Set.prototype` lo rechaza por receptor incompatible: **no hay slot
+que secuestrar**. `relay.mjs` sigue con 0 ediciones porque `.has()` y la
+iteración se conservan.
+
+**Verificado:**
+
+```
+instanceof Set = false
+add    via prototype LANZA: Method Set.prototype.add called on incompatible receiver #<Object>
+delete via prototype LANZA: Method Set.prototype.delete called on incompatible receiver #<Object>
+clear  via prototype LANZA: Method Set.prototype.clear called on incompatible receiver #<Object>
+add directo LANZA: CONTRATO-RELAY: la allowlist es inmutable en runtime ('add' …
+has(evento:colado) = false | size = 8
+iteracion sigue viva: 8 elementos
+upstream congelado: SI | length = 3
+```
+
+Sondas permanentes en el test «la allowlist resiste el secuestro por
+prototipo»: los tres métodos vía `Set.prototype`, `Array.prototype.push`
+sobre la subida, `defineProperty` sobre `has` y sobre
+`RELAY_CONTRACT.downstream`, y `instanceof Set === false` para que nadie
+reintroduzca un `Set` sin enterarse.
+
+La inversión que señalaba la contrarrevisión era exacta y vale la pena
+retenerla: **el array de subida sí estaba genuinamente congelado; el `Set`
+de bajada, que es el que guarda la puerta, no.** Lo barato parecía sólido y
+lo importante no lo era.
+
+### D3 · La allowlist no gobierna la propagación · **ACOTADO Y ENRUTADO**
+
+**Reproducido e2e, 0 ediciones:**
+
+```
+evento:colado-por-sobre llega abajo?  true
+CLIENT_REGISTER llega abajo?          true
+eventos distintos vistos abajo: ROOM_MESSAGE, evento:colado-por-sobre, CLIENT_REGISTER, track
+```
+
+`emitDownstream` (`relay.mjs:95`) hace `localNs.emit(inner, data)` con el
+nombre que venga dentro del sobre, **sin consultar la allowlist**. Herencia
+de la base; `relay.mjs` tiene 0 ediciones de U194 y es fichero caliente de
+U192/U193, así que no lo arreglo. Lo que sí era mío es el enunciado:
+
+| antes | ahora |
+| --- | --- |
+| test «cierre del relay contra puente real: **pasa exactamente el contrato y nada más**» | test «cierre de **la vía top-level** contra puente real: **por `onAny`** solo pasa el contrato» |
+| CA3 «La AUSENCIA no pasa» | CA3 «La AUSENCIA no pasa **por la vía top-level**»; el sobre queda declarado como hueco |
+
+**Hueco abierto, declarado y con dueño:**
+
+> El contrato gobierna la vía top-level de bajada (`relay.mjs:132`) y la de
+> subida (`relay.mjs:111`). **NO gobierna el desempaquetado del sobre**
+> (`relay.mjs:95`): un nombre arbitrario dentro de un `ROOM_MESSAGE` llega
+> abajo, incluidos nombres de la tabla de subida que la vía top-level sí
+> corta. → **U193 / U195**, dueños de `relay.mjs`.
+
+Escrito en tres sitios para que no se pierda: cabecera de
+`src/relay-contract.mjs` (sección «Alcance»), cabecera del test, y §8 punto
+5 de este reporte. Y **asertado sin taparlo** en el test «HUECO ABIERTO: el
+sobre `ROOM_MESSAGE` reemite cualquier nombre sin consultar la allowlist»,
+al estilo del caso rojo de U187: cuando U193 lo cierre, **ese test caerá a
+propósito** y su mensaje dice qué actualizar. Mi §8 punto 3 rozaba esto por
+`inner` no-cadena; ahora está nombrado por lo que es, un bypass de
+allowlist.
+
+### D4 · Borrar el gate entero era silencioso · **CORREGIDO**
+
+El resultado del gate ahora es **portante**: `RELAY_CONTRACT` se construye
+desde `VERIFICADO = assertRelayContract({…})`, no desde las tablas crudas.
+
+**Verificado** — sustituido el bloque del gate por un comentario:
+
+```
+# ReferenceError: VERIFICADO is not defined
+not ok 1 - test\peercard-vivo.test.mjs
+not ok 2 - test\relay-contract.test.mjs
+not ok 3 - test\relay-trace.test.mjs
+not ok 4 - test\server.test.mjs
+```
+
+Ya no es «pérdida de defensa en profundidad»: es el módulo que no carga.
+Más el test «el gate del contrato corre en la carga y su resultado es
+portante», que asserta la llamada y los cuatro campos derivados, por si
+alguien intenta reemplazar `VERIFICADO` por un objeto a mano.
+
+### D5 · El atacante competente · **CORREGIDO (ya no es solo contabilidad)**
+
+La contrarrevisión midió: contrato + `admin:override`, versión `1.1.0`,
+sello recalculado y las 3 anclas actualizadas → **16 pass / 1 fail, y el
+único rojo era de U192**. Mis 7 tests aportaban cero.
+
+Se añade el test **«el último cazador del atacante competente sigue vivo»**,
+que exige que `test/relay-trace.test.mjs` siga enumerando literalmente los
+11 nombres. Tiene dos efectos, y el segundo no lo esperaba:
+
+1. **Protege al cazador.** Si un WP futuro re-apunta el sello de U192 al
+   contrato, muere el único test que caza esta variante — y ahora eso es
+   rojo con un mensaje que lo explica. Verificado: re-apuntado el
+   `deepEqual` de U192 al contrato → `not ok 14` + `not ok 16`, 20/2.
+2. **Caza al atacante competente.** Añadir un evento al contrato sin
+   añadirlo también a la enumeración de U192 dispara este test. Medido:
+
+```
+atacante competente (evento + versión + sello + 3 anclas)
+  → not ok 14 - el último cazador del atacante competente sigue vivo (D5)   ← U194
+    not ok 16 - política intacta: los conjuntos de propagación …            ← U192
+  # tests 22 · pass 20 · fail 2
+```
+
+De **1 cazador (ajeno)** a **2, uno propio**. El acoplamiento con el test de
+U192 es deliberado y está declarado: U194 no duplica la lista, la **usa
+como testigo** y vigila que siga viva.
+
+Sigue siendo cierto, y lo digo sin rodeos: **el sello es un cerrojo, no
+criptografía.** Quien controle el árbol y esté dispuesto a tocar contrato,
+sello, versión, tres anclas y la enumeración de U192 mete un evento. Lo que
+el contrato compra es que no se pueda hacer de paso ni por accidente.
+
+### D6 · Las dos refs de rescate · **no era defecto mío**
+
+La contrarrevisión apunta que hay dos refs `refs/rescate/*` y mi §9 declara
+una. La segunda, `refs/rescate/u194-stash-2fbe966`, **la creó el
+orquestador** al drenar la pila compartida después de mi entrega. Mi §9 era
+exacto en el momento de escribirse. Queda anotado aquí para que el estado
+del repo cuadre con el reporte: **la pila se drenó y quedaron dos refs de
+rescate, una mía (`u180-wip-incidente-u194`) y una del orquestador
+(`u194-stash-2fbe966`)**; ambas son temporales y se borran cuando U180
+confirme su recuperación.
+
+### Estado tras la corrección
+
+| | antes de la devolución | ahora |
+| --- | --- | --- |
+| suite `@zeus/socket-server` | 17/17 | **22/22** |
+| tests propios de U194 | 7 | **11** |
+| `@zeus/webrtc-viewer` | 6/6 | **6/6** |
+| eslint `src/` + `test/` | 0/0 | **0 errores, 0 warnings** |
+| `src/relay.mjs` | 0 ediciones | **0 ediciones** |
+| `test/relay-trace.test.mjs` | 0 ediciones | **0 ediciones** |
+
+Tests nuevos (4): censo de despacho (D1) · gate portante (D4) · secuestro
+por prototipo (D2) · hueco del sobre (D3) · último cazador (D5) — cinco
+adiciones que se reparten en 4 tests nuevos más el renombrado del cierre
+e2e.
+
+Batería roja completa re-verificada contra el refactor: **A** (añadir sin
+re-sellar) 4 suites caen · **D** (guarda borrada) ahora 3 rojos en vez de 2
+· más los siete vectores nuevos de arriba.
+
+### Lo que sigue sin cubrirse, dicho aquí
+
+1. **El sobre** (D3): hueco abierto, de U193/U195, asertado sin tapar.
+2. **El censo ancla `relay.mjs`, no los módulos que importe.** Una puerta
+   trasera montada en un módulo nuevo que `relay.mjs` importe cambiaría el
+   sello de forma (el `import` es una línea nueva) → sería rojo. Pero si
+   `relay.mjs` ya importara ese módulo, el censo no vería el interior. Hoy
+   `relay.mjs` solo importa `socket-core/client` y `config.mjs`.
+3. **El atacante con acceso de escritura y paciencia** (D5): declarado
+   arriba, no resuelto — no es resoluble con tests en el mismo árbol.
+
+---
+
 *Worker Z · WP-U194 · rama `wp/u194-allowlist-contrato` · base `dc70cec` ·
-2026-08-01. Sin merge, sin push, sin reescritura de historia.*
+1.ª entrega 2026-08-01, corrección de devolución 2026-08-01. Sin merge, sin
+push, sin reescritura de historia.*
