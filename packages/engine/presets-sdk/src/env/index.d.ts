@@ -7,6 +7,7 @@ export function resetZeusEnvLoader(): void;
 
 export type ValidateMode = 'off' | 'warn' | 'enforce';
 
+export const DEFAULT_ZEUS_HOST: string;
 export const DEFAULT_ZEUS_MCP: Record<string, Record<string, number>>;
 export const DEFAULT_ZEUS_UI_MESH: Record<
   string,
@@ -18,6 +19,13 @@ export const DEFAULT_SPEC_TOOL_PORTS: {
   inspector: number;
   inspectorProxy: number;
 };
+
+/** `group.key` → ZEUS_* override var (MCP ports). */
+export const MCP_PORT_ENV: Record<string, string>;
+/** UI id → ZEUS_* override var. */
+export const UI_PORT_ENV: Record<string, string>;
+/** Spec tool id → ZEUS_* override var. */
+export const SPEC_TOOL_PORT_ENV: Record<string, string>;
 
 export function resolveValidateMode(scope?: 'http' | 'socket'): ValidateMode;
 export function readEnvPort(name: string, fallback: number): number;
@@ -67,6 +75,7 @@ export const SPEC_TOOL_PORTS: {
   inspector: number;
   inspectorProxy: number;
 };
+export const DEFAULT_ZEUS_INSPECTOR_TOKEN: string;
 export function resolveInspectorEndpoint(): {
   host: string;
   uiPort: number;
