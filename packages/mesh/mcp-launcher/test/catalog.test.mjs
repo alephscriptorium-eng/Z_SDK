@@ -8,8 +8,11 @@ import {
   resolveCatalog,
   getCatalogEntry,
   PORT_TABLE,
-  CATALOG_SEED
+  CATALOG_SEED,
+  FALLBACK_MCP_PORTS,
+  FALLBACK_UI_PORTS
 } from '../src/catalog.mjs';
+import { DEFAULT_ZEUS_MCP, DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk/env';
 import {
   generateVscodeMcpConfig,
   isValidVscodeMcpConfig
@@ -79,10 +82,48 @@ test('U234: launcher + v1-zeus service entries resolve ports from env single sou
   assert.equal(catalog.find((e) => e.id === 'firehose-browser').port, 3016); // ui.firehose
 });
 
+test('U180: ola 1 (socket-server + ciudad-lifecycle) toma el puerto de presets-sdk/env', () => {
+  const catalog = resolveCatalog();
+
+  const ciudad = catalog.find((e) => e.id === 'ciudad-lifecycle');
+  assert.ok(ciudad, 'ciudad-lifecycle debe existir en el catálogo');
+  assert.equal(ciudad.workspace, '@zeus/ciudad-lifecycle');
+  assert.equal(ciudad.kind, undefined); // MCP (default), no kind:service
+  assert.equal(ciudad.port, DEFAULT_ZEUS_MCP.ciudadLifecycle.disk);
+  assert.equal(ciudad.healthUrl, `http://localhost:${ciudad.port}/mcp/health`);
+  assert.equal(ciudad.url, `http://localhost:${ciudad.port}/mcp`);
+
+  const ss = catalog.find((e) => e.id === 'socket-server');
+  assert.ok(ss, 'socket-server debe existir en el catálogo');
+  assert.equal(ss.workspace, '@zeus/socket-server');
+  assert.equal(ss.kind, 'service');
+  assert.equal(ss.port, DEFAULT_ZEUS_UI_MESH.scriptorium.port);
+  assert.equal(ss.healthUrl, `http://localhost:${ss.port}/health`);
+});
+
+test('U180: mover el puerto en la fuente única mueve la entrada (cero literales)', () => {
+  const mcp = {
+    ...FALLBACK_MCP_PORTS,
+    ciudadLifecycle: { disk: 14051 }
+  };
+  const ui = {
+    ...FALLBACK_UI_PORTS,
+    scriptorium: { ...FALLBACK_UI_PORTS.scriptorium, port: 14017 }
+  };
+  const catalog = resolveCatalog({ mcp, ui });
+  const ciudad = catalog.find((e) => e.id === 'ciudad-lifecycle');
+  const ss = catalog.find((e) => e.id === 'socket-server');
+  assert.equal(ciudad.port, 14051);
+  assert.equal(ciudad.healthUrl, 'http://localhost:14051/mcp/health');
+  assert.equal(ss.port, 14017);
+  assert.equal(ss.healthUrl, 'http://localhost:14017/health');
+});
+
 test('U234: vscode config excludes kind:service, includes launcher MCP', () => {
   const config = generateVscodeMcpConfig(resolveCatalog());
   assert.equal(isValidVscodeMcpConfig(config), true);
   assert.ok(config.servers.launcher);
+  assert.ok(config.servers['ciudad-lifecycle']); // U180: MCP, sí entra
   assert.equal(config.servers['socket-server'], undefined);
   assert.equal(config.servers['cache-browser'], undefined);
   assert.equal(config.servers['firehose-browser'], undefined);

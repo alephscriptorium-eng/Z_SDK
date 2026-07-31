@@ -39,11 +39,13 @@
  * Env overrides: ZEUS_ORQ_TIMEOUT_MS (health total por grupo, def. 90000),
  * ZEUS_ORQ_POLL_MS (def. 500), ZEUS_ORQ_STATE_DIR (def. <repo>/data/orchestrator).
  *
- * Hallazgo U179 (vigente): el puerto de ciudad-lifecycle se resuelve
- * localmente (packages/mesh/ciudad-lifecycle/src/server.mjs:13-19), fuera de
- * la fuente única de env; U227 lo está integrando en paralelo. Por eso
- * ciudad-lifecycle NO tiene aún entrada de catálogo ni perfil aquí — se
- * añadirá cuando el env central declare su puerto (no lo resuelvas aquí).
+ * Hallazgo U179 (CERRADO por U227+U180): el env central ya declara
+ * `ciudadLifecycle.disk` (presets-sdk/src/env/index.mjs:44) y
+ * ciudad-lifecycle resuelve su bind desde ahí
+ * (packages/mesh/ciudad-lifecycle/src/server.mjs). U180 le dio entrada de
+ * catálogo (catalog.mjs, id `ciudad-lifecycle`), por lo que entra en el
+ * perfil "all" (toda entrada lanzable). NO se añade a `minimo` ni a
+ * `v1-zeus`: esos perfiles los fija U234 y su composición no cambia aquí.
  */
 
 import { spawn, spawnSync } from 'node:child_process';

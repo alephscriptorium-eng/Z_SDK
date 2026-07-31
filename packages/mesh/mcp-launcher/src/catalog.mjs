@@ -230,6 +230,19 @@ export const CATALOG_SEED = [
     notes: 'Actuator MCP itself; port launcher.disk (presets env). U234'
   },
   {
+    id: 'ciudad-lifecycle',
+    name: 'ciudad-lifecycle',
+    workspace: '@zeus/ciudad-lifecycle',
+    spawnGroup: 'ciudad-lifecycle',
+    deps: [],
+    capabilities: ['fleet.ciudadLifecycle', 'city.lifecycle'],
+    healthPath: '/mcp/health',
+    mcpPath: '/mcp',
+    notes:
+      'Z12 brain (XState) over the Z06 actuator; port ciudadLifecycle.disk ' +
+      '(presets env / ZEUS_MCP_CIUDAD_LIFECYCLE). deps:[] pending U184. U180'
+  },
+  {
     id: 'socket-server',
     name: 'socket-server',
     kind: 'service',
@@ -278,7 +291,7 @@ function portsById(mcp) {
   return {
     'linea-espana': mcp.lineas.espana,
     'linea-wp-historia': mcp.lineas.wpHistoria,
-    'linea-editor': mcp.lineaEditor?.disk ?? 4115,
+    'linea-editor': mcp.lineaEditor?.disk ?? FALLBACK_MCP_PORTS.lineaEditor.disk,
     'solar-sun': mcp.solar.sun,
     'solar-moon': mcp.solar.moon,
     'solar-earth': mcp.solar.earth,
@@ -290,7 +303,8 @@ function portsById(mcp) {
     'arg-player-dos': mcp.argPlayer.dos,
     'pozo-player': mcp.pozoPlayer.uno,
     'solve-player': mcp.solvePlayer.uno,
-    launcher: mcp.launcher.disk
+    launcher: mcp.launcher.disk,
+    'ciudad-lifecycle': mcp.ciudadLifecycle?.disk ?? FALLBACK_MCP_PORTS.ciudadLifecycle.disk
   };
 }
 
@@ -419,7 +433,8 @@ export function buildPortTable(mcp = syncEnvPorts(), ui = resolveZeusUiPorts()) 
     consoleMonitor: mcp.playerDebug.monitor,
     solar: [mcp.solar.sun, mcp.solar.moon, mcp.solar.earth],
     lineas: [mcp.lineas.espana, mcp.lineas.wpHistoria],
-    lineaEditor: mcp.lineaEditor?.disk ?? 4115,
+    lineaEditor: mcp.lineaEditor?.disk ?? FALLBACK_MCP_PORTS.lineaEditor.disk,
+    ciudadLifecycle: mcp.ciudadLifecycle?.disk ?? FALLBACK_MCP_PORTS.ciudadLifecycle.disk,
     forces: mcp.forces.disk,
     ssb: mcp.ssb.disk,
     argPlayer: [mcp.argPlayer.uno, mcp.argPlayer.dos],
