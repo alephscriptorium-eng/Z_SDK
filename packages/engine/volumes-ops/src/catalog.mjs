@@ -18,6 +18,11 @@ export const VOLUMES_OPS_INTENT_DEFS = Object.freeze({
     roles: ['player', 'dj'],
     description:
       'Playable empty request (no hard disk purge here; games wire trama in U83)'
+  },
+  import_pack: {
+    roles: ['operator'],
+    description:
+      'Import a Release pack into the volumes root (CONTRATO-IMPORT-PACK-v1, U201); rewrites the sealed manifest + ledger seat'
   }
 });
 

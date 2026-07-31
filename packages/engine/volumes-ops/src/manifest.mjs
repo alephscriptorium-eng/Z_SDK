@@ -7,7 +7,9 @@
  *   source, corpora[{id, path, label}]}`.
  * - It is READ-ONLY for the runtime. Its identity is the sha256 of its
  *   exact bytes on disk (the seal). Measuring NEVER modifies it; only an
- *   import may (re)write it, sealing a new hash.
+ *   import may (re)write it, sealing a new hash. Since WP-U201 that single
+ *   legitimate writer is `sealManifest()` below, used EXCLUSIVELY by the
+ *   import pipeline (src/import.mjs · plan/CONTRATO-IMPORT-PACK-v1.md).
  * - Measured counters (`files`, `bytes`, `missing`, `measuredAt`) do NOT
  *   live here — they live in volumes.state.json (see state.mjs), which
  *   never enters the manifest hash.
@@ -19,10 +21,10 @@
  * Node-only.
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
+import { resolveVolumesRoot, resetVolumesCache } from '@zeus/presets-sdk/volumes';
 
 export const MANIFEST_FILE_NAME = 'volumes.json';
 
@@ -56,4 +58,20 @@ export function readManifestRaw() {
 export function hashManifest() {
   const { path, raw } = readManifestRaw();
   return { path, sha256: createHash('sha256').update(raw).digest('hex') };
+}
+
+/**
+ * IMPORT-ONLY manifest write (WP-U201 · CONTRATO-IMPORT-PACK-v1 paso 5).
+ * The ONE legitimate writer of volumes.json: rewrites the whole manifest
+ * object and returns the NEW seal. Requires an existing manifest (a root
+ * without one is not operable — nothing is invented). Never call this from
+ * measurement/runtime paths: measuring writes volumes.state.json only.
+ * @param {object} config — full manifest object to persist
+ * @returns {{ path: string, sha256: string }} new seal
+ */
+export function sealManifest(config) {
+  const { path } = readManifestRaw(); // aborts when the root has no manifest
+  writeFileSync(path, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+  resetVolumesCache();
+  return hashManifest();
 }
