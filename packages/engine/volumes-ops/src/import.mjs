@@ -195,20 +195,6 @@ export function importPack(opts) {
       });
     }
   }
-  // Contract §1 paso 4 precondition: with corpora declared, every file must
-  // live under a declared corpus path (keeps fusion strictly per-corpus).
-  for (const [volId, vol] of Object.entries(pack.volumes)) {
-    if (!Array.isArray(vol.corpora) || vol.corpora.length === 0) continue;
-    const volPrefix = `${vol.path}/`;
-    const corpusPrefixes = vol.corpora.map((c) => `${vol.path}/${c.path || c.id}/`);
-    const strays = tree.files.filter(
-      (rel) => rel.startsWith(volPrefix) && !corpusPrefixes.some((p) => rel.startsWith(p))
-    );
-    if (strays.length > 0) {
-      return fail('verificar', 'fichero_fuera_de_corpus', { volume: volId, files: strays });
-    }
-  }
-
   // Destination: canonical root (U200 — env mandatory, node_modules refused).
   let volumesRoot;
   try {
@@ -260,6 +246,21 @@ export function importPack(opts) {
       });
     }
     families[volId] = detected.family;
+    // Generic (family-less) volumes with declared corpora: every file must
+    // live under a corpus path — family volumes own their layout via the
+    // driver (e.g. FORCES keeps registry.json at the volume root).
+    if (!detected.family && Array.isArray(vol.corpora) && vol.corpora.length > 0) {
+      const corpusPrefixes = vol.corpora.map((c) => `${c.path || c.id}/`);
+      const strays = volumeFilesById[volId].filter(
+        (rel) => !corpusPrefixes.some((p) => rel.startsWith(p))
+      );
+      if (strays.length > 0) {
+        return fail('familia', 'fichero_fuera_de_corpus', {
+          volume: volId,
+          files: strays
+        });
+      }
+    }
   }
   steps.push({ step: 'familia', ok: true, families });
 
@@ -376,6 +377,13 @@ export function importPack(opts) {
           destDir: volDestAbs,
           volumeFiles: volumeFilesById[volId]
         });
+        if (plan.error) {
+          // Driver collision (e.g. FORCES RO-immutable): abort in dry pass.
+          return fail('fusionar', plan.error.code, {
+            volume: volId,
+            ...(plan.error.detail || {})
+          });
+        }
         for (const rel of plan.moves) {
           const relFull = `${vol.path}/${rel}`;
           moves.push({
@@ -389,9 +397,10 @@ export function importPack(opts) {
           id: volId,
           family: families[volId],
           moved: plan.moves.length,
-          skipped: plan.skips.length,
-          divergences: plan.divergences,
-          protectedSidecars: plan.protectedSidecars
+          skipped: plan.skips?.length ?? 0,
+          divergences: plan.divergences ?? [],
+          protectedSidecars: plan.protectedSidecars ?? [],
+          snapshot: plan.snapshot ?? null
         });
         continue;
       }
@@ -495,7 +504,12 @@ export function importPack(opts) {
             version: pack.version,
             packHash,
             importedAt: new Date().toISOString(),
-            ...(origin ? { origin } : {}) // inert metadata (cerco §10.8)
+            ...(origin ? { origin } : {}), // inert metadata (cerco §10.8)
+            // Snapshot por hash (U203): unidades de familia amarradas por
+            // sha256 de su árbol — lo aporta el plan del driver.
+            ...(familyReports.find((f) => f.id === volId)?.snapshot
+              ? { snapshot: familyReports.find((f) => f.id === volId).snapshot }
+              : {})
           }
         },
         ...(corpora.length > 0 ? { corpora } : {})

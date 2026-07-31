@@ -12,10 +12,12 @@
  */
 
 import { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
+import { FORCES_DRIVER, FORCES_FAMILY } from './driver-forces.mjs';
 
 /** @type {Record<string, { family: string, detect: Function, validate: Function, merge: Function }>} */
 export const FAMILY_DRIVERS = Object.freeze({
-  [LINEAS_FAMILY]: LINEAS_DRIVER
+  [LINEAS_FAMILY]: LINEAS_DRIVER,
+  [FORCES_FAMILY]: FORCES_DRIVER
 });
 
 /**
