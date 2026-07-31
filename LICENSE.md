@@ -1,9 +1,17 @@
-# LICENSE — Animus Iocandi (composite)
+# LICENSE — AIPLv1 · Animus Iocandi (composite)
 
 **Effective:** 2026-06-20  
 **Scope:** Scriptorium workspace and derived works.
 
 This document is a **composite license**: GNU GPL v3 as the mandatory copyleft base, plus an **Animus Iocandi** layer (brand, attribution, transition policy). It does **not** replace GPL-3.0 obligations.
+
+**AIPLv1** is the historical short name of this composite: **AIPLv1 = GPL-3.0-or-later + Animus Iocandi** (custodian decision, 2026-07-31). All packages of this workspace receive the identical license treatment.
+
+## 0. Machine-readable declaration (SPDX / npm)
+
+- Canonical SPDX v2 expression of the composite: `(GPL-3.0-or-later AND LicenseRef-Animus-Iocandi)` — where `LicenseRef-Animus-Iocandi` designates §2 of this document.
+- Every `package.json` in this workspace (root, all workspace members, and the nested Angular library) declares: `"license": "SEE LICENSE IN LICENSE.md"` — this file. npm rejects `LicenseRef-` in the `license` field ("license should be a valid SPDX license expression (without \"LicenseRef\"), \"UNLICENSED\", or \"SEE LICENSE IN <filename>\""), so the pointer form is the valid vehicle; the composite above remains the authoritative SPDX reading.
+- Durable pointers per part: GPL-3.0-or-later → §1 (full text at gnu.org); Animus Iocandi layer → §2 of this document.
 
 ---
 
