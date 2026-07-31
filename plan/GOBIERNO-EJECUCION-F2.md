@@ -661,6 +661,14 @@ Criterio:
    orquestador: los diffs de ambas ramas son disjuntos. Para medir un
    «antes» sin stash: `git show <base>:<ruta>`, una copia en el
    scratchpad, o un worktree desechable. Vale igual para contrarrevisores.
+4-ter. **`npx <nombre>` con un binario que no esté en las deps: PROHIBIDO**
+   (incidente real, ola 3, 2026-07-31): un contrarrevisor tecleó `npx rg`
+   creyendo invocar ripgrep y `npx` **descargó del registry un paquete
+   homónimo** (`rg@0.0.2`, un generador de README) que intentó escribir un
+   `README.md` en el árbol; abortó solo porque el fichero ya existía. Cero
+   daño constatable, pero el patrón es ejecución de código arbitrario desde
+   el registry por un typo. Usar `grep`/`rg` del sistema, o `npx` solo con
+   binarios que el `package.json` ya declare.
 5. **C-ext no consume techo planificado**: se despacha al llegar la señal,
    ocupando hueco libre del techo vigente; si no hay hueco, espera.
 
