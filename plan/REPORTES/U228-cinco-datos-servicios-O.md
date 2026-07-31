@@ -85,14 +85,15 @@ servicio <alias>:
 
 ### 2.1 · Lo que NO cabe en el patrón (declarado, no forzado)
 
-**E1 — `ciudad-lifecycle`: puerto FUERA del env central** (hallazgo U179,
-hoy en obra de U227). Default `3051` y override `ZEUS_MCP_CIUDAD_LIFECYCLE`
-viven en la pieza, no en la fuente única
-(`packages/mesh/ciudad-lifecycle/src/server.mjs:13-16`; grep `CIUDAD` en env
-→ 0, M:101). Consecuencia para O: el env generado por U227
-(`plan/GOBIERNO-EJECUCION-F2.md:445`) **no emitirá** este puerto mientras el
-hallazgo no se resuelva; la variable existe y funciona, pero su fuente es la
-pieza. Es el **único** servicio cuyo puerto no resuelve contra env:36-107.
+**E1 — `ciudad-lifecycle`: puerto FUERA del env central** — **✎
+orquestador: HISTÓRICA desde 2026-07-31.** U227 ✅ añadió el slot a la
+fuente única (`presets-sdk/src/env/index.mjs`: `ciudadLifecycle.disk`
+default 3051 + `ZEUS_MCP_CIUDAD_LIFECYCLE`) y el env generado ya lo emite
+(comentado). La pieza sigue leyendo el mismo nombre
+(`packages/mesh/ciudad-lifecycle/src/server.mjs:13-16`); su migración a
+consumir el resolver central es de U234/lane F. [Texto original: cita
+inerte — el hallazgo era de U179; ya no hay servicio cuyo puerto no
+resuelva contra la fuente única.]
 
 **D2 — `operator-ui`: comando fuera de la forma única.** El alias raíz es
 `node packages/mesh/operator-ui/serve.mjs` (raíz:32), no `npm run start -w`.
