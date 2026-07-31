@@ -21,7 +21,11 @@ import {
 import { isSsbId } from '@zeus/protocol';
 import { SIGNALING_WIRE_EVENTS, WIRE_TO_ABSTRACT, createWireMessage } from './messages.mjs';
 import { SignalingService, abstractMessageToWire } from './signaling-service.mjs';
-import { peerCardFromMessage, ssbIdFromMessage } from './peer-card-gate.mjs';
+import {
+  assertSignalingAdmission,
+  peerCardFromMessage,
+  ssbIdFromMessage
+} from './peer-card-gate.mjs';
 
 /**
  * @typedef {object} SocketRoomSignalingOptions
@@ -38,6 +42,9 @@ import { peerCardFromMessage, ssbIdFromMessage } from './peer-card-gate.mjs';
  *   ausente = sesión anónima `role:null`; presentada = se valida ANTES de
  *   abrir el cable — inválida RECHAZA el connect (jamás degrada a anónimo);
  *   válida se reenvía en CLIENT_REGISTER (carril identidad de puerta)
+ * @property {string} [admission] — modo de antesala (WP-U197):
+ *   `peer-card` (por defecto, statu quo U186) | `anonymous` (offer /
+ *   answer / ICE / room-join sin card, con `role:null`)
  */
 
 export class SocketRoomSignalingService extends SignalingService {
@@ -54,6 +61,7 @@ export class SocketRoomSignalingService extends SignalingService {
     if (options.requiredRole) this._requiredRole = options.requiredRole;
     if (options.requireSsbId) this._requireSsbId = true;
     if (options.requireSeatSignature) this._requireSeatSignature = true;
+    if (options.admission) this.setAdmission(options.admission);
   }
 
   getClient() {
@@ -76,6 +84,7 @@ export class SocketRoomSignalingService extends SignalingService {
     if (opts.requireSeatSignature != null) {
       this._requireSeatSignature = opts.requireSeatSignature;
     }
+    if (opts.admission) this.setAdmission(opts.admission);
     if (opts.peerCard != null) {
       // Card presentada ⇒ valida o rechaza; lanzar aquí deja el cable
       // sin abrir (no hay sesión anónima encubierta tras card inválida).
@@ -122,23 +131,49 @@ export class SocketRoomSignalingService extends SignalingService {
    * El transporte base ya quedó establecido en `connect()` sin exigir
    * card; aquí la card se valida ANTES de suscribir/anunciar — inválida
    * lanza y el cable de transporte sigue intacto.
+   *
+   * WP-U197: con `admission: 'anonymous'` la card es OPCIONAL — omitirla
+   * entra a la antesala como anónimo (`role:null`, anuncio sin card ni
+   * ssbId). Presentarla y que sea inválida sigue RECHAZANDO: el modo
+   * anónimo no es una red de seguridad para cards falsas.
    * @param {string} roomId
-   * @param {object} peerCard — issued by authority (`issuePeerCard` / join)
+   * @param {object} [peerCard] — issued by authority (`issuePeerCard` / join)
    */
   async joinRoom(roomId, peerCard) {
     if (!this._client || !this._connected) {
       throw new Error('Not connected to signaling transport');
     }
-    this.setPeerCard(peerCard);
+    const admitted = assertSignalingAdmission(peerCard, {
+      admission: this._admission,
+      role: this._requiredRole ?? undefined,
+      requireSsbId: this._requireSsbId,
+      requireSeatSignature: this._requireSeatSignature
+    });
+    if (!admitted.ok) {
+      throw new Error(`SignalingService.setPeerCard: ${admitted.error}`);
+    }
+    if (!admitted.anonymous) this.setPeerCard(peerCard);
     this.roomId = roomId;
     this._client.io.emit('CLIENT_SUSCRIBE', { room: roomId });
-    const ssbId = isSsbId(peerCard?.ssbId) ? peerCard.ssbId : undefined;
+    const ssbId =
+      !admitted.anonymous && isSsbId(peerCard?.ssbId) ? peerCard.ssbId : undefined;
+    const card = admitted.anonymous ? undefined : peerCard;
     const payload = createWireMessage({
       type: 'join-room',
       from: this.userId,
       room: roomId,
-      data: { peerCard, roomId, ...(ssbId ? { ssbId } : {}) },
-      extra: { peerCard, ...(ssbId ? { ssbId } : {}) }
+      data: {
+        ...(card !== undefined ? { peerCard: card } : {}),
+        roomId,
+        ...(ssbId ? { ssbId } : {})
+      },
+      // Nada de `anonymous: true` en el cable: una autodeclaración no
+      // verificable es un claim más. La AUSENCIA de card es la señal, y
+      // el receptor la juzga con su propio modo (nunca con el del emisor).
+      extra: {
+        ...(card !== undefined ? { peerCard: card } : {}),
+        ...(ssbId ? { ssbId } : {})
+      }
     });
     emitRoomEvent(this._client, 'join-room', payload, roomId);
   }

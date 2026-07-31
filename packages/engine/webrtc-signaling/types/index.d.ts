@@ -47,16 +47,37 @@ export interface SignalingMessage {
   candidate?: RTCIceCandidateInit;
   data?: unknown;
   peerCard?: PeerCard;
+  ssbId?: string;
+  /** WP-U197: admitido sin card — sin peerCard, sin ssbId, sin rol. */
+  anonymous?: boolean;
 }
+
+/** Modos de admisión de la antesala WebRTC (WP-U197). */
+export type SignalingAdmission = 'peer-card' | 'anonymous';
+export const SIGNALING_ADMISSION: {
+  readonly peerCard: 'peer-card';
+  readonly anonymous: 'anonymous';
+};
 
 export declare class SignalingService extends EventEmitter {
   userId: string;
   roomId: string;
   setPeerCard(peerCard: PeerCard, opts?: { role?: string; now?: number }): void;
   getPeerCard(): PeerCard | null;
+  /** WP-U186: rol consultado en la acción; anónimo ⇒ null. */
+  getSessionRole(now?: number): string | null;
+  /** WP-U197: modo de admisión declarado localmente. */
+  setAdmission(mode: SignalingAdmission): void;
+  getAdmission(): SignalingAdmission;
+  isAnonymous(): boolean;
+  describeAdmission(now?: number): {
+    admission: SignalingAdmission;
+    anonymous: boolean;
+    role: string | null;
+  };
   connect(userId: string, config?: unknown): Promise<void>;
   disconnect(): Promise<void>;
-  joinRoom(roomId: string, peerCard: PeerCard): Promise<void>;
+  joinRoom(roomId: string, peerCard?: PeerCard): Promise<void>;
   leaveRoom(): Promise<void>;
   sendMessage(message: SignalingMessage): Promise<void>;
   sendOffer(targetPeerId: string, offer: RTCSessionDescriptionInit): Promise<void>;
@@ -80,6 +101,11 @@ export interface SocketRoomSignalingOptions {
   connectTimeoutMs?: number;
   client?: unknown;
   requiredRole?: string;
+  requireSsbId?: boolean;
+  requireSeatSignature?: boolean;
+  peerCard?: PeerCard;
+  /** WP-U197 — `peer-card` (defecto) | `anonymous`. */
+  admission?: SignalingAdmission;
 }
 
 export declare class SocketRoomSignalingService extends SignalingService {
@@ -138,6 +164,23 @@ export function assertSignalingPeerCard(
 ): { ok: true; role: string; ssbId?: string } | { ok: false; error: string };
 export function peerCardFromMessage(messageOrPayload?: object): unknown;
 export function ssbIdFromMessage(messageOrPayload?: object): string | null;
+export function isPeerCardPresented(card: unknown): boolean;
+export function assertSignalingAdmission(
+  card: unknown,
+  opts?: {
+    admission?: SignalingAdmission;
+    role?: string;
+    now?: number;
+    requireSsbId?: boolean;
+    requireSeatSignature?: boolean;
+    expectedSsbId?: string;
+    claimedSsbId?: unknown;
+    claimedFrom?: unknown;
+  }
+):
+  | { ok: true; anonymous: true; role: null }
+  | { ok: true; anonymous: false; role: string; ssbId?: string }
+  | { ok: false; anonymous: false; error: string };
 
 export function generateSeatKeyPair(): {
   ssbId: string;

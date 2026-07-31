@@ -109,6 +109,7 @@
     "e2e:domain:firehose": "node e2e/domain-firehose.mjs",
     "e2e:domain:selection": "node e2e/domain-selection.mjs",
     "e2e:webrtc-signaling": "node e2e/webrtc-signaling.mjs",
+    "e2e:webrtc-signaling-anonimo": "node e2e/webrtc-signaling-anonimo.mjs",
     "e2e:peer-card-chain": "node e2e/peer-card-chain.mjs",
     "e2e:blob-sync-spike": "npm run spike -w @zeus/blob-sync-harness",
     "test:blob-sync-harness": "npm test -w @zeus/blob-sync-harness",

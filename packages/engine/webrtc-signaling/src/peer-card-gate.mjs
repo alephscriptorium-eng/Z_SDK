@@ -3,6 +3,12 @@
  * Exige card con forma, frescura y rol antes de offer/answer/ICE.
  * Extensión SSB: `ssbId` en handshake + verificación de `seatSignature`.
  *
+ * WP-U197: el torno NO se retira ni se ablanda — `assertSignalingPeerCard`
+ * conserva su semántica exacta (card ausente = denegada) porque terceros
+ * lo consumen como portero de cosas protegidas. La antesala anónima se
+ * pide EXPLÍCITAMENTE con `assertSignalingAdmission(card, { admission:
+ * 'anonymous' })`, que admite sin card y devuelve `role: null`.
+ *
  * Solo importa `@zeus/protocol` (browser-safe) + `@zeus/protocol/peer-card-seat`
  * (Node) para verify — usable desde subpath sin arrastrar `@zeus/rooms`.
  */
@@ -105,6 +111,110 @@ export function assertSignalingPeerCard(card, opts = {}) {
   const ok = { ok: true, role: granted };
   if (isSsbId(ssbId)) ok.ssbId = ssbId;
   return ok;
+}
+
+/**
+ * Modos de **admisión** a la antesala WebRTC (WP-U197).
+ *
+ * `admisión ≠ permiso`. La admisión decide quién puede intercambiar
+ * SDP/ICE en la antesala; NO concede rol ninguno. Corolario de U186
+ * (transporte ≠ permiso): el rol se consulta EN LA ACCIÓN
+ * (`getSessionRole()`), jamás se deriva de haber completado un
+ * handshake.
+ *
+ * - `peer-card` (**por defecto**, statu quo U186): la antesala es una
+ *   capacidad opt-in; sin card no hay offer/answer/ICE.
+ * - `anonymous` (WP-U197): la antesala admite pares sin card. Elegirlo
+ *   es decisión LOCAL de despliegue (dueño: O, contrato D-O11/O13 de
+ *   `plan/REPORTES/U186-paso0-frontera-room-join.md`), nunca algo que
+ *   un par remoto pueda presentar ni negociar por el cable.
+ */
+export const SIGNALING_ADMISSION = Object.freeze({
+  peerCard: 'peer-card',
+  anonymous: 'anonymous'
+});
+
+/**
+ * ¿Hay card **presentada**? Regla de presencia idéntica a U186
+ * (`socket-room-signaling.mjs:79` — `opts.peerCard != null`):
+ * `null`/`undefined` = AUSENTE; cualquier otro valor (incluidos `false`,
+ * `0`, `''`, `{}`) = PRESENTADO ⇒ se valida y, si no acredita, RECHAZA.
+ * «Presentada y falsa» nunca degrada a «ausente».
+ *
+ * @param {unknown} card
+ * @returns {boolean}
+ */
+export function isPeerCardPresented(card) {
+  return card !== null && card !== undefined;
+}
+
+/**
+ * Admisión a la antesala WebRTC (WP-U197) — envoltura EXPLÍCITA sobre el
+ * torno de U186. `assertSignalingPeerCard` no cambia de semántica: quien
+ * lo llama directo (p. ej. el carril LAN de blobs,
+ * `packages/mesh/blob-sync-harness/src/lan-gate.mjs:23`) sigue exigiendo
+ * card. Sólo se es anónimo si se pide `admission: 'anonymous'` aquí.
+ *
+ * Reglas (fail-closed en el medio):
+ * - **sin claim y sin card** → anónimo admitido, `role: null`.
+ * - **card presentada** → se valida con el torno U186; inválida = RECHAZA
+ *   (jamás «degrada» a anónimo, aunque el modo sea anónimo).
+ * - **claim de identidad sin card** (`ssbId` en el handshake, o `from`
+ *   con forma de feed SSB) → DENIEGA: anónimo es anónimo, no un
+ *   pasaporte sin sello.
+ * - cualquier exigencia configurada (`role`, `requireSsbId`,
+ *   `requireSeatSignature`) vuelve a exigir card aunque el modo sea
+ *   anónimo: la ausencia deniega.
+ *
+ * @param {unknown} card
+ * @param {{
+ *   admission?: string,
+ *   role?: string,
+ *   now?: number,
+ *   requireSsbId?: boolean,
+ *   requireSeatSignature?: boolean,
+ *   expectedSsbId?: string,
+ *   claimedSsbId?: unknown,
+ *   claimedFrom?: unknown
+ * }} [opts]
+ * @returns {{ ok: true, anonymous: true, role: null }
+ *   | { ok: true, anonymous: false, role: string, ssbId?: string }
+ *   | { ok: false, anonymous: false, error: string }}
+ */
+export function assertSignalingAdmission(card, opts = {}) {
+  if (isPeerCardPresented(card)) {
+    const check = assertSignalingPeerCard(card, opts);
+    if (!check.ok) return { ok: false, anonymous: false, error: check.error };
+    return { ...check, anonymous: false };
+  }
+
+  const anonymousMode = opts.admission === SIGNALING_ADMISSION.anonymous;
+  const demandsCard =
+    !anonymousMode ||
+    Boolean(opts.role) ||
+    opts.requireSsbId === true ||
+    opts.requireSeatSignature === true;
+
+  if (demandsCard) {
+    // Mismo veredicto y mismo texto que el torno U186 ante card ausente:
+    // una sola fuente de la denegación, sin ruta paralela.
+    const denied = assertSignalingPeerCard(card, opts);
+    return {
+      ok: false,
+      anonymous: false,
+      error: denied.ok ? 'peer-card required' : denied.error
+    };
+  }
+
+  if (opts.claimedSsbId != null || isSsbId(opts.claimedFrom)) {
+    return {
+      ok: false,
+      anonymous: false,
+      error: 'anonymous signaling carries an unproven identity claim (ssbId)'
+    };
+  }
+
+  return { ok: true, anonymous: true, role: null };
 }
 
 /**

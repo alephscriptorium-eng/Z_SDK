@@ -13,8 +13,10 @@
 import { createBrowserRoomClient } from '@zeus/room-client-browser';
 import {
   assertSignalingPeerCard,
+  assertSignalingAdmission,
   isPeerCardGatedType,
-  peerCardFromMessage
+  peerCardFromMessage,
+  SIGNALING_ADMISSION
 } from '@zeus/webrtc-signaling/peer-card-gate';
 
 const WIRE_EVENTS = Object.freeze([
@@ -70,6 +72,9 @@ class Emitter {
  * @property {string} scriptoriumUrl
  * @property {string} [token]
  * @property {string} [room]
+ * @property {string} [admission] — WP-U197: `peer-card` (por defecto,
+ *   statu quo U93/U186) | `anonymous` (offer/answer/ICE sin card,
+ *   `role:null`). Decisión local de despliegue, no negociable por cable.
  */
 
 export class BrowserSocketSignalingService extends Emitter {
@@ -86,10 +91,25 @@ export class BrowserSocketSignalingService extends Emitter {
     this._client = null;
     /** @type {Array<() => void>} */
     this._unsubs = [];
+    /** @type {string} — WP-U197: admisión de antesala; por defecto la de U93 */
+    this._admission =
+      config.admission === SIGNALING_ADMISSION.anonymous
+        ? SIGNALING_ADMISSION.anonymous
+        : SIGNALING_ADMISSION.peerCard;
   }
 
   isConnected() {
     return this._connected;
+  }
+
+  /** @returns {string} */
+  getAdmission() {
+    return this._admission;
+  }
+
+  /** WP-U197 — anónimo = sin card adoptada; nunca implica permiso. */
+  isAnonymous() {
+    return this._peerCard == null;
   }
 
   getUserId() {
@@ -152,22 +172,30 @@ export class BrowserSocketSignalingService extends Emitter {
     this.emit('connection', false);
   }
 
-  /** @param {string} roomId @param {object} peerCard */
+  /** @param {string} roomId @param {object} [peerCard] */
   async joinRoom(roomId, peerCard) {
     if (!this._client || !this._connected) {
       throw new Error('Not connected to signaling transport');
     }
-    this.setPeerCard(peerCard);
+    const admitted = assertSignalingAdmission(peerCard, {
+      admission: this._admission
+    });
+    if (!admitted.ok) {
+      throw new Error(`BrowserSocketSignalingService.setPeerCard: ${admitted.error}`);
+    }
+    if (!admitted.anonymous) this.setPeerCard(peerCard);
     this.roomId = roomId;
     this._client.getSocket().emit('CLIENT_SUSCRIBE', { room: roomId });
     const payload = {
       type: 'join-room',
       from: this.userId,
       room: roomId,
-      data: { peerCard, roomId },
+      data: { ...(admitted.anonymous ? {} : { peerCard }), roomId },
       timestamp: Date.now(),
       messageId: messageId(),
-      peerCard
+      // Sin `anonymous: true` en el cable: la AUSENCIA de card es la
+      // señal; una autodeclaración no verificable sería otro claim.
+      ...(admitted.anonymous ? {} : { peerCard })
     };
     this._client.emit('join-room', payload);
   }
@@ -194,11 +222,12 @@ export class BrowserSocketSignalingService extends Emitter {
     const gated = { ...message };
     if (isPeerCardGatedType(gated.type)) {
       const card = gated.peerCard ?? this._peerCard;
-      const check = assertSignalingPeerCard(card);
+      const check = assertSignalingAdmission(card, { admission: this._admission });
       if (!check.ok) {
         throw new Error(`signaling peer-card required: ${check.error}`);
       }
-      gated.peerCard = card;
+      if (check.anonymous) delete gated.peerCard;
+      else gated.peerCard = card;
     }
     const wireType = ABSTRACT_TO_WIRE[gated.type] || gated.type;
     const room = gated.roomId || this.roomId;
@@ -286,10 +315,18 @@ export class BrowserSocketSignalingService extends Emitter {
     }
 
     if (isPeerCardGatedType(abstractType)) {
-      const check = assertSignalingPeerCard(peerCardFromMessage(message));
+      const check = assertSignalingAdmission(peerCardFromMessage(message), {
+        admission: this._admission,
+        claimedSsbId: payload.ssbId ?? payload.data?.ssbId ?? undefined,
+        claimedFrom: message.from
+      });
       if (!check.ok) {
         this.emit('error', new Error(`signaling peer-card rejected: ${check.error}`));
         return;
+      }
+      if (check.anonymous) {
+        delete message.peerCard;
+        message.anonymous = true;
       }
     }
 

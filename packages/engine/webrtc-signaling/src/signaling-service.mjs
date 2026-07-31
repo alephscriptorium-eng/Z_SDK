@@ -12,15 +12,25 @@
  * RECHAZO, jamás degrada a anónimo; el rol se consulta EN LA ACCIÓN
  * (`getSessionRole()` / torno por mensaje gated). Frontera:
  * plan/REPORTES/U186-paso0-frontera-room-join.md.
+ *
+ * WP-U197 (signaling anónimo): la antesala tiene modo de ADMISIÓN
+ * declarado — `peer-card` (por defecto, statu quo) o `anonymous`. En
+ * anónimo, offer/answer/ICE/room-join viajan SIN card y la sesión sigue
+ * siendo `role:null`: admisión ≠ permiso. Un mensaje anónimo no puede
+ * cargar claim de identidad (`ssbId`/`from` con forma de feed) y una card
+ * presentada se valida igual — inválida RECHAZA también en modo anónimo.
  */
 
 import { EventEmitter } from 'node:events';
 import { ABSTRACT_TO_WIRE, createWireMessage } from './messages.mjs';
 import {
   assertSignalingPeerCard,
+  assertSignalingAdmission,
   isPeerCardGatedType,
+  isPeerCardPresented,
   peerCardFromMessage,
-  ssbIdFromMessage
+  ssbIdFromMessage,
+  SIGNALING_ADMISSION
 } from './peer-card-gate.mjs';
 import { isSsbId } from '@zeus/protocol';
 
@@ -38,6 +48,8 @@ import { isSsbId } from '@zeus/protocol';
  * @property {unknown} [data]
  * @property {object} [peerCard]
  * @property {string} [ssbId] — feed id en el handshake federado
+ * @property {boolean} [anonymous] — admitido sin card (WP-U197): sin
+ *   peerCard, sin ssbId y sin rol. Marca informativa, NO credencial.
  */
 
 export class SignalingService extends EventEmitter {
@@ -57,6 +69,51 @@ export class SignalingService extends EventEmitter {
     this._requireSsbId = false;
     /** @type {boolean} — exigir firma de asiento (tarjeta viajera) */
     this._requireSeatSignature = false;
+    /**
+     * @type {string} — modo de admisión de la antesala (WP-U197).
+     * Por defecto `peer-card`: NO se retira ningún torno. `anonymous` es
+     * decisión local de despliegue, nunca negociable por el cable.
+     */
+    this._admission = SIGNALING_ADMISSION.peerCard;
+  }
+
+  /**
+   * Fija el modo de admisión de la antesala (WP-U197).
+   * @param {string} mode — `peer-card` | `anonymous`
+   */
+  setAdmission(mode) {
+    if (
+      mode !== SIGNALING_ADMISSION.peerCard &&
+      mode !== SIGNALING_ADMISSION.anonymous
+    ) {
+      throw new Error(
+        `SignalingService.setAdmission: unknown admission mode ${String(mode)}`
+      );
+    }
+    this._admission = mode;
+  }
+
+  /** @returns {string} */
+  getAdmission() {
+    return this._admission;
+  }
+
+  /**
+   * ¿La sesión es anónima? (WP-U197) — anónima = sin card adoptada.
+   * Nunca implica permiso: `getSessionRole()` sigue devolviendo `null`.
+   * @returns {boolean}
+   */
+  isAnonymous() {
+    return !isPeerCardPresented(this._peerCard);
+  }
+
+  /** @returns {{ admission: string, anonymous: boolean, role: string|null }} */
+  describeAdmission(now) {
+    return {
+      admission: this._admission,
+      anonymous: this.isAnonymous(),
+      role: this.getSessionRole(now)
+    };
   }
 
   /**
@@ -222,26 +279,38 @@ export class SignalingService extends EventEmitter {
       ) {
         card = { ...card, ssbId: handshakeSsbId };
       }
-      const check = assertSignalingPeerCard(card, {
+      const check = assertSignalingAdmission(card, {
+        admission: this._admission,
         role: this._requiredRole ?? undefined,
         requireSsbId: this._requireSsbId,
         requireSeatSignature: this._requireSeatSignature,
-        expectedSsbId: handshakeSsbId ?? undefined
+        expectedSsbId: handshakeSsbId ?? undefined,
+        claimedSsbId: handshakeSsbId ?? undefined,
+        claimedFrom: message?.from
       });
       if (!check.ok) {
         this.handleError(new Error(`signaling peer-card rejected: ${check.error}`));
         return;
       }
-      // SSB: from del wire debe amarrar al ssbId de la card cuando ambos existen
-      if (isSsbId(card?.ssbId) && isSsbId(message.from) && card.ssbId !== message.from) {
-        this.handleError(
-          new Error('signaling peer-card rejected: ssbId does not match message.from')
-        );
-        return;
+      if (check.anonymous) {
+        // WP-U197 · anónimo es anónimo: el mensaje entra SIN card y SIN
+        // ssbId. No hay identidad que un consumidor pueda confundir con
+        // credencial; el rol de la sesión sigue siendo null.
+        delete message.peerCard;
+        delete message.ssbId;
+        message.anonymous = true;
+      } else {
+        // SSB: from del wire debe amarrar al ssbId de la card cuando ambos existen
+        if (isSsbId(card?.ssbId) && isSsbId(message.from) && card.ssbId !== message.from) {
+          this.handleError(
+            new Error('signaling peer-card rejected: ssbId does not match message.from')
+          );
+          return;
+        }
+        message.peerCard = card;
+        if (isSsbId(card?.ssbId)) message.ssbId = card.ssbId;
+        else if (handshakeSsbId) message.ssbId = handshakeSsbId;
       }
-      message.peerCard = card;
-      if (isSsbId(card?.ssbId)) message.ssbId = card.ssbId;
-      else if (handshakeSsbId) message.ssbId = handshakeSsbId;
     }
     this.emit('message', message);
     if (message?.type) this.emit(message.type, message);
@@ -267,19 +336,31 @@ export class SignalingService extends EventEmitter {
   /**
    * Adjunta y valida el peer-card local en mensajes gated.
    * Propaga `ssbId` al handshake cuando la card lo trae.
+   * En admisión anónima (WP-U197) sale SIN card y SIN `ssbId`: lo que no
+   * se acredita, no viaja.
    * @param {SignalingMessage} message
    * @protected
    */
   _gatedOutbound(message) {
     if (!isPeerCardGatedType(message.type)) return message;
     const card = message.peerCard ?? this._peerCard;
-    const check = assertSignalingPeerCard(card, {
+    const check = assertSignalingAdmission(card, {
+      admission: this._admission,
       role: this._requiredRole ?? undefined,
       requireSsbId: this._requireSsbId,
-      requireSeatSignature: this._requireSeatSignature
+      requireSeatSignature: this._requireSeatSignature,
+      claimedSsbId: message.ssbId ?? undefined,
+      claimedFrom: message.from
     });
     if (!check.ok) {
       throw new Error(`signaling peer-card required: ${check.error}`);
+    }
+    if (check.anonymous) {
+      /** @type {SignalingMessage} */
+      const anon = { ...message, anonymous: true };
+      delete anon.peerCard;
+      delete anon.ssbId;
+      return anon;
     }
     /** @type {SignalingMessage} */
     const out = { ...message, peerCard: card };
