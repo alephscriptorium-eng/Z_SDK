@@ -16,11 +16,13 @@ export {
   DEFAULT_SOFT_CORPUS_STATUSES
 } from './empty.mjs';
 export { syncVolumeCounters } from './counters.mjs';
+export { importPack } from './import.mjs';
 export {
   MANIFEST_FILE_NAME,
   resolveManifestPath,
   readManifestRaw,
-  hashManifest
+  hashManifest,
+  sealManifest
 } from './manifest.mjs';
 export {
   STATE_FILE_NAME,
