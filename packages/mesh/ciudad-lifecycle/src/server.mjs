@@ -3,6 +3,7 @@
  */
 
 import { createStandardMcpServer, promptMessages } from '@zeus/presets-sdk/mcp';
+import { DEFAULT_ZEUS_MCP, resolveZeusMcpPorts } from '@zeus/presets-sdk/env';
 import { ProcessManager } from '@zeus/mcp-launcher';
 import { resolveExtendedCatalog } from './catalog-extend.mjs';
 import { CityLifecycleRuntime } from './runtime.mjs';
@@ -10,12 +11,17 @@ import * as tools from './tools.mjs';
 
 export const SERVER_NAME = 'ciudad-lifecycle';
 export const SERVER_VERSION = '0.1.0';
-export const DEFAULT_PORT = 3051;
+
+/**
+ * Single source = `@zeus/presets-sdk/env` (`ciudadLifecycle.disk` +
+ * ZEUS_MCP_CIUDAD_LIFECYCLE). No local literal: the catalog entry
+ * `ciudad-lifecycle` (mcp-launcher/src/catalog.mjs) and this bind must not be
+ * able to drift. U180 (slot added to the single source by U227).
+ */
+export const DEFAULT_PORT = DEFAULT_ZEUS_MCP.ciudadLifecycle.disk;
 
 export function resolveLifecyclePort() {
-  const raw = process.env.ZEUS_MCP_CIUDAD_LIFECYCLE;
-  if (raw && Number.isFinite(Number(raw))) return Number(raw);
-  return DEFAULT_PORT;
+  return resolveZeusMcpPorts().ciudadLifecycle.disk;
 }
 
 /**
