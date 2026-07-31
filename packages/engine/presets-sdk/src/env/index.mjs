@@ -41,6 +41,7 @@ export const DEFAULT_ZEUS_MCP = {
   lineaEditor: { disk: 4115 },
   firehose: { disk: 3008 },
   launcher: { disk: 3050 },
+  ciudadLifecycle: { disk: 3051 },
   playerDebug: { monitor: 3014 },
   argPlayer: { uno: 4121, dos: 4122 },
   pozoPlayer: { uno: 4131 },
@@ -48,7 +49,7 @@ export const DEFAULT_ZEUS_MCP = {
 };
 
 /** `group.key` → ZEUS_* override var. */
-const MCP_PORT_ENV = {
+export const MCP_PORT_ENV = {
   'solar.sun': 'ZEUS_MCP_SUN',
   'solar.moon': 'ZEUS_MCP_MOON',
   'solar.earth': 'ZEUS_MCP_EARTH',
@@ -59,6 +60,7 @@ const MCP_PORT_ENV = {
   'lineaEditor.disk': 'ZEUS_MCP_LINEA_EDITOR',
   'firehose.disk': 'ZEUS_MCP_FIREHOSE',
   'launcher.disk': 'ZEUS_MCP_LAUNCHER',
+  'ciudadLifecycle.disk': 'ZEUS_MCP_CIUDAD_LIFECYCLE',
   'playerDebug.monitor': 'ZEUS_PORT_PLAYER_DEBUG',
   'argPlayer.uno': 'ZEUS_MCP_ARG_UNO',
   'argPlayer.dos': 'ZEUS_MCP_ARG_DOS',
@@ -90,7 +92,7 @@ export const DEFAULT_ZEUS_UI_MESH = {
 };
 
 /** UI id → ZEUS_* override var. */
-const UI_PORT_ENV = {
+export const UI_PORT_ENV = {
   editor: 'ZEUS_PORT_EDITOR',
   player: 'ZEUS_PORT_PLAYER',
   view: 'ZEUS_PORT_VIEW',
@@ -117,7 +119,7 @@ export const DEFAULT_SPEC_TOOL_PORTS = {
   inspectorProxy: 6277
 };
 
-const SPEC_TOOL_PORT_ENV = {
+export const SPEC_TOOL_PORT_ENV = {
   studio: 'ZEUS_PORT_SPEC_STUDIO',
   docs: 'ZEUS_PORT_DOCS',
   inspector: 'ZEUS_PORT_INSPECTOR',
@@ -172,7 +174,10 @@ export function readEnvPort(name, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-export function resolveZeusHost(fallback = 'localhost') {
+/** Default host when ZEUS_HOST is unset. */
+export const DEFAULT_ZEUS_HOST = 'localhost';
+
+export function resolveZeusHost(fallback = DEFAULT_ZEUS_HOST) {
   loadZeusEnv();
   return process.env.ZEUS_HOST || fallback;
 }
@@ -310,6 +315,9 @@ export function resolveSpecToolPorts(base = DEFAULT_SPEC_TOOL_PORTS) {
 /** Resolved spec tooling ports (AsyncAPI Studio + VitePress docs + MCP Inspector). */
 export const SPEC_TOOL_PORTS = resolveSpecToolPorts();
 
+/** Default MCP Inspector auth token (override: ZEUS_INSPECTOR_TOKEN). */
+export const DEFAULT_ZEUS_INSPECTOR_TOKEN = 'zeus-dev-inspector';
+
 /**
  * MCP Inspector UI + proxy ports and auth token from env.
  * @returns {{ host: string, uiPort: number, proxyPort: number, token: string }}
@@ -321,7 +329,7 @@ export function resolveInspectorEndpoint() {
     host: resolveZeusHost(),
     uiPort: inspector,
     proxyPort: inspectorProxy,
-    token: process.env.ZEUS_INSPECTOR_TOKEN || 'zeus-dev-inspector'
+    token: process.env.ZEUS_INSPECTOR_TOKEN || DEFAULT_ZEUS_INSPECTOR_TOKEN
   };
 }
 
