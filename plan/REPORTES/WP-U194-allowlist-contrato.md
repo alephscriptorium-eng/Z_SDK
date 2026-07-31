@@ -473,6 +473,10 @@ U187 ola 2 lo tenía prohibido). Respetado.
    *nuevo* importado por el relay no entraría en el corpus. Requiere tocar
    `relay.mjs` para importarlo, lo que es visible en el diff, pero el test
    no lo cazaría solo. → candidato para U193/U196.
+   > ✎ **FALSO — devolución D-A.** «Requiere tocar `relay.mjs`» no es cierto:
+   > `create-server.mjs` es donde nacen `localNs` y `bridgeClient`, y una
+   > puerta ahí propaga sin tocar el relay (medido: 22/22 verde). El censo
+   > barre ahora **todo `src/`**. Ver **§12**.
 
 ---
 
@@ -506,12 +510,21 @@ U187 ola 2 lo tenía prohibido). Respetado.
    el desempaquetado. → **U193 / U195**, dueños de `relay.mjs`. Asertado sin
    taparlo en el test «HUECO ABIERTO…»: al cerrarlo, ese test cae a
    propósito y dice qué actualizar.
-6. **`relay.mjs` está ahora anclado por forma** (censo de despacho, D1).
-   U193: al editarlo tendrás que re-anclar `EMISIONES_ABAJO_ANCLADAS` y
-   `SELLO_DESPACHO_ANCLADO` en `test/relay-contract.test.mjs`. Es
-   deliberado — cambiar la propagación del relay es un cambio de contrato —
-   y el mensaje de fallo trae el sello nuevo. Comentarios y reformateos no
-   lo disparan (control negativo en §11).
+6. **TODO `packages/mesh/socket-server/src/` está anclado por forma** (censo
+   de despacho, D1 + D-A). U193 y quien toque el paquete: al editar
+   **cualquier** fuente de ese `src/` hay que re-anclar `EMISIONES_ANCLADAS`
+   y `SELLO_DESPACHO_ANCLADO` en `test/relay-contract.test.mjs`. Es
+   deliberado — cambiar la propagación es un cambio de contrato — y el
+   mensaje de fallo trae el sello nuevo **y la tabla por fichero**, así que
+   se ve de un vistazo cuál se movió. Tolera comentarios, espacios y EOL;
+   no tolera repartir líneas ni renombrar identificadores (§12 · D-D).
+7. **Higiene: 3 fuentes del paquete no están prettier-limpios**
+   (`admin-ui.mjs`, `create-server.mjs`, `lifecycle.mjs`; `npx prettier
+   --check packages/mesh/socket-server/src/*.mjs` los marca). Hallazgo al
+   medir el control negativo del censo. **No se tocaron** — no son de U194 y
+   pasarles `prettier` habría sido contrabando. Consecuencia práctica:
+   `prettier --write` sobre el paquete mueve el sello del censo hoy. →
+   candidato de higiene para el dueño del paquete.
 
 ---
 
@@ -846,16 +859,16 @@ confirme su recuperación.
 | | antes de la devolución | ahora |
 | --- | --- | --- |
 | suite `@zeus/socket-server` | 17/17 | **22/22** |
-| tests propios de U194 | 7 | **11** |
+| tests propios de U194 | 7 | **12** ✎ (decía 11; `grep -c "^test("` da 12) |
 | `@zeus/webrtc-viewer` | 6/6 | **6/6** |
 | eslint `src/` + `test/` | 0/0 | **0 errores, 0 warnings** |
 | `src/relay.mjs` | 0 ediciones | **0 ediciones** |
 | `test/relay-trace.test.mjs` | 0 ediciones | **0 ediciones** |
 
-Tests nuevos (4): censo de despacho (D1) · gate portante (D4) · secuestro
-por prototipo (D2) · hueco del sobre (D3) · último cazador (D5) — cinco
-adiciones que se reparten en 4 tests nuevos más el renombrado del cierre
-e2e.
+Tests nuevos (**5**, ✎ decía 4 y los enumerados eran cinco bloques `test()`
+distintos): censo de despacho (D1) · gate portante (D4) · secuestro por
+prototipo (D2) · hueco del sobre (D3) · último cazador (D5). Más el
+renombrado del cierre e2e.
 
 Batería roja completa re-verificada contra el refactor: **A** (añadir sin
 re-sellar) 4 suites caen · **D** (guarda borrada) ahora 3 rojos en vez de 2
@@ -869,11 +882,171 @@ re-sellar) 4 suites caen · **D** (guarda borrada) ahora 3 rojos en vez de 2
    sello de forma (el `import` es una línea nueva) → sería rojo. Pero si
    `relay.mjs` ya importara ese módulo, el censo no vería el interior. Hoy
    `relay.mjs` solo importa `socket-core/client` y `config.mjs`.
+   > ✎ **FALSO — devolución D-A.** «Que `relay.mjs` importe» sobra: la puerta
+   > no necesita al relay para nada. Corregido barriendo todo `src/` del
+   > paquete; alcance declarado en **§12 · D-A**.
 3. **El atacante con acceso de escritura y paciencia** (D5): declarado
    arriba, no resuelto — no es resoluble con tests en el mismo árbol.
 
 ---
 
+---
+
+## 12 · Corrección de la 2.ª devolución (D-A a D-D)
+
+Tercera vuelta. D1 dentro de `relay.mjs`, D2, D3, D4 y D5 quedaron
+confirmados por la contrarrevisión y **no se han tocado**. Lo que cayó fue
+el **alcance**, y estaba declarado al revés: el censo anclaba un fichero y
+yo escribía como si anclara la puerta.
+
+### D-A · El censo anclaba `relay.mjs`; yo afirmaba que anclaba la puerta · **CORREGIDO**
+
+**Reproducido**, con `relay.mjs` intacto, en `src/create-server.mjs` justo
+tras `attachRemoteBridge(...)`:
+
+```js
+if (bridgeClient) {
+  bridgeClient.io.onAny((ev, ...a) => {
+    if (ev === 'pwn' + ':' + 'x') localNs.emit(ev, a[0]);
+  });
+}
+```
+
+→ **22/22 verde.** Y no hay truco ninguno: `create-server.mjs` es
+literalmente donde nacen `localNs` (`:32`) y `bridgeClient` (`:38`). Mi
+frase «requiere tocar `relay.mjs`» era falsa, y la de «un módulo nuevo **que
+`relay.mjs` importe**» sobraba entera — la puerta no necesita al relay.
+
+**Corrección: el censo barre el paquete.** `censoDeDespacho()` usa
+`readdirSync` sobre `src/` — la misma maquinaria que ya tenía «sin segunda
+lista» dos tests más arriba — y produce, por fichero, forma normalizada,
+conteo de `.emit(` y sello; luego un **sello combinado** que incluye el
+**inventario de ficheros**.
+
+**Verificado, los dos vectores:**
+
+```
+puerta en create-server.mjs (relay.mjs intacto)
+  → not ok 8   · 22 pass / 1 fail
+    sello anclado : c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0
+    sello actual  : 6ba6d3c19eaedbb409479f547c0692d0d3db4a2cfaa714ff8debd623a8888d6f
+    create-server.mjs        emisiones=1  f5229adcc7a60963…   ← señalado por nombre
+
+fichero NUEVO src/puerta.mjs, ni siquiera importado
+  → not ok 8   · 22 pass / 1 fail
+    puerta.mjs               emisiones=1  0fd90f699d6c6e6c…
+```
+
+El mensaje de fallo imprime la tabla por fichero, así que el diagnóstico es
+inmediato en vez de «algo cambió».
+
+**Regla de alcance, declarada como tal:**
+
+> El censo cubre **`packages/mesh/socket-server/src/**` y hasta ahí**. Lo
+> que quede fuera de ese árbol no se persigue: se declara como hueco abierto
+> con dueño, igual que el sobre. Si tras barrer el paquete aparece otra vía,
+> se declara — no se amplía el WP.
+
+Escrito en el propio helper (`censoDeDespacho`, «Alcance, y es una decisión,
+no un descuido») y en el ancla.
+
+### D-B · «Sin segunda lista» reconocía una notación · **CORREGIDO**
+
+Era la lección de D1 sin aplicar en el test de al lado: amplié
+`literalesDeFuente` a backticks y no el `includes` de este. **Reproducido**
+con `` new Set([`SET_STATE`, `deck:resolved`, `track`, `state`]) `` en
+`config.mjs` → verde. Añadida la tercera notación.
+
+**Verificado:**
+
+```
+not ok 7 - sin segunda lista: ningún otro fuente del paquete declara nombres del contrato
+    +   "src/config.mjs declara 'SET_STATE'"
+    +   "src/config.mjs declara 'deck:resolved'"
+    +   "src/config.mjs declara 'state'"
+    +   "src/config.mjs declara 'track'"
+```
+
+### D-C · El tipo publicado mentía · **CORREGIDO**
+
+`types/index.d.ts:27` promete `ReadonlySet<string>`; al dejar de ser un
+`Set` (corrección de D2) escribí la superficie a mano y faltaba `entries()`.
+`downstream.entries()` compilaba en TS y reventaba en runtime — en un
+paquete **publicable**. También `keys()` devolvía `interno.values()` en vez
+de `interno.keys()` (equivalente en un `Set`, pero escrito por descuido).
+
+Añadidos `entries()` y `keys()` correcto. Y un test nuevo, **«la allowlist
+cumple de verdad el `ReadonlySet<string>` que publica el .d.ts»**, que
+ejerce *cada* miembro —`has`, `size`, `entries`, `keys`, `values`,
+`forEach` (con `thisArg` y los tres argumentos), `[Symbol.iterator]`— para
+que el `.d.ts` no pueda volver a mentir.
+
+**Verificado en runtime:**
+
+```
+has() -> true      entries() -> 8     keys() -> 8
+values() -> 8      forEach() -> "ok"  size -> 8
+entries()[0] -> ["SET_STATE","SET_STATE"]
+```
+
+### D-D · La redacción del control negativo · **CORREGIDA, y con un hallazgo**
+
+Redactado como pedías, pero medido de nuevo al ampliar el alcance, porque
+**la afirmación cambia con el alcance**:
+
+- `prettier --write` sobre **`src/relay.mjs`**: sello **idéntico**. La
+  medición del revisor era exacta.
+- `prettier --write` sobre **el paquete entero**: **mueve el sello**. No por
+  culpa del censo, sino porque tres fuentes del paquete **no están
+  prettier-limpios en el repo**: `admin-ui.mjs`, `create-server.mjs` y
+  `lifecycle.mjs` (`npx prettier --check` los marca; el resto de avisos son
+  solo EOL).
+
+Redacción final, en el ancla y en `formaNormalizada`: *tolera comentarios,
+indentación, líneas en blanco, colapso de espacios y EOL (CRLF↔LF
+indiferente); **no** tolera repartir una línea en varias ni renombrar
+identificadores; `prettier` deja `relay.mjs` idéntico pero mueve el sello
+del paquete mientras esos tres ficheros sigan sin formatear.*
+
+**Los 3 ficheros no se tocaron**: no son de U194 y pasarles `prettier`
+habría sido contrabando de la peor especie —ruido de formato dentro de un WP
+de contrato—. La pasada de prettier que hice para medir quedó **revertida**
+(`git checkout --`), verificado con `git diff --exit-code`. Anotado como
+higiene pendiente en §8 punto 7.
+
+### Contabilidad corregida
+
+- «tests propios de U194: 11» → **12** (`grep -c "^test("` = 13 hoy, tras
+  añadir el de D-C; eran 12 cuando lo medisteis). Marcado con ✎ en §11.
+- «4 tests nuevos» con cinco enumerados → **5**. Marcado con ✎ en §11.
+
+### Estado tras la 3.ª vuelta
+
+| | 2.ª entrega | ahora |
+| --- | --- | --- |
+| suite `@zeus/socket-server` | 22/22 | **23/23** |
+| tests propios de U194 | 12 | **13** |
+| `@zeus/webrtc-viewer` | 6/6 | **6/6** |
+| eslint `src/` + `test/` | 0/0 | **0 errores, 0 warnings** |
+| `src/relay.mjs` | 0 ediciones | **0 ediciones** |
+| `src/create-server.mjs` | 0 ediciones | **0 ediciones** |
+| `test/relay-trace.test.mjs` | 0 ediciones | **0 ediciones** |
+| alcance del censo | `src/relay.mjs` | **`src/**` del paquete, declarado** |
+
+### Lo que sigue fuera de alcance, por la regla de cierre
+
+1. **El sobre** (D3): hueco abierto de U193/U195, asertado sin tapar.
+2. **Fuera de `packages/mesh/socket-server/src/`**: quien tenga el handle del
+   servidor (`socketServer`, devuelto por `createScriptoriumServer`) puede
+   emitir en el namespace desde otro paquete. Eso no es un agujero de la
+   allowlist del relay: es la superficie pública de socket.io, y perseguirla
+   sería ampliar el WP. **Declarado como hueco con dueño**, que es la regla
+   de cierre acordada.
+3. **El atacante con acceso de escritura y paciencia** (D5): no resoluble
+   con tests en el mismo árbol.
+
+---
+
 *Worker Z · WP-U194 · rama `wp/u194-allowlist-contrato` · base `dc70cec` ·
-1.ª entrega 2026-08-01, corrección de devolución 2026-08-01. Sin merge, sin
-push, sin reescritura de historia.*
+1.ª entrega, corrección de devolución y corrección de 2.ª devolución,
+2026-08-01. Sin merge, sin push, sin reescritura de historia.*
