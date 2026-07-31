@@ -230,7 +230,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
-| **U186** | 10 | **U93-bis · transporte ≠ permiso** | **Paso 0 (pregunta estrecha de O·D-O11): confirmar la frontera** — ¿el `room-join` del signaling gobierna la sala genérica o solo la antesala WebRTC? Si WebRTC es capacidad opt-in, sus gates pueden quedarse; no se retiran tornos indiscriminadamente. Después: sacar de `PEER_CARD_GATED_TYPES` lo que sea transporte base; sin card = sesión anónima `role:null`; rol se consulta en la acción | (0) frontera confirmada y escrita · (1) sin card conecta al transporte base · (2) card válida concede en acción · (3) **card inválida rechaza, NO degrada a anónimo** · (4) acción sin rol denegada con cable intacto · contrato de retorno a O (WP-O13) cumplido | **P0** |
+| **U186** 🔶 | 10 | **U93-bis · transporte ≠ permiso** | **Paso 0 (pregunta estrecha de O·D-O11): confirmar la frontera** — ¿el `room-join` del signaling gobierna la sala genérica o solo la antesala WebRTC? Si WebRTC es capacidad opt-in, sus gates pueden quedarse; no se retiran tornos indiscriminadamente. Después: sacar de `PEER_CARD_GATED_TYPES` lo que sea transporte base; sin card = sesión anónima `role:null`; rol se consulta en la acción | (0) frontera confirmada y escrita · (1) sin card conecta al transporte base · (2) card válida concede en acción · (3) **card inválida rechaza, NO degrada a anónimo** · (4) acción sin rol denegada con cable intacto · contrato de retorno a O (WP-O13) cumplido | **P0** |
 | **U187** | 11 | Peercard en vivo + fila Z del grafo | `socket-server` + cliente `rooms`; `CLIENT_REGISTER` en 2 modalidades; marcar solo fila Z | log literal + id reproducible en ambas; marca con ruta de evidencia | **P0** |
 | U188 | 12 | Unificar plano peer-card | lógica en 4 sitios: camino único. **✎ premisa corregida (U232, 2026-07-31): `embajador-kit` NO tiene 0 consumidores — 3 referencias vivas en `operator-ui` (fixtures/puerta-entry.mjs · puerta-smoke.mjs · serve.mjs); re-medir antes de demoler** | un punto de emisión/consumo; grep duplicados = 0 | P1 |
 | U189 | 13 | Reúso de card entre niveles | edificio→barrio→ciudad: ¿reemite o reúsa? con base anónima. Aporte al hilo Z·G | contrato escrito + test de que ningún relay eleva scopes | P1 |
@@ -241,7 +241,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
-| **U192** | 20 | Traza de lo descartado en relay | allowlist de 8 descarta sin rastro + `MAKE_MASTER` suprimido: loguear antes de tocar política | todo evento no propagado deja registro con motivo | **P0** |
+| **U192** 🔶 | 20 | Traza de lo descartado en relay | allowlist de 8 descarta sin rastro + `MAKE_MASTER` suprimido: loguear antes de tocar política | todo evento no propagado deja registro con motivo | **P0** |
 | U193 | 21 | Identidad en el puente | `scriptorium-bridge` único colapsa emisor aguas arriba: propagar origen | aguas arriba se distingue quién publicó | P1 |
 | U194 | 22 | Allowlist como contrato | los 8 eventos + `RELAY_UPSTREAM` explícitos y versionados | cambiar allowlist = cambio de contrato con test | P1 |
 | U195 | 23 | Duplicación de reemisión | `ROOM_MESSAGE` + evento desenvuelto llegan 2 veces al doble-suscriptor | no duplica, o la duplicidad es contrato documentado | P2 |
@@ -253,7 +253,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
-| **U199** | 30 | **C-3 + sellado-hash (WP única · compromiso D-45)** | `counters.mjs` deja de mutar `volumes.json`; nace `volumes.state.json`; manifiesto RO+hash; import pobla `corpora` | manifiesto hasheable estable; medir no modifica; `firehose-core` sigue derivando stats | **P0** |
+| **U199** 🔶 | 30 | **C-3 + sellado-hash (WP única · compromiso D-45)** | `counters.mjs` deja de mutar `volumes.json`; nace `volumes.state.json`; manifiesto RO+hash; import pobla `corpora` | manifiesto hasheable estable; medir no modifica; `firehose-core` sigue derivando stats | **P0** |
 | **U200** | 31 | Resolver único · env obligatorio | unificar `presets-sdk/volumes` + resolver ascendente de `linea-kit`; env deja de ser opcional (◆5) | root no depende del cwd; un pack no secuestra la resolución | **P0** |
 | **U201** | 32 | Contrato de import v1 | formalizar `CONTRATO-IMPORT-PACK-v0`: verificar→staging→validar→fusionar→sellar→no-op→sin symlinks | 7 pasos con test; colisión de corpus aborta sin root a medias | **P0** |
 | **U202** | 33 | Driver LINEAS | `registry.yaml`, nodos, cache + **protección de curación** | import escribe lo que falta, reporta divergencia, no pisa `registro.md`/`delta.md` | **P0** |
@@ -271,7 +271,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
 | **U210** | 50 | Puente documental ◆4(b) | mientras G implementa 4(a): `volumesRoot` del loader = solo desarrollo; contrato de import = único camino de producto | doc sin ningún camino que apunte env a `node_modules` | **P0** |
-| **U211** | 51 | Reparar `VOLUMES/README.md` | 2 defectos propios: L24 (`npm install` → E404) + L26 (env al pack, contra cerco) | todo comando del README se ejecuta contra su canal real y resuelve (C8) | **P0** |
+| **U211** 🔶 | 51 | Reparar `VOLUMES/README.md` | 2 defectos propios: L24 (`npm install` → E404) + L26 (env al pack, contra cerco) | todo comando del README se ejecuta contra su canal real y resuelve (C8) | **P0** |
 | U212 | 52 | CA de canal limpio C-4 | condición ◆2c: kit npm + pack Release desde consumidor limpio | instalar capacidad por npm y sembrar datos por Release sin tocar el árbol | P1 |
 | **U178** | 53 | `linea-editor` publish-ready | **= WP-U178 existente** (cola P1 · D-42): sigue en PAUSA y es 1 de las 2 piezas realmente usadas | checklist §5 allowlist completo; GO publish aparte | P1 |
 | U213 | 54 | Allowlist como inventario vivo | `audit:publish-allowlist` contra registry en CI | desfase allowlist↔registry detectado pre-release | P2 |
@@ -294,7 +294,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 | - | -- | -- | ----- | ------------ | ---- |
 | U221 | 70 | Gate de arranque offline en CI | el CA local-first como gate, no como acta | CI corre una ronda sin red y falla si algo sale | P1 |
 | U222 | 71 | Falso positivo regla 15 | espejo de skills inunda `anomalias.log` (R-1); fix de método → porte del skill (L) | log sin falsos positivos; watchers reanudables | P1 |
-| U223 | 72 | Mapas `plan/MAPA-*` (#19) | el mundo no tiene mapas; crearlos para que el territorio no crezca en silencio. **Sube a P1**: es requisito del swarm F2, no cosmética | `verificar-territorio-mapa.sh` verde; entrada sin fila = FAIL | **P1** |
+| U223 🔶 | 72 | Mapas `plan/MAPA-*` (#19) | el mundo no tiene mapas; crearlos para que el territorio no crezca en silencio. **Sube a P1**: es requisito del swarm F2, no cosmética | `verificar-territorio-mapa.sh` verde; entrada sin fila = FAIL | **P1** |
 | U224 | 73 | Anomalía del segundo conductor | `CONTRARREVISION-U169-PASS.md` reescrito 25/07 21:57 tamaño idéntico, autor desconocido | causa identificada, o registro de indeterminable | P2 |
 | U225 | 74 | Nunca reconciliar por mtime/tamaño | convertir la lección U224 en regla verificable del plano de datos | test: mtime/size no deciden nada | P1 |
 | U226 | 75 | Estación reanudable | watchers parados por orden: arranque documentado con lease propio (`timbre-watch.log`) | relevo de ventana levanta estado desde bitácora sin preguntar | P2 |
@@ -322,7 +322,7 @@ contraparte de G (4a) y el CA de canal limpio (U212).*
 | **U234** | Orquestador de runtime v1 | `start:all` solo imprime comandos. Un SDK terminado arranca declarativo: start/stop/status/health con orden de deps y shutdown limpio. **V (mando de ciudad V34) y O (compose) lo consumen** | un comando levanta el perfil mínimo · otro lo para sin residuos · catálogo/deps como fuente, no shell manual | **P0** |
 | **U235** | Aceptación Z-v1 | e2e de sistema que hoy no existe: instalación limpia → runtime → juego G cargado → actores entran → intent → estado observado → **restart → recupera**. Desde checkout/tarballs limpios, offline tras seed | ciclo completo con evidencia literal · artifact inventory · cara Z del test del operador externo | **P0** |
 | U236 | Matriz de distribución | por clase: engine→npm · services→images/start · UIs→apps · fixtures→packs. **V20 (documento de puertas) es su consumidor directo** | cada pieza con canal verificable · cero «publicado» ambiguo | P1 |
-| **U237** | Licencia SPDX por workspace | root dice `AIPLv1`, LICENSE dice GPL-3.0+Animus. **Decidido (custodio 2026-07-31): AIPLv1 = composite GPL-3.0-or-later + Animus Iocandi — tratamiento idéntico en todos los paquetes del Scriptorium**; ejecutar la coherencia ×51 (acta única con L-F08·O08·G74·HUB-060) | SPDX validado en los 51 manifests · tarballs y docs coinciden | **P0** |
+| **U237** 🔶 | Licencia SPDX por workspace | root dice `AIPLv1`, LICENSE dice GPL-3.0+Animus. **Decidido (custodio 2026-07-31): AIPLv1 = composite GPL-3.0-or-later + Animus Iocandi — tratamiento idéntico en todos los paquetes del Scriptorium**; ejecutar la coherencia ×51 (acta única con L-F08·O08·G74·HUB-060) | SPDX validado en los 51 manifests · tarballs y docs coinciden | **P0** |
 | U238 | SBOM / provenance / reproducibilidad | artefactos verificables desde tip y canal | dos builds comparan · SBOM por paquete publicado | P1 |
 | **U239** | Triage de vulnerabilidades | las 53/6 críticas históricas de deps: clasificar explotable/no-aplica con evidencia | cero críticas sin veredicto · explotable **bloquea release** | **P0** |
 | U240 | Backup/restore del plano de datos | restore en root limpio; curación humana y secuencias SSB preservadas | ciclo backup→wipe→restore→CA local-first verde | P1 |
