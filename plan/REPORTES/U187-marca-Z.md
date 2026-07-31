@@ -122,7 +122,7 @@ $ npm test -w @zeus/socket-server        # tail literal
 # duration_ms 12922.7179
 ```
 
-(10 = 3 nuevos U187 + 4 de U192 `relay-trace.test.mjs` + 2 de
+(10 = 3 nuevos U187 + 5 de U192 `relay-trace.test.mjs` (✎ orquestador: el desglose decía 4, era error aritmético — contrarrevisión) + 2 de
 `server.test.mjs`; los tests de U192 mergeados siguen verdes.)
 
 ```
