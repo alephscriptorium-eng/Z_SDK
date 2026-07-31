@@ -604,6 +604,33 @@ completo en **decenas de segundos, no minutos**. La afirmación «crecimiento
 prácticamente lineal» de §6 se apoyaba en dos muestras únicas: **queda retirada**
 y sustituida por la cota analítica de arriba.
 
+## 10.7-bis · Método de la medida A/B, declarado (reglas 4-bis y 4-ter)
+
+Las dos reglas de gobierno que llegaron a `main` mientras corregía
+(`eb4fc03`, `f307e52`) me tocan, así que lo declaro yo antes de que lo
+encuentre nadie:
+
+- **`git stash`: no lo he usado** (`git stash list` = vacío). Para la medida
+  A/B **comprometí primero** el arreglo (`9cbc304`) y solo entonces traje los
+  4 ficheros del commit anterior con `git checkout 8a01920 -- <rutas>`,
+  restaurándolos después con `git checkout HEAD -- <rutas>`. Nada podía
+  perderse (ya estaba en un commit), no toqué la pila de stash —que es del
+  repositorio, no del worktree— y verifiqué el retorno: `git status` limpio,
+  `keyComponent` de vuelta en `driver-firehose.mjs:200` y suite 49/49. Aun
+  así **no es uno de los tres métodos que 4-bis sanciona** (`git show`, copia
+  en scratchpad, worktree desechable): si el gobierno prefiere que ni siquiera
+  esta variante se use, es corrección barata y la asumo.
+- **`npx eslint`: permitido por la letra de 4-ter** — `eslint@^9.39.1` está en
+  las `devDependencies` de la raíz y el `package.json` ya declara
+  `"lint": "eslint ."`, así que `npx` resuelve el binario **local**, sin tocar
+  el registry. No he invocado ningún `npx` con un binario no declarado.
+- **`npm ci` en el worktree**: el worktree nació sin `node_modules` (ninguna
+  suite podía correr), así que instalé desde el `package-lock.json` versionado.
+  Efecto colateral detectado y **revertido**: `npm` marcó como ejecutables tres
+  `bin/*.mjs` (`feed-kit`, `linea-kit`, `playbook-kit`); eran cambios de modo,
+  ajenos al WP, y volvieron a su estado con `git checkout --` antes del primer
+  commit. El diff de la rama no los contiene.
+
 ## 10.8 · Lo que sigue sin hacerse (sin cambios)
 
 Todo lo de §8 sigue igual, y se añade: **no** he arreglado la falta de rollback
