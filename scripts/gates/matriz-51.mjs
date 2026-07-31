@@ -25,9 +25,14 @@
  *     actualizar la constante Y plan/MATRIZ-RUNTIME-51.md;
  *   - pieza del árbol sin fila en el contraste, o fila del contraste sin
  *     pieza en el árbol (pieza fantasma / pieza ocultada);
+ *   - el contraste tiene filas duplicadas o su total físico ≠ 51;
  *   - entrada de catálogo con `workspace` que no existe como pieza, o SIN
- *     marca explícita de flota-declarada (`workspace: null`);
- *   - cualquier celda sin evidencia ni ⏳ (falla, no advierte).
+ *     marca explícita de flota-declarada (`workspace: null`), o con
+ *     `workspace` presente pero no parseable (no se fabrica null), o
+ *     bloque sin `id` literal parseable (spread → falso-positivo ruidoso,
+ *     falla cerrada — ver parseSeedEntries);
+ *   - cualquier celda sin evidencia ni ⏳, o con valor vacío sin ⏳
+ *     (falla, no advierte).
  *
  * Las entradas `workspace: null` (flota declarada > materializada, U179:
  * 4 seed + 6 city) NO fallan: se listan como «⏳ declarado» — visibles.
@@ -208,6 +213,18 @@ export function enumerarPiezas(opts = {}) {
 /**
  * Parse estático de un array-seed de catálogo (`export const <NOMBRE> = [...]`).
  * Soporta un nivel de objeto anidado (p. ej. `tree: {...}`).
+ *
+ * Endurecido tras contrarrevisión (D1):
+ * - `id`/`workspace` aceptan comillas simples Y dobles;
+ * - los comentarios `// ...` se eliminan ANTES de buscar la marca (un
+ *   comentario que diga "workspace: null" no cuenta como marca);
+ * - `workspace:` presente pero no parseable (ni null ni string) = fallo
+ *   `catalogo-parse` RUIDOSO — jamás se fabrica un null silencioso;
+ * - bloque de entrada sin `id` parseable = fallo `catalogo-parse` RUIDOSO.
+ *   Nota (limitación documentada): una entrada construida con spread
+ *   (`{ ...BASE, id }`) cae aquí como falso-positivo ruidoso — falla
+ *   cerrada, el gate exige entradas literales.
+ *
  * @param {string} texto contenido del fichero
  * @param {string} marcador p. ej. 'CATALOG_SEED'
  * @param {string} fuente ruta relativa (evidencia)
@@ -230,14 +247,32 @@ export function parseSeedEntries(texto, marcador, fuente) {
   }
   const slice = texto.slice(inicio, fin);
   const bloques = slice.match(/\{(?:[^{}]|\{[^{}]*\})*\}/g) || [];
-  for (const bloque of bloques) {
-    const idMatch = bloque.match(/(?:^|[\s{])id:\s*'([^']+)'/);
-    if (!idMatch) continue; // objeto anidado (tree) sin id de entrada
-    const hasWorkspaceKey = /(?:^|[\s{])workspace\s*:/.test(bloque);
-    const wsMatch = bloque.match(/(?:^|[\s{])workspace:\s*(null|'([^']+)')/);
+  /** @param {string} b */
+  const resumen = (b) => b.replace(/\s+/g, ' ').trim().slice(0, 80);
+  for (const bloqueCrudo of bloques) {
+    // fuera comentarios de línea: no pueden satisfacer marcas (D1-V4)
+    const bloque = bloqueCrudo.replace(/(^|[\s,{[])\/\/[^\n]*/gm, '$1');
+    const idMatch = bloque.match(/(?:^|[\s{,])id\s*:\s*(?:'([^']+)'|"([^"]+)")/);
+    if (!idMatch) {
+      fallos.push({
+        codigo: 'catalogo-parse',
+        detalle: `${marcador} en ${fuente}: bloque de entrada sin id parseable (¿spread/formato no literal?): ${resumen(bloqueCrudo)}`
+      });
+      continue;
+    }
+    const id = idMatch[1] ?? idMatch[2];
+    const hasWorkspaceKey = /(?:^|[\s{,])workspace\s*:/.test(bloque);
+    const wsMatch = bloque.match(/(?:^|[\s{,])workspace\s*:\s*(null|'([^']*)'|"([^"]*)")/);
+    if (hasWorkspaceKey && !wsMatch) {
+      fallos.push({
+        codigo: 'catalogo-parse',
+        detalle: `entrada "${id}" (${fuente}): campo workspace presente pero no parseable (se esperaba null o string entre comillas simples/dobles) — no se fabrica null`
+      });
+      continue;
+    }
     entradas.push({
-      id: idMatch[1],
-      workspace: wsMatch ? (wsMatch[1] === 'null' ? null : wsMatch[2]) : null,
+      id,
+      workspace: wsMatch ? (wsMatch[1] === 'null' ? null : (wsMatch[2] ?? wsMatch[3])) : null,
       hasWorkspaceKey,
       fuente
     });
@@ -324,12 +359,27 @@ export function parseContraste(opts = {}) {
     return { nombres: [], fallos: [{ codigo: 'contraste-ausente', detalle: `${CONTRASTE_PATH} no existe` }] };
   }
   const texto = fs.readFileSync(abs, 'utf8');
+  /** @type {string[]} */
   const nombres = [];
-  for (const m of texto.matchAll(/^\|\s*(@zeus\/[A-Za-z0-9._-]+)\s*\|/gm)) nombres.push(m[1]);
-  const fallos = nombres.length === 0
-    ? [{ codigo: 'contraste-vacio', detalle: `${CONTRASTE_PATH}: 0 filas | @zeus/... | parseadas` }]
-    : [];
-  return { nombres, fallos };
+  const vistos = new Set();
+  const duplicados = new Set();
+  for (const m of texto.matchAll(/^\|\s*(@zeus\/[A-Za-z0-9._-]+)\s*\|/gm)) {
+    nombres.push(m[1]);
+    if (vistos.has(m[1])) duplicados.add(m[1]);
+    vistos.add(m[1]);
+  }
+  /** @type {Fallo[]} */
+  const fallos = [];
+  if (nombres.length === 0) {
+    fallos.push({ codigo: 'contraste-vacio', detalle: `${CONTRASTE_PATH}: 0 filas | @zeus/... | parseadas` });
+  }
+  for (const d of [...duplicados].sort()) {
+    fallos.push({
+      codigo: 'contraste-duplicado',
+      detalle: `${CONTRASTE_PATH}: fila duplicada para ${d} (${nombres.length} filas físicas / ${vistos.size} únicas)`
+    });
+  }
+  return { nombres, unicos: [...vistos], fallos };
 }
 
 /**
@@ -559,11 +609,19 @@ export function validarCeldas(filas) {
       const valor = celda && typeof celda.valor === 'string' ? celda.valor : '';
       const evidencia = celda && typeof celda.evidencia === 'string' ? celda.evidencia : '';
       const conEvidencia = evidencia.trim().length > 0;
+      const conValor = valor.trim().length > 0;
       const conPendiente = valor.includes('⏳') || evidencia.includes('⏳');
+      const etiqueta = fila.pieza || fila.dir || '(fila sin pieza)';
       if (!conEvidencia && !conPendiente) {
         fallos.push({
           codigo: 'celda-sin-evidencia',
-          detalle: `${fila.pieza || fila.dir || '(fila sin pieza)'} · celda "${nombre}" sin evidencia ni ⏳`
+          detalle: `${etiqueta} · celda "${nombre}" sin evidencia ni ⏳`
+        });
+      } else if (!conValor && !conPendiente) {
+        // D3: evidencia sin valor no es celda válida — falla salvo ⏳ explícito
+        fallos.push({
+          codigo: 'celda-sin-valor',
+          detalle: `${etiqueta} · celda "${nombre}" con valor vacío sin ⏳ (evidencia sola no basta)`
         });
       }
     }
@@ -598,6 +656,12 @@ export function runMatriz51(opts = {}) {
   // contraste con la MATRIZ (U179): coincide o la divergencia se explica
   const contraste = parseContraste({ repoRoot: root });
   fallos.push(...contraste.fallos);
+  if (contraste.nombres.length !== EXPECTED_TOTAL) {
+    fallos.push({
+      codigo: 'contraste-total',
+      detalle: `${CONTRASTE_PATH}: ${contraste.nombres.length} filas físicas ≠ ${EXPECTED_TOTAL} esperadas (duplicado, fila falsa o retiro sin asiento)`
+    });
+  }
   const setContraste = new Set(contraste.nombres);
   const soloArbol = [...nombres].filter((n) => !setContraste.has(n)).sort();
   const soloMatriz = [...setContraste].filter((n) => !nombres.has(n)).sort();

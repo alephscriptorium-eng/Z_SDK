@@ -5,22 +5,28 @@
  *   (a) pieza fantasma 52 añadida temporalmente → exit ≠ 0,
  *   (b) pieza ocultada (manifest renombrado) → exit ≠ 0,
  *   (c) celda sin evidencia ni ⏳ → falla, no advierte,
+ *   (c-bis/D3) valor vacío con evidencia → falla salvo ⏳,
  *   (d) entrada de catálogo sin pieza NI marca explícita → falla.
+ * Vectores permanentes de contrarrevisión (D1/D2): comillas dobles no
+ * invisibilizan (V1), workspace en dobles no se degrada a null (V2),
+ * comentario no satisface la marca (V4), workspace no parseable y bloque
+ * spread → parse ruidoso, duplicado en la MATRIZ de contraste → fallo.
  * Las probes (a) y (b) mutan el árbol dentro de try/finally y se revierten.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
   REPO_ROOT,
   EXPECTED_TOTAL,
   runMatriz51,
-  buildJson,
   validarCeldas,
   parseSeedEntries,
+  parseContraste,
   compararCatalogo
 } from '../../scripts/gates/matriz-51.mjs';
 
@@ -163,6 +169,19 @@ test('fail-probe (c): celda sin evidencia ni ⏳ falla, no advierte', () => {
   assert.deepEqual(validarCeldas([fila]), []);
 });
 
+test('fail-probe (c-bis, D3): valor vacío con evidencia no basta — falla salvo ⏳', () => {
+  const result = runMatriz51({ repoRoot: REPO_ROOT });
+  const fila = structuredClone(result.filas[0]);
+  fila.celdas.start = { valor: '', evidencia: 'alguna/ruta/package.json' };
+  const fallos = validarCeldas([fila]);
+  assert.equal(fallos.length, 1);
+  assert.equal(fallos[0].codigo, 'celda-sin-valor');
+  assert.match(fallos[0].detalle, /start/);
+  // control: valor vacío con ⏳ en evidencia pasa
+  fila.celdas.start = { valor: '', evidencia: '⏳ hasta U236' };
+  assert.deepEqual(validarCeldas([fila]), []);
+});
+
 test('fail-probe (d): entrada de catálogo sin marca explícita o con workspace fantasma', () => {
   const sintetico = [
     "export const CATALOG_SEED = [",
@@ -196,4 +215,122 @@ test('fail-probe (d): entrada de catálogo sin marca explícita o con workspace 
     cmp.declaradasSinPieza.map((d) => d.id),
     ['declarada']
   );
+});
+
+// ---------------------------------------------------------------------------
+// Vectores de contrarrevisión D1 (permanentes — cazan regresiones del parser)
+// ---------------------------------------------------------------------------
+
+test('D1-V1: entrada con comillas DOBLES no es invisible — workspace fantasma falla', () => {
+  const seed = [
+    'export const CATALOG_SEED = [',
+    '  {',
+    '    id: "cr-dobles",',
+    '    name: "cr-dobles",',
+    '    workspace: "@zeus/no-existe-jamas"',
+    '  }',
+    '\n];'
+  ].join('\n');
+  const { entradas, fallos } = parseSeedEntries(seed, 'CATALOG_SEED', 'sintetico.mjs');
+  assert.deepEqual(fallos, []);
+  assert.equal(entradas.length, 1, 'la entrada en comillas dobles debe ser visible');
+  assert.equal(entradas[0].id, 'cr-dobles');
+  assert.equal(entradas[0].workspace, '@zeus/no-existe-jamas');
+  const cmp = compararCatalogo(entradas, new Set(['@zeus/existente']));
+  assert.ok(
+    cmp.fallos.some(
+      (f) => f.codigo === 'catalogo-workspace-fantasma' && f.detalle.includes('@zeus/no-existe-jamas')
+    ),
+    JSON.stringify(cmp.fallos)
+  );
+  assert.deepEqual(cmp.declaradasSinPieza, []);
+});
+
+test('D1-V2: id simple + workspace en dobles no se degrada a null — falla como fantasma', () => {
+  const seed = [
+    'export const CATALOG_SEED = [',
+    '  {',
+    "    id: 'cr-mixta',",
+    "    name: 'cr-mixta',",
+    '    workspace: "@zeus/tampoco-existe"',
+    '  }',
+    '\n];'
+  ].join('\n');
+  const { entradas, fallos } = parseSeedEntries(seed, 'CATALOG_SEED', 'sintetico.mjs');
+  assert.deepEqual(fallos, []);
+  assert.equal(entradas[0].workspace, '@zeus/tampoco-existe', 'no debe fabricarse null');
+  const cmp = compararCatalogo(entradas, new Set(['@zeus/existente']));
+  assert.ok(cmp.fallos.some((f) => f.codigo === 'catalogo-workspace-fantasma'));
+  assert.deepEqual(cmp.declaradasSinPieza, [], 'no debe listarse como ⏳ declarada');
+});
+
+test('D1-V4: comentario "workspace: null" NO cuenta como marca — falla sin-marca', () => {
+  const seed = [
+    'export const CATALOG_SEED = [',
+    '  {',
+    "    id: 'cr-comentario',",
+    "    name: 'cr-comentario' // TODO decidir workspace: null o real",
+    '  }',
+    '\n];'
+  ].join('\n');
+  const { entradas, fallos } = parseSeedEntries(seed, 'CATALOG_SEED', 'sintetico.mjs');
+  assert.deepEqual(fallos, []);
+  assert.equal(entradas.length, 1);
+  assert.equal(entradas[0].hasWorkspaceKey, false, 'el comentario no debe satisfacer la marca');
+  const cmp = compararCatalogo(entradas, new Set());
+  assert.ok(
+    cmp.fallos.some((f) => f.codigo === 'catalogo-sin-marca' && f.detalle.includes('cr-comentario')),
+    JSON.stringify(cmp.fallos)
+  );
+  assert.deepEqual(cmp.declaradasSinPieza, []);
+});
+
+test('D1: workspace presente pero no parseable = fallo de parse ruidoso, no null', () => {
+  const seed = [
+    'export const CATALOG_SEED = [',
+    '  {',
+    "    id: 'cr-const',",
+    '    workspace: ALGUNA_CONSTANTE',
+    '  }',
+    '\n];'
+  ].join('\n');
+  const { entradas, fallos } = parseSeedEntries(seed, 'CATALOG_SEED', 'sintetico.mjs');
+  assert.ok(
+    fallos.some((f) => f.codigo === 'catalogo-parse' && f.detalle.includes('cr-const')),
+    JSON.stringify(fallos)
+  );
+  assert.deepEqual(entradas, [], 'no debe emitirse entrada con dato fabricado');
+});
+
+test('D1: bloque sin id literal (spread) = fallo ruidoso, falla cerrada', () => {
+  const seed = [
+    'export const CATALOG_SEED = [',
+    '  { ...BASE, spawnGroup: "x" }',
+    '\n];'
+  ].join('\n');
+  const { fallos } = parseSeedEntries(seed, 'CATALOG_SEED', 'sintetico.mjs');
+  assert.ok(
+    fallos.some((f) => f.codigo === 'catalogo-parse' && /sin id parseable/.test(f.detalle)),
+    JSON.stringify(fallos)
+  );
+});
+
+test('D2: fila duplicada en la MATRIZ de contraste = fallo, no «coincide»', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'u233-contraste-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'plan'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmp, 'plan', 'MATRIZ-RUNTIME-51.md'),
+      ['| @zeus/uno | lib |', '| @zeus/dos | lib |', '| @zeus/uno | lib |'].join('\n')
+    );
+    const r = parseContraste({ repoRoot: tmp });
+    assert.equal(r.nombres.length, 3, 'filas físicas');
+    assert.equal(r.unicos.length, 2, 'únicas');
+    assert.ok(
+      r.fallos.some((f) => f.codigo === 'contraste-duplicado' && f.detalle.includes('@zeus/uno')),
+      JSON.stringify(r.fallos)
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
