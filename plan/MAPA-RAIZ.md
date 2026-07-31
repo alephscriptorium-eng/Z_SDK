@@ -40,3 +40,8 @@ Este mapa **apunta, no duplica**: el detalle de `packages/`, `VOLUMES/`, `docs/`
 Gate de este mapa: propuesta en `plan/MAPA-TALLER.md` §«Propuesta de gate `verificar-territorio-mapa`».
 
 **entrada sin fila = FAIL** — todo lo nuevo en este territorio añade su fila en el mismo cambio.
+
+✎ orquestador (2026-07-31): en checkouts VIVOS aparecen además entradas
+gitignoradas de runtime (`node_modules/`, `.claude/` espejo de skills —
+contexto U147, logs de estación). No son territorio del repo: el gate debe
+medir contra `git ls-files` / worktree limpio, no contra `ls` del checkout.
