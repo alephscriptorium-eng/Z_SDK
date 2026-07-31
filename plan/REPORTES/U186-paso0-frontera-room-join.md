@@ -150,3 +150,13 @@ la frontera técnica queda confirmada aquí.
 ---
 
 *Worker Z · WP-U186 · rama `wp/u186-transporte-permiso` · 2026-07-31.*
+
+---
+
+✎ orquestador (2026-07-31, tras contrarrevisión PASS): añadir a la
+resolución D-O11/O13 una pregunta explícita que la contrarrevisión
+destapó — **amarre identidad↔card**: hoy la card es *bearer* (una card
+válida de otra identidad se adopta sin amarre userId↔sessionId; diseño
+pre-existente de U93, no defecto de U186; el carril SSB sí amarra
+`ssbId`↔`from`). ¿Qué acredita la capacidad: el portador o el amarre?
+Decisión de política de O; ejecución posterior en el plano peer-card (U188/U190).
