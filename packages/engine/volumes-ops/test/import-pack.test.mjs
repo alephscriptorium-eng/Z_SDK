@@ -109,7 +109,8 @@ test('pipeline verde: verificar→staging→validar→fusionar→sellar→no-lin
     assert.equal(res.noop, false);
     assert.deepEqual(
       res.steps.map((s) => s.step),
-      ['verificar', 'staging', 'validar', 'fusionar', 'sellar', 'no-link']
+      // U202: el paso `familia` (detect de driver) entra al contrato observable.
+      ['verificar', 'familia', 'staging', 'validar', 'fusionar', 'sellar', 'no-link']
     );
     assert.ok(res.steps.every((s) => s.ok === true));
 
