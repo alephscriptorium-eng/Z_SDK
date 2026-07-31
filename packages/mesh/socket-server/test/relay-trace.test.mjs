@@ -38,7 +38,9 @@ function fakeNamespace() {
 
 /**
  * Política de bajada PREVIA a U192, transcrita literalmente de
- * src/relay.mjs:5-21 en la base de esta rama (commit 412673c):
+ * src/relay.mjs:5-21 en la base de esta rama (commit 4210b12 de Z_SDK;
+ * ✎ orquestador: la cita original 412673c era un hash de otro repo —
+ * corregida en aceptación, verificada por contrarrevisión contra 4210b12):
  * qué emitía emitDownstream para cada payload, sin traza alguna.
  * Sirve de referencia congelada para probar que la política no cambió.
  */
