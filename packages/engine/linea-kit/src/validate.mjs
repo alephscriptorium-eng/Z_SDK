@@ -123,23 +123,50 @@ export function validateFile(schemaId, absPath, format = 'json') {
 }
 
 /**
- * Resolve VOLUMES root: env, explicit option, or walk from cwd/repo.
+ * Resolve VOLUMES root: explicit option (callers/tests) or mandatory env.
+ *
+ * WP-U200 (consenso ◆5): the canonical resolver lives in
+ * `@zeus/presets-sdk/volumes` (src/volumes/resolve.mjs). linea-kit cannot
+ * declare that dependency in this WP (package.json frozen), so this
+ * function applies the SAME contract with ZERO search:
+ * - the old cwd-ascending walk is demolished — the result never depends
+ *   on where the process was launched;
+ * - no env and no explicit option → honest failure («not operable»),
+ *   never a guessed root;
+ * - a root inside node_modules is refused — a pack is an import source,
+ *   never a live volumes root (cerco §10.8);
+ * - the env value must be an ABSOLUTE path here: anchoring a relative
+ *   value is the canonical resolver's job (MONOREPO_ROOT), and anchoring
+ *   it to cwd is exactly the demolished behavior.
+ * Test harnesses inject the root explicitly (opts.volumesRoot) or via env
+ * (see packages/engine/test-utils/src/smoke-env.mjs).
+ *
  * @param {{ volumesRoot?: string }} [opts]
- * @returns {string|null}
+ * @returns {string}
  */
 export function resolveVolumesRoot(opts = {}) {
-  if (opts.volumesRoot) return path.resolve(opts.volumesRoot);
-  if (process.env.ZEUS_VOLUMES_ROOT) return path.resolve(process.env.ZEUS_VOLUMES_ROOT);
-
-  let dir = process.cwd();
-  for (let i = 0; i < 8; i += 1) {
-    const candidate = path.join(dir, 'VOLUMES');
-    if (fs.existsSync(path.join(candidate, 'volumes.json'))) return candidate;
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
+  let root = null;
+  if (opts.volumesRoot) {
+    root = path.resolve(opts.volumesRoot);
+  } else if (process.env.ZEUS_VOLUMES_ROOT) {
+    const value = process.env.ZEUS_VOLUMES_ROOT;
+    if (!path.isAbsolute(value)) {
+      throw new Error(
+        `ZEUS_VOLUMES_ROOT must be an absolute path for @zeus/linea-kit (got "${value}") — relative values are anchored by the canonical resolver in @zeus/presets-sdk/volumes, never by cwd (U200 · ◆5).`
+      );
+    }
+    root = path.resolve(value);
+  } else {
+    throw new Error(
+      'ZEUS_VOLUMES_ROOT is not set and no volumesRoot option was given — volumes root is not operable; set it explicitly. No default and no cwd walk (U200 · ◆5).'
+    );
   }
-  return null;
+  if (root.split(/[\\/]+/).includes('node_modules')) {
+    throw new Error(
+      `Volumes root resolves inside node_modules (${root}) — a pack is an import source, never a live volumes root; refusing (cerco §10.8).`
+    );
+  }
+  return root;
 }
 
 /**
@@ -158,20 +185,29 @@ function pushResult(results, result) {
  * @returns {{ ok: boolean, volumesRoot: string|null, results: object[], skipped: string[] }}
  */
 export function validateVolumesTree(opts = {}) {
-  const volumesRoot = resolveVolumesRoot(opts);
+  /** @type {string} */
+  let volumesRoot;
+  try {
+    volumesRoot = resolveVolumesRoot(opts);
+  } catch (err) {
+    // U200 (◆5): no root → honest failure report, never a guessed root.
+    return {
+      ok: false,
+      volumesRoot: null,
+      results: [
+        {
+          ok: false,
+          schemaId: 'volumes',
+          errors: [{ message: err instanceof Error ? err.message : String(err) }]
+        }
+      ],
+      skipped: ['DISK_01', 'DISK_02', 'DISK_03', 'DISK_04']
+    };
+  }
   /** @type {object[]} */
   const results = [];
   /** @type {string[]} */
   const skipped = [];
-
-  if (!volumesRoot) {
-    return {
-      ok: false,
-      volumesRoot: null,
-      results: [{ ok: false, schemaId: 'volumes', errors: [{ message: 'VOLUMES root not found' }] }],
-      skipped: ['DISK_01', 'DISK_02', 'DISK_03', 'DISK_04']
-    };
-  }
 
   const volumesJson = path.join(volumesRoot, 'volumes.json');
   pushResult(results, validateFile('volumes', volumesJson));

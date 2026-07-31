@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
@@ -7,6 +8,7 @@ import {
   validate,
   validateFile,
   validateVolumesTree,
+  resolveVolumesRoot,
   SCHEMA_FILES
 } from '../src/validate.mjs';
 import { loadLineaData, resolveNodo, resolveRegistrosForNodo } from '../src/loader.mjs';
@@ -89,6 +91,98 @@ describe('schemas + fixtures', () => {
     const regs = resolveRegistrosForNodo(demo, 'N01');
     assert.equal(regs.total, 2);
     assert.equal(regs.sections[0], 'Intro');
+  });
+});
+
+describe('resolver único U200 (◆5): env obligatorio, sin walk', () => {
+  /** Save/restore env + cwd around each assertion. */
+  function withCleanEnv(fn) {
+    const prevRoot = process.env.ZEUS_VOLUMES_ROOT;
+    const prevCwd = process.cwd();
+    try {
+      fn();
+    } finally {
+      process.chdir(prevCwd);
+      if (prevRoot == null) delete process.env.ZEUS_VOLUMES_ROOT;
+      else process.env.ZEUS_VOLUMES_ROOT = prevRoot;
+    }
+  }
+
+  it('CA-3: sin env y sin opción → aborta honesto; validateVolumesTree reporta ok:false', () => {
+    withCleanEnv(() => {
+      delete process.env.ZEUS_VOLUMES_ROOT;
+      assert.throws(() => resolveVolumesRoot(), /not operable/);
+
+      const report = validateVolumesTree({});
+      assert.equal(report.ok, false);
+      assert.equal(report.volumesRoot, null);
+      assert.match(report.results[0].errors[0].message, /not operable/);
+      assert.deepEqual(report.skipped, ['DISK_01', 'DISK_02', 'DISK_03', 'DISK_04']);
+    });
+  });
+
+  it('CA-1: el root no depende del cwd (opción explícita y env absoluto)', () => {
+    withCleanEnv(() => {
+      const otherCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u200-lk-cwd-'));
+      delete process.env.ZEUS_VOLUMES_ROOT;
+
+      const fromA = resolveVolumesRoot({ volumesRoot: fixtures });
+      process.chdir(otherCwd);
+      const fromB = resolveVolumesRoot({ volumesRoot: fixtures });
+      assert.equal(fromA, fromB);
+
+      process.env.ZEUS_VOLUMES_ROOT = fixtures;
+      const envA = resolveVolumesRoot();
+      process.chdir(__dirname);
+      const envB = resolveVolumesRoot();
+      assert.equal(envA, envB);
+      assert.equal(envA, path.resolve(fixtures));
+
+      process.chdir(__dirname);
+      fs.rmSync(otherCwd, { recursive: true, force: true });
+    });
+  });
+
+  it('CA-3b: env relativo → rechazo honesto (el anclaje es del resolver canónico, no del cwd)', () => {
+    withCleanEnv(() => {
+      process.env.ZEUS_VOLUMES_ROOT = './VOLUMES';
+      assert.throws(() => resolveVolumesRoot(), /must be an absolute path/);
+    });
+  });
+
+  it('CA-2 (caso rojo): un VOLUMES plantado en un pack bajo node_modules nunca gana', () => {
+    withCleanEnv(() => {
+      const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u200-lk-pack-'));
+      const packVolumes = path.join(tempRoot, 'node_modules', 'fake-pack', 'VOLUMES');
+      fs.mkdirSync(packVolumes, { recursive: true });
+      fs.writeFileSync(
+        path.join(packVolumes, 'volumes.json'),
+        JSON.stringify({ root: '.', volumes: {} }),
+        'utf8'
+      );
+
+      // 1) cwd dentro del pack + sin env: el walk ascendente demolido
+      //    habría elegido el VOLUMES plantado; ahora aborta sin elegir nada.
+      process.chdir(path.dirname(packVolumes));
+      delete process.env.ZEUS_VOLUMES_ROOT;
+      assert.throws(() => resolveVolumesRoot(), /not operable/);
+
+      // 2) env apuntando dentro de node_modules → rechazado (cerco §10.8).
+      process.env.ZEUS_VOLUMES_ROOT = packVolumes;
+      assert.throws(
+        () => resolveVolumesRoot(),
+        /never a live volumes root; refusing \(cerco §10\.8\)/
+      );
+
+      // 3) incluso la opción explícita rechaza un root dentro de un pack.
+      assert.throws(
+        () => resolveVolumesRoot({ volumesRoot: packVolumes }),
+        /never a live volumes root; refusing \(cerco §10\.8\)/
+      );
+
+      process.chdir(__dirname);
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    });
   });
 });
 
