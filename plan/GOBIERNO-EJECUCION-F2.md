@@ -673,6 +673,12 @@ Criterio:
    daño constatable, pero el patrón es ejecución de código arbitrario desde
    el registry por un typo. Usar `grep`/`rg` del sistema, o `npx` solo con
    binarios que el `package.json` ya declare.
+4-quater. **Correr suites puede ensuciar ficheros rastreados** (observado en
+   G, ola 3): algunos e2e escriben actas con fecha, commit y rutas absolutas
+   dentro del árbol. Un `git status` limpio **después** de correr las suites
+   merece mirarse dos veces, y un `git status` sucio no siempre es obra del
+   worker. Antes de acusar de contrabando, comprobar si el fichero lo genera
+   una suite.
 5. **C-ext no consume techo planificado**: se despacha al llegar la señal,
    ocupando hueco libre del techo vigente; si no hay hueco, espera.
 
