@@ -3,8 +3,9 @@
 El monorepo **ya no aloja DISKs vivos** (firehose 38 MB, líneas 20 MB, etc.).
 Esos datos salen por el pipeline de start packs en
 [`Z_SDK-games-library`](https://github.com/alephscriptorium-eng/Z_SDK-games-library)
-(`@zeus/startpack-<game>` + GitHub Release) o viven en un árbol externo
-apuntado por `ZEUS_VOLUMES_ROOT`.
+(`@zeus/startpack-<game>`, distribuido como **tarball del GitHub Release** —
+los packs **no** están en el registry npm) o viven en un árbol externo
+apuntado por `ZEUS_VOLUMES_ROOT` (root propio del operador).
 
 Aquí solo quedan **fixtures sintéticos** para CI y smoke del mesh.
 
@@ -19,26 +20,36 @@ Aquí solo quedan **fixtures sintéticos** para CI y smoke del mesh.
 `volumes.json` registra los ids canónicos (`firehose`, `lineas`, `forces`,
 `ssb`). Los slots diferidos llevan `deferred: true`.
 
-## Arranque de ronda (producto)
+## Arranque de ronda
 
-1. Instalar un start pack: `npm install @zeus/startpack-delta` (o tarball del
-   GitHub Release — ver docs de la library).
-2. Apuntar `ZEUS_VOLUMES_ROOT` al `volumes/` del pack (la autoridad delta/pozo
-   lo hace si `ZEUS_STARTPACK_ROOT` / paquete está resuelto).
+**Producto:** el único camino de producto es el **contrato de import v1**
+(verificar → staging → validar → fusionar → sellar), **obra en curso —
+WP-U201**. Hasta que exista, este README no ofrece instrucciones de import
+de packs. Los `@zeus/startpack-*` **no** están en el registry npm
+(`npm install` responde E404); su canal real es el tarball adjunto al
+GitHub Release de la library (canal externo: requiere red y acceso al repo).
+
+**Hoy (operador / desarrollo):**
+
+1. Crear (o reutilizar) un root de VOLUMES **propio del operador**, fuera del
+   monorepo, y apuntarlo: `ZEUS_VOLUMES_ROOT=/path/propio/VOLUMES`. El env
+   apunta **siempre** a un root del operador — nunca al árbol de un pack ni a
+   dependencias instaladas.
+2. Poblarlo con los sync de la tabla de abajo (o a mano).
 3. Arrancar mesh + autoridad.
 
-Datos vivos de operador: `ZEUS_VOLUMES_ROOT=/path/to/external/VOLUMES` — **nunca**
-volver a meter DISK_01/02 pesados en este repo.
+Datos vivos de operador: siempre en ese root externo — **nunca** volver a
+meter DISK_01/02 pesados en este repo.
 
 ## Variables
 
 | Variable / comando | Uso |
 |--------------------|-----|
-| `ZEUS_VOLUMES_ROOT` | Raíz del árbol VOLUMES (default: `./VOLUMES` = fixtures) |
-| `ZEUS_STARTPACK_ROOT` | Árbol unpack de `@zeus/startpack-*` (library) |
-| `ZEUS_JETSTREAM_FIXTURE=1` | Sync offline → DISK_01 en un root externo |
-| `ZEUS_SSB_LOG_PATH` | Dump JSON SSB → sync a DISK_04 en root externo |
-| `npm run volumes:sync:firehose` / `volumes:sync:ssb` | Sync hacia el root apuntado |
+| `ZEUS_VOLUMES_ROOT` | Raíz del árbol VOLUMES: root propio del operador (default: `VOLUMES/` del monorepo = estos fixtures). Nunca al árbol de un pack |
+| `ZEUS_JETSTREAM_FIXTURE=1` | Modo offline del sync firehose → DISK_01 del root apuntado |
+| `ZEUS_SSB_LOG_PATH` | Dump JSON del pub SSB: entrada del sync → DISK_04 del root apuntado |
+| `npm run volumes:sync:firehose` | Sync firehose → DISK_01 del root apuntado (precondición: `npm ci`). Offline con `ZEUS_JETSTREAM_FIXTURE=1`; el modo vivo requiere red (canal externo jetstream) |
+| `npm run volumes:sync:ssb` | Sync SSB → DISK_04 del root apuntado (precondición: `npm ci`). Sin red: lee el dump de `ZEUS_SSB_LOG_PATH`; fixture offline: `npm run sync -w @zeus/ssb-system -- --fixture` |
 
 ## Git policy
 
