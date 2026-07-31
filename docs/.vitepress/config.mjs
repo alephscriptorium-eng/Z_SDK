@@ -100,6 +100,7 @@ export default defineConfig({
           { text: 'Juegos de referencia', link: '/guide/two-games' },
           { text: 'Handshake externo', link: '/guide/external-handshake' },
           { text: 'Kits FOSS', link: '/guide/kits-foss' },
+          { text: 'Volúmenes y datos', link: '/guide/volumes-y-datos' },
           { text: 'Publicar la web', link: '/guide/publicar-la-web' },
           { text: 'Estado del swarm', link: '/guide/estado' },
           { text: 'Proyecto (back)', link: '/proyecto' }
