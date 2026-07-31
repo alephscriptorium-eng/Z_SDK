@@ -219,8 +219,14 @@ test('sin segunda lista: ningún otro fuente del paquete declara nombres del con
 
 test('gate fail-closed: sin versión, sin sello o con tabla inválida el contrato no carga', () => {
   const viva = declaracionViva();
-  const { version: _v, ...sinVersion } = viva;
-  const { seal: _s, ...sinSello } = viva;
+  // Campo AUSENTE de verdad (no `undefined` puesto a mano): la cara
+  // hostil-omite exige que el default de lo que no viene sea denegar.
+  const sinCampo = (obj, campo) =>
+    Object.fromEntries(Object.entries(obj).filter(([k]) => k !== campo));
+  const sinVersion = sinCampo(viva, 'version');
+  const sinSello = sinCampo(viva, 'seal');
+  assert.equal('version' in sinVersion, false);
+  assert.equal('seal' in sinSello, false);
 
   assert.throws(() => assertRelayContract(null), /no hay declaración de contrato/);
   assert.throws(() => assertRelayContract(sinVersion), /versión no declarada o malformada/);
