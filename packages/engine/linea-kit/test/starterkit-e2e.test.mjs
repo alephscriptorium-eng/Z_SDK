@@ -48,6 +48,30 @@ describe('CA: juguete E2E + linea-system', () => {
     assert.equal(resolveNodo(data, 1950).nodo.id, 'N02');
     assert.equal(resolveNodo(data, 2000).nodo.id, 'N03');
 
+    // U200 (◆5): env obligatorio — linea-system resuelve su base de volúmenes
+    // al importarse; el test inyecta un VOLUMES mínimo por env ANTES del
+    // import dinámico (patrón test-utils/src/smoke-env.mjs). Sin env el
+    // import aborta honesto: ya no existe default ni walk.
+    const volumesRoot = path.join(root, 'VOLUMES');
+    fs.mkdirSync(path.join(volumesRoot, 'DISK_02', 'LINEAS'), { recursive: true });
+    fs.writeFileSync(
+      path.join(volumesRoot, 'volumes.json'),
+      JSON.stringify({
+        root: '.',
+        volumes: {
+          lineas: {
+            disk: 'DISK_02',
+            path: 'DISK_02/LINEAS',
+            readonly: true,
+            label: 'Lineas (e2e juguete)'
+          }
+        }
+      }),
+      'utf8'
+    );
+    const prevVolumesRoot = process.env.ZEUS_VOLUMES_ROOT;
+    process.env.ZEUS_VOLUMES_ROOT = volumesRoot;
+
     const { createServer } = await import(lineaServerUrl);
     const prevPort = process.env.ZEUS_MCP_LINEA_ESPAN;
     // Ephemeral high port for isolation (test path; ports gate exempts /test/).
@@ -80,6 +104,8 @@ describe('CA: juguete E2E + linea-system', () => {
       if (handle) await handle.close();
       if (prevPort == null) delete process.env.ZEUS_MCP_LINEA_ESPAN;
       else process.env.ZEUS_MCP_LINEA_ESPAN = prevPort;
+      if (prevVolumesRoot == null) delete process.env.ZEUS_VOLUMES_ROOT;
+      else process.env.ZEUS_VOLUMES_ROOT = prevVolumesRoot;
     }
   });
 });
