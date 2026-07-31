@@ -68,3 +68,6 @@ meter DISK_01/02 pesados en este repo.
 ## Read API
 
 `@zeus/presets-sdk`: `resolveVolume`, `browseVolume`, `resolveVolumesRoot`.
+
+Doctrina del plano de datos (tres momentos · cerco · sello):
+[`docs/guide/volumes-y-datos.md`](../docs/guide/volumes-y-datos.md).
