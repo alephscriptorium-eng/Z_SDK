@@ -34,6 +34,10 @@ import { peerCardFromMessage, ssbIdFromMessage } from './peer-card-gate.mjs';
  * @property {string} [requiredRole] — rol concreto exigido por el torno
  * @property {boolean} [requireSsbId] — exigir ssbId en card (federación)
  * @property {boolean} [requireSeatSignature] — exigir firma de asiento
+ * @property {object} [peerCard] — card OPCIONAL en el connect (WP-U186):
+ *   ausente = sesión anónima `role:null`; presentada = se valida ANTES de
+ *   abrir el cable — inválida RECHAZA el connect (jamás degrada a anónimo);
+ *   válida se reenvía en CLIENT_REGISTER (carril identidad de puerta)
  */
 
 export class SocketRoomSignalingService extends SignalingService {
@@ -57,6 +61,10 @@ export class SocketRoomSignalingService extends SignalingService {
   }
 
   /**
+   * Transporte base (WP-U186: transporte ≠ permiso).
+   * Sin `peerCard` conecta igual: sesión anónima `role:null`. Con
+   * `peerCard` se valida AQUÍ, antes de abrir el cable — card inválida
+   * lanza (rechazo total, sin sesión), nunca se degrada a anónimo.
    * @param {string} userId
    * @param {SocketRoomSignalingOptions} [config]
    */
@@ -67,6 +75,11 @@ export class SocketRoomSignalingService extends SignalingService {
     if (opts.requireSsbId != null) this._requireSsbId = opts.requireSsbId;
     if (opts.requireSeatSignature != null) {
       this._requireSeatSignature = opts.requireSeatSignature;
+    }
+    if (opts.peerCard != null) {
+      // Card presentada ⇒ valida o rechaza; lanzar aquí deja el cable
+      // sin abrir (no hay sesión anónima encubierta tras card inválida).
+      this.setPeerCard(opts.peerCard);
     }
 
     if (!this._client) {
@@ -84,7 +97,9 @@ export class SocketRoomSignalingService extends SignalingService {
       room,
       type: 'ZeusWebRtcSignaling',
       features: ['webrtc-signaling', 'trickle-ice'],
-      connectTimeoutMs: opts.connectTimeoutMs
+      connectTimeoutMs: opts.connectTimeoutMs,
+      // Card válida viaja en CLIENT_REGISTER (opcional en el transporte)
+      ...(this._peerCard != null ? { peerCard: this._peerCard } : {})
     });
 
     this._bindWireListeners();
@@ -103,6 +118,10 @@ export class SocketRoomSignalingService extends SignalingService {
 
   /**
    * Join (or switch) signaling room presenting peer-card (WP-U93).
+   * Antesala WebRTC = capacidad opt-in: el torno SE QUEDA (WP-U186).
+   * El transporte base ya quedó establecido en `connect()` sin exigir
+   * card; aquí la card se valida ANTES de suscribir/anunciar — inválida
+   * lanza y el cable de transporte sigue intacto.
    * @param {string} roomId
    * @param {object} peerCard — issued by authority (`issuePeerCard` / join)
    */

@@ -20,7 +20,12 @@ export const SIGNALING_WIRE_EVENTS = Object.freeze([
   'peer-disconnected'
 ]);
 
-/** Map abstract SignalingService message type → wire event. */
+/**
+ * Map abstract SignalingService message type → wire event.
+ * `room-join` → `join-room` viaja como ROOM_MESSAGE (anuncio de antesala
+ * WebRTC), no como verbo de membresía del runtime (CLIENT_SUSCRIBE) —
+ * frontera WP-U186 (plan/REPORTES/U186-paso0-frontera-room-join.md).
+ */
 export const ABSTRACT_TO_WIRE = Object.freeze({
   offer: 'webrtc-offer',
   answer: 'webrtc-answer',

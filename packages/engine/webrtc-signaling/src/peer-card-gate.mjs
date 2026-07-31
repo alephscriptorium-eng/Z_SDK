@@ -16,7 +16,18 @@ import {
 } from '@zeus/protocol';
 import { verifyTravelingPeerCard } from '@zeus/protocol/peer-card-seat';
 
-/** Tipos abstractos que el torno bloquea sin card válida. */
+/**
+ * Tipos abstractos que el torno bloquea sin card válida.
+ *
+ * Frontera confirmada (WP-U186 · paso 0, D-O11 — ver
+ * plan/REPORTES/U186-paso0-frontera-room-join.md): los 4 tipos son
+ * acciones de la capacidad OPT-IN WebRTC (antesala). `room-join` es el
+ * anuncio wire `join-room` (ROOM_MESSAGE dentro de la sala de
+ * señalización) que dispara ofertas entre pares — NO la membresía
+ * genérica del runtime. El transporte base (CLIENT_REGISTER /
+ * CLIENT_SUSCRIBE en socket-core/rooms) no pasa por este torno y admite
+ * sesión anónima `role:null`; el rol se consulta EN LA ACCIÓN.
+ */
 export const PEER_CARD_GATED_TYPES = Object.freeze([
   'offer',
   'answer',
