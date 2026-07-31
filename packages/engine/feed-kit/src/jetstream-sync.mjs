@@ -153,7 +153,9 @@ export function writeJetstreamPost(firehoseRoot, raw, { corpus = 'raw', batch = 
 }
 
 /**
- * Recount corpus files via volumes-ops (any file type) and invalidate cache.
+ * Recount corpus files via volumes-ops (any file type). Since U199 the
+ * count is recorded in volumes.state.json — the volumes.json manifest
+ * stays sealed (read-only for measurement).
  * @param {string} volumesRoot
  */
 export function refreshFirehoseCorpusCounts(volumesRoot) {

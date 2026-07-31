@@ -108,7 +108,7 @@ test('syncJetstreamFixture writes DISK_01 posts', () => {
   }
 });
 
-test('refreshFirehoseCorpusCounts counts any file type and invalidates cache', () => {
+test('refreshFirehoseCorpusCounts counts any file type; manifest sealed, state recorded (U199)', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-feed-u97-'));
   const prev = process.env.ZEUS_VOLUMES_ROOT;
   try {
@@ -127,8 +127,15 @@ test('refreshFirehoseCorpusCounts counts any file type and invalidates cache', (
 
     process.env.ZEUS_VOLUMES_ROOT = tmp;
     resetVolumesCache();
+    // U199: the recount no longer rewrites the volumes.json manifest — the
+    // live count lands in volumes.state.json; the manifest keeps what the
+    // import scaffold declared (files: 0).
     const cfg = loadVolumesConfig();
-    assert.equal(cfg.volumes.firehose.corpora.find((c) => c.id === 'raw').files, 3);
+    assert.equal(cfg.volumes.firehose.corpora.find((c) => c.id === 'raw').files, 0);
+    const state = JSON.parse(
+      fs.readFileSync(path.join(tmp, 'volumes.state.json'), 'utf8')
+    );
+    assert.equal(state.volumes.firehose.corpora.find((c) => c.id === 'raw').files, 3);
   } finally {
     if (prev == null) delete process.env.ZEUS_VOLUMES_ROOT;
     else process.env.ZEUS_VOLUMES_ROOT = prev;
