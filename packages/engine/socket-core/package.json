@@ -27,7 +27,7 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "lib"
   },

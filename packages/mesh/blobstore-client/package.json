@@ -11,7 +11,7 @@
     "test": "node --test test/*.mjs",
     "fixture": "node src/run-fixture.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "private": true,
   "dependencies": {
     "@zeus/blob-sync-harness": "*",

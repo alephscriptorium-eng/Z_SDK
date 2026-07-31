@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "license": "SEE LICENSE IN LICENSE.md",
   "description": "Runnable gamemap demos (map authority / walk driver / watch viewer) over @zeus/rooms + @zeus/game-engine. Absorbed from gea-sdk/packages/game apps (block-11 GA-E); replaces the deprecated rooms-shared client.",
   "scripts": {
     "demo": "node launch.mjs",

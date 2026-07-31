@@ -11,7 +11,7 @@
     "test": "node --test test/*.mjs",
     "spike": "node src/run-spike.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "private": true,
   "dependencies": {
     "@zeus/authority-kit": "*",

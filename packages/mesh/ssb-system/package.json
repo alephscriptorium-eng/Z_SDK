@@ -14,7 +14,7 @@
     "sync": "node src/sync-cli.mjs",
     "test": "node --test test/*.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "mcp",
     "mcp": "ssb"

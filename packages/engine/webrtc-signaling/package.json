@@ -34,7 +34,7 @@
   "optionalDependencies": {
     "@roamhq/wrtc": "^0.10.0"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "lib"
   },

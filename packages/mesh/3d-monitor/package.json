@@ -8,7 +8,7 @@
     "start": "node src/server.mjs",
     "test": "node --test test/*.test.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "app",
     "ui": "debug3d"

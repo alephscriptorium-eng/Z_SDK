@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "description": "WebRTC mesh viewer (rooms + private): Angular sibling of operator-ui over adapted WebRTCEngine (WP-U89 / D-17)",
   "main": "src/index.mjs",
   "exports": {
