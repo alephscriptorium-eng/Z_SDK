@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { SocketClient } from '@zeus/socket-core/client';
 import { createScriptoriumServer } from '../src/index.mjs';
-import { relayDiscardLedger, resetRelayDiscardLedger } from '../src/relay.mjs';
+import { emitDownstream, relayDiscardLedger, resetRelayDiscardLedger } from '../src/relay.mjs';
 import { NAMESPACE, RELAY_DOWNSTREAM_TOP, RELAY_UPSTREAM } from '../src/config.mjs';
 import {
   RELAY_CONTRACT,
@@ -27,12 +28,18 @@ import {
  *    carga) y toda la suite cae;
  *  - añadir/quitar re-sellando pero sin subir versión → ancla del sello roja;
  *  - declarar una segunda lista en otro `src/*.mjs` → «sin segunda lista» roja;
- *  - ampliar la allowlist en caliente con `.add()` → «inmutable» roja;
+ *  - ampliar la allowlist en caliente, incluido `Set.prototype.add.call()`
+ *    → «inmutable» roja (corrección de D2);
  *  - borrar la guarda `RELAY_DOWNSTREAM_TOP.has(event)` o el bucle de subida
  *    → cierre e2e rojo (los intrusos pasan / lo permitido deja de pasar);
- *  - colar un evento por una rama nueva y hardcodeada dentro de `relay.mjs`
- *    → el corpus del cierre e2e se extrae de los literales del propio
- *    `relay.mjs`, así que el nombre colado se prueba a sí mismo.
+ *  - **añadir cualquier vía de emisión hacia abajo en `relay.mjs`**, sea con
+ *    comillas, con backtick, con concatenación o con lo que se invente →
+ *    censo de despacho rojo (corrección de D1: se ancla la FORMA del
+ *    despacho, no la notación del nombre).
+ *
+ * Lo que estos tests NO cubren, dicho aquí para que nadie lo lea de más:
+ * el desempaquetado del sobre (`relay.mjs:95`) no consulta la allowlist, y
+ * eso queda asertado como hueco abierto, no como si estuviera cerrado.
  */
 
 /** Ancla literal: cambiarla es declarar un cambio de contrato. */
@@ -40,6 +47,21 @@ const VERSION_ANCLADA = '1.0.0';
 const SELLO_ANCLADO = '57adb96df059db58ee86e20b725012f37adb9f5d20f99f901863cff3b637335e';
 const CUENTA_SUBIDA = 3;
 const CUENTA_BAJADA = 8;
+
+/**
+ * Ancla de la FORMA del despacho de `src/relay.mjs` (corrección de U194-D1).
+ *
+ * El corpus de sondas por literales reconoce una notación, no un valor: una
+ * puerta trasera escrita con backtick o con `'a' + 'b'` se le escapa. Esto
+ * ancla otra cosa: cuántas vías de emisión hacia abajo existen y qué forma
+ * tiene el fichero de despacho una vez quitados comentarios y espacios.
+ * Cualquier rama nueva que emita — con la notación que sea — mueve el censo.
+ *
+ * Si `relay.mjs` cambia legítimamente (es fichero de U192/U193, no de U194),
+ * re-anclar aquí es parte del cambio: la propagación del relay es contrato.
+ */
+const EMISIONES_ABAJO_ANCLADAS = 4;
+const SELLO_DESPACHO_ANCLADO = '51b2d8edfefef4fdb46f10473746769b4f3503ebf95d2a4210fcaf86676346a6';
 
 /** Nombres que socket.io reserva y no se pueden emitir como evento. */
 const RESERVADOS_SOCKETIO = new Set([
@@ -78,19 +100,44 @@ function fuente(rutaRelativa) {
 
 /**
  * Literales de cadena con pinta de nombre de evento presentes en los
- * fuentes dados. Sirve de corpus de sondas: cualquier nombre hardcodeado en
- * el relay que no esté en el contrato tiene que ser probado y rechazado.
+ * fuentes dados. Es UNA red, no LA red: reconoce las tres notaciones de
+ * literal (comilla simple, doble y backtick) pero por construcción no puede
+ * ver un nombre construido en tiempo de ejecución (`'a' + 'b'`). Quien
+ * cierra ese hueco es el censo de despacho, que ancla la forma y no el
+ * nombre. Se conserva porque es barata y porque caza al descuidado.
  * @param {string[]} rutas
  */
 function literalesDeFuente(rutas) {
   const encontrados = new Set();
   for (const ruta of rutas) {
-    for (const m of fuente(ruta).matchAll(/'([^'\n\\]{1,64})'|"([^"\n\\]{1,64})"/g)) {
-      const s = m[1] ?? m[2];
+    const re = /'([^'\n\\]{1,64})'|"([^"\n\\]{1,64})"|`([^`\n\\$]{1,64})`/g;
+    for (const m of fuente(ruta).matchAll(re)) {
+      const s = m[1] ?? m[2] ?? m[3];
       if (s && !/\s/.test(s) && !RESERVADOS_SOCKETIO.has(s)) encontrados.add(s);
     }
   }
   return [...encontrados];
+}
+
+/**
+ * Forma normalizada de un fuente: sin comentarios, sin líneas en blanco y
+ * con los espacios colapsados. Es lo que se sella para el censo de
+ * despacho: sobrevive a reformateos y a comentarios nuevos, pero no a una
+ * rama de emisión añadida, la escriba quien la escriba y como la escriba.
+ * @param {string} texto
+ */
+function formaNormalizada(texto) {
+  return texto
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split(/\r?\n/)
+    .map((linea) => linea.replace(/(^|[^:])\/\/.*$/, '$1').trim().replace(/\s+/g, ' '))
+    .filter((linea) => linea !== '')
+    .join('\n');
+}
+
+/** Vías de emisión hacia los clientes locales presentes en un fuente. */
+function emisionesAbajo(texto) {
+  return [...formaNormalizada(texto).matchAll(/localNs\.emit\(/g)].length;
 }
 
 /** Declaración plana equivalente al contrato vivo (para sondear el gate). */
@@ -215,6 +262,69 @@ test('sin segunda lista: ningún otro fuente del paquete declara nombres del con
   );
 });
 
+// ── 3-bis · Censo de despacho: la FORMA, no la notación (D1) ────────────
+
+test('censo de despacho: ninguna vía de emisión hacia abajo fuera del contrato', () => {
+  const relay = fuente('../src/relay.mjs');
+
+  assert.equal(
+    emisionesAbajo(relay),
+    EMISIONES_ABAJO_ANCLADAS,
+    'cambió el número de vías `localNs.emit(` en src/relay.mjs. Una vía nueva es una ' +
+      'puerta de propagación que la allowlist no gobierna: justifícala y re-ancla a conciencia'
+  );
+
+  const sello = createHash('sha256').update(formaNormalizada(relay), 'utf8').digest('hex');
+  assert.equal(
+    sello,
+    SELLO_DESPACHO_ANCLADO,
+    'la forma del despacho de src/relay.mjs cambió (comentarios y espacios ya están ' +
+      'descontados). La propagación del relay es contrato: si el cambio es legítimo ' +
+      '(U192/U193 son sus dueños), re-ancla SELLO_DESPACHO_ANCLADO y declara el cambio.\n' +
+      `  sello anclado : ${SELLO_DESPACHO_ANCLADO}\n` +
+      `  sello actual  : ${sello}`
+  );
+
+  // La guarda de la vía top-level sigue siendo la del contrato, no un `true`
+  // ni un nombre suelto: se comprueba sobre la forma normalizada, así que
+  // reformatear no la esconde.
+  const forma = formaNormalizada(relay);
+  assert.ok(
+    forma.includes('if (RELAY_DOWNSTREAM_TOP.has(event)) {'),
+    'la guarda de allowlist de la vía top-level ya no está en src/relay.mjs'
+  );
+  assert.ok(
+    forma.includes('for (const ev of RELAY_UPSTREAM) {'),
+    'el bucle de subida gobernado por el contrato ya no está en src/relay.mjs'
+  );
+});
+
+test('el gate del contrato corre en la carga y su resultado es portante (D4)', () => {
+  const contrato = formaNormalizada(fuente('../src/relay-contract.mjs'));
+
+  // 1. La llamada existe a nivel de módulo…
+  assert.ok(
+    contrato.includes('const VERIFICADO = assertRelayContract({'),
+    'desapareció la llamada a assertRelayContract() en la carga del módulo: el contrato ' +
+      'dejaría de verificarse al importar'
+  );
+  // 2. …y lo publicado se construye A PARTIR de su resultado, no de las
+  //    tablas crudas. Así, borrar el gate no lo deja sin correr en silencio:
+  //    deja el módulo sin cargar.
+  for (const campo of [
+    'version: VERIFICADO.version',
+    'seal: VERIFICADO.seal',
+    'upstream: Object.freeze([...VERIFICADO.upstream])',
+    'downstream: listaSellada(VERIFICADO.downstream)'
+  ]) {
+    assert.ok(
+      contrato.includes(campo),
+      `RELAY_CONTRACT ya no deriva del resultado del gate (falta \`${campo}\`): el gate ` +
+        'volvería a ser borrable sin consecuencia'
+    );
+  }
+});
+
 // ── 4 · Gate fail-closed (cara hostil-omite) ─────────────────────────────
 
 test('gate fail-closed: sin versión, sin sello o con tabla inválida el contrato no carga', () => {
@@ -278,9 +388,112 @@ test('la allowlist no se amplía en caliente: add/delete/clear denegados', () =>
   assert.equal(RELAY_DOWNSTREAM_TOP.has('evento:colado'), false);
 });
 
-// ── 6 · Cierre e2e: lo AUSENTE del contrato no pasa el relay ─────────────
+test('la allowlist resiste el secuestro por prototipo (D2: sombrear métodos no bastaba)', () => {
+  // La versión devuelta de U194 publicaba un `Set` real con los métodos
+  // sombreados en la instancia. `Object.freeze` no toca el slot interno
+  // [[SetData]], así que llamar al método del prototipo con la allowlist de
+  // receptor la ampliaba de verdad. Probado e2e por la contrarrevisión: el
+  // evento colado llegó al cliente de abajo. Estas son las sondas
+  // permanentes de que esa vía está cerrada.
+  assert.equal(
+    RELAY_DOWNSTREAM_TOP instanceof Set,
+    false,
+    'la allowlist volvió a ser un Set: Set.prototype puede secuestrarla'
+  );
 
-test('cierre del relay contra puente real: pasa exactamente el contrato y nada más', async () => {
+  for (const metodo of ['add', 'delete', 'clear']) {
+    assert.throws(
+      () => Set.prototype[metodo].call(RELAY_DOWNSTREAM_TOP, 'evento:colado'),
+      TypeError,
+      `Set.prototype.${metodo}.call() alcanzó la allowlist`
+    );
+  }
+  assert.equal(RELAY_DOWNSTREAM_TOP.has('evento:colado'), false, 'entró por el prototipo');
+  assert.equal(RELAY_DOWNSTREAM_TOP.size, CUENTA_BAJADA, 'el tamaño se movió');
+
+  // El array de subida sí es un array; su congelación sí es real, y también
+  // por la vía del prototipo.
+  assert.throws(
+    () => Array.prototype.push.call(RELAY_UPSTREAM, 'EVENTO_COLADO'),
+    TypeError,
+    'Array.prototype.push.call() alcanzó la tabla de subida'
+  );
+  assert.equal(RELAY_UPSTREAM.length, CUENTA_SUBIDA);
+
+  // Y no se puede reabrir redefiniendo la superficie publicada.
+  assert.throws(
+    () => Object.defineProperty(RELAY_DOWNSTREAM_TOP, 'has', { value: () => true }),
+    TypeError,
+    'se pudo redefinir `has` sobre la allowlist'
+  );
+  assert.throws(
+    () => Object.defineProperty(RELAY_CONTRACT, 'downstream', { value: new Set(['todo']) }),
+    TypeError,
+    'se pudo sustituir la allowlist entera en RELAY_CONTRACT'
+  );
+  assert.equal(RELAY_DOWNSTREAM_TOP.has('evento:colado'), false);
+  assert.equal(RELAY_DOWNSTREAM_TOP.size, CUENTA_BAJADA);
+});
+
+// ── 5-bis · Lo que la allowlist NO gobierna, asertado sin taparlo (D3) ──
+
+test('HUECO ABIERTO: el sobre ROOM_MESSAGE reemite cualquier nombre sin consultar la allowlist', () => {
+  // Esto NO es una prueba de que algo funcione: es un caso rojo asertado sin
+  // taparlo, al estilo de U187. `emitDownstream` (src/relay.mjs:95) hace
+  // `localNs.emit(inner, data)` con el nombre que venga dentro del sobre,
+  // sin pasar por RELAY_DOWNSTREAM_TOP. Es herencia de la base — U194 no lo
+  // empeoró (`relay.mjs`: 0 ediciones) y no puede arreglarlo, porque
+  // `relay.mjs` es fichero caliente de U192/U193 (GOBIERNO §2).
+  //
+  // Consecuencia honesta: el contrato gobierna la VÍA TOP-LEVEL, no el
+  // desempaquetado. Enrutado a U193/U195.
+  //
+  // CUANDO SE CIERRE, ESTE TEST DEBE CAER. Es su función: que nadie cierre
+  // el agujero sin enterarse de que aquí se estaba documentando.
+  resetRelayDiscardLedger();
+  const ns = { emitidos: [], emit(event, data) { this.emitidos.push({ event, data }); } };
+
+  const colado = 'evento:colado-por-sobre';
+  assert.equal(RELAY_DOWNSTREAM_TOP.has(colado), false, 'el nombre de sonda no debe estar en la allowlist');
+  emitDownstream(ns, { event: colado, room: 'R', data: { marca: 'D3' } });
+
+  assert.ok(
+    ns.emitidos.some((e) => e.event === colado),
+    'si esto falla, el agujero del sobre SE CERRÓ: enhorabuena — actualiza este test, ' +
+      'la cabecera de src/relay-contract.mjs y el §8 del reporte de U194'
+  );
+
+  // Lo mismo con un nombre de la tabla de SUBIDA, que la vía top-level sí corta.
+  emitDownstream(ns, { event: 'CLIENT_REGISTER', room: 'R', data: { marca: 'D3' } });
+  assert.ok(
+    ns.emitidos.some((e) => e.event === 'CLIENT_REGISTER'),
+    'el sobre tampoco filtra los nombres de subida (mismo hueco)'
+  );
+});
+
+test('el último cazador del atacante competente sigue vivo (D5)', () => {
+  // Un atacante que añada un evento, suba la versión, re-selle y actualice
+  // las anclas de ESTE fichero pasa todos los tests de U194. El único que lo
+  // caza entonces es la enumeración literal de U192 en relay-trace.test.mjs,
+  // que es una aserción histórica («la política es la previa a U192»), no una
+  // lista viva. Si un WP futuro la re-apunta al contrato, muere el último
+  // cazador y nadie se entera. Este test hace que sí se enteren.
+  const trace = fuente('../test/relay-trace.test.mjs');
+  const ausentes = [...RELAY_CONTRACT.upstream, ...RELAY_CONTRACT.downstream].filter(
+    (ev) => !trace.includes(`'${ev}'`) && !trace.includes(`"${ev}"`)
+  );
+  assert.deepEqual(
+    ausentes,
+    [],
+    'test/relay-trace.test.mjs ya no enumera literalmente la política de U192. Era el ' +
+      'único test que caza a quien añade un evento re-sellando Y subiendo la versión. ' +
+      'Si la retirada es deliberada, U194 necesita su propia ancla literal en su lugar'
+  );
+});
+
+// ── 6 · Cierre e2e de la vía top-level ──────────────────────────────────
+
+test('cierre de la vía top-level contra puente real: por onAny solo pasa el contrato', async () => {
   resetRelayDiscardLedger();
 
   const enContrato = new Set([...RELAY_CONTRACT.upstream, ...RELAY_CONTRACT.downstream]);

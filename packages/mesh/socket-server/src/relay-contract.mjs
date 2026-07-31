@@ -23,13 +23,26 @@ import { createHash } from 'node:crypto';
  *    tocar la versión sigue siendo rojo en
  *    `test/relay-contract.test.mjs` (ancla literal versión + sello).
  *    Contrato sin versión declarada = el gate falla (no arranca).
- * 4. **Inmutable en runtime.** Las tablas publicadas están congeladas y el
- *    Set de bajada rechaza `add`/`delete`/`clear`: nadie amplía la
- *    allowlist desde otro módulo sin pasar por este fichero.
+ * 4. **Inmutable en runtime.** La tabla de subida es un array congelado y
+ *    la de bajada NO es un `Set` sino una lista sellada sobre un conjunto
+ *    en closure (ver `listaSellada`): ni el sombreado de métodos ni
+ *    `Set.prototype.<m>.call(...)` la amplían desde otro módulo.
  *
- * Alcance: esto es política de PROPAGACIÓN (qué nombre de evento cruza el
- * puente), no de permiso ni de identidad — la frontera «transporte ≠
- * permiso» de U186 sigue intacta y este contrato no la toca.
+ * Alcance — leer antes de creerse el nombre de este fichero:
+ *
+ * - Esto es política de PROPAGACIÓN (qué nombre de evento cruza el puente),
+ *   no de permiso ni de identidad. La frontera «transporte ≠ permiso» de
+ *   U186 sigue intacta y este contrato no la toca.
+ * - El contrato gobierna la **vía top-level** de bajada (`relay.mjs:132`,
+ *   `RELAY_DOWNSTREAM_TOP.has(event)`) y la de subida (`relay.mjs:111`).
+ *   **NO gobierna el desempaquetado del sobre**: `emitDownstream`
+ *   (`relay.mjs:95`) reemite `payload.event` sin consultar la allowlist, así
+ *   que un nombre arbitrario metido dentro de un `ROOM_MESSAGE` llega abajo.
+ *   Es herencia de la base (U194 no lo empeoró: `relay.mjs` tiene 0
+ *   ediciones) y es **hueco abierto enrutado a U193/U195**, dueños de
+ *   `relay.mjs`. Está asertado sin taparlo en
+ *   `test/relay-contract.test.mjs` («el agujero del sobre»): cuando se
+ *   cierre, ese test caerá a propósito.
  *
  * Decisión de diseño del WP (GOBIERNO-EJECUCION-F2 :177-180 lo dejaba
  * `<pendiente>`: contrato local vs proyección al spec compartido de
@@ -175,28 +188,61 @@ export function assertRelayContract(decl) {
 }
 
 /**
- * Set con la allowlist cerrada: conserva `has`/iteración/spread (lo que el
- * relay y los tests usan) y rechaza toda mutación en caliente.
+ * Allowlist cerrada de bajada.
+ *
+ * NO es un `Set` — y esa es justamente la corrección de U194-D2. La versión
+ * anterior devolvía un `Set` real con `add`/`delete`/`clear` sombreados en
+ * la instancia y `Object.freeze` encima. No servía: `Object.freeze` no toca
+ * el slot interno `[[SetData]]`, así que
+ * `Set.prototype.add.call(allowlist, 'x')` saltaba el sombreado y ampliaba
+ * la allowlist de verdad (contrarrevisión lo probó e2e: el evento colado
+ * llegó al cliente de abajo).
+ *
+ * Ahora el conjunto real vive en el closure, inalcanzable, y lo que se
+ * publica es un objeto congelado que solo sabe responder. Al no ser un
+ * `Set`, los métodos de `Set.prototype` lo rechazan por receptor
+ * incompatible: no hay nada que secuestrar.
+ *
+ * Conserva lo que el runtime y los tests ya usaban: `has`, iteración,
+ * spread, `size`, `forEach`.
+ *
  * @param {string[]} valores
  */
-function conjuntoSellado(valores) {
-  const set = new Set(valores);
+function listaSellada(valores) {
+  const interno = new Set(valores); // solo existe aquí dentro
   const denegar = (metodo) => () => {
     throw new Error(
       `CONTRATO-RELAY: la allowlist es inmutable en runtime ('${metodo}' denegado). ` +
         'Cambiarla es un cambio de contrato en src/relay-contract.mjs.'
     );
   };
-  Object.defineProperties(set, {
-    add: { value: denegar('add'), writable: false, configurable: false, enumerable: false },
-    delete: { value: denegar('delete'), writable: false, configurable: false, enumerable: false },
-    clear: { value: denegar('clear'), writable: false, configurable: false, enumerable: false }
-  });
-  return Object.freeze(set);
+  /** @type {any} */
+  const lista = {
+    has: (valor) => interno.has(valor),
+    size: interno.size,
+    values: () => interno.values(),
+    keys: () => interno.values(),
+    forEach: (fn, thisArg) => {
+      for (const valor of interno) fn.call(thisArg, valor, valor, lista);
+    },
+    toJSON: () => [...interno],
+    [Symbol.iterator]: () => interno.values(),
+    add: denegar('add'),
+    delete: denegar('delete'),
+    clear: denegar('clear')
+  };
+  return Object.freeze(lista);
 }
 
-// ── Gate en la carga del módulo: contrato roto = el relay no existe ──────
-assertRelayContract({
+/**
+ * Gate en la carga del módulo: contrato roto = el relay no existe.
+ *
+ * El resultado es **portante** (corrección de U194-D4): `RELAY_CONTRACT` se
+ * construye a partir de `VERIFICADO`, no de las tablas crudas. Borrar esta
+ * llamada no deja el gate sin correr en silencio — deja el módulo sin
+ * cargar (`VERIFICADO is not defined`).
+ */
+const VERIFICADO = assertRelayContract({
   version: RELAY_CONTRACT_VERSION,
   seal: RELAY_CONTRACT_SEAL,
   upstream: UPSTREAM,
@@ -205,13 +251,14 @@ assertRelayContract({
 
 /**
  * El contrato publicado. `upstream` es un array congelado (el orden es
- * política); `downstream` es un Set sellado (lo que `relay.mjs` consulta).
+ * política); `downstream` es la lista sellada de arriba (lo que
+ * `relay.mjs:132` consulta con `.has()`).
  */
 export const RELAY_CONTRACT = Object.freeze({
-  version: RELAY_CONTRACT_VERSION,
-  seal: RELAY_CONTRACT_SEAL,
-  upstream: Object.freeze([...UPSTREAM]),
-  downstream: conjuntoSellado(DOWNSTREAM_TOP)
+  version: VERIFICADO.version,
+  seal: VERIFICADO.seal,
+  upstream: Object.freeze([...VERIFICADO.upstream]),
+  downstream: listaSellada(VERIFICADO.downstream)
 });
 
 /**
