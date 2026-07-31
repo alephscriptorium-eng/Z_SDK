@@ -51,6 +51,25 @@ export const CURATION_STATUS_KEYS = Object.freeze([
 ]);
 
 /**
+ * Curated-sidecar detection (WP-U202 · driver LINEAS · familia curada).
+ * The human curation layer (DATOS §2) lives in markdown sidecars:
+ * `registro.md` / `delta.md` anywhere in a LINEAS volume, plus ANY `*.md`
+ * inside a `registros/` directory (loader.mjs `readRegistro` reads every
+ * markdown sidecar there). Import merges must NEVER overwrite these paths
+ * (H-01 §④: what the human touched is not overwritten — existing sidecar
+ * in the destination → discard + report; missing → may land as
+ * «lo que falta»). Pure path predicate — browser-safe.
+ * @param {string} relPath — path relative to the LINEAS volume root
+ * @returns {boolean}
+ */
+export function isCuratedSidecarPath(relPath) {
+  const p = String(relPath || '').replace(/\\/g, '/').toLowerCase();
+  const base = p.split('/').pop() || '';
+  if (base === 'registro.md' || base === 'delta.md') return true;
+  return base.endsWith('.md') && p.includes('/registros/');
+}
+
+/**
  * @param {unknown} value
  * @returns {string|null}
  */
