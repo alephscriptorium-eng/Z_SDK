@@ -29,8 +29,10 @@ Convenciones de este documento:
   (BACKLOG :211). **Drift observado:** el árbol tiene **48** manifests
   (`ls packages/*/*/package.json` → 48; grupos `editor/ engine/ mesh/`);
   la ficha debe reconciliar 51 vs 48 con evidencia, no heredar la cifra.
-- paths: entregable documental **(nuevo)** — propuesta
-  `plan/REPORTES/FICHA-RUNTIME-51.md`; lee (no edita)
+- paths: entregable documental — **entregado como
+  `plan/MATRIZ-RUNTIME-51.md`** (✎ orquestador: U179 se despachó en
+  ola 0 junto a U232, sin colisión — entregables documentales distintos);
+  lee (no edita)
   `packages/mesh/mcp-launcher/src/catalog.mjs:59` (`CATALOG_SEED`),
   `packages/engine/presets-sdk/src/env/index.mjs:239`
   (`resolveZeusMcpPorts`), `package.json:15-34` (scripts `start:*`).
