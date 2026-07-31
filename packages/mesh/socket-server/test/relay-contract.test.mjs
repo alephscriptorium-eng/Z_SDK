@@ -50,7 +50,7 @@ const CUENTA_BAJADA = 8;
 
 /**
  * Ancla de la FORMA del despacho de TODO
- * `packages/mesh/socket-server/src/` (correcciones U194-D1 y U194-D-A).
+ * `packages/mesh/socket-server/src/**` (correcciones U194-D1, D-A y DEF-1).
  *
  * El corpus de sondas por literales reconoce una notación, no un valor: una
  * puerta trasera escrita con backtick o con `'a' + 'b'` se le escapa. Esto
@@ -58,9 +58,14 @@ const CUENTA_BAJADA = 8;
  * inventario de fuentes. Cualquier vía de emisión nueva — con la notación
  * que sea y en el fichero que sea — mueve el sello.
  *
- * **Alcance declarado**: el paquete, no solo `relay.mjs`. Anclar solo el
- * relay era falso: `create-server.mjs` es donde nacen `localNs` y
- * `bridgeClient`, y una puerta ahí propagaba con la suite en verde.
+ * **Alcance declarado, y ahora implementado igual**: el árbol `src/**`
+ * completo — recursivo, y `.mjs`/`.js`/`.cjs` sin distinguir mayúsculas
+ * (`fuentesDelPaquete`). Dos correcciones sucesivas de esta misma frase:
+ * anclar solo `relay.mjs` era falso (`create-server.mjs` es donde nacen
+ * `localNs` y `bridgeClient`), y barrer solo el primer nivel también
+ * (`src/sub/puerta.mjs`, `src/puerta.js` y `src/puerta.cjs` cargaban, emitían
+ * y no se veían). Si vuelves a tocar el alcance, comprueba que la frase y el
+ * `readdirSync` dicen lo mismo: es donde ha fallado dos veces.
  *
  * `EMISIONES_ANCLADAS` es señal legible, **no** garantía: el conteo se deja
  * clavado quitando una vía y añadiendo otra. Quien caza es el sello.
@@ -158,6 +163,30 @@ function formaNormalizada(texto) {
 }
 
 /**
+ * Inventario de fuentes de `packages/mesh/socket-server/src/`.
+ *
+ * **Recursivo y con las tres extensiones ejecutables** (U194-DEF-1). La
+ * versión anterior hacía `readdirSync(...).filter(f => f.endsWith('.mjs'))`:
+ * primer nivel y una sola extensión. `src/sub/puerta.mjs`, `src/puerta.js` y
+ * `src/puerta.cjs` cargan, emiten y eran **invisibles** — la suite se quedaba
+ * en verde con la puerta puesta. Lo declarado (`src/**`) y lo implementado
+ * (primer nivel) no coincidían, y la grieta era justo esa.
+ *
+ * Lo usan el censo de despacho **y** «sin segunda lista»: un único
+ * enumerador para que no vuelvan a divergir — una tabla paralela en
+ * `src/sub/config2.mjs` evadía los dos a la vez.
+ *
+ * Rutas relativas a `src/` con separador normalizado a `/`, para que el
+ * sello no dependa del sistema de ficheros.
+ */
+function fuentesDelPaquete() {
+  return readdirSync(new URL('../src/', import.meta.url), { recursive: true })
+    .map((f) => String(f).replaceAll('\\', '/'))
+    .filter((f) => /\.(mjs|js|cjs)$/i.test(f))
+    .sort();
+}
+
+/**
  * Censo de despacho de TODO `packages/mesh/socket-server/src/`.
  *
  * Alcance, y es una decisión, no un descuido: **el paquete entero**. Anclar
@@ -168,13 +197,11 @@ function formaNormalizada(texto) {
  *
  * Fuera de este árbol no se persigue: se declara como hueco con dueño.
  *
- * El inventario forma parte del censo (`readdirSync`), así que un fichero
- * nuevo mueve el sello aunque todavía no lo importe nadie.
+ * El inventario forma parte del censo, así que un fichero nuevo mueve el
+ * sello aunque todavía no lo importe nadie — en cualquier subdirectorio.
  */
 function censoDeDespacho() {
-  const filas = readdirSync(new URL('../src/', import.meta.url))
-    .filter((f) => f.endsWith('.mjs'))
-    .sort()
+  const filas = fuentesDelPaquete()
     .map((fichero) => {
       const forma = formaNormalizada(fuente(`../src/${fichero}`));
       return {
@@ -290,10 +317,10 @@ test('sin segunda lista: ningún otro fuente del paquete declara nombres del con
   // SET_STATE un camino propio (comportamiento heredado de la base, probado
   // por relay-trace.test.mjs). No son listas: son dos ramas nombradas.
   const permitido = { 'relay.mjs': new Set(['ROOM_MESSAGE', 'SET_STATE']) };
-  // Se enumera el directorio, no una lista fija: un fuente nuevo con una
-  // tabla paralela entra solo en el barrido.
-  const otrosFuentes = readdirSync(new URL('../src/', import.meta.url))
-    .filter((f) => f.endsWith('.mjs') && f !== 'relay-contract.mjs');
+  // Se enumera el árbol, no una lista fija: un fuente nuevo con una tabla
+  // paralela entra solo en el barrido, esté en `src/` o en `src/sub/…` y
+  // sea `.mjs`, `.js` o `.cjs` (mismo enumerador que el censo, DEF-1).
+  const otrosFuentes = fuentesDelPaquete().filter((f) => f !== 'relay-contract.mjs');
   assert.ok(otrosFuentes.length >= 5, `barrido vacío o truncado (${otrosFuentes.length} fuentes)`);
   assert.ok(otrosFuentes.includes('config.mjs') && otrosFuentes.includes('relay.mjs'));
 
