@@ -828,6 +828,25 @@ Dentro de la dispersión ya publicada en §10.7 (A ∈ [21,9 · 36,8] s, B ∈ [
 moved, **8.388 ficheros exactos**, `snapshot.units === 8388`, tercer pase
 `noop` con sello idéntico.
 
+## 11.5-bis · Aislamiento de los probes nuevos, verificado por mí
+
+La contrarrevisión anterior comprobó que cada probe tumbaba **el suyo y solo
+el suyo**. Como los tres arreglos nuevos han de resistir lo mismo, lo verifico
+antes de entregar, revirtiendo cada uno por separado (sobre el commit ya
+hecho, con `git checkout <fichero>` para volver — nunca `git stash`, regla
+4-bis):
+
+| regresión inyectada | probes que caen |
+| ------------------- | --------------- |
+| `firehoseUnitKey` vuelve al fallback (`return parseAtUri(raw?.uri)`) | **5**, todos del contrato de clave: `D1 (ambas vías)`, `D-A unitario`, `D-A resucitador (e2e)`, `D1b (ambas vías)`, `D1c`. Cero fuera del contrato |
+| se retira la guarda `enlace_en_destino` de `merge` | **1**: `D-B`. Nada más |
+| se retira el guardián `unidad_en_raiz` | **1**: `D-E`. Nada más |
+
+Los 53 tests vuelven a verde al restaurar. Que la regresión de D-A tumbe cinco
+y no uno es lo correcto: los cinco afirman **el mismo contrato** (una sola vía
+de clave) desde ángulos distintos, y ese es justamente el contrato que la
+primera entrega demostraba solo por un camino.
+
 ## 11.6 · Qué NO he tocado (regla de cierre respetada)
 
 El alcance era **mi driver y mis probes**. Lo heredado se enruta:
