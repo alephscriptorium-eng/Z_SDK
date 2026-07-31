@@ -661,6 +661,10 @@ Criterio:
    orquestador: los diffs de ambas ramas son disjuntos. Para medir un
    «antes» sin stash: `git show <base>:<ruta>`, una copia en el
    scratchpad, o un worktree desechable. Vale igual para contrarrevisores.
+   ✎ **Cuarto método admitido** (2026-07-31, a raíz de una autodeclaración de
+   worker): commitear primero y usar `git checkout <commit> -- <rutas>` con
+   restauración verificada. Es **local al worktree** y no toca estado
+   compartido, que es lo único que 4-bis protege. Queda sancionado.
 4-ter. **`npx <nombre>` con un binario que no esté en las deps: PROHIBIDO**
    (incidente real, ola 3, 2026-07-31): un contrarrevisor tecleó `npx rg`
    creyendo invocar ripgrep y `npx` **descargó del registry un paquete
