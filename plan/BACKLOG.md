@@ -271,7 +271,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
 | **U210** | 50 | Puente documental ◆4(b) | mientras G implementa 4(a): `volumesRoot` del loader = solo desarrollo; contrato de import = único camino de producto | doc sin ningún camino que apunte env a `node_modules` | **P0** |
-| **U211** 🔶 | 51 | Reparar `VOLUMES/README.md` | 2 defectos propios: L24 (`npm install` → E404) + L26 (env al pack, contra cerco) | todo comando del README se ejecuta contra su canal real y resuelve (C8) | **P0** |
+| **U211** ✅ | 51 | Reparar `VOLUMES/README.md` | 2 defectos eliminados (E404 npm fuera → canal Release declarado externo honesto · env jamás al pack) + hallazgo: `ZEUS_STARTPACK_ROOT` era variable muerta (0 lectores) — retirada. Ecos menores fuera de alcance anotados: `volumes.json:4,:11` (→ carril D) · `.env.example:60` · `.gitignore:13` (limpieza en ola posterior). Aceptado por el orquestador 2026-07-31 (rama `wp/u211-volumes-readme`) | grep `npm install @zeus`=0 ✓ · `node_modules`=0 ✓ · import v1 declarado obra en curso (U201), no prometido ✓ — verificado por orquestador | **P0** |
 | U212 | 52 | CA de canal limpio C-4 | condición ◆2c: kit npm + pack Release desde consumidor limpio | instalar capacidad por npm y sembrar datos por Release sin tocar el árbol | P1 |
 | **U178** | 53 | `linea-editor` publish-ready | **= WP-U178 existente** (cola P1 · D-42): sigue en PAUSA y es 1 de las 2 piezas realmente usadas | checklist §5 allowlist completo; GO publish aparte | P1 |
 | U213 | 54 | Allowlist como inventario vivo | `audit:publish-allowlist` contra registry en CI | desfase allowlist↔registry detectado pre-release | P2 |
