@@ -49,19 +49,38 @@ const CUENTA_SUBIDA = 3;
 const CUENTA_BAJADA = 8;
 
 /**
- * Ancla de la FORMA del despacho de `src/relay.mjs` (corrección de U194-D1).
+ * Ancla de la FORMA del despacho de TODO
+ * `packages/mesh/socket-server/src/` (correcciones U194-D1 y U194-D-A).
  *
  * El corpus de sondas por literales reconoce una notación, no un valor: una
  * puerta trasera escrita con backtick o con `'a' + 'b'` se le escapa. Esto
- * ancla otra cosa: cuántas vías de emisión hacia abajo existen y qué forma
- * tiene el fichero de despacho una vez quitados comentarios y espacios.
- * Cualquier rama nueva que emita — con la notación que sea — mueve el censo.
+ * ancla otra cosa: la forma normalizada de cada fuente del paquete y el
+ * inventario de fuentes. Cualquier vía de emisión nueva — con la notación
+ * que sea y en el fichero que sea — mueve el sello.
  *
- * Si `relay.mjs` cambia legítimamente (es fichero de U192/U193, no de U194),
- * re-anclar aquí es parte del cambio: la propagación del relay es contrato.
+ * **Alcance declarado**: el paquete, no solo `relay.mjs`. Anclar solo el
+ * relay era falso: `create-server.mjs` es donde nacen `localNs` y
+ * `bridgeClient`, y una puerta ahí propagaba con la suite en verde.
+ *
+ * `EMISIONES_ANCLADAS` es señal legible, **no** garantía: el conteo se deja
+ * clavado quitando una vía y añadiendo otra. Quien caza es el sello.
+ *
+ * Al cambiar legítimamente cualquier fuente del paquete (U192/U193 son los
+ * dueños de `relay.mjs`), re-anclar aquí es parte del cambio: la propagación
+ * es contrato.
+ *
+ * Qué tolera y qué no, medido y sin redondear:
+ *  - **tolera** comentarios, indentación, líneas en blanco, colapso de
+ *    espacios y EOL (CRLF↔LF es indiferente);
+ *  - **NO tolera** repartir una línea en varias ni renombrar identificadores;
+ *  - `prettier --write` sobre `src/relay.mjs` deja el sello **idéntico**,
+ *    pero sobre el paquete entero **lo mueve**: `admin-ui.mjs`,
+ *    `create-server.mjs` y `lifecycle.mjs` no están prettier-limpios en el
+ *    repo hoy (`npx prettier --check` los marca). No es defecto del censo:
+ *    es higiene pendiente del paquete, anotada en el reporte.
  */
-const EMISIONES_ABAJO_ANCLADAS = 4;
-const SELLO_DESPACHO_ANCLADO = '51b2d8edfefef4fdb46f10473746769b4f3503ebf95d2a4210fcaf86676346a6';
+const EMISIONES_ANCLADAS = 5;
+const SELLO_DESPACHO_ANCLADO = 'c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0';
 
 /** Nombres que socket.io reserva y no se pueden emitir como evento. */
 const RESERVADOS_SOCKETIO = new Set([
@@ -122,8 +141,11 @@ function literalesDeFuente(rutas) {
 /**
  * Forma normalizada de un fuente: sin comentarios, sin líneas en blanco y
  * con los espacios colapsados. Es lo que se sella para el censo de
- * despacho: sobrevive a reformateos y a comentarios nuevos, pero no a una
- * rama de emisión añadida, la escriba quien la escriba y como la escriba.
+ * despacho. Tolera comentarios, indentación, líneas en blanco, colapso de
+ * espacios y EOL. NO tolera repartir una línea en varias ni renombrar
+ * identificadores — eso obliga a re-anclar, y es el precio de que no tolere
+ * una rama de emisión añadida, la escriba quien la escriba y como la escriba.
+ * Detalle sobre `prettier` en el comentario de `SELLO_DESPACHO_ANCLADO`.
  * @param {string} texto
  */
 function formaNormalizada(texto) {
@@ -135,9 +157,39 @@ function formaNormalizada(texto) {
     .join('\n');
 }
 
-/** Vías de emisión hacia los clientes locales presentes en un fuente. */
-function emisionesAbajo(texto) {
-  return [...formaNormalizada(texto).matchAll(/localNs\.emit\(/g)].length;
+/**
+ * Censo de despacho de TODO `packages/mesh/socket-server/src/`.
+ *
+ * Alcance, y es una decisión, no un descuido: **el paquete entero**. Anclar
+ * solo `relay.mjs` era falso — la contrarrevisión metió una puerta en
+ * `create-server.mjs`, que es justamente donde nacen `localNs` y
+ * `bridgeClient`, y la suite siguió verde. Cualquier fuente de este `src/`
+ * puede propagar sin pasar por la allowlist, así que todos entran.
+ *
+ * Fuera de este árbol no se persigue: se declara como hueco con dueño.
+ *
+ * El inventario forma parte del censo (`readdirSync`), así que un fichero
+ * nuevo mueve el sello aunque todavía no lo importe nadie.
+ */
+function censoDeDespacho() {
+  const filas = readdirSync(new URL('../src/', import.meta.url))
+    .filter((f) => f.endsWith('.mjs'))
+    .sort()
+    .map((fichero) => {
+      const forma = formaNormalizada(fuente(`../src/${fichero}`));
+      return {
+        fichero,
+        emisiones: [...forma.matchAll(/\.emit\(/g)].length,
+        sello: createHash('sha256').update(forma, 'utf8').digest('hex')
+      };
+    });
+  return {
+    filas,
+    emisiones: filas.reduce((n, f) => n + f.emisiones, 0),
+    sello: createHash('sha256')
+      .update(filas.map((f) => `${f.fichero} ${f.sello}`).join('\n'), 'utf8')
+      .digest('hex')
+  };
 }
 
 /** Declaración plana equivalente al contrato vivo (para sondear el gate). */
@@ -250,7 +302,14 @@ test('sin segunda lista: ningún otro fuente del paquete declara nombres del con
     const texto = fuente(`../src/${nombre}`);
     for (const evento of nombres) {
       if (permitido[nombre]?.has(evento)) continue;
-      if (texto.includes(`'${evento}'`) || texto.includes(`"${evento}"`)) {
+      // Las TRES notaciones de literal. Con solo comilla simple y doble,
+      // una tabla paralela escrita con backticks pasaba en verde (D-B):
+      // es la lección de D1 sin aplicar en el test de al lado.
+      if (
+        texto.includes(`'${evento}'`) ||
+        texto.includes(`"${evento}"`) ||
+        texto.includes('`' + evento + '`')
+      ) {
         infracciones.push(`src/${nombre} declara '${evento}'`);
       }
     }
@@ -264,37 +323,47 @@ test('sin segunda lista: ningún otro fuente del paquete declara nombres del con
 
 // ── 3-bis · Censo de despacho: la FORMA, no la notación (D1) ────────────
 
-test('censo de despacho: ninguna vía de emisión hacia abajo fuera del contrato', () => {
-  const relay = fuente('../src/relay.mjs');
+test('censo de despacho: ninguna vía de emisión nueva en TODO src/ del paquete', () => {
+  const censo = censoDeDespacho();
+
+  // El inventario entra en el censo: un `src/puerta.mjs` nuevo mueve el
+  // sello aunque nadie lo importe todavía.
+  const tabla = censo.filas
+    .map((f) => `    ${f.fichero.padEnd(24)} emisiones=${f.emisiones}  ${f.sello.slice(0, 16)}…`)
+    .join('\n');
 
   assert.equal(
-    emisionesAbajo(relay),
-    EMISIONES_ABAJO_ANCLADAS,
-    'cambió el número de vías `localNs.emit(` en src/relay.mjs. Una vía nueva es una ' +
-      'puerta de propagación que la allowlist no gobierna: justifícala y re-ancla a conciencia'
-  );
-
-  const sello = createHash('sha256').update(formaNormalizada(relay), 'utf8').digest('hex');
-  assert.equal(
-    sello,
+    censo.sello,
     SELLO_DESPACHO_ANCLADO,
-    'la forma del despacho de src/relay.mjs cambió (comentarios y espacios ya están ' +
-      'descontados). La propagación del relay es contrato: si el cambio es legítimo ' +
-      '(U192/U193 son sus dueños), re-ancla SELLO_DESPACHO_ANCLADO y declara el cambio.\n' +
+    'la forma de algún fuente de packages/mesh/socket-server/src/ cambió (comentarios, ' +
+      'líneas en blanco y espacios ya están descontados).\n' +
+      'Este paquete es donde nacen `localNs` y `bridgeClient`: una vía de emisión nueva ' +
+      'en CUALQUIERA de estos ficheros propaga sin pasar por la allowlist. Si el cambio ' +
+      'es legítimo, re-ancla SELLO_DESPACHO_ANCLADO (y EMISIONES_ANCLADAS si movió) y ' +
+      'declara el cambio como cambio de contrato.\n' +
       `  sello anclado : ${SELLO_DESPACHO_ANCLADO}\n` +
-      `  sello actual  : ${sello}`
+      `  sello actual  : ${censo.sello}\n` +
+      `  censo por fichero:\n${tabla}`
   );
 
-  // La guarda de la vía top-level sigue siendo la del contrato, no un `true`
-  // ni un nombre suelto: se comprueba sobre la forma normalizada, así que
-  // reformatear no la esconde.
-  const forma = formaNormalizada(relay);
+  // Señal legible secundaria. NO es la garantía: el contador se puede dejar
+  // clavado quitando una vía y añadiendo otra (la contrarrevisión lo hizo).
+  // Quien caza es el sello; esto solo hace el diagnóstico legible.
+  assert.equal(
+    censo.emisiones,
+    EMISIONES_ANCLADAS,
+    `cambió el número total de \`.emit(\` en src/ (${censo.emisiones} vs ${EMISIONES_ANCLADAS}):\n${tabla}`
+  );
+
+  // Las guardas del contrato siguen en su sitio, comprobadas sobre la forma
+  // normalizada para que reformatear no las esconda.
+  const relay = formaNormalizada(fuente('../src/relay.mjs'));
   assert.ok(
-    forma.includes('if (RELAY_DOWNSTREAM_TOP.has(event)) {'),
+    relay.includes('if (RELAY_DOWNSTREAM_TOP.has(event)) {'),
     'la guarda de allowlist de la vía top-level ya no está en src/relay.mjs'
   );
   assert.ok(
-    forma.includes('for (const ev of RELAY_UPSTREAM) {'),
+    relay.includes('for (const ev of RELAY_UPSTREAM) {'),
     'el bucle de subida gobernado por el contrato ya no está en src/relay.mjs'
   );
 });
@@ -386,6 +455,42 @@ test('la allowlist no se amplía en caliente: add/delete/clear denegados', () =>
   assert.equal(RELAY_DOWNSTREAM_TOP.size, CUENTA_BAJADA);
   assert.equal(RELAY_UPSTREAM.length, CUENTA_SUBIDA);
   assert.equal(RELAY_DOWNSTREAM_TOP.has('evento:colado'), false);
+});
+
+test('la allowlist cumple de verdad el ReadonlySet<string> que publica el .d.ts (D-C)', () => {
+  // `types/index.d.ts` declara `downstream: ReadonlySet<string>`. Al dejar de
+  // ser un `Set` (corrección de D2) la superficie se escribió a mano, y
+  // faltaba `entries()`: el tipo compilaba y el runtime reventaba. Este test
+  // ejerce CADA miembro de ReadonlySet para que el .d.ts no pueda mentir.
+  const lista = RELAY_CONTRACT.downstream;
+  const uno = [...lista][0];
+
+  assert.equal(typeof lista.size, 'number');
+  assert.equal(lista.size, CUENTA_BAJADA);
+  assert.equal(lista.has(uno), true);
+  assert.equal(lista.has('evento:que-no-existe'), false);
+  assert.deepEqual([...lista.values()], [...lista]);
+  assert.deepEqual([...lista.keys()], [...lista]);
+  assert.deepEqual(
+    [...lista.entries()],
+    [...lista].map((v) => [v, v]),
+    'entries() debe existir y rendir pares [valor, valor], como en un Set'
+  );
+  assert.equal(typeof lista[Symbol.iterator], 'function');
+
+  const vistos = [];
+  lista.forEach(function (valor, valor2, receptor) {
+    vistos.push(valor);
+    assert.equal(valor2, valor, 'el 2.º argumento de forEach es el valor, como en Set');
+    assert.equal(receptor, lista, 'el 3.º argumento de forEach debe ser la lista publicada');
+    assert.equal(this?.marca, 'thisArg', 'forEach debe respetar thisArg');
+  }, { marca: 'thisArg' });
+  assert.deepEqual(vistos, [...lista]);
+
+  // Y ningún miembro de ReadonlySet se quedó sin implementar.
+  for (const miembro of ['has', 'size', 'entries', 'keys', 'values', 'forEach']) {
+    assert.ok(miembro in lista, `la superficie publicada no tiene \`${miembro}\``);
+  }
 });
 
 test('la allowlist resiste el secuestro por prototipo (D2: sombrear métodos no bastaba)', () => {

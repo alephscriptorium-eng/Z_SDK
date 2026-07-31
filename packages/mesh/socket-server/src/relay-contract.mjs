@@ -216,12 +216,18 @@ function listaSellada(valores) {
         'Cambiarla es un cambio de contrato en src/relay-contract.mjs.'
     );
   };
+  // La superficie es la de `ReadonlySet<string>` COMPLETA, que es lo que
+  // `types/index.d.ts` publica. Faltaba `entries()` y el tipo mentía:
+  // compilaba en TS y reventaba en runtime (U194-D-C). El paquete es
+  // publicable, así que la superficie declarada y la real deben coincidir;
+  // `test/relay-contract.test.mjs` las compara miembro a miembro.
   /** @type {any} */
   const lista = {
     has: (valor) => interno.has(valor),
     size: interno.size,
     values: () => interno.values(),
-    keys: () => interno.values(),
+    keys: () => interno.keys(),
+    entries: () => interno.entries(),
     forEach: (fn, thisArg) => {
       for (const valor of interno) fn.call(thisArg, valor, valor, lista);
     },
