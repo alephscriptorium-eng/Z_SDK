@@ -652,6 +652,15 @@ Criterio:
    olas 1–2 por construcción.
 4. **Un WP = un worker = una rama = un worktree** (regla 1 del método);
    el techo es de workers *simultáneos*, no de WPs por ola.
+4-bis. **`git stash` PROHIBIDO mientras haya más de un worktree vivo**
+   (regla nacida de un incidente real, ola 3, 2026-07-31): **la pila de
+   stash es del repositorio, no del worktree**. Dos workers de carriles
+   distintos (U180 y U194) la usaron con ~30 s de diferencia y cada uno
+   consumió la obra del otro. Se recuperó todo (commit colgante + ref de
+   rescate) y ninguna rama quedó contaminada — comprobado por el
+   orquestador: los diffs de ambas ramas son disjuntos. Para medir un
+   «antes» sin stash: `git show <base>:<ruta>`, una copia en el
+   scratchpad, o un worktree desechable. Vale igual para contrarrevisores.
 5. **C-ext no consume techo planificado**: se despacha al llegar la señal,
    ocupando hueco libre del techo vigente; si no hay hueco, espera.
 
