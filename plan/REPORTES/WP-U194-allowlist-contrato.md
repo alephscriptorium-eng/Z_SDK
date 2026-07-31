@@ -940,6 +940,12 @@ fichero NUEVO src/puerta.mjs, ni siquiera importado
 El mensaje de fallo imprime la tabla por fichero, así que el diagnóstico es
 inmediato en vez de «algo cambió».
 
+> ✎ **INCOMPLETO — devolución DEF-1.** El barrido era de **primer nivel** y
+> solo `.mjs`: `src/sub/puerta.mjs`, `src/puerta.js` y `src/puerta.cjs`
+> cargaban, emitían y **no se veían**. «Un fichero nuevo cae aunque no lo
+> importe nadie» era falso fuera del primer nivel. Corregido a barrido
+> recursivo con `.mjs`/`.js`/`.cjs` en **§13**.
+
 **Regla de alcance, declarada como tal:**
 
 > El censo cubre **`packages/mesh/socket-server/src/**` y hasta ahí**. Lo
@@ -1047,6 +1053,99 @@ higiene pendiente en §8 punto 7.
 
 ---
 
+---
+
+## 13 · Corrección de la 3.ª devolución (DEF-1)
+
+Un solo defecto, y es **la cuarta vez en esta ola que caigo en el mismo
+sitio**: afirmación de alcance más ancha que la evidencia. Esta vez en la
+frase que arreglaba exactamente eso.
+
+### DEF-1 · El censo barría primer nivel; el alcance declarado era `src/**` · **CORREGIDO**
+
+`readdirSync(new URL('../src/'…)).filter(f => f.endsWith('.mjs'))`: **no
+recursivo** y con filtro de extensión sensible a mayúsculas. Yo escribía
+`src/**` y `.filter` decía «primer nivel, una extensión».
+
+**Reproducido**, con `src/sub/puerta.mjs` y `src/sub/config2.mjs` puestos en
+el árbol: **23/23 verde**, con una puerta de propagación y una tabla
+paralela dentro del paquete. Refuta mi propia frase de D-A («un fichero
+nuevo mueve el sello aunque todavía no lo importe nadie»): era cierta solo
+en el primer nivel.
+
+**Corrección**: un enumerador único, `fuentesDelPaquete()`:
+
+```js
+readdirSync(new URL('../src/', import.meta.url), { recursive: true })
+  .map((f) => String(f).replaceAll('\\', '/'))
+  .filter((f) => /\.(mjs|js|cjs)$/i.test(f))
+  .sort();
+```
+
+Recursivo, las tres extensiones ejecutables, insensible a la caja, y con el
+separador normalizado a `/` para que el sello no dependa del sistema de
+ficheros.
+
+**Aplicado en los dos sitios, y compartido a propósito.** Tenías razón en
+que «sin segunda lista» comparte el mismo `readdirSync`: en vez de arreglar
+dos veces el mismo `filter`, ambos tests llaman ahora al mismo enumerador.
+Duplicarlo es precisamente cómo se vuelven a separar — y la sonda
+`src/sub/config2.mjs` evadía **los dos a la vez**.
+
+**Los cinco vectores, verificados en rojo:**
+
+```
+src/sub/puerta.mjs      → not ok 8   sub/puerta.mjs   emisiones=1  0fd90f699d6c6e6c…
+src/puerta.js           → not ok 8   puerta.js        emisiones=1  2f326d6d2c9109e4…
+src/puerta.cjs          → not ok 8   puerta.cjs       emisiones=1  90f9a3cbe7dab089…
+src/Puerta.MJS          → not ok 8   Puerta.MJS       emisiones=1  c84a094425156e4b…   (caja)
+src/sub/config2.mjs     → not ok 7   "src/sub/config2.mjs declara 'SET_STATE'"
+                                     "src/sub/config2.mjs declara 'state'"
+                                     "src/sub/config2.mjs declara 'track'"
+```
+
+**El sello anclado NO cambia**: sigue siendo
+`c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0`, porque
+hoy no hay subdirectorios ni `.js`/`.cjs` en `src/`. Conviene decirlo
+explícito para la contrarrevisión: **esto ensancha cobertura, no re-ancla**.
+Si el sello hubiera cambiado, habría que sospechar del arreglo.
+
+Y la mitigación que declaraste con honestidad, anotada porque es verdad y
+matiza la gravedad: para propagar de verdad desde `src/sub/`, algún `.mjs`
+de primer nivel tiene que importarlo, **y esa edición sí movía la forma
+sellada**. Lo roto era la detección en *staging* y la cobertura declarada,
+no la invariante de runtime. No lo uso para rebajarlo: lo que prometía D-A
+era justamente la detección en staging.
+
+### Nota de método, ya que van cuatro
+
+Los cuatro bloqueantes de esta ola —D1, D-A, DEF-1 y la parte enunciativa de
+D3— han sido **el mismo fallo**: implementar algo correcto y describirlo con
+un alcance mayor del que tiene. Ninguno fue un error de lógica. En el ancla
+del censo queda escrito, para quien venga:
+
+> Si vuelves a tocar el alcance, comprueba que la frase y el `readdirSync`
+> dicen lo mismo: es donde ha fallado dos veces.
+
+### Estado tras la 4.ª vuelta
+
+| | 3.ª entrega | ahora |
+| --- | --- | --- |
+| suite `@zeus/socket-server` | 23/23 | **23/23** |
+| tests propios de U194 | 13 | **13** |
+| `@zeus/webrtc-viewer` | 6/6 | **6/6** |
+| eslint `src/` + `test/` | 0/0 | **0 errores, 0 warnings** |
+| sello del censo | `c842ca2f…` | **`c842ca2f…` (sin cambio)** |
+| alcance del censo | `src/*.mjs` primer nivel | **`src/**` recursivo, `.mjs`/`.js`/`.cjs`** |
+| `relay.mjs` · `create-server.mjs` · `admin-ui.mjs` · `lifecycle.mjs` · `relay-trace.test.mjs` | 0 ediciones | **0 ediciones** |
+
+Regresión re-verificada tras el cambio: **D1** (backtick en `relay.mjs`) 2
+rojos · **A** (añadir sin re-sellar) 4 suites caen · **D2** (`Set.prototype`
+rechazado, `instanceof Set` falso, `size` 8) · D3, D4 y D5 verdes en su
+sitio.
+
+---
+
 *Worker Z · WP-U194 · rama `wp/u194-allowlist-contrato` · base `dc70cec` ·
-1.ª entrega, corrección de devolución y corrección de 2.ª devolución,
-2026-08-01. Sin merge, sin push, sin reescritura de historia.*
+1.ª entrega + tres correcciones de devolución, 2026-08-01. Sin merge, sin
+push, sin reescritura de historia.*
