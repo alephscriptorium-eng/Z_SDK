@@ -37,6 +37,7 @@ import { assertIntentRole, resolveIntentRole } from '@zeus/protocol';
 import { validate as validateSchema } from '@zeus/linea-kit/validate';
 import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
 import { VOLUMES_OPS_CATALOG } from './catalog.mjs';
+import { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
 import { hashManifest, sealManifest } from './manifest.mjs';
 import { syncVolumeCounters } from './counters.mjs';
 import { measurePath } from './measure.mjs';
@@ -240,6 +241,28 @@ export function importPack(opts) {
     manifestSha256: sealBefore.sha256
   });
 
+  // ── FAMILIA (driver seed U202 → U242): detect per volume ───────────────
+  // Declared unknown family = abort (H-01 §③: sin driver no se importa).
+  /** @type {Record<string, string|null>} */
+  const families = {};
+  /** @type {Record<string, string[]>} */
+  const volumeFilesById = {};
+  for (const [volId, vol] of Object.entries(pack.volumes)) {
+    const prefix = `${vol.path}/`;
+    volumeFilesById[volId] = tree.files
+      .filter((rel) => rel.startsWith(prefix))
+      .map((rel) => rel.slice(prefix.length));
+    const detected = detectVolumeFamily(vol, volumeFilesById[volId]);
+    if (detected.error) {
+      return fail('familia', detected.error, {
+        volume: volId,
+        family: detected.family
+      });
+    }
+    families[volId] = detected.family;
+  }
+  steps.push({ step: 'familia', ok: true, families });
+
   // ── 6 · NO-OP (decided after VERIFICAR, before STAGING) ────────────────
   const allSealed = Object.keys(pack.volumes).every((id) => {
     const dest = destConfig.volumes[id];
@@ -301,17 +324,77 @@ export function importPack(opts) {
         return fail('validar', 'staging_corrupto', { file: rel });
       }
     }
+    // Family gate (U202): staged tree against the REAL family validators.
+    for (const [volId, vol] of Object.entries(pack.volumes)) {
+      if (!families[volId]) continue;
+      const driver = FAMILY_DRIVERS[families[volId]];
+      const fam = driver.validate({
+        stagedDir: join(stagingDir, vol.path.split('/').join(sep))
+      });
+      if (!fam.ok) {
+        return fail('validar', 'familia_invalida', {
+          volume: volId,
+          family: families[volId],
+          results: fam.results.filter((r) => !r.ok)
+        });
+      }
+    }
     steps.push({ step: 'validar', ok: true, schema: 'volumes', files: declared.length });
 
     // ── 4 · FUSIONAR ─────────────────────────────────────────────────────
     // Dry pass: EVERY collision is detected before the first rename.
-    /** @type {{ kind: 'volume'|'corpus', volId: string, corpus?: object, from: string, to: string }[]} */
+    /** @type {{ kind: 'volume'|'corpus'|'file', volId: string, corpus?: object, from: string, to: string }[]} */
     const moves = [];
     /** @type {{ volId: string, corpusId: string }[]} */
     const noopCorpora = [];
+    /** @type {object[]} */
+    const familyReports = [];
     for (const [volId, vol] of Object.entries(pack.volumes)) {
       const dest = destConfig.volumes[volId];
       const volDestAbs = join(volumesRoot, vol.path.split('/').join(sep));
+      if (families[volId]) {
+        // Family volume (U202): the driver returns the merge PLAN; the
+        // family rules (escribe-lo-que-falta, divergencia-reportada,
+        // curación intocable) replace the generic corpus collision.
+        if (!dest) {
+          const clash = Object.entries(destConfig.volumes).find(
+            ([, v]) => v.path === vol.path && v.disk === vol.disk
+          );
+          if (clash) {
+            return fail('fusionar', 'slot_en_conflicto', {
+              volume: volId,
+              claimedBy: clash[0]
+            });
+          }
+          if (existsSync(volDestAbs) && walkTree(volDestAbs).files.length > 0) {
+            return fail('fusionar', 'slot_ocupado', { volume: volId, path: vol.path });
+          }
+        }
+        const driver = FAMILY_DRIVERS[families[volId]];
+        const plan = driver.merge({
+          stagedDir: join(stagingDir, vol.path.split('/').join(sep)),
+          destDir: volDestAbs,
+          volumeFiles: volumeFilesById[volId]
+        });
+        for (const rel of plan.moves) {
+          const relFull = `${vol.path}/${rel}`;
+          moves.push({
+            kind: 'file',
+            volId,
+            from: join(stagingDir, relFull.split('/').join(sep)),
+            to: join(volumesRoot, relFull.split('/').join(sep))
+          });
+        }
+        familyReports.push({
+          id: volId,
+          family: families[volId],
+          moved: plan.moves.length,
+          skipped: plan.skips.length,
+          divergences: plan.divergences,
+          protectedSidecars: plan.protectedSidecars
+        });
+        continue;
+      }
       if (!dest) {
         // New volume: its disk/path must not be claimed by another volume.
         const clash = Object.entries(destConfig.volumes).find(
@@ -365,7 +448,15 @@ export function importPack(opts) {
       step: 'fusionar',
       ok: true,
       moved: moves.length,
-      noopCorpora: noopCorpora.length
+      noopCorpora: noopCorpora.length,
+      families: familyReports.map((f) => ({
+        id: f.id,
+        family: f.family,
+        moved: f.moved,
+        skipped: f.skipped,
+        divergences: f.divergences.length,
+        protectedSidecars: f.protectedSidecars.length
+      }))
     });
 
     // ── 5 · SELLAR ───────────────────────────────────────────────────────
@@ -396,6 +487,7 @@ export function importPack(opts) {
         path: vol.path,
         readonly: vol.readonly ?? true,
         label: vol.label || prev.label || volId,
+        ...(families[volId] ? { family: families[volId] } : {}),
         source: {
           ...(prev.source || {}),
           imported: {
@@ -442,7 +534,13 @@ export function importPack(opts) {
         pack: { name: pack.name, version: pack.version, packHash },
         volumes: Object.keys(pack.volumes),
         manifestSha256: { before: sealBefore.sha256, after: sealAfter.sha256 },
-        noopCorpora
+        noopCorpora,
+        families: familyReports.map((f) => ({
+          id: f.id,
+          family: f.family,
+          divergences: f.divergences.length,
+          protectedSidecars: f.protectedSidecars.length
+        }))
       },
       ledgerOpts
     );
@@ -456,6 +554,7 @@ export function importPack(opts) {
       manifestSha256Before: sealBefore.sha256,
       imported: importedReport,
       noopCorpora,
+      families: familyReports,
       steps,
       ledger: seat
     };

@@ -10,7 +10,8 @@ export {
   isCurationStatus,
   isCanonStatus,
   readCurationStatus,
-  curationStatusFromCorpus
+  curationStatusFromCorpus,
+  isCuratedSidecarPath
 } from './curation.mjs';
 
 export {

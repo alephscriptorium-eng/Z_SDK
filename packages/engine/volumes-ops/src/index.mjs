@@ -17,6 +17,8 @@ export {
 } from './empty.mjs';
 export { syncVolumeCounters } from './counters.mjs';
 export { importPack } from './import.mjs';
+export { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
+export { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
 export {
   MANIFEST_FILE_NAME,
   resolveManifestPath,
