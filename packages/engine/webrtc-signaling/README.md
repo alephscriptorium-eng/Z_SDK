@@ -82,10 +82,25 @@ Invariantes que el modo anónimo **no** relaja:
    un payload que se declare anónimo no abre una antesala estricta.
 4. **Cualquier exigencia configurada vuelve a exigir card** aunque el modo
    sea anónimo (`requiredRole`, `requireSsbId`, `requireSeatSignature`):
-   la ausencia deniega.
+   la ausencia deniega. Las exigencias se leen **por truthiness**, igual
+   que el torno U186 — `requireSsbId: 1` exige, no se descarta.
 5. **`assertSignalingPeerCard` no cambia de semántica.** Es el portero que
-   consumen terceros (p. ej. el carril LAN de blobs); ante card ausente
-   sigue denegando, con modo anónimo o sin él.
+   **importan** terceros (`@zeus/blob-sync-harness`,
+   `@zeus/blobstore-client`); ante card ausente sigue denegando, con modo
+   anónimo o sin él. Ojo con lo que esto *no* dice: hoy esos consumidores
+   sólo lo invocan desde spikes y fixtures, no desde una ruta de datos
+   viva — el motivo para no tocarlo es que **alguien lo importa**, no que
+   proteja un carril en producción.
+6. **El carril SSB no admite modo anónimo**, y no por configuración sino
+   por construcción: `SsbPrivateSignalingService.setAdmission('anonymous')`
+   **lanza**. En un carril cuyo transporte *es* la identidad del feed,
+   anónimo no es un modo.
+
+Estos invariantes valen **en los dos gemelos**. El de navegador
+(`@zeus/webrtc-viewer` · `BrowserSocketSignalingService`) acepta las
+mismas tres exigencias y expone `setAdmission` / `getSessionRole` /
+`describeAdmission` / `getSsbId`; un modo de admisión desconocido **lanza**
+en ambos.
 
 ### Hook SSB (extensión Z_SDK #4)
 

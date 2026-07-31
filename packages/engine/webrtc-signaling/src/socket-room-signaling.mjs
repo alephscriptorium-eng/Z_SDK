@@ -59,6 +59,7 @@ export class SocketRoomSignalingService extends SignalingService {
     /** @type {boolean} */
     this._ownsClient = !options.client;
     if (options.requiredRole) this._requiredRole = options.requiredRole;
+    // Ya eran truthiness (correcto); se dejan tal cual por simetría con D1.
     if (options.requireSsbId) this._requireSsbId = true;
     if (options.requireSeatSignature) this._requireSeatSignature = true;
     if (options.admission) this.setAdmission(options.admission);
@@ -80,9 +81,10 @@ export class SocketRoomSignalingService extends SignalingService {
     this.userId = userId;
     const opts = { ...this._options, ...config };
     if (opts.requiredRole) this._requiredRole = opts.requiredRole;
-    if (opts.requireSsbId != null) this._requireSsbId = opts.requireSsbId;
+    // D1: normalizar al guardar (ver `peer-card-gate.mjs` demandsCard).
+    if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
     if (opts.requireSeatSignature != null) {
-      this._requireSeatSignature = opts.requireSeatSignature;
+      this._requireSeatSignature = Boolean(opts.requireSeatSignature);
     }
     if (opts.admission) this.setAdmission(opts.admission);
     if (opts.peerCard != null) {

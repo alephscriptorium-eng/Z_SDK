@@ -189,11 +189,17 @@ export function assertSignalingAdmission(card, opts = {}) {
   }
 
   const anonymousMode = opts.admission === SIGNALING_ADMISSION.anonymous;
+  // D1 (devolución): truthiness, NO `=== true`. El torno U186 lee estas
+  // mismas exigencias por truthiness (`:85`, `:100`); si aquí se leyeran
+  // por identidad estricta, una exigencia configurada con un truthy
+  // no-booleano (`requireSsbId: 1`) se descartaría en silencio y la
+  // admisión anónima quedaría fail-OPEN contra lo declarado. Las dos
+  // caras del mismo fichero tienen que leer el opt igual.
   const demandsCard =
     !anonymousMode ||
     Boolean(opts.role) ||
-    opts.requireSsbId === true ||
-    opts.requireSeatSignature === true;
+    Boolean(opts.requireSsbId) ||
+    Boolean(opts.requireSeatSignature);
 
   if (demandsCard) {
     // Mismo veredicto y mismo texto que el torno U186 ante card ausente:

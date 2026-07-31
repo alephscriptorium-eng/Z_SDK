@@ -11,6 +11,7 @@
  */
 
 import { createBrowserRoomClient } from '@zeus/room-client-browser';
+import { isSsbId } from '@zeus/protocol';
 import {
   assertSignalingPeerCard,
   assertSignalingAdmission,
@@ -75,6 +76,11 @@ class Emitter {
  * @property {string} [admission] — WP-U197: `peer-card` (por defecto,
  *   statu quo U93/U186) | `anonymous` (offer/answer/ICE sin card,
  *   `role:null`). Decisión local de despliegue, no negociable por cable.
+ *   Un modo desconocido **lanza** (D3): un typo de despliegue no puede
+ *   depurarse a ciegas.
+ * @property {string} [requiredRole] — rol concreto exigido por el torno
+ * @property {boolean} [requireSsbId] — exigir ssbId en card (federación)
+ * @property {boolean} [requireSeatSignature] — exigir firma de asiento
  */
 
 export class BrowserSocketSignalingService extends Emitter {
@@ -92,14 +98,66 @@ export class BrowserSocketSignalingService extends Emitter {
     /** @type {Array<() => void>} */
     this._unsubs = [];
     /** @type {string} — WP-U197: admisión de antesala; por defecto la de U93 */
-    this._admission =
-      config.admission === SIGNALING_ADMISSION.anonymous
-        ? SIGNALING_ADMISSION.anonymous
-        : SIGNALING_ADMISSION.peerCard;
+    this._admission = SIGNALING_ADMISSION.peerCard;
+    /**
+     * D6 — la «red de seguridad» del modo anónimo: cualquier exigencia
+     * configurada vuelve a exigir card. Sin estos tres campos el gemelo
+     * publicaba una red que no tenía.
+     * @type {string|null}
+     */
+    this._requiredRole = null;
+    /** @type {boolean} */
+    this._requireSsbId = false;
+    /** @type {boolean} */
+    this._requireSeatSignature = false;
+    this._applyPolicy(config);
+  }
+
+  /**
+   * Aplica política declarada (constructor o `connect`). D4: `connect()`
+   * ya no ignora `admission`; D1: exigencias normalizadas por truthiness.
+   * @param {BrowserSignalingConfig} [cfg]
+   * @private
+   */
+  _applyPolicy(cfg = {}) {
+    if (cfg.admission != null) this.setAdmission(cfg.admission);
+    if (cfg.requiredRole) this._requiredRole = cfg.requiredRole;
+    if (cfg.requireSsbId != null) this._requireSsbId = Boolean(cfg.requireSsbId);
+    if (cfg.requireSeatSignature != null) {
+      this._requireSeatSignature = Boolean(cfg.requireSeatSignature);
+    }
+  }
+
+  /** Opciones del torno, en un solo sitio (paridad con el carril Node). */
+  _gateOpts(extra = {}) {
+    return {
+      admission: this._admission,
+      role: this._requiredRole ?? undefined,
+      requireSsbId: this._requireSsbId,
+      requireSeatSignature: this._requireSeatSignature,
+      ...extra
+    };
   }
 
   isConnected() {
     return this._connected;
+  }
+
+  /**
+   * D3 — modo desconocido LANZA (antes degradaba en silencio a
+   * `peer-card`: dirección segura, pero muda).
+   * @param {string} mode
+   */
+  setAdmission(mode) {
+    if (
+      mode !== SIGNALING_ADMISSION.peerCard &&
+      mode !== SIGNALING_ADMISSION.anonymous
+    ) {
+      throw new Error(
+        `BrowserSocketSignalingService.setAdmission: unknown admission mode ${String(mode)}`
+      );
+    }
+    this._admission = mode;
   }
 
   /** @returns {string} */
@@ -110,6 +168,33 @@ export class BrowserSocketSignalingService extends Emitter {
   /** WP-U197 — anónimo = sin card adoptada; nunca implica permiso. */
   isAnonymous() {
     return this._peerCard == null;
+  }
+
+  /**
+   * Rol de la sesión, consultado EN EL MOMENTO (paridad con U186).
+   * Sin card ⇒ `null`; con card se re-valida (frescura incluida).
+   * @param {number} [now]
+   * @returns {string|null}
+   */
+  getSessionRole(now) {
+    if (this._peerCard == null) return null;
+    const check = assertSignalingPeerCard(this._peerCard, this._gateOpts({ now }));
+    return check.ok ? check.role : null;
+  }
+
+  /** @returns {string|null} */
+  getSsbId() {
+    const id = this._peerCard?.ssbId;
+    return isSsbId(id) ? id : null;
+  }
+
+  /** @returns {{ admission: string, anonymous: boolean, role: string|null }} */
+  describeAdmission(now) {
+    return {
+      admission: this._admission,
+      anonymous: this.isAnonymous(),
+      role: this.getSessionRole(now)
+    };
   }
 
   getUserId() {
@@ -128,7 +213,7 @@ export class BrowserSocketSignalingService extends Emitter {
    * @param {object} peerCard
    */
   setPeerCard(peerCard) {
-    const check = assertSignalingPeerCard(peerCard);
+    const check = assertSignalingPeerCard(peerCard, this._gateOpts());
     if (!check.ok) {
       throw new Error(`BrowserSocketSignalingService.setPeerCard: ${check.error}`);
     }
@@ -142,6 +227,11 @@ export class BrowserSocketSignalingService extends Emitter {
   async connect(userId, config = {}) {
     this.userId = userId;
     const cfg = { ...this._config, ...config };
+    // D4 — `connect()` ya NO ignora la política: `admission` y las tres
+    // exigencias se aplican aquí, igual que en el carril Node
+    // (`socket-room-signaling.mjs:82-88`). Modo desconocido lanza ANTES
+    // de abrir el cable.
+    this._applyPolicy(cfg);
     this._client = createBrowserRoomClient({
       scriptoriumUrl: cfg.scriptoriumUrl,
       token: cfg.token || '',
@@ -177,9 +267,7 @@ export class BrowserSocketSignalingService extends Emitter {
     if (!this._client || !this._connected) {
       throw new Error('Not connected to signaling transport');
     }
-    const admitted = assertSignalingAdmission(peerCard, {
-      admission: this._admission
-    });
+    const admitted = assertSignalingAdmission(peerCard, this._gateOpts());
     if (!admitted.ok) {
       throw new Error(`BrowserSocketSignalingService.setPeerCard: ${admitted.error}`);
     }
@@ -222,7 +310,10 @@ export class BrowserSocketSignalingService extends Emitter {
     const gated = { ...message };
     if (isPeerCardGatedType(gated.type)) {
       const card = gated.peerCard ?? this._peerCard;
-      const check = assertSignalingAdmission(card, { admission: this._admission });
+      const check = assertSignalingAdmission(
+        card,
+        this._gateOpts({ claimedSsbId: gated.ssbId ?? undefined, claimedFrom: gated.from })
+      );
       if (!check.ok) {
         throw new Error(`signaling peer-card required: ${check.error}`);
       }
@@ -315,16 +406,20 @@ export class BrowserSocketSignalingService extends Emitter {
     }
 
     if (isPeerCardGatedType(abstractType)) {
-      const check = assertSignalingAdmission(peerCardFromMessage(message), {
-        admission: this._admission,
-        claimedSsbId: payload.ssbId ?? payload.data?.ssbId ?? undefined,
-        claimedFrom: message.from
-      });
+      const check = assertSignalingAdmission(
+        peerCardFromMessage(message),
+        this._gateOpts({
+          claimedSsbId: payload.ssbId ?? payload.data?.ssbId ?? undefined,
+          claimedFrom: message.from
+        })
+      );
       if (!check.ok) {
         this.emit('error', new Error(`signaling peer-card rejected: ${check.error}`));
         return;
       }
       if (check.anonymous) {
+        // D7: defensa en profundidad, no la garantía — el mensaje se
+        // construye arriba sin `peerCard` cuando el payload no la trae.
         delete message.peerCard;
         message.anonymous = true;
       }

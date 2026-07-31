@@ -13,7 +13,11 @@ import { isSsbId } from '@zeus/protocol';
 import { createMessageId } from './messages.mjs';
 import { SignalingService } from './signaling-service.mjs';
 import { SSB_WEBRTC_SIGNAL_TYPE } from './ssb-private-transport.mjs';
-import { peerCardFromMessage, ssbIdFromMessage } from './peer-card-gate.mjs';
+import {
+  peerCardFromMessage,
+  ssbIdFromMessage,
+  SIGNALING_ADMISSION
+} from './peer-card-gate.mjs';
 
 /**
  * Abstract signaling type → SSB content.signal field.
@@ -53,7 +57,30 @@ export class SsbPrivateSignalingService extends SignalingService {
     this._allowTrickle = options.allowTrickle === true;
     // Carril SSB: identidad = feed id en el saludo (Z_SDK #4)
     this._requireSsbId = options.requireSsbId !== false;
-    this._requireSeatSignature = options.requireSeatSignature === true;
+    // D1 (devolución): truthiness, no identidad estricta — una exigencia
+    // declarada con truthy no-booleano no puede caer a `false`.
+    this._requireSeatSignature = Boolean(options.requireSeatSignature);
+    // Una opción `admission` no se ignora en silencio: se aplica (y en
+    // este carril, `anonymous` lanza — ver `setAdmission` abajo).
+    if (options.admission) this.setAdmission(options.admission);
+  }
+
+  /**
+   * El carril SSB NO admite antesala anónima (WP-U197 · D1 de la
+   * devolución). Antes se confiaba en que `requireSsbId` valía `true` por
+   * defecto; eso es un DEFECTO, no una imposibilidad: `requireSsbId:false`
+   * es legal y `setAdmission()` es público y heredado. Aquí se hace
+   * estructural: en un carril cuyo transporte ES la identidad del feed,
+   * «anónimo» no es un modo, es una contradicción.
+   * @param {string} mode
+   */
+  setAdmission(mode) {
+    if (mode === SIGNALING_ADMISSION.anonymous) {
+      throw new Error(
+        'SsbPrivateSignalingService: el carril SSB no admite antesala anónima (la identidad del feed ES el transporte)'
+      );
+    }
+    return super.setAdmission(mode);
   }
 
   getTransport() {
@@ -81,10 +108,12 @@ export class SsbPrivateSignalingService extends SignalingService {
     }
     this.userId = userId || who;
     this._allowTrickle = opts.allowTrickle === true;
-    if (opts.requireSsbId != null) this._requireSsbId = opts.requireSsbId;
+    // D1: normalizar al guardar.
+    if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
     if (opts.requireSeatSignature != null) {
-      this._requireSeatSignature = opts.requireSeatSignature;
+      this._requireSeatSignature = Boolean(opts.requireSeatSignature);
     }
+    if (opts.admission) this.setAdmission(opts.admission);
 
     this._unbind();
     this._unsub = this._transport.subscribePrivate((msg) => this._onPrivateMsg(msg));

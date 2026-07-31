@@ -161,6 +161,105 @@ test('U197: claim de identidad sin card deniega también en el navegador', () =>
   assert.match(errors[0].message, /unproven identity claim/);
 });
 
+// ───────────────────────────────────────────────────────────────────────
+// Divergencias del gemelo señaladas en la devolución (D3 · D4 · D5 · D6)
+// ───────────────────────────────────────────────────────────────────────
+
+test('D3: modo desconocido LANZA (antes degradaba a peer-card en silencio)', () => {
+  for (const bad of ['anon', 'ANONYMOUS', '', 'peercard', true, 0, {}]) {
+    assert.throws(
+      () => new BrowserSocketSignalingService({ scriptoriumUrl: 'http://x', admission: bad }),
+      /unknown admission mode/,
+      `constructor con admission:${String(bad)}`
+    );
+  }
+  const { svc } = service();
+  for (const bad of ['anon', 'ANONYMOUS', '', true, {}]) {
+    assert.throws(() => svc.setAdmission(bad), /unknown admission mode/);
+  }
+  assert.equal(svc.getAdmission(), 'peer-card', 'el modo válido previo no se corrompe');
+});
+
+test('D4: connect() aplica la política (antes `admission` era un no-op silencioso)', async () => {
+  // Un modo inválido en `connect` LANZA — y lanza ANTES de construir el
+  // cliente de sala, así que no se abre cable ninguno. Esto prueba, sin
+  // tocar la red, que `connect` sí lee la política (antes la ignoraba y
+  // habría seguido adelante sin rechistar).
+  const svc = new BrowserSocketSignalingService({ scriptoriumUrl: 'http://x' });
+  assert.equal(svc.getAdmission(), 'peer-card');
+  await assert.rejects(
+    () => svc.connect('me', { admission: 'anon' }),
+    /unknown admission mode/
+  );
+  assert.equal(svc.isConnected(), false, 'sin cable abierto tras el typo');
+  assert.equal(svc._client, null, 'ni siquiera se construyó el cliente de sala');
+
+  // Y lo que `connect` aplica es exactamente esto (mismo camino):
+  const svc2 = new BrowserSocketSignalingService({ scriptoriumUrl: 'http://x' });
+  svc2._applyPolicy({
+    admission: 'anonymous',
+    requiredRole: 'operator',
+    requireSsbId: 1,
+    requireSeatSignature: 'yes'
+  });
+  assert.equal(svc2.getAdmission(), 'anonymous');
+  assert.equal(svc2._requiredRole, 'operator');
+  assert.equal(svc2._requireSsbId, true, 'normalizado (D1)');
+  assert.equal(svc2._requireSeatSignature, true, 'normalizado (D1)');
+});
+
+test('D5: paridad de introspección — setAdmission/getSessionRole/describeAdmission/getSsbId', async () => {
+  const { svc } = service({ admission: 'anonymous' });
+  for (const m of ['setAdmission', 'getSessionRole', 'describeAdmission', 'getSsbId']) {
+    assert.equal(typeof svc[m], 'function', `falta ${m}()`);
+  }
+  assert.equal(svc.getSessionRole(), null, 'anónimo ⇒ rol null');
+  assert.equal(svc.getSsbId(), null);
+  assert.deepEqual(svc.describeAdmission(), {
+    admission: 'anonymous',
+    anonymous: true,
+    role: null
+  });
+
+  // Con card válida concede EN LA ACCIÓN, y caducada vuelve a null
+  await svc.joinRoom(ROOM, freshCard('alice'));
+  assert.equal(svc.getSessionRole(), 'player');
+  assert.equal(svc.describeAdmission().anonymous, false);
+  const past = Date.now() + 120_000; // «ahora» futuro ⇒ la card ya expiró
+  assert.equal(svc.getSessionRole(past), null, 'la card caducada no acredita');
+});
+
+test('D6: la red de seguridad existe en el gemelo — exigencia ⇒ vuelve a exigir card', async () => {
+  // (i) rol exigido
+  const rol = service({ admission: 'anonymous', requiredRole: 'operator' });
+  await assert.rejects(() => rol.svc.joinRoom(ROOM), /missing or malformed/);
+  await assert.rejects(
+    () => rol.svc.sendOffer('bob', { type: 'offer', sdp: 'x' }),
+    /peer-card required/
+  );
+  // y una card de `player` tampoco vale donde se exige `operator`
+  await assert.rejects(
+    () => rol.svc.joinRoom(ROOM, freshCard('alice')),
+    /does not grant role:operator/
+  );
+
+  // (ii) ssbId exigido — incluida la cara D1 (truthy no booleano)
+  for (const truthy of [true, 1, 'yes']) {
+    const s = service({ admission: 'anonymous', requireSsbId: truthy });
+    await assert.rejects(() => s.svc.joinRoom(ROOM), /missing or malformed/);
+    assert.equal(s.svc._requireSsbId, true, 'exigencia normalizada');
+  }
+
+  // (iii) firma de asiento exigida
+  const firma = service({ admission: 'anonymous', requireSeatSignature: 1 });
+  await assert.rejects(() => firma.svc.joinRoom(ROOM), /missing or malformed/);
+  await assert.rejects(
+    () => firma.svc.joinRoom(ROOM, freshCard('alice')),
+    /seat signature missing/,
+    'card sin firma tampoco pasa donde la firma se exige'
+  );
+});
+
 test('U197: en modo anónimo el mensaje entrante llega sin card y marcado', () => {
   const { svc } = service({ admission: 'anonymous' });
   const seen = [];

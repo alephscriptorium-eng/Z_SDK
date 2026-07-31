@@ -122,9 +122,11 @@ export class SignalingService extends EventEmitter {
    * @param {{ role?: string, now?: number, requireSsbId?: boolean, requireSeatSignature?: boolean }} [opts]
    */
   setPeerCard(peerCard, opts = {}) {
-    if (opts.requireSsbId != null) this._requireSsbId = opts.requireSsbId;
+    // D1: se normaliza al guardar; una exigencia declarada con truthy
+    // no-booleano NO puede acabar valiendo `false` río abajo.
+    if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
     if (opts.requireSeatSignature != null) {
-      this._requireSeatSignature = opts.requireSeatSignature;
+      this._requireSeatSignature = Boolean(opts.requireSeatSignature);
     }
     const check = assertSignalingPeerCard(peerCard, {
       role: opts.role ?? this._requiredRole ?? undefined,
@@ -294,8 +296,16 @@ export class SignalingService extends EventEmitter {
       }
       if (check.anonymous) {
         // WP-U197 · anónimo es anónimo: el mensaje entra SIN card y SIN
-        // ssbId. No hay identidad que un consumidor pueda confundir con
-        // credencial; el rol de la sesión sigue siendo null.
+        // ssbId, y el rol de la sesión sigue siendo null.
+        //
+        // D7 (devolución): estos dos `delete` son DEFENSA EN PROFUNDIDAD,
+        // no la garantía. Quien garantiza la ausencia es la CONSTRUCCIÓN
+        // del mensaje aguas arriba (`socket-room-signaling.mjs:220-231` /
+        // `ssb-private-signaling.mjs:211-222`, que sólo copian `peerCard`
+        // / `ssbId` si existen) más el rechazo del claim sin sello en
+        // `assertSignalingAdmission`. Mutarlos NO tumba ninguna prueba
+        // porque no hay vector que los alcance: se dejan como red por si
+        // un futuro camino de construcción sí los alcanza.
         delete message.peerCard;
         delete message.ssbId;
         message.anonymous = true;

@@ -319,6 +319,90 @@ test('CA3e: firma de asiento exigida deniega al anónimo (hostil-omite)', async 
 });
 
 // ───────────────────────────────────────────────────────────────────────
+// D1 (devolución) · fail-open contra configuración declarada
+//
+// El torno U186 lee las exigencias por TRUTHINESS (`peer-card-gate.mjs:85`
+// `if (opts.requireSsbId || ssbId != null)` y `:100`). La admisión las
+// leía con `=== true`: una exigencia declarada con un truthy no-booleano
+// se descartaba en silencio y el anónimo entraba. Asimetría cerrada.
+// ───────────────────────────────────────────────────────────────────────
+
+test('D1: exigencia con truthy NO booleano sigue exigiendo card (no fail-open)', () => {
+  const card = freshCard('a'); // sin ssbId, sin seatSignature
+  for (const truthy of [1, 'yes', -1, Infinity, {}, [], 'false']) {
+    // el torno U186: por truthiness, deniega
+    const torno = assertSignalingPeerCard(card, { requireSsbId: truthy });
+    assert.equal(torno.ok, false, `torno con requireSsbId:${String(truthy)}`);
+
+    // la admisión U197 debe coincidir, no descartar la exigencia
+    const adm = assertSignalingAdmission(null, {
+      admission: SIGNALING_ADMISSION.anonymous,
+      requireSsbId: truthy
+    });
+    assert.equal(adm.ok, false, `admisión con requireSsbId:${String(truthy)} debe denegar`);
+    assert.equal(adm.anonymous, false, 'y no admitir como anónimo');
+
+    const seat = assertSignalingAdmission(null, {
+      admission: SIGNALING_ADMISSION.anonymous,
+      requireSeatSignature: truthy
+    });
+    assert.equal(seat.ok, false, `requireSeatSignature:${String(truthy)} debe denegar`);
+  }
+  // Falsy sigue significando «sin exigencia» (simetría con el torno)
+  for (const falsy of [0, '', false, null, undefined, NaN]) {
+    const adm = assertSignalingAdmission(null, {
+      admission: SIGNALING_ADMISSION.anonymous,
+      requireSsbId: falsy
+    });
+    assert.equal(adm.ok, true, `requireSsbId:${String(falsy)} = sin exigencia`);
+    assert.equal(adm.anonymous, true);
+  }
+});
+
+test('D1b: alcanzable por API pública — connect() con requireSsbId truthy deniega', async () => {
+  for (const truthy of [1, 'yes']) {
+    const bus = roomBus();
+    const svc = new SocketRoomSignalingService({
+      client: bus.makeClient(`anon-${String(truthy)}`),
+      room: ROOM
+    });
+    await svc.connect(`anon-${String(truthy)}`, {
+      admission: SIGNALING_ADMISSION.anonymous,
+      requireSsbId: truthy
+    });
+
+    // El join anónimo NO puede entrar con una exigencia declarada
+    await assert.rejects(() => svc.joinRoom(ROOM), /missing or malformed/);
+    await assert.rejects(
+      () => svc.sendOffer('bob', { type: 'offer', sdp: 'x' }),
+      /peer-card required/
+    );
+    // y el valor quedó normalizado, no crudo
+    assert.equal(svc._requireSsbId, true, 'la exigencia se guarda normalizada');
+  }
+});
+
+test('D1c: el carril SSB NO admite antesala anónima (estructural, no por defecto)', async () => {
+  const { SsbPrivateSignalingService } = await import('../src/ssb-private-signaling.mjs');
+
+  // Antes se confiaba en `requireSsbId: true` por defecto; eso era un
+  // defecto, no una imposibilidad. Ahora es imposible por construcción.
+  const svc = new SsbPrivateSignalingService({ requireSsbId: false });
+  assert.throws(
+    () => svc.setAdmission(SIGNALING_ADMISSION.anonymous),
+    /carril SSB no admite antesala anónima/
+  );
+  assert.throws(
+    () => new SsbPrivateSignalingService({ admission: SIGNALING_ADMISSION.anonymous }),
+    /carril SSB no admite antesala anónima/
+  );
+  assert.equal(svc.getAdmission(), 'peer-card', 'el modo del carril SSB no se mueve');
+  // El modo estricto sí se puede fijar (no es un lanzador indiscriminado)
+  svc.setAdmission(SIGNALING_ADMISSION.peerCard);
+  assert.equal(svc.getAdmission(), 'peer-card');
+});
+
+// ───────────────────────────────────────────────────────────────────────
 // Casos rojos · el bypass que buscará la contrarrevisión
 // ───────────────────────────────────────────────────────────────────────
 
