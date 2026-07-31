@@ -842,6 +842,15 @@ hecho, con `git checkout <fichero>` para volver — nunca `git stash`, regla
 | se retira la guarda `enlace_en_destino` de `merge` | **1**: `D-B`. Nada más |
 | se retira el guardián `unidad_en_raiz` | **1**: `D-E`. Nada más |
 
+**Sobre la regla 4-quater** (correr suites puede ensuciar ficheros
+rastreados): mi `git status` está limpio **después** de correr las siete
+suites, y no por casualidad — toda la suite del WP escribe exclusivamente bajo
+`fs.mkdtempSync(path.join(os.tmpdir(), …))` (raíces de volúmenes en
+`zeus-u204-root-*`, packs en `zeus-u204-pack-*`), y cada test borra su temporal
+en el `finally`. Ni un byte se escribe dentro del árbol, ni siquiera la
+junction del probe D-B (vive en el root temporal y se desenlaza antes de
+borrar). No hay actas ni artefactos con fecha o rutas absolutas.
+
 Los 53 tests vuelven a verde al restaurar. Que la regresión de D-A tumbe cinco
 y no uno es lo correcto: los cinco afirman **el mismo contrato** (una sola vía
 de clave) desde ángulos distintos, y ese es justamente el contrato que la
