@@ -218,7 +218,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 
 | U | F2 | WP | BRIEF | CA tentativo | prio |
 | - | -- | -- | ----- | ------------ | ---- |
-| **U179** | 01 | Ficha de runtime — **matriz 51/51 explícita** | 8 columnas por pieza para **las 51**, no «por servicio»: (MCP/lib · catálogo · engine/mesh · comando · puerto+cómo cambia · disco · deps · peercard). Cita de fichero por celda. Alimenta el gate U233 | ninguna celda por inferencia · **51 filas, ninguna pieza fuera** · el grep de la cita resuelve | **P0** |
+| **U179** 🔶 | 01 | Ficha de runtime — **matriz 51/51 explícita** | 8 columnas por pieza para **las 51**, no «por servicio»: (MCP/lib · catálogo · engine/mesh · comando · puerto+cómo cambia · disco · deps · peercard). Cita de fichero por celda. Alimenta el gate U233 | ninguna celda por inferencia · **51 filas, ninguna pieza fuera** · el grep de la cita resuelve | **P0** |
 | **U180** | 02 | Catálogo ola 1 | entradas `socket-server` + `ciudad-lifecycle`; puerto por `presets-sdk/env`, cero literales | `health` de facto por entrada; sin literales | **P0** |
 | U181 | 03 | Catálogo ola 2 (UIs) | `editor-ui`, `player-ui`, `player-3d-ui`, `3d-monitor`, `cache-browser`, `firehose-browser` | cada UI arranca desde catálogo; puerto por env | P1 |
 | U182 | 04 | Presentar los 17 invisibles | 3 tandas (transporte · autoridad/juego · kits UI): qué resuelve y quién consume | cada pieza: consumida, documentada como lib, o propuesta a retiro | P1 |
@@ -264,7 +264,7 @@ Temis: gobierno, gate 51/51, orquestador, aceptación, licencia, seguridad).
 | **U207** | 38 | Porte one-off de la genealogía | U176 = pieza parcial; faltan adaptadores `linea-aleph` (~48 MB · 677 reg), FIREHOSE, FORCES. **Da ID al diferido «U87 §5 · linea-aleph vivo»** | `--check` verde antes de escribir; registry stale = incompleto | P1 |
 | **U71R** | 39 | Anclaje por contenido = fuente de import | **reencuadre de WP-U71** bajo cerco §10.8: git/rad/IPFS solo origen + procedencia inerte; jamás dependencia de arranque; wikimedia encaja por `oldid` | corpus anclado importa y arranca offline; 0 URLs vivas en root | P2 |
 | U208 | 40 | `cache_wikitext` acotado | materialización remota explícita válida en juego, prohibida en arranque | arranque en frío sin red no invoca fetch; herramienta viva bajo demanda | P1 |
-| U209 | 41 | Root VPS ≡ local | mismo contrato lógico, paths distintos; gitignored + fuera del contexto Docker | el mismo manifiesto valida en ambos hosts; `.dockerignore` verificado | P1 |
+| U209 | 41 | Root VPS ≡ local | mismo contrato lógico, paths distintos; gitignored + fuera del contexto Docker. **Decisión ④ (custodio 2026-07-31): reencolado al final — cero VPS hasta réplica local validada (U206); la subida será desde imágenes (dockerhub); horizonte PODs → U243** | el mismo manifiesto valida en ambos hosts; `.dockerignore` verificado | P2 **DEFERRED** |
 
 ### Lane E · Canal y verdad de la documentación (`core`)
 
@@ -317,22 +317,23 @@ contraparte de G (4a) y el CA de canal limpio (U212).*
 
 | U | WP | BRIEF | CA tentativo | prio |
 | - | -- | ----- | ------------ | ---- |
-| **U232** | Gobierno de ejecución F2 | mapa WP→deps→paths, ficheros calientes, olas, techo de workers, contrarrevisión por riesgo, plantilla BRIEF y **DoD Z-v1**. La ola de datos U199–U206 tiene contención propia y este WP la gobierna | ningún WP huérfano de gate · lotes con alcance disjunto · DoD escrita antes del primer despacho | **P0** |
+| **U232** 🔶 | Gobierno de ejecución F2 | mapa WP→deps→paths, ficheros calientes, olas, techo de workers, contrarrevisión por riesgo, plantilla BRIEF y **DoD Z-v1**. La ola de datos U199–U206 tiene contención propia y este WP la gobierna | ningún WP huérfano de gate · lotes con alcance disjunto · DoD escrita antes del primer despacho | **P0** |
 | **U233** | **Gate matriz 51/51** | el denominador con dientes: manifest **derivado** de las 51 piezas — tipo, capacidad, canal, consumidor, start/health, evidencia o ⏳. U180–U185 lo consumen; presencia en catálogo ≠ uso | 51 filas derivadas, no transcritas · gate **falla si falta una** · cero invisibles al cierre | **P0** |
 | **U234** | Orquestador de runtime v1 | `start:all` solo imprime comandos. Un SDK terminado arranca declarativo: start/stop/status/health con orden de deps y shutdown limpio. **V (mando de ciudad V34) y O (compose) lo consumen** | un comando levanta el perfil mínimo · otro lo para sin residuos · catálogo/deps como fuente, no shell manual | **P0** |
 | **U235** | Aceptación Z-v1 | e2e de sistema que hoy no existe: instalación limpia → runtime → juego G cargado → actores entran → intent → estado observado → **restart → recupera**. Desde checkout/tarballs limpios, offline tras seed | ciclo completo con evidencia literal · artifact inventory · cara Z del test del operador externo | **P0** |
 | U236 | Matriz de distribución | por clase: engine→npm · services→images/start · UIs→apps · fixtures→packs. **V20 (documento de puertas) es su consumidor directo** | cada pieza con canal verificable · cero «publicado» ambiguo | P1 |
-| **U237** | Licencia SPDX por workspace | root dice `AIPLv1`, LICENSE dice GPL-3.0+Animus: **inconsistente ×51 paquetes**. El custodio decide; todo coherente | SPDX validado en los 51 manifests · tarballs y docs coinciden | **P0** |
+| **U237** | Licencia SPDX por workspace | root dice `AIPLv1`, LICENSE dice GPL-3.0+Animus. **Decidido (custodio 2026-07-31): AIPLv1 = composite GPL-3.0-or-later + Animus Iocandi — tratamiento idéntico en todos los paquetes del Scriptorium**; ejecutar la coherencia ×51 (acta única con L-F08·O08·G74·HUB-060) | SPDX validado en los 51 manifests · tarballs y docs coinciden | **P0** |
 | U238 | SBOM / provenance / reproducibilidad | artefactos verificables desde tip y canal | dos builds comparan · SBOM por paquete publicado | P1 |
 | **U239** | Triage de vulnerabilidades | las 53/6 críticas históricas de deps: clasificar explotable/no-aplica con evidencia | cero críticas sin veredicto · explotable **bloquea release** | **P0** |
 | U240 | Backup/restore del plano de datos | restore en root limpio; curación humana y secuencias SSB preservadas | ciclo backup→wipe→restore→CA local-first verde | P1 |
 | U241 | Resiliencia y presupuestos | caída de relay/pub/driver con recuperación medida; CPU/mem/snapshot presupuestados | cada caída con comportamiento declarado y test · presupuestos en CI | P1 |
 | U242 | Contrato de plugin/driver | probar que un driver **externo** (o fixture) se añade sin tocar el núcleo — la extensibilidad como hecho, no como intención | segundo driver monta por contrato · cero ediciones en core | P1 |
+| U243 | Spike PODs/Solid · líneas como RDF (horizonte VOLUMES) | hay PRs pendientes (zeus) que integran el mundo POD/Solid; `ZEUS_VOLUMES_ROOT` podría quedar **sobreseído** por un cluster de pods (por jugador / por servicio / por agente) modelando las líneas como RDF. Insumo externo (solo lectura, fuera del cerco): la gestión del grafo graphdb del paradigma de holones (ALEPH.instructions, OASIS) | informe de viabilidad + decisión de mesa · no toca runtime ni contratos v1 | P2 **DEFERRED** hasta U206 |
 
 ### Conteo y dependencias (edición F2-unificada)
 
-**66 WPs** · P0 **22** · P1 **31** · P2 **13** *(55 previos con U223→P1,
-+11 nuevos: 6 P0 · 5 P1)*.
+**67 WPs** · P0 **22** · P1 **30** · P2 **15** *(F2-unificada +11; 2026-07-31:
++U243 spike PODs/RDF · U209→P2 DEFERRED — decisión ④)*.
 
 ```text
 U186 (U93-bis) ──▶ U197 (signaling anónimo) ──▶ U218 (holón-7)
@@ -346,7 +347,7 @@ U234 (orquestador) ──▶ V34 (mando ciudad) · O22 (compose consume)
 U236 (matriz distribución) ──▶ V20 (documento de puertas)
 U210/U211 (doc) — arrancan ya; NO CIERRAN sin 4a de G + U212 (CA canal)
 U216/U217 (Ciudad) ◀── esperan que G fije qué es un barrio
-U209 (root VPS) ◀── espera ruta del volumen VPS (custodio)
+U209 (root VPS) ◀── DEFERRED al final (decisión ④): U206 validada + subida vía imágenes · horizonte U243
 U235 (aceptación) ◀── último gate; consume U206+U218+U233+U234
 ```
 
