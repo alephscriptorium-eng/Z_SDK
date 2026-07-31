@@ -11,6 +11,7 @@
 
 import {
   DEFAULT_ZEUS_MCP,
+  DEFAULT_ZEUS_UI_MESH,
   resolveZeusMcpPorts,
   resolveZeusUiPorts
 } from '@zeus/presets-sdk/env';
@@ -26,6 +27,10 @@ import {
  * @property {string} [spawnGroup] shared child process key (one spawn serves many ports)
  * @property {string[]} [deps] catalog ids that should be up first
  * @property {string[]} [capabilities] RNFP / federation capability tags
+ * @property {'mcp'|'service'} [kind] default 'mcp'; 'service' = HTTP/socket
+ *   service without MCP surface (excluded from vscode mcp.json)
+ * @property {string} [uiPort] key into resolveZeusUiPorts() when the port
+ *   lives in the UI mesh block (ZEUS_PORT_*), not in DEFAULT_ZEUS_MCP
  * @property {string} [healthPath]
  * @property {string} [mcpPath]
  * @property {string} [notes]
@@ -35,6 +40,9 @@ import {
 
 /** Offline/tests mirror of presets-sdk defaults (no local port literals). */
 export const FALLBACK_MCP_PORTS = structuredClone(DEFAULT_ZEUS_MCP);
+
+/** Offline/tests mirror of UI mesh defaults (no local port literals). */
+export const FALLBACK_UI_PORTS = structuredClone(DEFAULT_ZEUS_UI_MESH);
 
 async function loadEnv() {
   try {
@@ -49,6 +57,14 @@ function syncEnvPorts() {
     return resolveZeusMcpPorts();
   } catch {
     return FALLBACK_MCP_PORTS;
+  }
+}
+
+function syncUiPorts() {
+  try {
+    return resolveZeusUiPorts();
+  } catch {
+    return FALLBACK_UI_PORTS;
   }
 }
 
@@ -201,6 +217,56 @@ export const CATALOG_SEED = [
     capabilities: ['fleet.solvePlayer', 'game.solve'],
     healthPath: '/mcp/health',
     mcpPath: '/mcp'
+  },
+  {
+    id: 'launcher',
+    name: 'mcp-launcher',
+    workspace: '@zeus/mcp-launcher',
+    spawnGroup: 'mcp-launcher',
+    deps: [],
+    capabilities: ['fleet.launcher', 'meta.actuator'],
+    healthPath: '/mcp/health',
+    mcpPath: '/mcp',
+    notes: 'Actuator MCP itself; port launcher.disk (presets env). U234'
+  },
+  {
+    id: 'socket-server',
+    name: 'socket-server',
+    kind: 'service',
+    workspace: '@zeus/socket-server',
+    spawnGroup: 'socket-server',
+    deps: [],
+    capabilities: ['fleet.socketServer', 'v1.zeus'],
+    healthPath: '/health',
+    mcpPath: '/',
+    uiPort: 'scriptorium',
+    notes: 'V1 Zeus substrate (Socket.IO+REST); no MCP surface. Port = ui.scriptorium (ZEUS_PORT_SCRIPTORIUM). U234'
+  },
+  {
+    id: 'cache-browser',
+    name: 'cache-browser',
+    kind: 'service',
+    workspace: '@zeus/cache-browser',
+    spawnGroup: 'cache-browser',
+    deps: [],
+    capabilities: ['fleet.cacheBrowser', 'v1.zeus'],
+    healthPath: '/health',
+    mcpPath: '/',
+    uiPort: 'view',
+    notes: 'View UI over DISK_02/LINEAS; no MCP surface. Port = ui.view (ZEUS_PORT_VIEW). U234'
+  },
+  {
+    id: 'firehose-browser',
+    name: 'firehose-browser',
+    kind: 'service',
+    workspace: '@zeus/firehose-browser',
+    spawnGroup: 'firehose-browser',
+    deps: [],
+    capabilities: ['fleet.firehoseBrowser', 'v1.zeus'],
+    healthPath: '/health',
+    mcpPath: '/',
+    uiPort: 'firehose',
+    notes: 'Firehose volume UI; no MCP surface. Port = ui.firehose (ZEUS_PORT_FIREHOSE). U234'
   }
 ];
 
@@ -223,7 +289,8 @@ function portsById(mcp) {
     'arg-player-uno': mcp.argPlayer.uno,
     'arg-player-dos': mcp.argPlayer.dos,
     'pozo-player': mcp.pozoPlayer.uno,
-    'solve-player': mcp.solvePlayer.uno
+    'solve-player': mcp.solvePlayer.uno,
+    launcher: mcp.launcher.disk
   };
 }
 
@@ -235,17 +302,23 @@ function defaultRepoRoot() {
     .replace(/\//g, process.platform === 'win32' ? '\\' : '/');
 }
 
+/** Monorepo root as resolved by this package (spawn cwd, orchestrator state). */
+export function resolveRepoRoot() {
+  return defaultRepoRoot();
+}
+
 /**
- * @param {{ seed?: typeof CATALOG_SEED, mcp?: object, host?: string }} [opts]
+ * @param {{ seed?: typeof CATALOG_SEED, mcp?: object, ui?: object, host?: string }} [opts]
  * @returns {CatalogEntry[]}
  */
 export function resolveCatalog(opts = {}) {
   const seed = opts.seed || CATALOG_SEED;
   const mcp = opts.mcp || syncEnvPorts();
+  const ui = opts.ui || syncUiPorts();
   const host = opts.host || 'localhost';
   const ports = portsById(mcp);
   return seed.map((entry) => {
-    const port = ports[entry.id];
+    const port = entry.uiPort ? ui[entry.uiPort]?.port : ports[entry.id];
     if (port == null) {
       throw new Error(`Catalog entry "${entry.id}" has no port mapping`);
     }
@@ -269,6 +342,7 @@ export async function resolveCatalogLive(opts = {}) {
   return resolveCatalog({
     ...opts,
     mcp: env.resolveZeusMcpPorts(),
+    ui: env.resolveZeusUiPorts(),
     host: env.resolveZeusHost()
   });
 }

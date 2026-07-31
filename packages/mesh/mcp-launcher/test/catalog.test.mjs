@@ -62,3 +62,28 @@ test('CATALOG_SEED has no xstate / child supervision fields required', () => {
     assert.equal(e.tree, undefined);
   }
 });
+
+test('U234: launcher + v1-zeus service entries resolve ports from env single source', () => {
+  const catalog = resolveCatalog();
+  const launcher = catalog.find((e) => e.id === 'launcher');
+  assert.ok(launcher);
+  assert.equal(launcher.port, 3050); // DEFAULT_ZEUS_MCP.launcher.disk
+  assert.equal(launcher.workspace, '@zeus/mcp-launcher');
+
+  const ss = catalog.find((e) => e.id === 'socket-server');
+  assert.equal(ss.kind, 'service');
+  assert.equal(ss.port, 3017); // DEFAULT_ZEUS_UI_MESH.scriptorium
+  assert.ok(ss.healthUrl.endsWith(':3017/health'));
+
+  assert.equal(catalog.find((e) => e.id === 'cache-browser').port, 3015); // ui.view
+  assert.equal(catalog.find((e) => e.id === 'firehose-browser').port, 3016); // ui.firehose
+});
+
+test('U234: vscode config excludes kind:service, includes launcher MCP', () => {
+  const config = generateVscodeMcpConfig(resolveCatalog());
+  assert.equal(isValidVscodeMcpConfig(config), true);
+  assert.ok(config.servers.launcher);
+  assert.equal(config.servers['socket-server'], undefined);
+  assert.equal(config.servers['cache-browser'], undefined);
+  assert.equal(config.servers['firehose-browser'], undefined);
+});
