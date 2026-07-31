@@ -36,8 +36,8 @@ function setupSandbox() {
             readonly: false,
             label: 'Sandbox',
             corpora: [
-              { id: 'raw', path: 'raw', label: 'Raw', files: 1 },
-              { id: 'curated', path: 'curated', label: 'Curated', files: 1 }
+              { id: 'raw', path: 'raw', label: 'Raw' },
+              { id: 'curated', path: 'curated', label: 'Curated' }
             ]
           }
         }
@@ -105,8 +105,13 @@ test('operator empty raw → files gone + ledger + counters', () => {
     const after = measureCorpus('sandbox', 'raw');
     assert.equal(after.files, 0);
 
+    // U199: manifest sealed — measured counters live in volumes.state.json.
     const cfg = JSON.parse(fs.readFileSync(path.join(root, 'volumes.json'), 'utf8'));
-    assert.equal(cfg.volumes.sandbox.corpora.find((c) => c.id === 'raw').files, 0);
+    assert.equal(cfg.volumes.sandbox.corpora.find((c) => c.id === 'raw').files, undefined);
+    const state = JSON.parse(
+      fs.readFileSync(path.join(root, 'volumes.state.json'), 'utf8')
+    );
+    assert.equal(state.volumes.sandbox.corpora.find((c) => c.id === 'raw').files, 0);
 
     const ledger = readOpsLedger({ volumesRoot: root });
     assert.equal(ledger.length, 1);
