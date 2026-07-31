@@ -9,6 +9,7 @@
 export function generateVscodeMcpConfig(catalog, opts = {}) {
   const servers = {};
   for (const entry of catalog) {
+    if (entry.kind === 'service') continue; // no MCP surface (U234)
     const url = entry.url || `http://${opts.host || 'localhost'}:${entry.port}${entry.mcpPath || '/mcp'}`;
     servers[entry.id] = {
       type: 'http',
