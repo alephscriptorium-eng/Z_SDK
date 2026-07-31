@@ -31,10 +31,10 @@ declara `VOLUMES/README.md:28-30`).
 **Sembrar** es el único momento que puebla datos, y tiene un solo camino de
 producto: el **contrato de import** — verificar → staging → validar →
 fusionar → sellar, con reimport del mismo Release = no-op (import-once).
-Ese contrato es **obra en curso** (WP-U201, que materializa
-`plan/CONTRATO-IMPORT-PACK-v1.md`; al escribir esta página ese documento
-aún no existe en esta base). Hasta que cierre, esta página no ofrece
-instrucciones de import — mismo criterio honesto que `VOLUMES/README.md`.
+Ese contrato está **materializado**: `plan/CONTRATO-IMPORT-PACK-v1.md`
+(WP-U201 ✅ — ✎ orquestador: U201 mergeó en paralelo a esta página; los 7
+pasos y el pipeline `importPack` existen). Los comandos de operador
+llegarán con los drivers de familia (U202–U205) y el CA de canal (U212).
 
 **Sincronizar** (P2P, réplica continua) no está encolado: es un segundo
 acto que requiere consenso de mesa. Se nombra para que el lector sepa que
@@ -121,9 +121,9 @@ depende de tres piezas que no son suyas:
 2. **CA de canal limpio (WP-U212).** La prueba de que un consumidor limpio
    instala capacidad por npm y siembra datos por Release sin tocar el
    árbol (`plan/BACKLOG.md:275`). Pendiente.
-3. **Contrato de import v1 (WP-U201).** En obra;
-   `plan/CONTRATO-IMPORT-PACK-v1.md` aún no existe en esta base. Hasta
-   entonces, aquí no hay comandos de import.
+3. **Contrato de import v1 (WP-U201).** ✅ materializado
+   (`plan/CONTRATO-IMPORT-PACK-v1.md` — ✎ orquestador: cerró en paralelo);
+   los comandos de operador esperan a los drivers U202–U205.
 
 Cuando esas piezas cierren, esta página enlazará el contrato de import con
 sus comandos reales y retirará este aviso.

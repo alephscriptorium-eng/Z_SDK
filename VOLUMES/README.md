@@ -45,7 +45,7 @@ meter DISK_01/02 pesados en este repo.
 
 | Variable / comando | Uso |
 |--------------------|-----|
-| `ZEUS_VOLUMES_ROOT` | Raíz del árbol VOLUMES: root propio del operador (default: `VOLUMES/` del monorepo = estos fixtures). Nunca al árbol de un pack |
+| `ZEUS_VOLUMES_ROOT` | Raíz del árbol VOLUMES: root propio del operador. **Obligatoria desde U200 (✎: el resolver ya no tiene default)** — en desarrollo la aporta `.env` (ver `.env.example:59`, apuntando a estos fixtures). Nunca al árbol de un pack |
 | `ZEUS_JETSTREAM_FIXTURE=1` | Modo offline del sync firehose → DISK_01 del root apuntado |
 | `ZEUS_SSB_LOG_PATH` | Dump JSON del pub SSB: entrada del sync → DISK_04 del root apuntado |
 | `npm run volumes:sync:firehose` | Sync firehose → DISK_01 del root apuntado (precondición: `npm ci`). Offline con `ZEUS_JETSTREAM_FIXTURE=1`; el modo vivo requiere red (canal externo jetstream) |
