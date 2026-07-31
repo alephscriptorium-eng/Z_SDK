@@ -71,6 +71,38 @@ export function writeVolumesState(state) {
 }
 
 /**
+ * Record a LIVE SYNC mark for a volume (WP-U204).
+ *
+ * `syncedAt` is the timestamp of the last live producer run (jetstream sync,
+ * SSB export…). It is LIVE STATE, never manifest: a temporal field inside
+ * volumes.json would break the seal's stability on every sync (the exact
+ * defect demolished here — feed-kit `ensureFirehoseVolumeLayout` wrote
+ * `source.syncedAt` straight into the manifest with `writeFileSync`).
+ * The manifest only changes by import.
+ *
+ * Fail-closed like the rest: a volume the manifest does not declare aborts —
+ * no entry is invented (`hashManifest()` already aborts on a root without a
+ * manifest).
+ *
+ * @param {string} volumeId
+ * @param {{ syncedAt?: string, source?: object }} [mark]
+ * @returns {{ statePath: string, state: object, syncedAt: string }}
+ */
+export function recordVolumeSync(volumeId, mark = {}) {
+  const state = loadVolumesState();
+  state.version = STATE_VERSION;
+  state.volumes = state.volumes || {};
+  const syncedAt = mark.syncedAt ?? new Date().toISOString();
+  state.volumes[volumeId] = {
+    ...(state.volumes[volumeId] || {}),
+    syncedAt,
+    ...(mark.source ? { source: mark.source } : {})
+  };
+  const statePath = writeVolumesState(state);
+  return { statePath, state, syncedAt };
+}
+
+/**
  * Record one volume's live measurement into the state.
  * @param {string} volumeId
  * @param {{ files: number, bytes: number, missing?: boolean, corpora?: object[] }} measured
@@ -85,6 +117,9 @@ export function recordVolumeState(volumeId, measured, opts = {}) {
   }
   state.volumes = state.volumes || {};
   state.volumes[volumeId] = {
+    // Marks recorded by other live paths (e.g. `syncedAt`, U204) survive a
+    // remeasure: measuring never erases state it did not produce.
+    ...(state.volumes[volumeId] || {}),
     files: measured.files,
     bytes: measured.bytes,
     missing: measured.missing ?? false,
