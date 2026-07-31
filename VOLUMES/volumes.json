@@ -38,14 +38,12 @@
         {
           "id": "forces",
           "path": "forces",
-          "label": "Forces fixture",
-          "files": 1
+          "label": "Forces fixture"
         },
         {
           "id": "cotas",
           "path": "cotas",
-          "label": "Cotas fixture",
-          "files": 1
+          "label": "Cotas fixture"
         }
       ]
     },
