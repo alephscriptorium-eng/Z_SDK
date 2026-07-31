@@ -60,3 +60,6 @@ plan/recursos/*
 
 # Estación de vigilancia — pulsos locales (WP-U153); nunca en git
 .vigilancia/
+
+# secreto local del operador - jamas al indice (decision custodio 2026-07-31)
+/.env
