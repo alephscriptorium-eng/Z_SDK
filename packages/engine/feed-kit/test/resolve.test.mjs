@@ -13,6 +13,7 @@ import {
   probeFeedMcpHealth,
   syncJetstreamFixture,
   resolveFirehoseVolumeRoot,
+  recordFirehoseSync,
   refreshFirehoseCorpusCounts
 } from '../src/index.mjs';
 import { isJetstreamPost } from '@zeus/firehose-core';
@@ -172,6 +173,14 @@ test('WP-U204: sync sobre root sin volumen declarado ABORTA — no inventa manif
     );
     assert.equal(fs.readFileSync(path.join(tmp, 'volumes.json'), 'utf8'), before);
     assert.ok(!fs.existsSync(path.join(tmp, 'DISK_01', 'FIREHOSE', 'raw', 'jetstream')));
+
+    // (c) D4 de la contrarrevisión: el export público `recordFirehoseSync`
+    // llamado DIRECTO también es fallo cerrado — no inventa estado ni entrada.
+    assert.throws(() => recordFirehoseSync(tmp), /Unknown volume id: firehose/);
+    assert.ok(!fs.existsSync(path.join(tmp, 'volumes.state.json')));
+    fs.rmSync(path.join(tmp, 'volumes.json'));
+    assert.throws(() => recordFirehoseSync(tmp), /not operable|not found/i);
+    assert.ok(!fs.existsSync(path.join(tmp, 'volumes.state.json')));
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

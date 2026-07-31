@@ -26,7 +26,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { resetVolumesCache } from '@zeus/presets-sdk/volumes';
 import { resetZeusEnvLoader } from '@zeus/presets-sdk/env';
-import { importPack, hashManifest, firehoseUnitKey } from '../src/index.mjs';
+import {
+  importPack,
+  hashManifest,
+  firehoseUnitKey,
+  parseAtUri,
+  recordVolumeSync
+} from '../src/index.mjs';
 
 const VOL_REL = 'DISK_01/FIREHOSE';
 const CORPORA = ['raw', 'candidate', 'discarded', 'labeled'];
@@ -38,14 +44,21 @@ const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
  * Payload jetstream crudo, misma forma que SAMPLE_POSTS de feed-kit.
  * @param {{ did?: string, rkey: string, text?: string, withUri?: boolean }} o
  */
-function post({ did = 'did:plc:alpha', rkey, text = `post ${rkey}`, withUri = true }) {
+function post({
+  did = 'did:plc:alpha',
+  rkey,
+  collection = COLLECTION,
+  text = `post ${rkey}`,
+  withUri = true,
+  uri = null
+}) {
   return {
     did,
     kind: 'commit',
-    handle: `${did.split(':').pop()}.bsky.social`,
-    ...(withUri ? { uri: `at://${did}/${COLLECTION}/${rkey}` } : {}),
+    handle: `${String(did).split(':').pop()}.bsky.social`,
+    ...(uri !== null ? { uri } : withUri ? { uri: `at://${did}/${collection}/${rkey}` } : {}),
     commit: {
-      collection: COLLECTION,
+      collection,
       rkey,
       record: { text, createdAt: '2026-07-31T00:00:00.000Z' }
     }
@@ -467,6 +480,230 @@ test('ROJO: familia desconocida declarada = error ANTES de staging, root intacto
   } finally {
     restore();
     fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+// ── PROBES PERMANENTES de la contrarrevisión (D1-D4) ──────────────────────
+// Cada uno reproduce el vector exacto con el que la contrarrevisión tumbó una
+// afirmación de cabecera. No son arreglos de una vez: se quedan.
+
+test('D1: la clave es INYECTIVA — un `/` en cualquier componente NO rinde clave', () => {
+  // El vector: dos registros DISTINTOS que antes colapsaban en la misma clave
+  // `at://did:plc:alpha/app.bsky.feed.post/x/y`.
+  const a = post({ rkey: 'x/y', withUri: false });
+  const b = post({ rkey: 'y', collection: `${COLLECTION}/x`, withUri: false });
+  assert.equal(firehoseUnitKey(a), null, 'rkey con `/` no rinde clave');
+  assert.equal(firehoseUnitKey(b), null, 'collection con `/` no rinde clave');
+  assert.equal(firehoseUnitKey(post({ did: 'did:plc:al/pha', rkey: 'z', withUri: false })), null);
+
+  // Inyectividad por construcción: sin `/` en los componentes, la clave se
+  // parte de forma única en exactamente 3 partes.
+  const key = firehoseUnitKey(post({ rkey: 'z', withUri: false }));
+  assert.deepEqual(key.slice('at://'.length).split('/'), [
+    'did:plc:alpha',
+    COLLECTION,
+    'z'
+  ]);
+});
+
+test('D1: el par ambiguo no se descarta en silencio — importPack lo RECHAZA', () => {
+  const { root, restore } = setupRoot();
+  // Vector real: corpus sano con DOS registros malformados que antes
+  // colapsaban en la misma clave. Ninguno se descarta en silencio: ambos se
+  // citan por ruta y el import entero aborta antes de fusionar.
+  const packA = buildFirehosePack({
+    units: [
+      { raw: post({ rkey: 'sano' }) },
+      { raw: post({ rkey: 'x/y', withUri: false }) },
+      { raw: post({ rkey: 'y', collection: `${COLLECTION}/x`, withUri: false }) }
+    ]
+  });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.steps));
+    assert.equal(res.step, 'validar');
+    assert.equal(res.error, 'familia_invalida');
+    const dump = JSON.stringify(res.results);
+    assert.match(dump, /unidad_sin_clave: raw\/jetstream\/x\/y\.json/);
+    assert.match(dump, /unidad_sin_clave: raw\/jetstream\/y\.json/);
+    // Y jamás `clave_duplicada_en_pack`: la ambigüedad ya no existe, así que
+    // tampoco puede abortar un import legítimo con un duplicado falso.
+    assert.doesNotMatch(dump, /clave_duplicada_en_pack/);
+    assert.equal(manifestBytes(root), before);
+    assert.ok(!fs.existsSync(path.join(root, 'DISK_01')));
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D1b: SIN trim — componentes con espacios se rechazan, no se normalizan', () => {
+  assert.equal(firehoseUnitKey(post({ did: '  did:plc:alpha  ', rkey: 'z', withUri: false })), null);
+  assert.equal(firehoseUnitKey(post({ rkey: ' z ', withUri: false })), null);
+  assert.equal(firehoseUnitKey(post({ rkey: 'a\tb', withUri: false })), null);
+  assert.equal(firehoseUnitKey(post({ rkey: '', withUri: false })), null);
+});
+
+test('D1c: el fallback `uri` exige AT-URI BIEN FORMADO', () => {
+  assert.equal(parseAtUri('no-soy-un-at-uri'), null);
+  assert.equal(parseAtUri('../../etc/passwd'), null);
+  assert.equal(parseAtUri('at://solo/dos'), null);
+  assert.equal(parseAtUri('at://a/b/c/d'), null);
+  assert.equal(parseAtUri('at:// /b/c'), null);
+  assert.equal(parseAtUri(`at://did:plc:alpha/${COLLECTION}/z`), `at://did:plc:alpha/${COLLECTION}/z`);
+
+  // Con did inservible, un `uri` basura ya no viaja sellado como `unit:'at-uri'`.
+  assert.equal(firehoseUnitKey(post({ did: 42, rkey: 'z', uri: 'no-soy-un-at-uri' })), null);
+  assert.equal(firehoseUnitKey(post({ did: 42, rkey: 'z', uri: '../../etc/passwd' })), null);
+  assert.equal(
+    firehoseUnitKey(post({ did: 42, rkey: 'z', uri: `at://did:plc:beta/${COLLECTION}/z` })),
+    `at://did:plc:beta/${COLLECTION}/z`
+  );
+});
+
+test('D2: fichero de raíz NO declarado = familia_invalida (la allowlist la ejerce el driver)', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack({
+    mutate(dataDir) {
+      fs.writeFileSync(path.join(dataDir, 'basura.txt'), 'ruido\n', 'utf8');
+      fs.writeFileSync(path.join(dataDir, 'payload.html'), '<html></html>\n', 'utf8');
+    }
+  });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'validar');
+    assert.equal(res.error, 'familia_invalida');
+    const dump = JSON.stringify(res.results);
+    assert.match(dump, /fichero_de_raiz_no_declarado: basura\.txt/);
+    assert.match(dump, /fichero_de_raiz_no_declarado: payload\.html/);
+    assert.equal(manifestBytes(root), before);
+    assert.ok(!fs.existsSync(path.join(root, 'DISK_01')));
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D2: unidad plantada en la RAÍZ del pack = familia_invalida citando el corpus', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack({
+    mutate(dataDir) {
+      fs.writeFileSync(
+        path.join(dataDir, 'fantasma.json'),
+        `${JSON.stringify(post({ rkey: 'fantasma' }), null, 2)}\n`,
+        'utf8'
+      );
+    }
+  });
+  try {
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'validar');
+    assert.match(
+      JSON.stringify(res.results),
+      /fichero_de_raiz_no_declarado: fantasma\.json es una unidad FIREHOSE .*viven bajo un corpus/
+    );
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D2: unidad HEREDADA en la raíz del destino SÍ deduplica y SÍ cuenta', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'u1' }) }] });
+  try {
+    assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
+
+    // Material heredado (anterior a la regla de layout): una unidad en la raíz
+    // del volumen destino. El índice del driver DEBE verla.
+    const huerfano = rootFile(root, 'huerfano.json');
+    fs.writeFileSync(huerfano, `${JSON.stringify(post({ rkey: 'u2' }), null, 2)}\n`, 'utf8');
+
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-raiz',
+      version: '2.0.0',
+      units: [{ batch: 'jetstream-2', raw: post({ rkey: 'u2' }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, true, JSON.stringify(res.steps));
+
+    const fam = res.families.find((f) => f.id === 'firehose');
+    assert.equal(fam.moved, 0, 'el registro ya vive en el volumen: no se duplica');
+    assert.deepEqual(fam.dedup.map((d) => d.at), ['huerfano.json']);
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream-2/u2.json')));
+    assert.equal(volumeFiles(root).length, 2);
+
+    // snapshot.units cuadra con el disco y declara la anomalía de layout.
+    const snapshot = JSON.parse(manifestBytes(root)).volumes.firehose.source.imported.snapshot;
+    assert.equal(snapshot.units, 2);
+    assert.equal(snapshot.destUnidadesEnRaiz, 1);
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D3: ancestro que existe como FICHERO = fallo declarado, nunca excepción a medias', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'u1' }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    // `raw/zzz` existe como FICHERO en el destino; el pack trae `raw/zzz/y.json`.
+    fs.writeFileSync(rootFile(root, 'raw/zzz'), 'soy un fichero, no un dir\n', 'utf8');
+    const manifestBefore = manifestBytes(root);
+    const treeBefore = volumeFiles(root);
+
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-bloqueado',
+      version: '2.0.0',
+      units: [{ corpus: 'raw', batch: 'zzz', raw: post({ rkey: 'y' }) }]
+    });
+
+    // No lanza: devuelve el contrato observable de fallo.
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'ruta_bloqueada_por_fichero');
+    assert.equal(res.file, 'raw/zzz/y.json');
+    assert.equal(res.blockedBy, 'raw/zzz');
+
+    // Root intacto: sello, árbol y staging.
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.equal(hashManifest().sha256, first.manifestSha256);
+    assert.deepEqual(volumeFiles(root), treeBefore);
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D4: recordVolumeSync es fallo CERRADO — ni inventa manifiesto ni inventa entrada', () => {
+  const { root, restore } = setupRoot();
+  try {
+    // (a) manifiesto presente que NO declara el volumen → aborta sin escribir.
+    assert.throws(() => recordVolumeSync('firehose'), /Unknown volume id: firehose/);
+    assert.ok(!fs.existsSync(path.join(root, 'volumes.state.json')));
+
+    // (b) root sin manifiesto → no operable, aborta antes de nada.
+    fs.rmSync(path.join(root, 'volumes.json'));
+    resetVolumesCache();
+    assert.throws(() => recordVolumeSync('firehose'), /not operable|not found/i);
+    assert.ok(!fs.existsSync(path.join(root, 'volumes.state.json')));
+  } finally {
+    restore();
   }
 });
 

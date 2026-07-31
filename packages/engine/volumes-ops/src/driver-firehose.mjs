@@ -38,25 +38,69 @@
  * `unidad_sin_clave` (fallo-cerrado en VALIDAR, staging borrado, root
  * intacto). No se inventa una clave por comodidad.
  *
+ * ── INYECTIVIDAD de la clave (defecto D1 de la contrarrevisión, cerrado)
+ * Concatenar tres componentes con `/` sin validarlos NO es inyectivo: el par
+ * `{did:'d', collection:'c', rkey:'x/y'}` y `{did:'d', collection:'c/x',
+ * rkey:'y'}` rendía la MISMA clave — dos registros distintos, uno descartado
+ * en silencio y un `dedup` que mentía sobre dónde vivía la clave. Era el
+ * mismo modo de fallo que motivó descartar la ruta (§2.2 del reporte).
+ * Cerrado por construcción: **cada componente debe pasar `keyComponent()`**
+ * (no vacío, sin `/`, sin espacios ni caracteres de control). Con `/` prohibido
+ * en los tres, `at://A/B/C` se parte de forma única en exactamente 3 partes:
+ * la aplicación (did, collection, rkey) → clave es INYECTIVA. Lo que no case
+ * NO rinde clave (null) → `unidad_sin_clave`, fallo-cerrado, nunca descarte
+ * silencioso. Sin `trim()`: normalizar espacios volvía a colapsar material
+ * distinto (`'  d  '` y `'d'`); un componente con espacios se RECHAZA.
+ * El fallback `uri` exige AT-URI bien formado (`at://` + 3 componentes que
+ * casen): un string cualquiera ya no viaja sellado como `unit:'at-uri'`.
+ * Límite declarado del fallback: un AT-URI que use el HANDLE en vez del DID
+ * rinde clave distinta de la derivada del mismo registro — por eso la vía
+ * derivada es la primaria y el fallback solo actúa cuando aquella no existe.
+ * Charset: ATProto prohíbe `/` en NSID y en rkey, así que la regla no rechaza
+ * material legítimo; rechaza material malformado, que es exactamente lo que
+ * llega por red no confiada.
+ *
  * ── Reglas de reconciliación (NO son las de LINEAS ni las de FORCES)
  * - clave NUEVA → aterriza (unión aditiva);
- * - clave YA PRESENTE en cualquier corpus del destino → **dedup**: no se mueve
- *   nada, no se pisa nada, se reporta dónde vive ya. Es un no-op observable —
- *   NO es divergencia (LINEAS) ni colisión que aborta (FORCES): una caché que
- *   crece no aborta el import entero porque un registro ya estuviera;
+ * - clave YA PRESENTE en cualquier parte del volumen destino → **dedup**: no se
+ *   mueve nada, no se pisa nada, se reporta dónde vive ya. Es un no-op
+ *   observable — NO es divergencia (LINEAS) ni colisión que aborta (FORCES):
+ *   una caché que crece no aborta el import porque un registro ya estuviera;
  * - misma RUTA ocupada por clave DISTINTA → `colision_ruta`: aborta en el pase
  *   dry (sobrescribir sería pérdida de dato, no reconciliación);
- * - sidecar de raíz del volumen (p.ej. `triage-manifest.json`): falta →
- *   aterriza; idéntico → no-op; distinto → **divergencia reportada, jamás
- *   pisada** (el triage del destino es decisión local viva, no dato del pack);
+ * - sidecar de raíz del volumen (`triage-manifest.json`): falta → aterriza;
+ *   idéntico → no-op; distinto → **divergencia reportada, jamás pisada** (el
+ *   triage del destino es decisión local viva, no dato del pack);
  * - clave duplicada DENTRO del pack → `clave_duplicada_en_pack` en VALIDAR
  *   (pack malformado; deduplicarlo en silencio ocultaría el defecto).
  *
- * Garantía estructural: antes de devolver el plan se verifica que NINGÚN
- * `move` apunta a una ruta ya existente en el destino; si alguno lo hiciera el
- * driver devuelve `sobrescritura_imposible` en vez de plan. `importPack`
- * ejecuta con `renameSync` (que SÍ pisaría) — la imposibilidad la garantiza
- * este guardián, no el sistema de ficheros.
+ * ── LA RAÍZ DEL VOLUMEN LA VALIDA ESTE DRIVER (defecto D2, cerrado)
+ * `importPack:256-267` exime a los volúmenes de familia del control
+ * `fichero_fuera_de_corpus` con el comentario «family volumes own their layout
+ * via the driver». Antes, este driver aceptaba esa responsabilidad y NO la
+ * ejercía: todo fichero de raíz distinto de `triage-manifest.json` aterrizaba
+ * sin validar, y una unidad plantada en la raíz era invisible al índice por
+ * clave (⇒ el mismo registro se duplicaba y `snapshot.units` descuadraba).
+ * Cerrado en dos mitades:
+ * 1. VALIDAR: la raíz tiene ALLOWLIST declarada (`FIREHOSE_ROOT_FILES`,
+ *    derivada de `presets-sdk/src/paths/firehose.mjs:8` y del validador real
+ *    `linea-kit/src/validate.mjs:217-221`). Cualquier otro fichero de raíz =
+ *    `fichero_de_raiz_no_declarado`; si además rinde clave, el mensaje dice que
+ *    una unidad vive bajo un corpus. El pack ya no cuela nada por la raíz.
+ * 2. ÍNDICE y MERGE clasifican por CONTENIDO, no por profundidad de ruta: el
+ *    índice del destino cubre TODO el árbol (incluida la raíz), así que una
+ *    unidad heredada en la raíz sí deduplica y sí cuenta en `snapshot.units`.
+ *
+ * Garantía estructural: antes de devolver el plan se verifica que ningún
+ * `move` (a) apunta a una ruta ya existente → `sobrescritura_imposible`, ni
+ * (b) tiene un ancestro que exista como FICHERO en el destino →
+ * `ruta_bloqueada_por_fichero` (defecto D3: sin esa guarda `importPack`
+ * LANZABA `EEXIST` a mitad de los renames, modo de fallo no declarado por el
+ * contrato y volumen a medias). `importPack` ejecuta con `renameSync`, que SÍ
+ * pisaría: la imposibilidad la garantiza este guardián, no el sistema de
+ * ficheros. Alcance honesto: la guarda protege el camino de ESTA familia; el
+ * camino genérico de `importPack` (volúmenes sin driver) sigue sin rollback —
+ * es deuda de U201, citada, no arreglada aquí.
  *
  * ── Cursor sellado
  * `snapshot = { unit:'at-uri', units:<n>, unitsSha256:<sha256 del conjunto de
@@ -76,7 +120,7 @@
  * Node-only.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateFile } from '@zeus/linea-kit/validate';
@@ -85,6 +129,17 @@ export const FIREHOSE_FAMILY = 'firehose';
 
 /** Índice de triage en la raíz del volumen (schema real U80: `triage-manifest`). */
 export const TRIAGE_INDEX_FILE = 'triage-manifest.json';
+
+/**
+ * ALLOWLIST de la raíz del volumen (D2). Derivada de lo declarado en el árbol:
+ * `presets-sdk/src/paths/firehose.mjs:8` (`TRIAGE_MANIFEST_PATH`) y el
+ * validador real `linea-kit/src/validate.mjs:217-221`. Las unidades viven bajo
+ * un corpus; la raíz solo aloja el índice.
+ */
+export const FIREHOSE_ROOT_FILES = Object.freeze([TRIAGE_INDEX_FILE]);
+
+/** Cualquier espacio en blanco, incluidos los unicode (NBSP, separadores). */
+const ANY_WHITESPACE = /\s/;
 
 /** Tope de lecturas de contenido en `detect` (firma derivada, no fichero-firma). */
 const DETECT_SAMPLE_CAP = 64;
@@ -135,22 +190,57 @@ export function isFirehoseUnit(raw) {
 }
 
 /**
- * Clave de la unidad — AT-URI canónico DERIVADO (Z-D9, cabecera).
- * Devuelve `null` cuando el material no permite una clave inequívoca: quien
- * llama decide (VALIDAR aborta; el índice del destino la cuenta como no
- * indexable). Jamás se fabrica una clave a partir de la ruta.
+ * Componente admisible de la clave, o `null` (D1): string no vacío, SIN `/`
+ * (es lo que hace inyectivo el AT-URI compuesto), sin espacios en blanco y sin
+ * caracteres de control. Sin `trim()`: normalizar espacios colapsaría material
+ * distinto en la misma clave, que es justo el defecto que se cierra.
+ * @param {any} value
+ * @returns {string|null}
+ */
+function keyComponent(value) {
+  if (typeof value !== 'string' || value.length === 0) return null;
+  if (value.includes('/') || ANY_WHITESPACE.test(value)) return null;
+  for (const ch of value) {
+    const code = ch.codePointAt(0);
+    if (code < 0x20 || code === 0x7f) return null;
+  }
+  return value;
+}
+
+/**
+ * AT-URI bien formado, o `null` (D1c): `at://` + exactamente 3 componentes
+ * admisibles. Un string cualquiera ya no pasa por clave.
+ * @param {any} value
+ * @returns {string|null}
+ */
+export function parseAtUri(value) {
+  if (typeof value !== 'string' || !value.startsWith('at://')) return null;
+  const parts = value.slice('at://'.length).split('/');
+  if (parts.length !== 3) return null;
+  const [did, collection, rkey] = parts.map(keyComponent);
+  if (!did || !collection || !rkey) return null;
+  return `at://${did}/${collection}/${rkey}`;
+}
+
+/**
+ * Clave de la unidad — AT-URI canónico DERIVADO e INYECTIVO (Z-D9 + D1, ver
+ * cabecera). Devuelve `null` cuando el material no permite una clave
+ * inequívoca: quien llama decide (VALIDAR aborta con la ruta; el índice del
+ * destino la cuenta como no indexable). Jamás se fabrica una clave a partir de
+ * la ruta, y jamás se normaliza para que «encaje».
  * @param {any} raw
  * @returns {string|null}
  */
 export function firehoseUnitKey(raw) {
   if (!isFirehoseUnit(raw)) return null;
-  const did = typeof raw?.did === 'string' ? raw.did.trim() : '';
-  const collection = typeof raw?.commit?.collection === 'string' ? raw.commit.collection.trim() : '';
-  const rkey = typeof raw?.commit?.rkey === 'string' ? raw.commit.rkey.trim() : '';
+  const did = keyComponent(raw?.did);
+  const collection = keyComponent(raw?.commit?.collection);
+  const rkey = keyComponent(raw?.commit?.rkey);
   if (did && collection && rkey) return `at://${did}/${collection}/${rkey}`;
-  // Fallback declarado: el AT-URI explícito, cuando el productor lo trajo.
-  const uri = typeof raw?.uri === 'string' ? raw.uri.trim() : '';
-  return uri || null;
+  // Fallback declarado: el AT-URI explícito, si el productor lo trajo BIEN
+  // FORMADO (límite conocido: un AT-URI por handle keya distinto del derivado
+  // por DID — por eso la vía derivada es la primaria).
+  return parseAtUri(raw?.uri);
 }
 
 /** Lee la clave de un fichero de unidad; null si no parsea o no rinde clave. */
@@ -163,8 +253,28 @@ function keyOfFile(abs) {
 }
 
 /**
- * Índice del destino: clave → rel, sobre TODO el volumen (los cuatro corpus).
- * Lo no indexable se cuenta y se reporta; el driver no repara el destino.
+ * ¿Algún ancestro del destino de `rel` existe como FICHERO? (D3) Si lo hay,
+ * `mkdirSync`/`renameSync` lanzarían EEXIST/ENOTDIR a mitad de la fusión.
+ * @param {string} destDir @param {string} rel
+ * @returns {string|null} el ancestro bloqueante, o null
+ */
+function blockingAncestor(destDir, rel) {
+  const parts = rel.split('/');
+  let acc = '';
+  for (let i = 0; i < parts.length - 1; i += 1) {
+    acc = acc ? `${acc}/${parts[i]}` : parts[i];
+    const abs = toAbs(destDir, acc);
+    if (existsSync(abs) && lstatSync(abs).isFile()) return acc;
+  }
+  return null;
+}
+
+/**
+ * Índice del destino: clave → rel, sobre TODO el árbol del volumen — incluida
+ * la RAÍZ (D2): una unidad heredada fuera de corpus tiene que deduplicar y
+ * contar, no ser invisible. La clasificación es por CONTENIDO, no por
+ * profundidad de ruta. Lo no indexable bajo corpus se cuenta y se reporta; el
+ * driver no repara el destino.
  * @param {string} dir
  */
 function indexByKey(dir) {
@@ -174,17 +284,20 @@ function indexByKey(dir) {
   const unkeyed = [];
   /** @type {string[]} */
   const duplicated = [];
+  /** @type {string[]} */
+  const rootUnits = [];
   for (const rel of walkRel(dir)) {
-    if (!isUnitSlot(rel)) continue; // sidecar de raíz
     const key = rel.endsWith('.json') ? keyOfFile(toAbs(dir, rel)) : null;
     if (!key) {
-      unkeyed.push(rel);
+      // Sidecar de raíz declarado: no es unidad y no es defecto.
+      if (isUnitSlot(rel)) unkeyed.push(rel);
       continue;
     }
+    if (!isUnitSlot(rel)) rootUnits.push(rel);
     if (byKey.has(key)) duplicated.push(rel);
     else byKey.set(key, rel);
   }
-  return { byKey, unkeyed, duplicated };
+  return { byKey, unkeyed, duplicated, rootUnits };
 }
 
 /**
@@ -226,9 +339,26 @@ function validate({ stagedDir }) {
   let units = 0;
 
   for (const rel of walkRel(stagedDir)) {
-    if (!isUnitSlot(rel)) continue;
     const abs = toAbs(stagedDir, rel);
     const key = rel.endsWith('.json') ? keyOfFile(abs) : null;
+    if (!isUnitSlot(rel)) {
+      // D2 · la raíz del volumen la valida ESTE driver (allowlist declarada).
+      if (!FIREHOSE_ROOT_FILES.includes(rel)) {
+        results.push({
+          ok: false,
+          schemaId: 'firehose-layout',
+          path: rel,
+          errors: [
+            {
+              message: key
+                ? `fichero_de_raiz_no_declarado: ${rel} es una unidad FIREHOSE (${key}) y las unidades viven bajo un corpus, no en la raíz del volumen`
+                : `fichero_de_raiz_no_declarado: ${rel} — la raíz del volumen solo admite ${FIREHOSE_ROOT_FILES.join(', ')}`
+            }
+          ]
+        });
+      }
+      continue;
+    }
     if (!key) {
       results.push({
         ok: false,
@@ -299,10 +429,16 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   for (const rel of volumeFiles) {
     const stagedAbs = toAbs(stagedDir, rel);
     const destAbs = toAbs(destDir, rel);
+    // D2 · clasificación por CONTENIDO, no por profundidad de ruta.
+    const key = rel.endsWith('.json') ? keyOfFile(stagedAbs) : null;
 
-    if (!isUnitSlot(rel)) {
-      // Sidecar de raíz (índice de triage y compañía): aditivo por ruta,
-      // divergencia reportada, JAMÁS pisado.
+    if (!key) {
+      if (isUnitSlot(rel)) {
+        // Inalcanzable tras VALIDAR; guardián por si el orden cambiara.
+        return { error: { code: 'unidad_sin_clave', detail: { file: rel } } };
+      }
+      // Sidecar de raíz (índice de triage): aditivo por ruta, divergencia
+      // reportada, JAMÁS pisado. VALIDAR ya limitó la raíz a la allowlist.
       if (!existsSync(destAbs)) {
         moves.push(rel);
       } else {
@@ -314,10 +450,9 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       continue;
     }
 
-    const key = rel.endsWith('.json') ? keyOfFile(stagedAbs) : null;
-    if (!key) {
-      // Inalcanzable tras VALIDAR; guardián por si el orden cambiara.
-      return { error: { code: 'unidad_sin_clave', detail: { file: rel } } };
+    if (!isUnitSlot(rel)) {
+      // Inalcanzable tras VALIDAR (allowlist de raíz); guardián explícito.
+      return { error: { code: 'unidad_en_raiz', detail: { file: rel, key } } };
     }
 
     const at = dest.byKey.get(key);
@@ -346,10 +481,16 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   }
 
   // Garantía estructural: cero moves sobre ruta existente (la sobrescritura no
-  // es «no deseada»: es imposible por construcción del plan).
+  // es «no deseada»: es imposible por construcción del plan) y cero moves cuyo
+  // ancestro exista como fichero (D3 — si no, `importPack` LANZA a mitad de
+  // los renames y el volumen queda a medias).
   for (const rel of moves) {
     if (existsSync(toAbs(destDir, rel))) {
       return { error: { code: 'sobrescritura_imposible', detail: { file: rel } } };
+    }
+    const blocked = blockingAncestor(destDir, rel);
+    if (blocked) {
+      return { error: { code: 'ruta_bloqueada_por_fichero', detail: { file: rel, blockedBy: blocked } } };
     }
   }
 
@@ -367,7 +508,10 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       units: sorted.length,
       unitsSha256: digest.digest('hex'),
       ...(dest.unkeyed.length > 0 ? { destSinClave: dest.unkeyed.length } : {}),
-      ...(dest.duplicated.length > 0 ? { destDuplicadas: dest.duplicated.length } : {})
+      ...(dest.duplicated.length > 0 ? { destDuplicadas: dest.duplicated.length } : {}),
+      // Unidades heredadas fuera de corpus en el destino: cuentan y deduplican
+      // (D2), pero se declaran porque el layout de la familia no las admite.
+      ...(dest.rootUnits.length > 0 ? { destUnidadesEnRaiz: dest.rootUnits.length } : {})
     }
   };
 }

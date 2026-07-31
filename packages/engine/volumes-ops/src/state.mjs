@@ -33,7 +33,8 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
+import { loadVolumesConfig, resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
+import { hashManifest } from './manifest.mjs';
 
 export const STATE_FILE_NAME = 'volumes.state.json';
 export const STATE_VERSION = 1;
@@ -80,17 +81,29 @@ export function writeVolumesState(state) {
  * `source.syncedAt` straight into the manifest with `writeFileSync`).
  * The manifest only changes by import.
  *
- * Fail-closed like the rest: a volume the manifest does not declare aborts —
- * no entry is invented (`hashManifest()` already aborts on a root without a
- * manifest).
+ * Fail-closed FOR REAL (contrarrevisión U204 · D4 — la versión anterior de
+ * este docstring prometía abortar y el código NUNCA llamaba a `hashManifest()`
+ * ni a `loadVolumesConfig()`: un root sin manifiesto inventaba estado y un
+ * volumen no declarado inventaba entrada). Ahora, como `syncVolumeCounters`:
+ * 1. `hashManifest()` primero — un root sin manifiesto no es operable y aborta;
+ * 2. el volumen debe estar declarado por el manifiesto, o aborta sin escribir.
+ * Nada se inventa. El sello se anota junto a la marca (informativo: identifica
+ * contra qué manifiesto se tomó, nunca es clave de reconciliación — U225).
  *
  * @param {string} volumeId
  * @param {{ syncedAt?: string, source?: object }} [mark]
- * @returns {{ statePath: string, state: object, syncedAt: string }}
+ * @returns {{ statePath: string, state: object, syncedAt: string, manifestSha256: string }}
+ * @throws si el root no tiene manifiesto o el manifiesto no declara el volumen
  */
 export function recordVolumeSync(volumeId, mark = {}) {
+  const manifest = hashManifest(); // aborta si el root no tiene manifiesto
+  const config = loadVolumesConfig();
+  if (!config.volumes?.[volumeId]) {
+    throw new Error(`Unknown volume id: ${volumeId}`);
+  }
   const state = loadVolumesState();
   state.version = STATE_VERSION;
+  state.manifest = { sha256: manifest.sha256 };
   state.volumes = state.volumes || {};
   const syncedAt = mark.syncedAt ?? new Date().toISOString();
   state.volumes[volumeId] = {
@@ -99,7 +112,7 @@ export function recordVolumeSync(volumeId, mark = {}) {
     ...(mark.source ? { source: mark.source } : {})
   };
   const statePath = writeVolumesState(state);
-  return { statePath, state, syncedAt };
+  return { statePath, state, syncedAt, manifestSha256: manifest.sha256 };
 }
 
 /**

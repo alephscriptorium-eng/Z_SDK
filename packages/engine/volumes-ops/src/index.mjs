@@ -23,8 +23,10 @@ export { FORCES_DRIVER, FORCES_FAMILY } from './driver-forces.mjs';
 export {
   FIREHOSE_DRIVER,
   FIREHOSE_FAMILY,
+  FIREHOSE_ROOT_FILES,
   TRIAGE_INDEX_FILE,
   firehoseUnitKey,
+  parseAtUri,
   isFirehoseUnit,
   isUnitSlot
 } from './driver-firehose.mjs';
