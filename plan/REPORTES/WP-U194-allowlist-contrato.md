@@ -543,6 +543,34 @@ es rama ni tag de publicación). Se creó para que el `gc` no se llevara la
 obra de otro carril. Declarada aquí para que el orquestador la borre cuando
 U180 confirme la recuperación.
 
+### Desarrollo posterior: hay una MINA en la pila de stash
+
+Al cerrar el WP, la pila del repositorio ya no estaba vacía:
+
+```
+$ git stash list
+stash@{0}: On wp/u194-allowlist-contrato: u194-tmp (restaurado por worker
+           U180 tras colision de pila de stash compartida entre worktrees)
+```
+
+El worker de U180 detectó la colisión por su lado y **devolvió la entrada de
+U194 a la pila**. Gesto correcto, pero deja un peligro activo:
+
+- esa entrada contiene los 5 ficheros de `packages/mesh/socket-server/` de
+  este WP, y **ya son redundantes**: están commiteados en `f8b8e42`;
+- el próximo `git stash pop` de *cualquier* worktree del repo se llevará
+  obra de U194 a un carril ajeno — el mismo accidente, en espejo.
+
+**Este worker NO la ha tocado, a propósito.** Manipular la pila compartida
+es justo lo que produjo el incidente, y ahora mismo hay otro worker
+operando sobre ella: quitarla sería una segunda carrera. Queda para el
+orquestador, que es quien puede serializar:
+
+4. **Drenar la pila**: `git stash drop stash@{0}` (previa verificación de que
+   `git stash show -p stash@{0}` solo contiene ficheros de
+   `packages/mesh/socket-server/`, todos ya presentes en `f8b8e42`). La pila
+   debe quedar **vacía** antes de despachar la ola 4.
+
 ---
 
 ## 10 · Reproducir
