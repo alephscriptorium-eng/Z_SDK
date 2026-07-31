@@ -398,6 +398,22 @@ protocolo de preparación de worktrees asume árbol instalable, conviene
 decirlo en el BRIEF: sin `@roamhq/wrtc` (optional dep) **no hay e2e de
 WebRTC posible**, y con él sí — es lo que ha permitido el CA1 de facto.
 
+**Obs. 5 (autodenuncia) — usé `git stash` una vez, antes de que existiera
+la regla que lo prohíbe.** Para comprobar que las 3 caídas de
+`@zeus/protocol` eran previas y no mías hice `git stash -u` + `stash pop`
+en un único comando encadenado (§9 obs. 1). Mi base era `dc70cec`; la
+**regla 4-bis** (`git stash` PROHIBIDO con más de un worktree vivo,
+GOBIERNO :655-663) aterrizó en `main` en `f307e52`, **después**, mientras
+yo trabajaba — no estaba en mi árbol y no pude leerla. Estado comprobado
+tras el hecho: `git stash list` **vacío**, `git status` limpio, los dos
+commits de esta rama completos y las 45+13 pruebas verdes; el diff
+`dc70cec..HEAD` son 13 ficheros, todos míos. No hay contaminación, pero lo
+declaro porque el incidente que originó la regla es exactamente éste y un
+revisor merece verlo escrito y no descubrirlo. La alternativa correcta
+—`git show <base>:<ruta>` o copia al scratchpad— es la que usé después
+para los fail-probes (§5), donde sí respaldé los ficheros en el
+scratchpad en vez de tocar la pila.
+
 **Obs. 4 — `packages/mesh/webrtc-viewer/src/browser/browser-signaling.mjs`
 tenía cobertura CERO.** Es un gemelo completo del torno de señalización
 (3 llamadas a `assertSignalingPeerCard`, líneas 111/197/289 del original)
