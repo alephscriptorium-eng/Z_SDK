@@ -13,7 +13,7 @@
     "./loader": "./src/loader.mjs",
     "./browse": "./src/browse.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "lib",
     "docs": {

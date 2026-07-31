@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "description": "Angular gamified operator UI (tier-2). Hosts @zeus/threejs-ui-lib; projects game state via @zeus/operator-bridge; emits intents with role operator. Isolated Angular workspace (own install + ng build → dist), NOT part of the zeus npm workspace.",
   "main": "dist/index.js",
   "files": [

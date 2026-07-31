@@ -49,7 +49,7 @@
     "test": "node --test test/*.mjs",
     "spec:generate": "node spec/generate.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "lib",
     "docs": {

@@ -19,7 +19,7 @@
     "test": "node --test test/*.test.mjs",
     "sync:jetstream": "node bin/jetstream-sync.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "lib"
   },

@@ -10,7 +10,7 @@
   "exports": {
     ".": "./src/index.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "lib"
   },

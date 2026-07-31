@@ -50,7 +50,7 @@
     "spec:generate": "node spec/generate.mjs",
     "types:generate": "node spec/generate-types.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "lib"
   },

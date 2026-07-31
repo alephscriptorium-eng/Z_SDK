@@ -12,7 +12,7 @@
     ".": "./src/index.mjs",
     "./server": "./src/firehose-server.mjs"
   },
-  "license": "AIPLv1",
+  "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
     "role": "mcp",
     "mcp": "firehose",

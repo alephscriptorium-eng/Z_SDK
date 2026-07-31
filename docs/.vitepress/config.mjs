@@ -160,7 +160,7 @@ export default defineConfig({
         `<a href="${SITE_BACK.ci}">CI</a>`,
         '·',
         '<a href="/proyecto">proyecto</a>',
-        '· Animus Iocandi AIPLv1'
+        `· AIPLv1 (GPL-3.0-or-later + Animus Iocandi) — <a href="${SITE_BACK.repo}/blob/main/LICENSE.md">LICENSE.md</a>`
       ].join(' '),
       copyright: 'Scriptorium · Zeus SDK'
     }
