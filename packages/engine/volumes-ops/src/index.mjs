@@ -21,6 +21,14 @@ export { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
 export { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
 export { FORCES_DRIVER, FORCES_FAMILY } from './driver-forces.mjs';
 export {
+  FIREHOSE_DRIVER,
+  FIREHOSE_FAMILY,
+  TRIAGE_INDEX_FILE,
+  firehoseUnitKey,
+  isFirehoseUnit,
+  isUnitSlot
+} from './driver-firehose.mjs';
+export {
   MANIFEST_FILE_NAME,
   resolveManifestPath,
   readManifestRaw,
@@ -33,7 +41,8 @@ export {
   resolveVolumesStatePath,
   loadVolumesState,
   writeVolumesState,
-  recordVolumeState
+  recordVolumeState,
+  recordVolumeSync
 } from './state.mjs';
 export {
   appendOpsLedger,

@@ -238,7 +238,11 @@ export function importPack(opts) {
     volumeFilesById[volId] = tree.files
       .filter((rel) => rel.startsWith(prefix))
       .map((rel) => rel.slice(prefix.length));
-    const detected = detectVolumeFamily(vol, volumeFilesById[volId]);
+    const detected = detectVolumeFamily(
+      vol,
+      volumeFilesById[volId],
+      join(dataRoot, String(vol.path).split('/').join(sep))
+    );
     if (detected.error) {
       return fail('familia', detected.error, {
         volume: volId,
@@ -400,6 +404,9 @@ export function importPack(opts) {
           skipped: plan.skips?.length ?? 0,
           divergences: plan.divergences ?? [],
           protectedSidecars: plan.protectedSidecars ?? [],
+          // U204: unión aditiva por clave — lo deduplicado se REPORTA con la
+          // ruta donde la clave ya vivía (no-op observable, nada pisado).
+          dedup: plan.dedup ?? [],
           snapshot: plan.snapshot ?? null
         });
         continue;
@@ -464,7 +471,8 @@ export function importPack(opts) {
         moved: f.moved,
         skipped: f.skipped,
         divergences: f.divergences.length,
-        protectedSidecars: f.protectedSidecars.length
+        protectedSidecars: f.protectedSidecars.length,
+        dedup: f.dedup.length
       }))
     });
 
@@ -553,7 +561,8 @@ export function importPack(opts) {
           id: f.id,
           family: f.family,
           divergences: f.divergences.length,
-          protectedSidecars: f.protectedSidecars.length
+          protectedSidecars: f.protectedSidecars.length,
+          dedup: f.dedup.length
         }))
       },
       ledgerOpts

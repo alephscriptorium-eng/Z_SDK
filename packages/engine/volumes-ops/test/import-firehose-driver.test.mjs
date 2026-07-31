@@ -1,0 +1,581 @@
+/**
+ * WP-U204 · Driver FIREHOSE sobre importPack — caché CRECIENTE:
+ * UNIÓN ADITIVA POR CLAVE, jamás sobrescritura.
+ *
+ * Z-D9 (unidad/clave) probado aquí: la clave es el AT-URI DERIVADO
+ * `at://<did>/<collection>/<rkey>`, no la ruta. Los casos que lo demuestran:
+ * - mismo registro en OTRO batch → dedup, no duplica (la ruta habría fallado);
+ * - mismo registro ya triado en OTRO corpus → no resucita en `raw`;
+ * - mismo `rkey` con OTRO `did` (misma ruta, clave distinta) → `colision_ruta`
+ *   que aborta (dedup por ruta habría PISADO un registro ajeno);
+ * - unidad sin `uri` (formato jetstream crudo) → la clave se deriva igual.
+ *
+ * Fixture sintética con la forma que el productor del mundo escribe hoy
+ * (`feed-kit/src/jetstream-sync.mjs` `writeJetstreamPost`:
+ * `<corpus>/<batch>/<rkey>.json` con el payload jetstream crudo). El corpus
+ * real (38 MB · 8.388 ficheros, censo `sincronia/notas/
+ * NOTA-Z-2026-07-26-R7-matriz-migracion-y-loadstartpack.md:23`) vive fuera del
+ * repo: la cota se demuestra por medida propia (test de escala, al final).
+ */
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { resetVolumesCache } from '@zeus/presets-sdk/volumes';
+import { resetZeusEnvLoader } from '@zeus/presets-sdk/env';
+import { importPack, hashManifest, firehoseUnitKey } from '../src/index.mjs';
+
+const VOL_REL = 'DISK_01/FIREHOSE';
+const CORPORA = ['raw', 'candidate', 'discarded', 'labeled'];
+const COLLECTION = 'app.bsky.feed.post';
+
+const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
+
+/**
+ * Payload jetstream crudo, misma forma que SAMPLE_POSTS de feed-kit.
+ * @param {{ did?: string, rkey: string, text?: string, withUri?: boolean }} o
+ */
+function post({ did = 'did:plc:alpha', rkey, text = `post ${rkey}`, withUri = true }) {
+  return {
+    did,
+    kind: 'commit',
+    handle: `${did.split(':').pop()}.bsky.social`,
+    ...(withUri ? { uri: `at://${did}/${COLLECTION}/${rkey}` } : {}),
+    commit: {
+      collection: COLLECTION,
+      rkey,
+      record: { text, createdAt: '2026-07-31T00:00:00.000Z' }
+    }
+  };
+}
+
+function collectFiles(dir, rel = '') {
+  /** @type {string[]} */
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) out.push(...collectFiles(path.join(dir, entry.name), childRel));
+    else if (entry.isFile()) out.push(childRel);
+  }
+  return out.sort();
+}
+
+function setupRoot() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u204-root-'));
+  fs.writeFileSync(
+    path.join(root, 'volumes.json'),
+    `${JSON.stringify({ root: '.', volumes: {} }, null, 2)}\n`,
+    'utf8'
+  );
+  const prev = process.env.ZEUS_VOLUMES_ROOT;
+  process.env.ZEUS_VOLUMES_ROOT = root;
+  resetZeusEnvLoader();
+  resetVolumesCache();
+  return {
+    root,
+    restore() {
+      if (prev == null) delete process.env.ZEUS_VOLUMES_ROOT;
+      else process.env.ZEUS_VOLUMES_ROOT = prev;
+      resetZeusEnvLoader();
+      resetVolumesCache();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  };
+}
+
+/**
+ * Pack FIREHOSE sintético.
+ * @param {{
+ *   name?: string, version?: string,
+ *   units?: { corpus?: string, batch?: string, name?: string, raw: object }[],
+ *   triage?: object|null,
+ *   declareFamily?: string|null,
+ *   mutate?: (dataDir: string) => void
+ * }} [opts]
+ */
+function buildFirehosePack(opts = {}) {
+  const {
+    name = 'pack-firehose-a',
+    version = '1.0.0',
+    units = [
+      { raw: post({ rkey: 'u204a' }) },
+      { raw: post({ rkey: 'u204b' }) }
+    ],
+    triage = null,
+    declareFamily = null,
+    mutate = null
+  } = opts;
+
+  const packRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u204-pack-'));
+  const dataDir = path.join(packRoot, 'volumes', ...VOL_REL.split('/'));
+  for (const unit of units) {
+    const corpus = unit.corpus || 'raw';
+    const batch = unit.batch || 'jetstream';
+    const file = `${unit.name || unit.raw.commit.rkey}.json`;
+    const abs = path.join(dataDir, corpus, batch, file);
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, `${JSON.stringify(unit.raw, null, 2)}\n`, 'utf8');
+  }
+  if (triage) {
+    fs.writeFileSync(
+      path.join(dataDir, 'triage-manifest.json'),
+      `${JSON.stringify(triage, null, 2)}\n`,
+      'utf8'
+    );
+  }
+  if (mutate) mutate(dataDir);
+
+  const volumesDir = path.join(packRoot, 'volumes');
+  /** @type {Record<string,string>} */
+  const hashes = {};
+  for (const rel of collectFiles(volumesDir)) {
+    hashes[rel] = sha256(fs.readFileSync(path.join(volumesDir, rel.split('/').join(path.sep))));
+  }
+  fs.writeFileSync(
+    path.join(packRoot, 'manifest.json'),
+    JSON.stringify(
+      {
+        name,
+        version,
+        volumes: {
+          firehose: {
+            disk: 'DISK_01',
+            path: VOL_REL,
+            readonly: true,
+            label: 'Firehose (pack sintetico U204)',
+            ...(declareFamily ? { family: declareFamily } : {}),
+            corpora: CORPORA.map((id) => ({ id, path: id, label: id }))
+          }
+        },
+        hashes
+      },
+      null,
+      2
+    ),
+    'utf8'
+  );
+  return { packRoot, dataDir };
+}
+
+const manifestBytes = (root) => fs.readFileSync(path.join(root, 'volumes.json'), 'utf8');
+const rootFile = (root, rel) =>
+  path.join(root, VOL_REL.split('/').join(path.sep), rel.split('/').join(path.sep));
+const noStagingLeft = (root) => fs.readdirSync(root).every((n) => !n.startsWith('.import-staging'));
+const volumeFiles = (root) => collectFiles(path.join(root, VOL_REL.split('/').join(path.sep)));
+
+// ── Z-D9: la clave, aislada ────────────────────────────────────────────────
+
+test('Z-D9: la clave es el AT-URI DERIVADO — did+collection+rkey; sin `uri` funciona igual', () => {
+  const withUri = post({ rkey: 'k1' });
+  const withoutUri = post({ rkey: 'k1', withUri: false });
+  assert.equal(firehoseUnitKey(withUri), 'at://did:plc:alpha/app.bsky.feed.post/k1');
+  assert.equal(firehoseUnitKey(withoutUri), firehoseUnitKey(withUri));
+
+  // Mismo rkey, otro did = OTRA clave (la ruta `<batch>/k1.json` sería la MISMA).
+  assert.notEqual(firehoseUnitKey(post({ rkey: 'k1', did: 'did:plc:beta' })), firehoseUnitKey(withUri));
+
+  // Sin material que rinda clave: null. Jamás se fabrica desde la ruta.
+  assert.equal(firehoseUnitKey({ did: 'did:plc:alpha', commit: { collection: COLLECTION } }), null);
+  assert.equal(firehoseUnitKey({ hola: 'mundo' }), null);
+});
+
+// ── CA-1 · import entero ───────────────────────────────────────────────────
+
+test('CA-1: pack FIREHOSE importa entero — detect SIN fichero-firma, cursor sellado, corpora medidos', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack({
+    units: [
+      { raw: post({ rkey: 'u204a' }) },
+      { raw: post({ rkey: 'u204b' }) },
+      { corpus: 'candidate', batch: 'triaje-1', raw: post({ rkey: 'u204c' }) }
+    ]
+  });
+  try {
+    // El pack NO trae triage-manifest.json: la familia se detecta por el
+    // CONTENIDO de lo que hay, no por un fichero-firma.
+    assert.ok(!fs.existsSync(path.join(packRoot, 'volumes', ...VOL_REL.split('/'), 'triage-manifest.json')));
+
+    const res = importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+    assert.equal(res.ok, true, JSON.stringify(res));
+    assert.ok(res.steps.some((s) => s.step === 'familia' && s.families.firehose === 'firehose'));
+
+    for (const rel of [
+      'raw/jetstream/u204a.json',
+      'raw/jetstream/u204b.json',
+      'candidate/triaje-1/u204c.json'
+    ]) {
+      assert.ok(fs.existsSync(rootFile(root, rel)), `falta ${rel}`);
+    }
+
+    const fam = res.families.find((f) => f.id === 'firehose');
+    assert.equal(fam.family, 'firehose');
+    assert.equal(fam.moved, 3);
+    assert.equal(fam.dedup.length, 0);
+    assert.equal(fam.divergences.length, 0);
+
+    // Cursor sellado por importPack (el driver no sella).
+    const cfg = JSON.parse(manifestBytes(root));
+    assert.equal(cfg.volumes.firehose.family, 'firehose');
+    const snapshot = cfg.volumes.firehose.source.imported.snapshot;
+    assert.equal(snapshot.unit, 'at-uri');
+    assert.equal(snapshot.units, 3);
+    assert.match(snapshot.unitsSha256, /^[0-9a-f]{64}$/);
+
+    // Corpora del manifiesto poblados con conteo medido (U199/U201).
+    const byId = Object.fromEntries(cfg.volumes.firehose.corpora.map((c) => [c.id, c.files]));
+    assert.equal(byId.raw, 2);
+    assert.equal(byId.candidate, 1);
+    assert.equal(byId.discarded, 0);
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+// ── CA-2 · idempotencia incremental + unión aditiva ────────────────────────
+
+test('CA-2: reimport del MISMO pack = no-op observable (sello idéntico, cero escrituras)', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack();
+  try {
+    const first = importPack({ packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    const bytesAfter = manifestBytes(root);
+    const treeAfter = volumeFiles(root);
+
+    const again = importPack({ packRoot, role: 'operator' });
+    assert.equal(again.noop, true);
+    assert.equal(again.manifestSha256, first.manifestSha256);
+    assert.equal(manifestBytes(root), bytesAfter);
+    assert.deepEqual(volumeFiles(root), treeAfter);
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+test('CA-2: unión ADITIVA por clave — mismo registro en OTRO batch NO duplica; lo nuevo se suma', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack();
+  try {
+    assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
+    const bytesA = fs.readFileSync(rootFile(root, 'raw/jetstream/u204a.json'));
+
+    // Pack B: corrida de sync posterior. u204a y u204b VUELVEN (mismo
+    // registro, batch distinto) + u204d nuevo. Dedup por RUTA los habría
+    // duplicado; dedup por CLAVE los reconoce.
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-b',
+      version: '2.0.0',
+      units: [
+        { batch: 'jetstream-2', raw: post({ rkey: 'u204a' }) },
+        { batch: 'jetstream-2', raw: post({ rkey: 'u204b' }) },
+        { batch: 'jetstream-2', raw: post({ rkey: 'u204d' }) }
+      ]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, true, JSON.stringify(res.steps));
+
+    const fam = res.families.find((f) => f.id === 'firehose');
+    assert.equal(fam.moved, 1); // solo u204d
+    assert.equal(fam.dedup.length, 2);
+    assert.deepEqual(
+      fam.dedup.map((d) => d.at).sort(),
+      ['raw/jetstream/u204a.json', 'raw/jetstream/u204b.json']
+    );
+
+    // Aditivo: lo nuevo aterrizó; lo viejo sigue donde estaba, byte a byte;
+    // el batch nuevo NO contiene copias de lo ya presente.
+    assert.ok(fs.existsSync(rootFile(root, 'raw/jetstream-2/u204d.json')));
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream-2/u204a.json')));
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream-2/u204b.json')));
+    assert.deepEqual(fs.readFileSync(rootFile(root, 'raw/jetstream/u204a.json')), bytesA);
+    assert.equal(volumeFiles(root).length, 3);
+
+    const cfg = JSON.parse(manifestBytes(root));
+    assert.equal(cfg.volumes.firehose.source.imported.snapshot.units, 3);
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('CA-2: la clave es de VOLUMEN — un registro ya triado no resucita en `raw`', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({
+    units: [{ corpus: 'labeled', batch: 'triaje-1', raw: post({ rkey: 'u204e' }) }]
+  });
+  try {
+    assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
+    assert.ok(fs.existsSync(rootFile(root, 'labeled/triaje-1/u204e.json')));
+
+    // El pack posterior lo trae otra vez como crudo: NO debe reaparecer en raw.
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-triage',
+      version: '2.0.0',
+      units: [{ corpus: 'raw', batch: 'jetstream', raw: post({ rkey: 'u204e' }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, true, JSON.stringify(res.steps));
+    const fam = res.families.find((f) => f.id === 'firehose');
+    assert.equal(fam.moved, 0);
+    assert.deepEqual(fam.dedup.map((d) => d.at), ['labeled/triaje-1/u204e.json']);
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream/u204e.json')));
+    assert.equal(volumeFiles(root).length, 1);
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('CA-2: unidad SIN `uri` (jetstream crudo) dedupe contra la que sí lo trae', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'u204f' }) }] });
+  try {
+    assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-sin-uri',
+      version: '2.0.0',
+      units: [{ batch: 'jetstream-2', raw: post({ rkey: 'u204f', withUri: false }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, true);
+    const fam = res.families.find((f) => f.id === 'firehose');
+    assert.equal(fam.moved, 0);
+    assert.equal(fam.dedup.length, 1);
+    assert.equal(volumeFiles(root).length, 1);
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+// ── ROJOS · sobrescritura imposible ────────────────────────────────────────
+
+test('ROJO: misma RUTA con clave DISTINTA (otro did, mismo rkey) = colision_ruta que aborta', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'shared' }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    const bytesBefore = fs.readFileSync(rootFile(root, 'raw/jetstream/shared.json'));
+    const manifestBefore = manifestBytes(root);
+
+    // Otro repo (did) con el MISMO rkey → misma ruta, otro registro.
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-colision',
+      version: '2.0.0',
+      units: [
+        { raw: post({ rkey: 'nuevo-ok' }) },
+        { raw: post({ rkey: 'shared', did: 'did:plc:beta' }) }
+      ]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'colision_ruta');
+    assert.equal(res.file, 'raw/jetstream/shared.json');
+    assert.equal(res.key, 'at://did:plc:beta/app.bsky.feed.post/shared');
+    assert.equal(res.destKey, 'at://did:plc:alpha/app.bsky.feed.post/shared');
+
+    // Sin root a medias: el registro ajeno intacto byte a byte, lo nuevo no
+    // aterrizó, sello idéntico, staging borrado.
+    assert.deepEqual(fs.readFileSync(rootFile(root, 'raw/jetstream/shared.json')), bytesBefore);
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream/nuevo-ok.json')));
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.equal(hashManifest().sha256, first.manifestSha256);
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('ROJO: fichero bajo corpus que no rinde clave = familia_invalida (VALIDAR, antes de fusionar)', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack({
+    mutate(dataDir) {
+      const abs = path.join(dataDir, 'raw', 'jetstream', 'no-es-post.json');
+      fs.writeFileSync(abs, `${JSON.stringify({ hola: 'mundo' }, null, 2)}\n`, 'utf8');
+    }
+  });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'validar');
+    assert.equal(res.error, 'familia_invalida');
+    assert.match(JSON.stringify(res.results), /unidad_sin_clave/);
+    assert.equal(manifestBytes(root), before);
+    assert.ok(!fs.existsSync(path.join(root, 'DISK_01')));
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+test('ROJO: clave duplicada DENTRO del pack = familia_invalida (no se deduplica en silencio)', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack({
+    units: [
+      { raw: post({ rkey: 'dup' }) },
+      { batch: 'otro-batch', name: 'copia', raw: post({ rkey: 'dup' }) }
+    ]
+  });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'validar');
+    assert.equal(res.error, 'familia_invalida');
+    assert.match(JSON.stringify(res.results), /clave_duplicada_en_pack/);
+    assert.equal(manifestBytes(root), before);
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+test('ROJO: familia desconocida declarada = error ANTES de staging, root intacto', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack({ declareFamily: 'firehose-v2' });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'familia');
+    assert.equal(res.error, 'familia_desconocida');
+    assert.equal(res.family, 'firehose-v2');
+    assert.ok(!res.steps.some((s) => s.step === 'staging'));
+    assert.equal(manifestBytes(root), before);
+    assert.ok(!fs.existsSync(path.join(root, 'DISK_01')));
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+// ── Índice de triage: sidecar de raíz, divergencia reportada ──────────────
+
+test('índice: triage-manifest.json aterriza si falta; distinto = divergencia reportada, JAMÁS pisado', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({
+    triage: { timestamp: '2026-07-31T00:00:00.000Z', source: 'jetstream', counts: { raw: 2 } }
+  });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true, JSON.stringify(first));
+    const triagePath = rootFile(root, 'triage-manifest.json');
+    assert.ok(fs.existsSync(triagePath));
+    const triageBefore = fs.readFileSync(triagePath);
+
+    // Pack posterior con OTRO triage: el del destino es decisión local viva.
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-triage-b',
+      version: '2.0.0',
+      units: [{ batch: 'jetstream-2', raw: post({ rkey: 'u204g' }) }],
+      triage: { timestamp: '2026-08-01T00:00:00.000Z', source: 'jetstream', counts: { raw: 99 } }
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, true, JSON.stringify(res.steps));
+    const fam = res.families.find((f) => f.id === 'firehose');
+    assert.deepEqual(
+      fam.divergences.map((d) => ({ path: d.path, kind: d.kind })),
+      [{ path: 'triage-manifest.json', kind: 'contenido_distinto' }]
+    );
+    assert.deepEqual(fs.readFileSync(triagePath), triageBefore);
+    assert.ok(fs.existsSync(rootFile(root, 'raw/jetstream-2/u204g.json')));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('índice: triage-manifest.json roto = familia_invalida por el schema REAL de linea-kit (U80)', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot } = buildFirehosePack({ triage: { timestamp: 12345 } });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'validar');
+    assert.equal(res.error, 'familia_invalida');
+    assert.match(JSON.stringify(res.results), /triage-manifest/);
+    assert.equal(manifestBytes(root), before);
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+// ── Cota realista ─────────────────────────────────────────────────────────
+
+test('cota: import incremental a escala (ZEUS_U204_SCALE, por defecto 1200 unidades)', () => {
+  const total = Number(process.env.ZEUS_U204_SCALE || 1200);
+  const { root, restore } = setupRoot();
+  const mk = (from, to, batch) =>
+    Array.from({ length: to - from }, (_, i) => ({
+      batch,
+      raw: post({ rkey: `esc${String(from + i).padStart(6, '0')}`, text: `escala ${from + i}` })
+    }));
+
+  // Pack A: el 60% del censo. Pack B: el 100% (solapa el 60% + añade el 40%).
+  const cut = Math.floor(total * 0.6);
+  const packA = buildFirehosePack({ name: 'pack-escala-a', units: mk(0, cut, 'lote-1') });
+  const packB = buildFirehosePack({
+    name: 'pack-escala-b',
+    version: '2.0.0',
+    units: [...mk(0, cut, 'lote-2'), ...mk(cut, total, 'lote-2')]
+  });
+  try {
+    const t0 = Date.now();
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    const tA = Date.now() - t0;
+    assert.equal(first.ok, true, JSON.stringify(first.error));
+
+    const t1 = Date.now();
+    const second = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    const tB = Date.now() - t1;
+    assert.equal(second.ok, true, JSON.stringify(second.error));
+
+    const fam = second.families.find((f) => f.id === 'firehose');
+    assert.equal(fam.dedup.length, cut, 'el solape se deduplica por clave');
+    assert.equal(fam.moved, total - cut, 'solo lo nuevo aterriza');
+    assert.equal(volumeFiles(root).length, total, 'unión aditiva: ni una copia de más');
+
+    const cfg = JSON.parse(manifestBytes(root));
+    assert.equal(cfg.volumes.firehose.source.imported.snapshot.units, total);
+
+    // Tercer pase: reimport de B = no-op por packHash (idempotencia estable).
+    const third = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(third.noop, true);
+    assert.equal(third.manifestSha256, second.manifestSha256);
+
+    console.log(
+      `[U204·cota] unidades=${total} · import A (${cut} nuevas)=${tA}ms · ` +
+        `import B (${cut} dedup + ${total - cut} nuevas)=${tB}ms`
+    );
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  }
+});

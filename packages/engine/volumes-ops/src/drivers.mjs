@@ -13,20 +13,29 @@
 
 import { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
 import { FORCES_DRIVER, FORCES_FAMILY } from './driver-forces.mjs';
+import { FIREHOSE_DRIVER, FIREHOSE_FAMILY } from './driver-firehose.mjs';
 
 /** @type {Record<string, { family: string, detect: Function, validate: Function, merge: Function }>} */
 export const FAMILY_DRIVERS = Object.freeze({
   [LINEAS_FAMILY]: LINEAS_DRIVER,
-  [FORCES_FAMILY]: FORCES_DRIVER
+  [FORCES_FAMILY]: FORCES_DRIVER,
+  [FIREHOSE_FAMILY]: FIREHOSE_DRIVER
 });
 
 /**
  * Resolve the family of a pack volume.
+ *
+ * `volumeDir` (WP-U204) is the volume's absolute directory INSIDE THE PACK:
+ * families whose signature is not a file name but the CONTENT of what is
+ * there (FIREHOSE — «detect sin firma en disco») need to read to answer
+ * honestly. Drivers that key off a signature file ignore it.
+ *
  * @param {object} volumeEntry — pack manifest volume entry (may declare `family`)
  * @param {string[]} volumeFiles — posix rels of the volume's files in the pack
+ * @param {string} [volumeDir] — absolute dir of the volume inside the pack
  * @returns {{ family: string|null } | { error: string, family: string }}
  */
-export function detectVolumeFamily(volumeEntry, volumeFiles) {
+export function detectVolumeFamily(volumeEntry, volumeFiles, volumeDir) {
   const declared = volumeEntry?.family;
   if (declared != null) {
     if (!FAMILY_DRIVERS[declared]) {
@@ -35,7 +44,7 @@ export function detectVolumeFamily(volumeEntry, volumeFiles) {
     return { family: declared };
   }
   for (const driver of Object.values(FAMILY_DRIVERS)) {
-    if (driver.detect({ volumeEntry, volumeFiles })) {
+    if (driver.detect({ volumeEntry, volumeFiles, volumeDir })) {
       return { family: driver.family };
     }
   }
