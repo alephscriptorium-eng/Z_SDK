@@ -1,7 +1,7 @@
 /**
- * WP-U82 CA e2e:
+ * WP-U82 CA e2e (U199: manifest sealed):
  * fill synthetic corpus → measure via MCP resource → empty operator (ledger +
- * files gone) → reject same empty as player; volumes.json counters.
+ * files gone) → reject same empty as player; counters in volumes.state.json.
  */
 
 import test from 'node:test';
@@ -41,7 +41,7 @@ function setupSandbox() {
             path: 'DISK_99/SANDBOX',
             readonly: false,
             label: 'Sandbox',
-            corpora: [{ id: 'raw', path: 'raw', label: 'Raw', files: 0 }]
+            corpora: [{ id: 'raw', path: 'raw', label: 'Raw' }]
           }
         }
       },
@@ -156,9 +156,15 @@ test('CA: fill → measure resource → empty operator → reject player; counte
   assert.ok(!fs.existsSync(path.join(rawDir, 'one.bin')));
   assert.ok(!fs.existsSync(path.join(rawDir, 'two.bin')));
 
+  // U199: the manifest stays sealed — counters live in volumes.state.json.
   const cfg = JSON.parse(fs.readFileSync(path.join(root, 'volumes.json'), 'utf8'));
-  assert.equal(cfg.volumes.sandbox.corpora[0].files, 0);
-  assert.equal(cfg.volumes.sandbox.files, 0);
+  assert.equal(cfg.volumes.sandbox.corpora[0].files, undefined);
+  assert.equal(cfg.volumes.sandbox.files, undefined);
+  const state = JSON.parse(
+    fs.readFileSync(path.join(root, 'volumes.state.json'), 'utf8')
+  );
+  assert.equal(state.volumes.sandbox.files, 0);
+  assert.equal(state.volumes.sandbox.corpora[0].files, 0);
 
   const ledger = readOpsLedger({ volumesRoot: root });
   assert.ok(ledger.some((e) => e.kind === 'empty_volume' && e.role === 'operator'));

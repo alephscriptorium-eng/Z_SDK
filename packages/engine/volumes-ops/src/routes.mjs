@@ -87,7 +87,8 @@ export function mountVolumesOpsRoutes(app, opts = {}) {
     }
   );
 
-  // Optional: sync counters without emptying (measure write-back).
+  // Optional: sync counters without emptying. Records the measurement in
+  // volumes.state.json — the volumes.json manifest stays sealed (U199).
   app.post('/api/volumes/:volumeId/sync-counters', (req, res) => {
     try {
       res.json({ ok: true, ...syncVolumeCounters(req.params.volumeId) });

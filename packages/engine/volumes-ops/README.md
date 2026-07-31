@@ -45,10 +45,17 @@ const { registry, templateRegistry } = bindProjectedHttpReaders(projected, {
 });
 ```
 
-## Contadores
+## Contadores (U199 · manifiesto sellado)
 
-Tras un vaciado (o `POST …/sync-counters`), reescribe `files`/`bytes` en
-`volumes.json` y llama `resetVolumesCache()`.
+`volumes.json` es MANIFIESTO: identidad/topología, read-only para el
+runtime, sellado por sha256 de sus bytes exactos (`manifest.mjs`). Medir
+JAMÁS lo modifica. Tras un vaciado (o `POST …/sync-counters`), la medición
+viva se registra en `volumes.state.json` (`state.mjs`): `files`/`bytes`
+por volumen y corpus + `measuredAt` + `manifest.sha256` contra el que se
+midió. El estado es mutable/regenerable, no versionado y nunca entra en el
+hash del manifiesto. Regla D-45: si se puede regenerar midiendo, es
+estado, no manifiesto. Volumen sin entrada en el manifiesto (o root sin
+manifiesto) → la operación aborta, no se inventa nada.
 
 ## Ledger
 

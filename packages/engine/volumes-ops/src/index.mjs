@@ -17,6 +17,20 @@ export {
 } from './empty.mjs';
 export { syncVolumeCounters } from './counters.mjs';
 export {
+  MANIFEST_FILE_NAME,
+  resolveManifestPath,
+  readManifestRaw,
+  hashManifest
+} from './manifest.mjs';
+export {
+  STATE_FILE_NAME,
+  STATE_VERSION,
+  resolveVolumesStatePath,
+  loadVolumesState,
+  writeVolumesState,
+  recordVolumeState
+} from './state.mjs';
+export {
   appendOpsLedger,
   readOpsLedger,
   resolveOpsLedgerPath,
