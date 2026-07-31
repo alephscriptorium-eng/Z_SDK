@@ -5,6 +5,13 @@
  *
  * WP-U93: offer/answer/ICE y room-join exigen peer-card válida (torno).
  * Z_SDK #4: handshake lleva `ssbId`; asiento firmado se verifica.
+ *
+ * WP-U186 (transporte ≠ permiso): el torno gobierna SOLO la antesala
+ * WebRTC (capacidad opt-in). El transporte base admite sesión anónima
+ * `role:null` (sin card); una card presentada se valida — inválida =
+ * RECHAZO, jamás degrada a anónimo; el rol se consulta EN LA ACCIÓN
+ * (`getSessionRole()` / torno por mensaje gated). Frontera:
+ * plan/REPORTES/U186-paso0-frontera-room-join.md.
  */
 
 import { EventEmitter } from 'node:events';
@@ -77,6 +84,25 @@ export class SignalingService extends EventEmitter {
 
   getPeerCard() {
     return this._peerCard;
+  }
+
+  /**
+   * Rol de la sesión, consultado EN EL MOMENTO (WP-U186).
+   * Sin card = sesión anónima ⇒ `null`. Con card, se re-valida aquí
+   * (frescura incluida): si la card ya no acredita, devuelve `null` —
+   * y toda acción gated queda igualmente denegada por el torno.
+   * @param {number} [now]
+   * @returns {string|null}
+   */
+  getSessionRole(now) {
+    if (this._peerCard == null) return null;
+    const check = assertSignalingPeerCard(this._peerCard, {
+      role: this._requiredRole ?? undefined,
+      now,
+      requireSsbId: this._requireSsbId,
+      requireSeatSignature: this._requireSeatSignature
+    });
+    return check.ok ? check.role : null;
   }
 
   /** @returns {string|null} */
