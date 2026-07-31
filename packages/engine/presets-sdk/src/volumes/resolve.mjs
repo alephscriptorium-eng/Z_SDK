@@ -5,16 +5,42 @@ import { loadZeusEnv, MONOREPO_ROOT } from '../env/index.mjs';
 let _configCache = null;
 
 /**
- * Resolve the VOLUMES root directory.
- * Honors ZEUS_VOLUMES_ROOT; defaults to MONOREPO_ROOT/VOLUMES.
+ * Canonical resolver for the VOLUMES root (WP-U200 · consenso ◆5).
+ * This is THE single resolver: every runtime path to the volumes root goes
+ * through here (volumes-ops, feed-kit, ssb-system, paths/*). linea-kit
+ * mirrors this exact contract in src/validate.mjs (it cannot declare this
+ * package as a dependency in U200 — package.json frozen).
+ *
+ * ZEUS_VOLUMES_ROOT is MANDATORY:
+ * - absent → honest failure («not operable»), same fail-closed pattern as
+ *   the U199 manifest seal. NO default root, NO cwd walk, NO in-repo
+ *   fallback as a product path.
+ * - a root inside node_modules is REFUSED even when the env points there:
+ *   a pack is an import source, never a live volumes root (cerco §10.8 —
+ *   living-anchor ban).
+ * - a relative value resolves against MONOREPO_ROOT, never against cwd:
+ *   the result must not depend on where the process was launched.
+ *
+ * Dev/test convenience — explicit and env-driven only: loadZeusEnv() reads
+ * the monorepo .env (e.g. `ZEUS_VOLUMES_ROOT=./VOLUMES`, see .env.example)
+ * and test harnesses inject the env themselves (see
+ * packages/engine/test-utils/src/smoke-env.mjs `setupSmokeVolumesEnv`).
  */
 export function resolveVolumesRoot() {
   loadZeusEnv();
   const override = process.env.ZEUS_VOLUMES_ROOT;
-  if (override) {
-    return isAbsolute(override) ? resolve(override) : resolve(MONOREPO_ROOT, override);
+  if (!override) {
+    throw new Error(
+      'ZEUS_VOLUMES_ROOT is not set — volumes root is not operable; set it explicitly (environment or .env). No default and no cwd walk (U200 · ◆5).'
+    );
   }
-  return join(MONOREPO_ROOT, 'VOLUMES');
+  const root = isAbsolute(override) ? resolve(override) : resolve(MONOREPO_ROOT, override);
+  if (root.split(/[\\/]+/).includes('node_modules')) {
+    throw new Error(
+      `ZEUS_VOLUMES_ROOT resolves inside node_modules (${root}) — a pack is an import source, never a live volumes root; refusing (cerco §10.8).`
+    );
+  }
+  return root;
 }
 
 /**
