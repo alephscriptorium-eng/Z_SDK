@@ -141,7 +141,7 @@ jobs:
       # saltarse a sí misma.
       #
       # La tercera comprobación es la que importa: `registry.yaml` es LITERALMENTE
-      # el fichero que `test/helpers/live-volumes.mjs:34` abre para decidir entre
+      # el fichero que `test/helpers/live-volumes.mjs:34-35,50` abre para decidir entre
       # aseverar y omitir. Sin él, el helper lanza y el job cae — pero cae con un
       # rastro de node; aquí cae con un mensaje que dice qué falta.
       - name: linea-system exige su root de VOLUMES (WP-U261)
