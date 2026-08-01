@@ -19,6 +19,12 @@
  *   volume AS IT LANDED (recomputed from the destination after FUSIONAR,
  *   never copied from `pack.hashes`). Rationale and declared scope at the
  *   seal site below.
+ * - U259: `source.imported.snapshot` follows the SAME rule — se recomputa del
+ *   DESTINO tras FUSIONAR con el `snapshotOf()` del driver de la familia, en
+ *   vez de copiarse del PLAN (que se calcula sobre el staging). Y el gate
+ *   NO-OP gana una condición de FORMA para que un root sellado antes del
+ *   contrato de snapshot no se quede sin él para siempre. Los dos porqués,
+ *   con su medida, en sus sitios.
  *
  * Every failure leaves the root intact (manifest seal unchanged) and the
  * staging directory removed. Nothing lands halfway: staging lives INSIDE
@@ -291,11 +297,35 @@ export function importPack(opts) {
   steps.push({ step: 'familia', ok: true, families });
 
   // ── 6 · NO-OP (decided after VERIFICAR, before STAGING) ────────────────
+  //
+  // U259 · el NO-OP tiene una segunda condición, y hace falta. «Ya sellado con
+  // este contenido» se decidía sólo por `packHash`, así que un root sellado por
+  // una versión ANTERIOR al contrato de snapshot se quedaba para siempre sin
+  // él: el import respondía `noop:true` («ya está») y el tramo de snapshot
+  // seguía en «omitido honesto». Medido sobre el root de referencia, que es
+  // exactamente ese caso: su volumen LINEAS no llevaba snapshot y ninguna
+  // re-ejecución del sellador se lo iba a poner.
+  //
+  // La condición añadida es de FORMA, no de VALOR — a propósito. Comparar el
+  // snapshot sellado con el recomputado abriría una vía de blanqueo: un volumen
+  // CORROMPIDO dejaría de ser NO-OP, el import correría y volvería a sellar la
+  // corrupción como si fuera legítima. Lo que se comprueba es sólo que el
+  // registro sellado NO CAREZCA de un snapshot que la familia sí sabe sellar; y
+  // eso una corrupción de datos no lo puede provocar (no borra campos del
+  // manifiesto, y si los borrara el sello se rompería y `sello_vs_ledger` lo
+  // cazaría antes).
+  const faltaSnapshotDeContrato = (id) => {
+    const dest = destConfig.volumes[id];
+    if (dest?.source?.imported?.snapshot) return false;
+    const fam = families[id];
+    return Boolean(fam && FAMILY_DRIVERS[fam]?.snapshotOf);
+  };
   const allSealed = Object.keys(pack.volumes).every((id) => {
     const dest = destConfig.volumes[id];
     return (
       dest?.source?.imported?.name === pack.name &&
-      dest?.source?.imported?.packHash === packHash
+      dest?.source?.imported?.packHash === packHash &&
+      !faltaSnapshotDeContrato(id)
     );
   });
   if (allSealed) {
@@ -536,6 +566,12 @@ export function importPack(opts) {
         if (existsSync(abs)) landedHashes[rel] = sha256File(abs);
         else noAterrizados.push(rel);
       }
+      // Snapshot recomputado del DESTINO (ver el bloque de abajo). `null` si el
+      // volumen no es de familia o si su driver no sella snapshot.
+      const famDriver = families[volId] ? FAMILY_DRIVERS[families[volId]] : null;
+      const landedSnapshot = famDriver?.snapshotOf
+        ? famDriver.snapshotOf(join(volumesRoot, vol.path.split('/').join(sep)))
+        : null;
       const corpora = (vol.corpora || []).map((c) => {
         const corpusAbs = join(
           volumesRoot,
@@ -567,11 +603,19 @@ export function importPack(opts) {
             ...(origin ? { origin } : {}), // inert metadata (cerco §10.8)
             // Sello por fichero (U258): `<relPosix>` → sha256 de lo aterrizado.
             ...(Object.keys(landedHashes).length > 0 ? { hashes: landedHashes } : {}),
-            // Snapshot por hash (U203): unidades de familia amarradas por
-            // sha256 de su árbol — lo aporta el plan del driver.
-            ...(familyReports.find((f) => f.id === volId)?.snapshot
-              ? { snapshot: familyReports.find((f) => f.id === volId).snapshot }
-              : {})
+            // ── SNAPSHOT DE UNIDAD (U203 · recomputado del DESTINO en U259) ─
+            // Antes se copiaba del PLAN del driver, que se calcula sobre el
+            // STAGING. En FORCES daba igual (una unidad que difiera aborta el
+            // import), pero en LINEAS **no**: el driver conserva el fichero del
+            // destino cuando diverge y jamás pisa un `.md` curado, así que el
+            // árbol que queda tras fusionar NO es el del pack. Sellar el
+            // staging anotaría un árbol que el volumen no tiene y el root
+            // dejaría de arrancar POR HABER IMPORTADO BIEN — el defecto exacto
+            // que U258 cerró para el sello por fichero, aquí para el de unidad.
+            // Misma regla para las cuatro familias, un solo momento: **después
+            // de FUSIONAR, desde el destino**, con el `snapshotOf()` del propio
+            // driver que verifica.
+            ...(landedSnapshot ? { snapshot: landedSnapshot } : {})
           }
         },
         ...(corpora.length > 0 ? { corpora } : {})
@@ -580,6 +624,7 @@ export function importPack(opts) {
         id: volId,
         corpora,
         hashes: Object.keys(landedHashes).length,
+        snapshot: landedSnapshot,
         // Cero en todo camino de los drivers actuales; se REPORTA en vez de
         // callarse para que un plan de fusión que deje un fichero sin
         // aterrizar sea observable en la salida del import, no invisible.
@@ -596,7 +641,19 @@ export function importPack(opts) {
       ok: true,
       manifestSha256: sealAfter.sha256,
       volumes: importedReport.map((v) => v.id),
-      hashes: importedReport.map((v) => ({ id: v.id, files: v.hashes, unsealed: v.unsealed.length }))
+      hashes: importedReport.map((v) => ({ id: v.id, files: v.hashes, unsealed: v.unsealed.length })),
+      // U259 · qué ancló el snapshot de cada volumen, para que el sello sea
+      // observable en la salida del import y no sólo en el manifiesto.
+      snapshots: importedReport
+        .filter((v) => v.snapshot)
+        .map((v) => ({
+          id: v.id,
+          unit: typeof v.snapshot.unit === 'string' ? v.snapshot.unit : 'arbol-por-unidad',
+          units:
+            typeof v.snapshot.units === 'number'
+              ? v.snapshot.units
+              : Object.keys(v.snapshot).length
+        }))
     });
 
     // ── 7 · NO-LINK (result tree) ────────────────────────────────────────

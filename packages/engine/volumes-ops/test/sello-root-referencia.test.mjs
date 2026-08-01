@@ -48,7 +48,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resetVolumesCache } from '@zeus/presets-sdk/volumes';
 import { resetZeusEnvLoader } from '@zeus/presets-sdk/env';
-import { assertVolumesRootBootable, verifyRootIntegrity } from '../src/index.mjs';
+import {
+  assertVolumesRootBootable,
+  FAMILY_DRIVERS,
+  hashUnitTree,
+  scanRootCerco,
+  verifyRootIntegrity
+} from '../src/index.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../../..');
@@ -162,7 +168,10 @@ test('NO VACUO · el sello está PUESTO: los legs que lo comprueban salen VERDES
   const rep = reporte(REF_ROOT);
   assert.equal(rep.ok, true, JSON.stringify(rep.findings));
   const verdes = new Set(rep.checks.filter((c) => c.ok).map((c) => c.check));
-  for (const leg of ['manifiesto', 'sello_vs_ledger', 'ficheros']) {
+  // U259 · `snapshot` entra en la lista: era el tramo que en este root salía
+  // `omitido: sin_snapshot_sellado` para LINEAS, y con él omitido un ALTA
+  // schema-válida dentro de la línea ARRANCABA.
+  for (const leg of ['manifiesto', 'sello_vs_ledger', 'ficheros', 'snapshot']) {
     assert.ok(
       verdes.has(leg),
       `el leg «${leg}» no está VERDE: el root dejó de estar sellado y la guarda ` +
@@ -240,6 +249,157 @@ test('PORTABILIDAD · el sello coincide con los BYTES QUE GIT ENTREGA, no con lo
     }
   }
   assert.ok(comparados > 0, 'no se comparó ningún fichero contra el blob de git');
+});
+
+test('U259 · cobertura de SNAPSHOT: todo volumen con árbol y familia que sabe sellar, lo lleva', () => {
+  const cfg = manifiesto();
+  let conSnapshot = 0;
+  for (const [id, entry] of Object.entries(cfg.volumes)) {
+    if (!tieneArbol(REF_ROOT, entry)) continue;
+    const driver = entry.family ? FAMILY_DRIVERS[entry.family] : null;
+    assert.ok(driver, `el volumen «${id}» tiene árbol y quedó sin familia con driver`);
+    if (!driver.snapshotOf) continue;
+    const sellado = entry?.source?.imported?.snapshot;
+    assert.ok(
+      sellado && Object.keys(sellado).length > 0,
+      `el volumen «${id}» (familia ${entry.family}) tiene árbol y CERO snapshot sellado: ` +
+        'un ALTA dentro de una unidad volvería a arrancar'
+    );
+    // Y es el que su propio driver recomputa: sellar y verificar, un solo cuerpo.
+    assert.deepEqual(
+      driver.verifySnapshot(
+        path.join(REF_ROOT, String(entry.path).split('/').join(path.sep)),
+        sellado
+      ),
+      [],
+      `el snapshot sellado de «${id}» no casa con el árbol vivo del repo`
+    );
+    conSnapshot += 1;
+  }
+  assert.ok(conSnapshot >= 2, `sólo ${conSnapshot} volúmenes con snapshot: se perdió cobertura`);
+});
+
+test('U259 · PORTABILIDAD del snapshot: se recomputa igual desde los BLOBS DE GIT', () => {
+  // Misma lección que U258 con `hashes`, aplicada al hash de ÁRBOL: si el
+  // checkout de CI entrega otros bytes (finales de línea), el árbol de la unidad
+  // hashea distinto y los servicios no arrancan. Se recomputa la unidad
+  // ENTERAMENTE desde el índice de git, en un directorio temporal.
+  const cfg = manifiesto();
+  let unidades = 0;
+  for (const [id, entry] of Object.entries(cfg.volumes)) {
+    const sellado = entry?.source?.imported?.snapshot;
+    // Sólo la forma «árbol por unidad» se puede reconstruir así; los cursores
+    // O(1) de FIREHOSE/SSB no aplican (y en este root no hay volúmenes de esas
+    // familias con árbol).
+    if (!sellado || Object.values(sellado).some((v) => typeof v !== 'string')) continue;
+    for (const [unitDir, hash] of Object.entries(sellado)) {
+      const prefijo = `VOLUMES/${entry.path}/${unitDir}/`;
+      const listado = execFileSync('git', ['ls-files', '-z', '--', prefijo], {
+        cwd: REPO_ROOT,
+        encoding: 'utf8',
+        maxBuffer: 1 << 28
+      })
+        .split('\0')
+        .filter(Boolean);
+      assert.ok(
+        listado.length > 0,
+        `la unidad ${id}/${unitDir} está sellada y git no rastrea nada bajo ${prefijo}`
+      );
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u259-blob-'));
+      TEMPS.push(tmp);
+      for (const gitPath of listado) {
+        const rel = gitPath.slice(prefijo.length);
+        const abs = path.join(tmp, rel.split('/').join(path.sep));
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(
+          abs,
+          execFileSync('git', ['show', `:${gitPath}`], {
+            cwd: REPO_ROOT,
+            encoding: 'buffer',
+            maxBuffer: 1 << 28
+          })
+        );
+      }
+      assert.equal(
+        hashUnitTree(tmp),
+        hash,
+        `${id}/${unitDir}: el snapshot no coincide con el árbol que git entrega — ` +
+          'un checkout en otra plataforma no arrancaría'
+      );
+      unidades += 1;
+    }
+  }
+  assert.ok(unidades > 0, 'no se reconstruyó ninguna unidad desde los blobs de git');
+});
+
+test('U259 · ROJO: un ALTA schema-VÁLIDA dentro de una unidad sellada niega el arranque', () => {
+  // El vector que ANTES de este WP arrancaba en LINEAS: copiar un fichero
+  // VÁLIDO dentro de la línea. Ningún schema se queja, el leg `ficheros` sólo
+  // mira pertenencia de lo sellado y los corpora no están medidos. Sólo el
+  // snapshot —que es un hash de CONJUNTO— lo ve.
+  const cfg = manifiesto();
+  const porVolumen = new Map(PUNTOS_DE_ARRANQUE.map((p) => [p.volumeIds[0], p]));
+  let vectores = 0;
+  for (const [id, entry] of Object.entries(cfg.volumes)) {
+    const sellado = entry?.source?.imported?.snapshot;
+    if (!sellado || Object.values(sellado).some((v) => typeof v !== 'string')) continue;
+    const punto = porVolumen.get(id);
+    assert.ok(punto, `el volumen «${id}» tiene snapshot y ningún punto de arranque lo acota`);
+    for (const unitDir of Object.keys(sellado)) {
+      const root = copiaDelRoot();
+      const unidad = path.join(
+        root,
+        String(entry.path).split('/').join(path.sep),
+        unitDir.split('/').join(path.sep)
+      );
+      // Copia EXACTA de un fichero que ya vive en la unidad: schema-válida por
+      // construcción, así que el rojo no puede venir del validador de familia.
+      const alguno = fs.readdirSync(unidad, { withFileTypes: true }).find((e) => e.isFile());
+      assert.ok(alguno, `la unidad ${id}/${unitDir} no tiene ficheros en su raíz`);
+      fs.copyFileSync(
+        path.join(unidad, alguno.name),
+        path.join(unidad, `copia-${alguno.name}`)
+      );
+      const r = arranca(root, punto);
+      assert.equal(
+        r.arranca,
+        false,
+        `un ALTA en ${id}/${unitDir} NO impidió el arranque de ${punto.service}`
+      );
+      assert.match(r.motivo, /unidad_corrupta/);
+      vectores += 1;
+    }
+  }
+  assert.ok(vectores > 0, 'el vector ALTA no llegó a correr sobre ninguna unidad');
+});
+
+test('U259 · el CERCO del root de referencia queda LIMPIO (modo estricto ya es usable)', () => {
+  // U206 midió TRES hallazgos aquí —dos `urls.revision` de la fixture de LINEAS
+  // y un enlace de repositorio en `README.md`—, ninguno un ancla de arranque, y
+  // por eso el cerco no podía abortar: hacerlo negaría el arranque a todo el
+  // monorepo. Con el predicado de U259 los tres quedan clasificados por REGLA
+  // (I2 y I4), así que `ZEUS_VOLUMES_CERCO=strict` deja de ser un interruptor
+  // que nadie puede pulsar. Si alguien planta un ancla de verdad, esto se pone
+  // rojo — que es lo que un cerco tiene que hacer.
+  const rep = scanRootCerco({ root: REF_ROOT });
+  assert.equal(
+    rep.ok,
+    true,
+    `el cerco del root de referencia tiene hallazgos: ${JSON.stringify(rep.findings, null, 2)}`
+  );
+  assert.ok(rep.files > 0, 'el cerco barrió CERO ficheros: no probaría nada');
+});
+
+test('U259 · y NO es vacuo: una URL viva plantada en el root de referencia sí se caza', () => {
+  const root = copiaDelRoot();
+  fs.writeFileSync(
+    path.join(root, 'DISK_02', 'LINEAS', 'demo', 'ancla.json'),
+    `${JSON.stringify({ endpoint: 'https://servidor.real/v1/x' }, null, 2)}\n`,
+    'utf8'
+  );
+  const rep = scanRootCerco({ root });
+  assert.equal(rep.ok, false, 'el cerco quedó limpio ante una URL viva plantada: es vacuo');
+  assert.ok(rep.liveUrls.some((u) => u.url === 'https://servidor.real/v1/x'));
 });
 
 test('ROJO · alterar CUALQUIER fichero sellado niega el arranque del servicio que lo usa', () => {

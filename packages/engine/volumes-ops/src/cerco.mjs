@@ -28,27 +28,93 @@
  *     se **importa de import.mjs** en vez de copiarse: una segunda copia de
  *     la lista es una juntura por la que se cuela lo que se añada a la otra.
  *
- * 4 · URL VIVA. Un literal `http://` o `https://` en un fichero escaneado,
- *     EXCEPTO:
- *     (a) **placeholder de entorno**: la autoridad empieza por `${` — la
- *         forma `https://${ZEUS_X}/…` no es un ancla, es una plantilla que
- *         alguien tiene que rellenar por env;
- *     (b) **procedencia inerte declarada por el contrato**: los valores de
- *         `volumes.<id>.source.imported.origin` DENTRO de `volumes.json`.
- *         El contrato dice literalmente que la URL de origen viaja «solo
- *         como metadato inerte» (CONTRATO-IMPORT-PACK-v1 §3, y el comentario
- *         de import.mjs:567), así que exentarla es aplicar el contrato, no
- *         abrir un boquete: la exención es **por ruta de clave exacta**, y
- *         sólo en el manifiesto. La misma URL en cualquier otro sitio del
- *         root —incluido cualquier otro campo del propio `volumes.json`— es
- *         una URL viva.
+ * 4 · URL VIVA — **el predicado, reescrito en U259**. Ver el bloque siguiente:
+ *     es la mitad de ese WP y una decisión de contrato, no un detalle.
  *
- *     Nota honesta sobre el manifiesto de referencia: `VOLUMES/volumes.json`
- *     del monorepo lleva `"remotePath": "${ZEUS_FIREHOSE_REMOTE_PATH}"`
- *     (línea 13) y `"pubUrl": "${ZEUS_SSB_PUB_URL}"` (línea 59) — o sea
- *     placeholders **sin esquema**, que por tanto ni siquiera llegan a
- *     casar con el patrón. La cláusula (a) no es vacua por eso: cubre la
- *     forma `https://${VAR}/…`, que sí casa.
+ * ── EL PREDICADO DE URL VIVA (U259) ──────────────────────────────────────
+ *
+ * **Qué se estaba decidiendo.** U206 dejó escrito, con la medida delante, que
+ * «0 URLs vivas» **no distingue procedencia registrada de ancla de arranque**
+ * (boot.mjs:19-31): sobre el root de referencia el cerco daba TRES hallazgos
+ * —dos `urls.revision` de una fixture de LINEAS y un enlace de repositorio en
+ * `README.md`—, ninguno de ellos un ancla, y por eso el cerco no puede abortar.
+ * Un gate que, aplicado, negaría el arranque a todo el monorepo no es un gate.
+ *
+ * **La pregunta, formulada de modo que se pueda contestar.** Un ANCLA DE
+ * ARRANQUE es una URL que el PRODUCTO puede dereferenciar: si se corta la red,
+ * algo del root deja de funcionar. Un METADATO INERTE es una URL que sólo
+ * puede leer una persona, o que nombra un original **del que el root ya guarda
+ * copia o coordenada**. El cerco no puede ejecutar el producto, así que la
+ * distinción se toma con **cuatro exenciones, cada una decidible sobre los
+ * bytes del propio fichero**. Todo lo que no caiga en una de las cuatro es
+ * URL VIVA: el default es fallo-cerrado, no al revés.
+ *
+ * **I1 · AUTORIDAD NO RESOLUBLE.** El **host** de la URL —la autoridad ya
+ *   descontadas userinfo y puerto, tal y como la parte `new URL()`— está vacío
+ *   o contiene un placeholder `${…}`. Nadie puede dereferenciarla sin que
+ *   alguien la rellene: no es un ancla, es una plantilla.
+ *   **Esto ESTRECHA la exención (a) de U206, no la ensancha**, y ahí había un
+ *   agujero real: la regla vieja era `/^https?:\/\/\$\{/i`, o sea «empieza por
+ *   `https://${`», y con eso **`https://${TOKEN}@servidor.real/x` quedaba
+ *   exenta** — su autoridad de verdad es `servidor.real`, el `${…}` está en la
+ *   userinfo. Ese caso hoy pasa y con esta regla CAE. (El literal, además,
+ *   antes ni se capturaba entero: el patrón excluía `}`, así que casaba
+ *   `https://${TOKEN` y se iba por la exención por prefijo. El patrón ahora
+ *   admite grupos `${…}` completos — capturar MÁS, decidir después.)
+ *
+ * **I2 · REFERENCIA COORDINADA.** La URL es el **valor completo** de un campo
+ *   de un documento **estructurado** (JSON), y el **registro que la contiene**
+ *   coordina con ella un par nombre=valor: existe un parámetro de consulta de
+ *   la URL cuyo nombre es una clave del registro y cuyo valor es, verbatim, el
+ *   valor de esa clave (o el mismo par expresado como `/<clave>/<valor>` en la
+ *   ruta). Leído en voz alta: **la URL no apunta a un servicio, apunta al MISMO
+ *   objeto que el registro está describiendo, y lo demuestra repitiendo su
+ *   coordenada.** Un endpoint nunca coordina —`https://pub.example/` no repite
+ *   ningún dato del root—; una referencia a un original concreto casi siempre
+ *   sí, porque el registro existe justamente para anotar CUÁL original es.
+ *   Es la regla que hace inerte `registros[i].urls.revision =
+ *   "…?oldid=2"` junto a `registros[i].oldid = 2`, **sin nombrar el campo**.
+ *   «Registro» = el objeto que contiene el campo y sus ancestros, subiendo
+ *   hasta el primero que sea ELEMENTO DE UN ARRAY (o hasta la raíz del
+ *   documento si no hay ninguno): es la frontera natural de «una entrada».
+ *
+ * **I3 · PROCEDENCIA SELLADA DEL MANIFIESTO** — heredada de U206 **sin tocar
+ *   un carácter**: los valores de `volumes.<id>.source.imported.origin` dentro
+ *   de `volumes.json`. El contrato dice literalmente que la URL de origen
+ *   viaja «solo como metadato inerte» (CONTRATO-IMPORT-PACK-v1 §3,
+ *   import.mjs · paso SELLAR). La exención sigue siendo **por ruta de clave
+ *   exacta y sólo en el manifiesto**: la misma URL en cualquier otro sitio del
+ *   root —incluido cualquier otro campo del propio `volumes.json`— es viva.
+ *   No se ensancha a `source.imported.*` ni a `source.*` **a propósito**:
+ *   ensanchar una exención existente es debilitar una guarda, y este WP no
+ *   hace eso ni para que le pasen sus propios casos.
+ *
+ * **I4 · PROSA DE RAÍZ.** Dos condiciones, las dos necesarias:
+ *   (a) el fichero es un `.md` **suelto en la raíz del root**, sin directorio
+ *       de disco por encima. Esa categoría **ya existe declarada** en el
+ *       constructor de packs: un fichero suelto en el dataRoot se descarta con
+ *       motivo `manifiesto_de_root` porque «un pack sólo transporta discos»
+ *       (pack-adapter.mjs). O sea: **no es dato de ningún volumen, no viaja en
+ *       ninguna réplica por import y ningún cargador de familia lo abre**;
+ *   (b) la URL aparece dentro de un **enlace de Markdown** (`[t](url)`,
+ *       `<url>` o `[id]: url`), o sea material dirigido a una persona y no el
+ *       valor de un campo que un cargador pudiera leer.
+ *   Un `.md` **de datos** (escena de FORCES bajo `DISK_03/…`, curación de
+ *   LINEAS bajo `DISK_02/…`) **no** cumple (a): ahí una URL sigue siendo viva.
+ *   El `.ops-ledger.jsonl` y `volumes.state.json`, que también son de raíz,
+ *   **no** cumplen (b): son JSON, no prosa, y se siguen barriendo enteros —
+ *   el alcance que U206 declaró no se recorta.
+ *
+ * **LO QUE ESTE PREDICADO NO ES.** No es a prueba de adversario, y decirlo
+ * importa: I2 se puede fabricar (basta añadir al registro un campo con el
+ * nombre y el valor del parámetro que uno quiera colar). Es del mismo estatuto
+ * que el ledger, que es «append-only por convención, no a prueba de
+ * manipulación»: protege contra DERIVA, no contra alguien con escritura en el
+ * root — y quien tiene escritura en el root tiene delante los otros tres
+ * predicados y los ocho tramos del verificador de integridad.
+ * **Tampoco cubre YAML**: un `.yaml`/`.yml` no se parsea, se barre como texto,
+ * así que no obtiene I2 y cualquier URL suya es viva. Es fallo-cerrado
+ * deliberado: antes de exentar hay que poder leer la estructura.
  *
  * Ficheros binarios: se detectan por byte NUL en los primeros 8 kB y NO se
  * escanean en busca de URLs; se reportan en `binaries[]`. Un `.md` o un
@@ -71,8 +137,14 @@ import { MANIFEST_FILE_NAME } from './manifest.mjs';
  * Literal de URL con esquema http(s). INSENSIBLE A MAYÚSCULAS (U206·m3): sin
  * la bandera `i`, `HTTPS://EJEMPLO.TEST` no se detectaba — y la denylist de
  * identidad sí era insensible, o sea que el módulo aplicaba dos varas.
+ *
+ * U259 · admite grupos `${…}` COMPLETOS. Antes `}` cerraba el literal siempre,
+ * así que `https://${TOKEN}@servidor.real/x` se capturaba como `https://${TOKEN`
+ * y salía exenta por «empieza por `https://${`» — con la autoridad real
+ * (`servidor.real`) fuera del literal y fuera de la decisión. Se captura MÁS y
+ * se decide después, sobre el host parseado (I1).
  */
-const URL_LITERAL_RE = /https?:\/\/[^\s"'`<>)\]}\\]*/gi;
+const URL_LITERAL_RE = /https?:\/\/(?:\$\{[^}\s]*\}|[^\s"'`<>)\]}\\])*/gi;
 
 /** Bytes iniciales que se miran para CLASIFICAR un fichero como binario. */
 const BINARY_SNIFF_BYTES = 8192;
@@ -107,11 +179,83 @@ function walkRoot(rootDir) {
 }
 
 /**
- * ¿La URL casada es un placeholder de entorno? (`https://${VAR}/…`)
+ * I1 · ¿la AUTORIDAD de la URL es resoluble?
+ *
+ * Se parsea con `new URL()` y se mira el **host**, no el prefijo: `${…}` en la
+ * userinfo NO exenta, porque la autoridad de verdad está detrás del `@`. Una
+ * URL que ni siquiera parsea se trata como resoluble (fallo-cerrado: no se
+ * regala una exención por ser rara).
  * @param {string} match
+ * @returns {boolean} true = NO resoluble ⇒ inerte por I1
  */
-function isEnvPlaceholderUrl(match) {
-  return /^https?:\/\/\$\{/i.test(match);
+function tieneAutoridadNoResoluble(match) {
+  /** @type {URL} */
+  let u;
+  try {
+    u = new URL(match);
+  } catch {
+    return false;
+  }
+  return u.hostname === '' || u.hostname.includes('${') || u.hostname.includes('%7b');
+}
+
+/**
+ * Coordenadas que la URL expone: pares `nombre → valor` de la consulta, más
+ * los pares `/<nombre>/<valor>` consecutivos de la ruta.
+ * @param {string} match
+ * @returns {Map<string,string>|null}
+ */
+function coordenadasDeUrl(match) {
+  /** @type {URL} */
+  let u;
+  try {
+    u = new URL(match);
+  } catch {
+    return null;
+  }
+  /** @type {Map<string,string>} */
+  const pares = new Map();
+  for (const [k, v] of u.searchParams) if (!pares.has(k)) pares.set(k, v);
+  const segs = u.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+  for (let i = 0; i + 1 < segs.length; i += 1) {
+    if (!pares.has(segs[i])) pares.set(segs[i], segs[i + 1]);
+  }
+  return pares;
+}
+
+/**
+ * I2 · ¿el REGISTRO que contiene la URL coordina con ella un par nombre=valor?
+ *
+ * `record` es la unión de los escalares del objeto que contiene el campo y de
+ * sus ancestros hasta el primer elemento de array (lo arma `scanStructuredUrls`).
+ * @param {string} match @param {Map<string,string>} record
+ * @returns {{ key: string, value: string }|null}
+ */
+function coordinaConElRegistro(match, record) {
+  const pares = coordenadasDeUrl(match);
+  if (!pares || record.size === 0) return null;
+  for (const [nombre, valor] of pares) {
+    if (record.has(nombre) && record.get(nombre) === valor) {
+      return { key: nombre, value: valor };
+    }
+  }
+  return null;
+}
+
+/**
+ * I4·(b) · ¿la URL aparece como ENLACE de Markdown? Se mira lo que hay
+ * inmediatamente ANTES de la aparición: `](` (enlace inline), `<` (autolink) o
+ * `]: ` (definición de referencia).
+ * @param {string} text @param {number} index
+ */
+function esEnlaceMarkdown(text, index) {
+  const antes = text.slice(Math.max(0, index - 64), index);
+  return /\]\($/.test(antes) || /<$/.test(antes) || /\]:\s*$/.test(antes);
+}
+
+/** I4·(a) · fichero suelto en la RAÍZ del root (sin disco por encima) y `.md`. */
+function esProsaDeRaiz(rel) {
+  return !rel.includes('/') && /\.md$/i.test(rel);
 }
 
 /**
@@ -130,50 +274,93 @@ function isInertOriginPath(keyPath) {
 }
 
 /**
- * URLs vivas del MANIFIESTO, resueltas por RUTA DE CLAVE.
+ * URLs vivas de un documento ESTRUCTURADO (JSON), resueltas por RUTA DE CLAVE
+ * y por REGISTRO.
  *
- * Se parsea y se recorre el objeto en vez de barrer el texto, porque la
- * exención del contrato es por ruta de clave exacta y una exención por VALOR
- * sería mucho más ancha de lo declarado: la misma cadena bajo cualquier otra
- * clave quedaría exenta de rebote. (Ese defecto exacto existió en la primera
- * versión de este módulo y lo cazó `cerco-root.test.mjs`.)
+ * Se parsea y se recorre el objeto en vez de barrer el texto por dos razones
+ * distintas, las dos aprendidas a base de defecto:
+ * - la exención del contrato (I3) es por ruta de clave exacta, y una exención
+ *   por VALOR sería mucho más ancha de lo declarado: la misma cadena bajo
+ *   cualquier otra clave quedaría exenta de rebote. (Ese defecto exacto existió
+ *   en la primera versión de este módulo y lo cazó `cerco-root.test.mjs`.)
+ * - la exención por coordenada (I2, U259) necesita saber **qué registro**
+ *   contiene la URL; sobre texto plano no hay registro que mirar.
  *
- * Un manifiesto ilegible NO obtiene barra libre: se cae al barrido de texto,
- * donde no hay exención por clave posible.
+ * Un JSON ilegible NO obtiene barra libre: se cae al barrido de texto, donde
+ * sólo queda I1.
  * @param {string} text
  * @param {string} rel
+ * @param {boolean} isManifest — habilita I3 (sólo el manifiesto la tiene)
  * @returns {object[]}
  */
-function scanManifestUrls(text, rel) {
+function scanStructuredUrls(text, rel, isManifest) {
   /** @type {any} */
-  let cfg;
+  let doc;
   try {
-    cfg = JSON.parse(text);
+    doc = JSON.parse(text);
   } catch {
     return scanTextUrls(text, rel);
   }
   /** @type {object[]} */
   const urls = [];
-  /** @param {unknown} node @param {(string|number)[]} keyPath */
-  function walk(node, keyPath) {
+
+  /**
+   * Escalares del REGISTRO que contiene el campo: el objeto propietario y sus
+   * ancestros, subiendo hasta el primero que sea ELEMENTO DE UN ARRAY (incluido)
+   * o hasta la raíz. Es la frontera natural de «una entrada» y evita que un
+   * ancestro lejano exente por casualidad.
+   * @param {{obj: object, isArrayElement: boolean}[]} stack
+   * @param {string} ownKey — el campo de la propia URL, que no se cuenta
+   */
+  const registroDe = (stack, ownKey) => {
+    /** @type {Map<string,string>} */
+    const record = new Map();
+    for (let i = stack.length - 1; i >= 0; i -= 1) {
+      const frame = stack[i];
+      for (const [k, v] of Object.entries(frame.obj)) {
+        if (i === stack.length - 1 && k === ownKey) continue;
+        if (v === null || typeof v === 'object') continue;
+        if (!record.has(k)) record.set(k, String(v));
+      }
+      if (frame.isArrayElement) break;
+    }
+    return record;
+  };
+
+  /**
+   * @param {unknown} node
+   * @param {(string|number)[]} keyPath
+   * @param {{obj: object, isArrayElement: boolean}[]} stack
+   * @param {string|null} ownKey
+   */
+  function walk(node, keyPath, stack, ownKey) {
     if (typeof node === 'string') {
       for (const m of node.matchAll(URL_LITERAL_RE)) {
         const value = m[0];
-        if (isEnvPlaceholderUrl(value)) continue;
-        if (isInertOriginPath(keyPath)) continue;
+        if (tieneAutoridadNoResoluble(value)) continue; // I1
+        if (isManifest && isInertOriginPath(keyPath)) continue; // I3
+        // I2 · sólo si la URL es el VALOR COMPLETO del campo: una URL incrustada
+        // en una frase no la lee ningún cargador por ese campo, y aun así no se
+        // exenta — no hay registro que la coordine.
+        if (ownKey !== null && node.trim() === value) {
+          const coord = coordinaConElRegistro(value, registroDe(stack, ownKey));
+          if (coord) continue;
+        }
         urls.push({ path: rel, keyPath: keyPath.join('.'), url: value, line: lineOf(text, value) });
       }
       return;
     }
     if (Array.isArray(node)) {
-      node.forEach((v, i) => walk(v, [...keyPath, i]));
+      node.forEach((v, i) => walk(v, [...keyPath, i], stack, null));
       return;
     }
     if (node && typeof node === 'object') {
+      const frame = { obj: node, isArrayElement: ownKey === null && stack.length > 0 };
+      const childStack = [...stack, frame];
       for (const [k, v] of Object.entries(node)) {
         // Las CLAVES también se miran: una URL como nombre de campo es una URL.
         for (const m of k.matchAll(URL_LITERAL_RE)) {
-          if (!isEnvPlaceholderUrl(m[0])) {
+          if (!tieneAutoridadNoResoluble(m[0])) {
             urls.push({
               path: rel,
               keyPath: [...keyPath, k].join('.'),
@@ -182,11 +369,11 @@ function scanManifestUrls(text, rel) {
             });
           }
         }
-        walk(v, [...keyPath, k]);
+        walk(v, [...keyPath, k], childStack, k);
       }
     }
   }
-  walk(cfg, []);
+  walk(doc, [], [], null);
   return urls;
 }
 
@@ -197,16 +384,20 @@ function lineOf(text, needle) {
 }
 
 /**
- * URLs vivas de un fichero de texto cualquiera (sin exención por clave).
+ * URLs vivas de un fichero de texto cualquiera: sólo I1, y I4 cuando el fichero
+ * es prosa de raíz. Sin estructura no hay registro que coordine (I2) ni ruta de
+ * clave que exentar (I3) — fallo-cerrado.
  * @param {string} text @param {string} rel
  * @returns {object[]}
  */
 function scanTextUrls(text, rel) {
   /** @type {object[]} */
   const urls = [];
+  const prosaDeRaiz = esProsaDeRaiz(rel);
   for (const m of text.matchAll(URL_LITERAL_RE)) {
     const value = m[0];
-    if (isEnvPlaceholderUrl(value)) continue;
+    if (tieneAutoridadNoResoluble(value)) continue; // I1
+    if (prosaDeRaiz && esEnlaceMarkdown(text, m.index)) continue; // I4
     urls.push({ path: rel, line: text.slice(0, m.index).split('\n').length, url: value });
   }
   return urls;
@@ -230,7 +421,14 @@ function scanUrls(abs, rel, isManifest) {
     return { urls: scanTextUrls(buf.toString('latin1'), rel), binary: true };
   }
   const text = buf.toString('utf8');
-  return { urls: isManifest ? scanManifestUrls(text, rel) : scanTextUrls(text, rel), binary: false };
+  // U259 · la lectura ESTRUCTURADA ya no es privilegio del manifiesto: cualquier
+  // `.json` del root se parsea, porque I2 necesita el registro. El manifiesto se
+  // distingue sólo en que además tiene I3.
+  const estructurado = isManifest || /\.json$/i.test(rel);
+  return {
+    urls: estructurado ? scanStructuredUrls(text, rel, isManifest) : scanTextUrls(text, rel),
+    binary: false
+  };
 }
 
 /**

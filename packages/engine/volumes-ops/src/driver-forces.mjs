@@ -18,6 +18,16 @@
  * Snapshot por hash: el plan devuelve `snapshot { <unitDir>: sha256 del
  * árbol de la unidad }`; importPack lo sella en el manifiesto
  * (`source.imported.snapshot`) — el driver no sella ni mueve nada.
+ *
+ * ── U259 · el mismo cuerpo SELLA y VERIFICA ───────────────────────────────
+ * `snapshotOf(volumeDir)` calcula el snapshot desde un volumen VIVO y
+ * `verifySnapshot(volumeDir, sellado)` lo contrasta. Desde U259 el paso SELLAR
+ * de `importPack` llama a `snapshotOf` sobre el DESTINO tras FUSIONAR (misma
+ * doctrina que el sello por fichero de U258) y `verify.mjs` llama a
+ * `verifySnapshot`: quien sella y quien verifica son la misma función, así que
+ * no pueden divergir. `hashUnitTree` se mudó a `unit-tree.mjs` —cuerpo
+ * verbatim— porque LINEAS lo necesita también; aquí se RE-EXPORTA para que
+ * ningún importador anterior cambie.
  * Node-only.
  */
 
@@ -25,6 +35,11 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateFile } from '@zeus/linea-kit/validate';
+import {
+  hashUnitTree,
+  isUnitTreeSnapshot,
+  verifyUnitTreeSnapshot
+} from './unit-tree.mjs';
 
 export const FORCES_FAMILY = 'forces';
 
@@ -61,21 +76,13 @@ function walkRel(rootDir) {
 /**
  * Content hash of a directory tree (sorted rel:sha lines).
  *
- * Exported since WP-U206 **sin cambiar una coma de su cuerpo**: es el
- * algoritmo con el que este driver sella `source.imported.snapshot`, y el
- * verificador de integridad (src/verify.mjs) tiene que recomputarlo con el
- * MISMO algoritmo. Reimplementarlo allí sería plantar dos copias que derivan
- * — el defecto vive en la juntura, no en la pieza.
- * @param {string} rootDir
- * @returns {string} sha256 hex
+ * Exportado desde WP-U206 **sin cambiar una coma de su cuerpo**; mudado a
+ * `unit-tree.mjs` en U259 —también verbatim— porque LINEAS pasó a sellar
+ * snapshot de unidad y la alternativa era una tercera copia. Se re-exporta
+ * desde aquí para que `verify.mjs`, `index.mjs` y los tests que ya lo
+ * importaban de este módulo no cambien una línea.
  */
-export function hashUnitTree(rootDir) {
-  const h = createHash('sha256');
-  for (const rel of walkRel(rootDir)) {
-    h.update(`${rel}:${sha256File(toAbs(rootDir, rel))}\n`);
-  }
-  return h.digest('hex');
-}
+export { hashUnitTree };
 
 /** Alias interno histórico (el cuerpo del driver lo usa por este nombre). */
 const hashTree = hashUnitTree;
@@ -236,9 +243,64 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   return { moves, skips, snapshot, replacedIndex };
 }
 
+/**
+ * snapshotOf (U259) — el snapshot de la familia calculado desde un volumen
+ * VIVO. Es EL MISMO valor que `merge` devuelve en su plan (mismo `hashTree`
+ * sobre las mismas unidades del mismo `registry.json`); la diferencia es de
+ * momento, no de fórmula: `merge` lo calcula sobre el STAGING y esto sobre el
+ * DESTINO. Un test lo asevera, no lo supone.
+ *
+ * Por qué el sello pasa a tomarse del DESTINO: es la lección de U258 con
+ * `hashes`. En FORCES los dos coinciden siempre (una unidad que difiera aborta
+ * el import con `colision_force`, así que el destino tras fusionar ES el
+ * staging), pero la regla tiene que ser una sola para las cuatro familias, y en
+ * LINEAS no coinciden — ahí sellar el staging sería sellar una mentira.
+ *
+ * `null` cuando el volumen no tiene índice: sin `registry.json` no hay unidades
+ * declaradas y no se inventa ninguna.
+ * @param {string} volumeDir — directorio absoluto del volumen (vivo)
+ * @returns {Record<string,string>|null}
+ */
+export function snapshotOf(volumeDir) {
+  const registryPath = join(volumeDir, 'registry.json');
+  if (!existsSync(registryPath)) return null;
+  /** @type {{ units: {dir: string}[] }} */
+  let parsed;
+  try {
+    parsed = readUnits(registryPath);
+  } catch {
+    return null; // índice ilegible: el leg `familia` es quien lo denuncia
+  }
+  /** @type {Record<string,string>} */
+  const snapshot = {};
+  for (const unit of parsed.units) snapshot[unit.dir] = hashTree(toAbs(volumeDir, unit.dir));
+  return Object.keys(snapshot).length > 0 ? snapshot : null;
+}
+
+/**
+ * verifySnapshot (U259) — contrasta el snapshot SELLADO contra el árbol vivo.
+ * Recomputa con `hashUnitTree`, la misma primitiva que lo selló.
+ * @param {string} volumeDir @param {unknown} sealed
+ * @returns {object[]} hallazgos (vacío = íntegro)
+ */
+export function verifySnapshot(volumeDir, sealed) {
+  if (!isUnitTreeSnapshot(sealed)) {
+    return [
+      {
+        error: 'snapshot_ilegible',
+        note:
+          'la familia FORCES sella «árbol por unidad» y el snapshot sellado no tiene esa forma'
+      }
+    ];
+  }
+  return verifyUnitTreeSnapshot(volumeDir, /** @type {Record<string,string>} */ (sealed));
+}
+
 export const FORCES_DRIVER = Object.freeze({
   family: FORCES_FAMILY,
   detect,
   validate,
-  merge
+  merge,
+  snapshotOf,
+  verifySnapshot
 });
