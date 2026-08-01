@@ -124,13 +124,26 @@ export function rachasDeReglas(fuente, reglas, minimo = 3) {
  * (La frase de arriba evita escribir la anotación con su cuerpo entre llaves a
  * propósito: el barrido de este mismo fichero la leería como una redefinición
  * y se denunciaría solo. Se rodea cambiando el idioma, no desafilando la regla.)
+ *
+ * NO BASTA con exigir que delegue: medido atacando, delegar a un módulo
+ * CUALQUIERA dejaba pasar el vector «apunto a `../fuera-del-barrido.mjs`, que
+ * sí reescribe la unión y no lo barre nadie». Con `dirAbs` se resuelve el
+ * especificador y se exige que sea EL módulo único; sin él —vectores
+ * sintéticos, que no viven en el disco— se conforma con el nombre de fichero.
  * @param {string} fuente
+ * @param {string|null} [dirAbs] directorio del fichero, para resolver el especificador
  * @returns {string[]} los cuerpos infractores
  */
-export function typedefsQueNoDelegan(fuente) {
+export function typedefsQueNoDelegan(fuente, dirAbs = null) {
   return [...fuente.matchAll(/@typedef\s*\{([^}]*)\}\s*GateRule\b/g)]
     .map((m) => m[1].trim())
-    .filter((cuerpo) => !/^import\((['"])[^'"]+\1\)\.GateRule$/.test(cuerpo));
+    .filter((cuerpo) => {
+      const m = cuerpo.match(/^import\((['"])([^'"]+)\1\)\.GateRule$/);
+      if (!m) return true;
+      if (!/(^|\/)reglas\.mjs$/.test(m[2])) return true;
+      if (dirAbs === null) return false;
+      return path.resolve(dirAbs, m[2]) !== path.resolve(REPO, FUENTE_UNICA);
+    });
 }
 
 /**
@@ -215,9 +228,10 @@ test('ningún otro fichero de gates vuelve a escribir la lista de reglas', () =>
   const ofensas = [];
   for (const rel of ficheros) {
     if (rel === FUENTE_UNICA) continue;
-    const fuente = fs.readFileSync(path.join(REPO, rel), 'utf8');
-    for (const cuerpo of typedefsQueNoDelegan(fuente)) {
-      ofensas.push(`${rel} · @typedef GateRule que no delega: {${cuerpo}}`);
+    const abs = path.join(REPO, rel);
+    const fuente = fs.readFileSync(abs, 'utf8');
+    for (const cuerpo of typedefsQueNoDelegan(fuente, path.dirname(abs))) {
+      ofensas.push(`${rel} · anotación de GateRule que no delega en el módulo único: ${cuerpo}`);
     }
     for (const racha of rachasDeReglas(fuente, GATE_RULES)) {
       ofensas.push(`${rel}:${lineaDe(fuente, racha.inicio)} · lista de reglas reescrita: ${racha.nombres.join(', ')}`);
@@ -227,8 +241,9 @@ test('ningún otro fichero de gates vuelve a escribir la lista de reglas', () =>
     ofensas,
     [],
     `la lista de reglas volvió a estar escrita fuera de ${FUENTE_UNICA}. Ésa es exactamente\n` +
-      'la forma en que se partió en dos la primera vez. Importa el tipo con\n' +
-      "`/** @typedef {import('./reglas.mjs').GateRule} GateRule */` y las claves con GATE_RULES:\n" +
+      'la forma en que se partió en dos la primera vez. Da nombre local al tipo delegando\n' +
+      `en ${FUENTE_UNICA} (ver cómo lo hacen scan.mjs y exceptions.mjs) y construye las\n` +
+      'claves con GATE_RULES en vez de repetirlas:\n' +
       ofensas.join('\n')
   );
 });
@@ -293,6 +308,21 @@ function fuenteUnica() {
   return fs.readFileSync(path.join(REPO, FUENTE_UNICA), 'utf8');
 }
 
+/**
+ * Compone una anotación de tipo de `GateRule` con el cuerpo dado, SIN que su
+ * texto literal llegue a aparecer en este fichero.
+ *
+ * No es cosmética ni evasión: el barrido de arriba incluye a este fichero A
+ * PROPÓSITO —un guardián que se exime a sí mismo deja abierto el sitio más
+ * cómodo para volver a plantar la tabla— y un vector escrito en claro lo
+ * pondría rojo por denunciarse solo, con el guardián funcionando perfectamente.
+ * Se rodea cambiando el idioma, que es más barato que desafilar la regla; es el
+ * mismo rodeo, y por el mismo motivo, que `arbol-inmutable.test.mjs` documenta
+ * para su sonda de procedencia. Queda escrito.
+ * @param {string} cuerpo
+ */
+const anotacion = (cuerpo) => `/** ${`@${'typedef'}`} {${cuerpo}} GateRule */`;
+
 /** Un nombre de regla que no existe, para inyectarlo en una copia y no en la otra. */
 const INTRUSA = 'gemela-u257';
 
@@ -327,13 +357,13 @@ test('ataque: reordenar una de las dos copias sin cambiar el conjunto → rojo',
 test('ataque: reescribir la lista en otro fichero, en sus cuatro disfraces → rojo', () => {
   const reglas = [...GATE_RULES];
   const disfraces = [
-    // 1 · unión de @typedef, tal cual estaba en exceptions.mjs antes del WP
-    ['unión de @typedef', `/** @typedef {${reglas.map((r) => `'${r}'`).join('|')}} GateRule */`],
+    // 1 · unión de tipo, tal cual estaba en exceptions.mjs antes del WP
+    ['unión de literales', anotacion(reglas.map((r) => `'${r}'`).join('|'))],
     // 2 · la MISMA unión pero incompleta: el defecto histórico literal, la
     //     séptima regla ausente. Tiene que caer por reescribir la lista, no
     //     por estar rancia — porque cuando se dio de alta la séptima aún no
     //     había nada rancio que ver.
-    ['unión incompleta (el defecto de e7a608d)', `/** @typedef {${reglas.slice(0, -1).map((r) => `'${r}'`).join('|')}} GateRule */`],
+    ['unión incompleta (el defecto de e7a608d)', anotacion(reglas.slice(0, -1).map((r) => `'${r}'`).join('|'))],
     // 3 · claves de objeto, la forma que tenía byRule en runAllGates
     ['claves de objeto', `const byRule = { ${reglas.map((r) => `'${r}': []`).join(', ')} };`],
     // 4 · prosa entrecomillada en un comentario, la forma de la cabecera de
@@ -350,6 +380,29 @@ test('ataque: reescribir la lista en otro fichero, en sus cuatro disfraces → r
   }
 });
 
+test('ataque: delegar a un módulo que no es el único → rojo', () => {
+  // Este vector SE ESCAPABA en la primera versión del guardián, que se
+  // conformaba con que el tipo se importara de alguna parte. Basta apuntar a un
+  // fichero fuera de `scripts/gates/` y de `test/gates/` —donde el barrido no
+  // llega— y volver a escribir allí la unión. Se cierra resolviendo el
+  // especificador contra el disco, no leyéndolo.
+  const dir = path.join(REPO, 'scripts', 'gates');
+  const senuelos = ['../fuera-del-barrido.mjs', './scan.mjs', '@zeus/lo-que-sea'];
+  for (const spec of senuelos) {
+    const src = anotacion(`import('${spec}').GateRule`);
+    assert.equal(typedefsQueNoDelegan(src, dir).length, 1, `señuelo NO cazado: ${src}`);
+  }
+  // Y la delegación de verdad sigue pasando, escrita desde los dos árboles.
+  assert.deepEqual(typedefsQueNoDelegan(anotacion("import('./reglas.mjs').GateRule"), dir), []);
+  assert.deepEqual(
+    typedefsQueNoDelegan(
+      anotacion("import('../../scripts/gates/reglas.mjs').GateRule"),
+      path.join(REPO, 'test', 'gates')
+    ),
+    []
+  );
+});
+
 test('contraprueba: mencionar reglas sueltas NO es reescribir la lista', () => {
   // Un guardián que también pinta de rojo el idioma legítimo obliga a
   // desactivarlo. Estos tres son el idioma real de los ficheros de gates.
@@ -362,11 +415,15 @@ test('contraprueba: mencionar reglas sueltas NO es reescribir la lista', () => {
         `{ path: 'packages/b/src/y.mjs', rule: '${r1}', reason: 'motivo dos' },\n` +
         `{ path: 'packages/c/src/z.mjs', rule: '${r2}', reason: 'motivo tres' }`
     ],
-    ['delegación al módulo único', "/** @typedef {import('./reglas.mjs').GateRule} GateRule */"]
+    ['delegación al módulo único', anotacion("import('./reglas.mjs').GateRule")]
   ];
   for (const [nombre, src] of limpios) {
     assert.deepEqual(rachasDeReglas(src, GATE_RULES), [], `falso positivo (racha) en: ${nombre}`);
-    assert.deepEqual(typedefsQueNoDelegan(src), [], `falso positivo (typedef) en: ${nombre}`);
+    assert.deepEqual(
+      typedefsQueNoDelegan(src, path.join(REPO, 'scripts', 'gates')),
+      [],
+      `falso positivo (anotación) en: ${nombre}`
+    );
   }
 });
 
