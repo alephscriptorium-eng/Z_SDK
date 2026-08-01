@@ -78,6 +78,18 @@ Invariantes que el modo anónimo **no** relaja:
 2. **Claim sin sello deniega**: un mensaje anónimo que traiga `ssbId` —o
    un `from` con forma de feed SSB— se rechaza. Lo que no se acredita, no
    viaja: el cable anónimo sale sin `peerCard` y sin `ssbId`.
+   **Incluido el `join-room`** (WP-U251, defecto 1): el anuncio de antesala
+   saca `from: userId` al cable, así que `joinRoom()` juzga ese `from` con
+   la misma regla que `sendOffer` / `sendAnswer` / `sendIceCandidate`.
+   Antes no lo hacía: el anuncio anónimo salía con el claim puesto y la
+   primera acción posterior lanzaba.
+   ⇒ **Consecuencia declarada: el modo `anonymous` NO es compatible con un
+   `userId` con forma de feed SSB** (`@…=.ed25519`). Con esa identidad,
+   `joinRoom()` y las acciones gated denegan igual, con
+   `anonymous signaling carries an unproven identity claim (ssbId)`. No es
+   un bug: un feed id ES un claim de identidad, y anónimo es anónimo. Si
+   quieres antesala anónima, usa un `userId` que no sea un feed; si quieres
+   usar tu feed, preséntalo con card (`admission: 'peer-card'`).
 3. **El modo no se negocia por el cable**: `admission` es config local;
    un payload que se declare anónimo no abre una antesala estricta.
 4. **Cualquier exigencia configurada vuelve a exigir card** aunque el modo
@@ -95,22 +107,35 @@ Invariantes que el modo anónimo **no** relaja:
    **lanza**, y **ninguna vía de configuración lo alcanza** — ni el
    constructor, ni `connect()`, ni un modo con espacio de más. En un carril
    cuyo transporte *es* la identidad del feed, anónimo no es un modo.
-   ✎ *Alcance exacto (contrarrevisión, 2026-07-31): el candado es un
-   `override` de método sobre un campo público, así que **no es «imposible
-   por construcción»** — quien escribe código en el proceso puede pincharlo
-   (`svc._admission = …`, `Prototype.setAdmission.call(…)`, subclase,
-   `setPrototypeOf`). Lo garantizado es que **no hay configuración que lo
-   abra**. Endurecerlo de verdad (campo privado o forzar el modo en las
-   opciones del torno) va en **U251**.*
+   ✎ *Alcance actualizado (WP-U251, defecto 2 — cierra la anotación de la
+   contrarrevisión de 2026-07-31). El candado ya **no** es sólo un
+   `override` sobre campo público. Son dos mitades:*
+   - *la **ruidosa**: `setAdmission('anonymous')` sigue lanzando, para que
+     la vía de configuración se entere;*
+   - *la **estructural**: `#admission` es un campo **privado** de
+     `SignalingService` (nadie lo escribe sin pasar por `setAdmission`) y
+     el torno lee el modo por `getAdmission()`, que el carril SSB
+     **sobrescribe a la constante `peer-card`**. Pinchar el campo o llamar
+     `SignalingService.prototype.setAdmission.call(svc, 'anonymous')` ya no
+     mueve el veredicto del torno: no lo mira.*
+   - *Lo que sigue sin garantizarse: una **subclase** propia puede volver a
+     sobrescribir `getAdmission()`. Eso ya es escribir otro servicio, no
+     pinchar éste.*
+7. **Un modo de admisión desconocido LANZA, no se degrada.** Vale para
+   cualquier valor que no sea uno de los dos declarados, **incluidos los
+   falsy** (`''`, `0`, `NaN`, `false`). Sólo `undefined` / `null` significan
+   «no declarado» ⇒ statu quo `peer-card`. Un typo de despliegue no se
+   depura a ciegas.
 
 Estos invariantes valen **en los dos gemelos**. El de navegador
 (`@zeus/webrtc-viewer` · `BrowserSocketSignalingService`) acepta las
 mismas tres exigencias y expone `setAdmission` / `getSessionRole` /
-`describeAdmission` / `getSsbId`. ✎ *Matiz medido: un modo desconocido
-**lanza en ambos** cuando es una cadena no vacía; con `''`, `0` o `NaN` el
-lado Node acepta en silencio (cae a `peer-card`) y el de navegador lanza.
-Las dos direcciones son seguras, pero **no son idénticas** — divergencia
-anotada en U251.*
+`describeAdmission` / `getSsbId`. ✎ *Divergencia de U251 (defecto 5)
+**cerrada y medida**: con `admission` falsy (`''`, `0`, `NaN`, `false`) el
+lado Node aceptaba en silencio cayendo a `peer-card` y el de navegador
+lanzaba. Ambas direcciones eran seguras pero **no idénticas**. Node sigue
+ahora al navegador —gana la ruidosa— y los dos coinciden en los 9 valores
+medidos (los 2 modos, 4 falsy, un typo no vacío, `undefined` y `null`).*
 
 ### Hook SSB (extensión Z_SDK #4)
 
@@ -138,6 +163,16 @@ assertSignalingPeerCard(signed, { requireSsbId: true, requireSeatSignature: true
 
 No es ACL ni niveles (Z_SDK #5 / #6). La emisión TTL/campos no-crypto de la
 card sigue en `@zeus/authority-kit` (`issuePeerCard`).
+
+**Desde TypeScript** (WP-U251, defecto 6): el candado del carril SSB es
+visible **en build**, no sólo en runtime — `setAdmission` está estrechado a
+`'peer-card'` en `SsbPrivateSignalingService` y `admission?: 'peer-card'` en
+sus opciones, así que `setAdmission('anonymous')` es un error de
+compilación. `SsbPrivateSignalingOptions` declara además `requireSsbId` /
+`requireSeatSignature` (el runtime siempre las leyó; el tipo las ocultaba),
+y `setPeerCard` acepta las mismas dos en su `opts`. El carril de socket
+**no** se estrecha: ahí `anonymous` es legal y sigue typecheckeando.
+Sensor: `test/fixtures/ts-candado-ssb/consumidor.ts` bajo `tsc --noEmit`.
 
 **Portería del carril LAN para blobs (WP-U100/U101 / D-21 fila 4):** el
 transfer de blobs por DataChannel debe pasar por el mismo torno

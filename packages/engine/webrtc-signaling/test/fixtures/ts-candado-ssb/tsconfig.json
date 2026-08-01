@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "lib": ["ES2022", "DOM"],
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@zeus/webrtc-signaling": ["../../../types/index.d.ts"]
+    }
+  },
+  "include": ["./consumidor.ts"]
+}

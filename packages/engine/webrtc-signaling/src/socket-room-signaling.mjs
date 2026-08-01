@@ -62,7 +62,13 @@ export class SocketRoomSignalingService extends SignalingService {
     // Ya eran truthiness (correcto); se dejan tal cual por simetría con D1.
     if (options.requireSsbId) this._requireSsbId = true;
     if (options.requireSeatSignature) this._requireSeatSignature = true;
-    if (options.admission) this.setAdmission(options.admission);
+    // WP-U251 (defecto 5): `!= null`, no truthiness. Con `admission: ''`
+    // (o `0`/`NaN`/`false`) esto se saltaba en silencio y el servicio caía
+    // a `peer-card` — dirección segura pero MUDA, mientras el gemelo de
+    // navegador (`browser-signaling.mjs` `_applyPolicy`) lanzaba con el
+    // mismo valor. Un typo de despliegue no se depura a ciegas: gana la
+    // implementación ruidosa, y Node la sigue.
+    if (options.admission != null) this.setAdmission(options.admission);
   }
 
   getClient() {
@@ -74,47 +80,63 @@ export class SocketRoomSignalingService extends SignalingService {
    * Sin `peerCard` conecta igual: sesión anónima `role:null`. Con
    * `peerCard` se valida AQUÍ, antes de abrir el cable — card inválida
    * lanza (rechazo total, sin sesión), nunca se degrada a anónimo.
+   *
+   * WP-U251 (defecto 4): la política se aplica EN BLOQUE. Si algo lanza a
+   * mitad —card caducada, modo desconocido, transporte caído— el estado
+   * vuelve al de antes de llamar. Antes no: `admission` y las exigencias ya
+   * estaban escritas cuando `setPeerCard` lanzaba, así que un connect
+   * FALLIDO dejaba la antesala abierta y `requireSsbId` rebajado. Fail-open.
    * @param {string} userId
    * @param {SocketRoomSignalingOptions} [config]
    */
   async connect(userId, config = {}) {
-    this.userId = userId;
-    const opts = { ...this._options, ...config };
-    if (opts.requiredRole) this._requiredRole = opts.requiredRole;
-    // D1: normalizar al guardar (ver `peer-card-gate.mjs` demandsCard).
-    if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
-    if (opts.requireSeatSignature != null) {
-      this._requireSeatSignature = Boolean(opts.requireSeatSignature);
-    }
-    if (opts.admission) this.setAdmission(opts.admission);
-    if (opts.peerCard != null) {
-      // Card presentada ⇒ valida o rechaza; lanzar aquí deja el cable
-      // sin abrir (no hay sesión anónima encubierta tras card inválida).
-      this.setPeerCard(opts.peerCard);
-    }
+    const snapshot = this._policySnapshot();
+    try {
+      this.userId = userId;
+      // El spread materializa cada opt UNA vez (D3 / U251 defecto 3): un
+      // getter alternante no puede declarar una exigencia y retirarla en la
+      // lectura siguiente. Deliberado, no de rebote.
+      const opts = { ...this._options, ...config };
+      if (opts.requiredRole) this._requiredRole = opts.requiredRole;
+      // D1: normalizar al guardar (ver `peer-card-gate.mjs` demandsCard).
+      if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
+      if (opts.requireSeatSignature != null) {
+        this._requireSeatSignature = Boolean(opts.requireSeatSignature);
+      }
+      // U251 defecto 5: `!= null` — paridad con el gemelo de navegador.
+      if (opts.admission != null) this.setAdmission(opts.admission);
+      if (opts.peerCard != null) {
+        // Card presentada ⇒ valida o rechaza; lanzar aquí deja el cable
+        // sin abrir (no hay sesión anónima encubierta tras card inválida).
+        this.setPeerCard(opts.peerCard);
+      }
 
-    if (!this._client) {
-      this._client = createClient(userId, {
-        ...(opts.url ? { url: opts.url } : {}),
-        ...(opts.namespace ? { namespace: opts.namespace } : {}),
-        ...(opts.secret ? { secret: opts.secret } : {}),
-        ...(opts.room ? { room: opts.room } : {})
+      if (!this._client) {
+        this._client = createClient(userId, {
+          ...(opts.url ? { url: opts.url } : {}),
+          ...(opts.namespace ? { namespace: opts.namespace } : {}),
+          ...(opts.secret ? { secret: opts.secret } : {}),
+          ...(opts.room ? { room: opts.room } : {})
+        });
+        this._ownsClient = true;
+      }
+
+      const room = opts.room ?? this.roomId ?? roomsConfig.room;
+      await connectAndJoin(this._client, userId, {
+        room,
+        type: 'ZeusWebRtcSignaling',
+        features: ['webrtc-signaling', 'trickle-ice'],
+        connectTimeoutMs: opts.connectTimeoutMs,
+        // Card válida viaja en CLIENT_REGISTER (opcional en el transporte)
+        ...(this._peerCard != null ? { peerCard: this._peerCard } : {})
       });
-      this._ownsClient = true;
+
+      this._bindWireListeners();
+      this.handleConnectionChange(true);
+    } catch (err) {
+      this._policyRestore(snapshot);
+      throw err;
     }
-
-    const room = opts.room ?? this.roomId ?? roomsConfig.room;
-    await connectAndJoin(this._client, userId, {
-      room,
-      type: 'ZeusWebRtcSignaling',
-      features: ['webrtc-signaling', 'trickle-ice'],
-      connectTimeoutMs: opts.connectTimeoutMs,
-      // Card válida viaja en CLIENT_REGISTER (opcional en el transporte)
-      ...(this._peerCard != null ? { peerCard: this._peerCard } : {})
-    });
-
-    this._bindWireListeners();
-    this.handleConnectionChange(true);
   }
 
   async disconnect() {
@@ -138,6 +160,14 @@ export class SocketRoomSignalingService extends SignalingService {
    * entra a la antesala como anónimo (`role:null`, anuncio sin card ni
    * ssbId). Presentarla y que sea inválida sigue RECHAZANDO: el modo
    * anónimo no es una red de seguridad para cards falsas.
+   *
+   * WP-U251 (defecto 1): el anuncio saca `from: this.userId` AL CABLE, así
+   * que ese `from` es un claim de identidad como cualquier otro. Se juzga
+   * con la misma regla que `_gatedOutbound` aplica a offer/answer/ICE
+   * (`claimedFrom`). Sin ella, la vía de ADMISIÓN era más floja que la de
+   * ACCIÓN: el `join-room` anónimo con `userId` de forma feed SSB salía con
+   * el claim puesto y el `sendOffer` siguiente lanzaba — modo anónimo
+   * inusable para esa forma de identidad, y el claim ya había viajado.
    * @param {string} roomId
    * @param {object} [peerCard] — issued by authority (`issuePeerCard` / join)
    */
@@ -146,10 +176,11 @@ export class SocketRoomSignalingService extends SignalingService {
       throw new Error('Not connected to signaling transport');
     }
     const admitted = assertSignalingAdmission(peerCard, {
-      admission: this._admission,
+      admission: this.getAdmission(),
       role: this._requiredRole ?? undefined,
       requireSsbId: this._requireSsbId,
-      requireSeatSignature: this._requireSeatSignature
+      requireSeatSignature: this._requireSeatSignature,
+      claimedFrom: this.userId
     });
     if (!admitted.ok) {
       throw new Error(`SignalingService.setPeerCard: ${admitted.error}`);

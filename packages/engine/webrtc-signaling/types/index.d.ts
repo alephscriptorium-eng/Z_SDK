@@ -62,7 +62,16 @@ export const SIGNALING_ADMISSION: {
 export declare class SignalingService extends EventEmitter {
   userId: string;
   roomId: string;
-  setPeerCard(peerCard: PeerCard, opts?: { role?: string; now?: number }): void;
+  setPeerCard(
+    peerCard: PeerCard,
+    opts?: {
+      role?: string;
+      now?: number;
+      /** WP-U251 (6): el runtime ya las leía; el tipo las ocultaba. */
+      requireSsbId?: boolean;
+      requireSeatSignature?: boolean;
+    }
+  ): void;
   getPeerCard(): PeerCard | null;
   /** WP-U186: rol consultado en la acción; anónimo ⇒ null. */
   getSessionRole(now?: number): string | null;
@@ -143,11 +152,29 @@ export const SSB_SIGNAL_TO_ABSTRACT: Readonly<Record<string, string>>;
 export interface SsbPrivateSignalingOptions {
   transport?: SsbPrivateTransport;
   allowTrickle?: boolean;
+  /** Carril SSB: `ssbId` obligatorio en la card por defecto (`true`). */
+  requireSsbId?: boolean;
+  /** Exigir firma de asiento en la tarjeta viajera. */
+  requireSeatSignature?: boolean;
+  /**
+   * WP-U251 (6) — el candado, visible en build: este carril sólo admite
+   * `peer-card`. `admission: 'anonymous'` LANZA en runtime; aquí ni
+   * typechequea. La identidad del feed ES el transporte.
+   */
+  admission?: 'peer-card';
 }
 
 export declare class SsbPrivateSignalingService extends SignalingService {
   constructor(options?: SsbPrivateSignalingOptions);
   getTransport(): SsbPrivateTransport | null;
+  /**
+   * WP-U251 (6) — firma estrechada a propósito. Heredar la del padre hacía
+   * que un consumidor TS viera `setAdmission('anonymous')` como legal justo
+   * en la capa donde se enteraría en tiempo de compilación.
+   */
+  setAdmission(mode: 'peer-card'): void;
+  /** El modo del torno en este carril es una constante (defecto 2). */
+  getAdmission(): 'peer-card';
 }
 
 export const PEER_CARD_GATED_TYPES: readonly string[];

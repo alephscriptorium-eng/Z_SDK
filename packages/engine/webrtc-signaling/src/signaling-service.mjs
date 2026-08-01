@@ -53,6 +53,21 @@ import { isSsbId } from '@zeus/protocol';
  */
 
 export class SignalingService extends EventEmitter {
+  /**
+   * Modo de admisión de la antesala (WP-U197). Por defecto `peer-card`:
+   * NO se retira ningún torno. `anonymous` es decisión local de despliegue,
+   * nunca negociable por el cable.
+   *
+   * WP-U251 (defecto 2) — campo PRIVADO de verdad. Era `_admission`,
+   * público por convención: `svc._admission = 'anonymous'` saltaba el
+   * `setAdmission()` y con él el candado del carril SSB. Ahora la única
+   * escritura desde fuera es `setAdmission()`, y la única lectura del
+   * torno es `getAdmission()` — que una subclase puede FORZAR (lo hace
+   * `SsbPrivateSignalingService`).
+   * @type {string}
+   */
+  #admission = SIGNALING_ADMISSION.peerCard;
+
   constructor() {
     super();
     /** @type {string} */
@@ -69,12 +84,6 @@ export class SignalingService extends EventEmitter {
     this._requireSsbId = false;
     /** @type {boolean} — exigir firma de asiento (tarjeta viajera) */
     this._requireSeatSignature = false;
-    /**
-     * @type {string} — modo de admisión de la antesala (WP-U197).
-     * Por defecto `peer-card`: NO se retira ningún torno. `anonymous` es
-     * decisión local de despliegue, nunca negociable por el cable.
-     */
-    this._admission = SIGNALING_ADMISSION.peerCard;
   }
 
   /**
@@ -90,12 +99,54 @@ export class SignalingService extends EventEmitter {
         `SignalingService.setAdmission: unknown admission mode ${String(mode)}`
       );
     }
-    this._admission = mode;
+    this.#admission = mode;
   }
 
-  /** @returns {string} */
+  /**
+   * Modo con el que el torno juzga. WP-U251 (defecto 2): ÚNICA lectura del
+   * modo en todo el servicio — `handleMessage`, `_gatedOutbound` y el
+   * `joinRoom` de las impls pasan por aquí, así que una subclase que lo
+   * sobrescriba fuerza el modo del torno pase lo que pase con el campo.
+   * @returns {string}
+   */
   getAdmission() {
-    return this._admission;
+    return this.#admission;
+  }
+
+  /**
+   * Retrato de la política de exigencias (WP-U251 · defecto 4).
+   * Un `connect()` que LANZA no puede dejar el estado a medias: si ya
+   * aplicó `admission` / `requireSsbId` / … y después falla, la sesión
+   * queda MÁS permisiva que antes de llamar, sin cable que lo justifique.
+   * Eso es fail-open. Se saca el retrato al entrar y se restaura al salir
+   * por excepción.
+   * @returns {{ admission: string, requiredRole: string|null, requireSsbId: boolean, requireSeatSignature: boolean, peerCard: object|null }}
+   * @protected
+   */
+  _policySnapshot() {
+    return {
+      admission: this.#admission,
+      requiredRole: this._requiredRole,
+      requireSsbId: this._requireSsbId,
+      requireSeatSignature: this._requireSeatSignature,
+      peerCard: this._peerCard
+    };
+  }
+
+  /**
+   * Deshace `_policySnapshot()`. Escribe `#admission` DIRECTO a propósito:
+   * restaura un valor que ya pasó por `setAdmission()` en su día, y hacerlo
+   * por el método público volvería a chocar con overrides como el del
+   * carril SSB (que lanza ante `anonymous`) durante un rollback.
+   * @param {ReturnType<SignalingService['_policySnapshot']>} snapshot
+   * @protected
+   */
+  _policyRestore(snapshot) {
+    this.#admission = snapshot.admission;
+    this._requiredRole = snapshot.requiredRole;
+    this._requireSsbId = snapshot.requireSsbId;
+    this._requireSeatSignature = snapshot.requireSeatSignature;
+    this._peerCard = snapshot.peerCard;
   }
 
   /**
@@ -110,7 +161,7 @@ export class SignalingService extends EventEmitter {
   /** @returns {{ admission: string, anonymous: boolean, role: string|null }} */
   describeAdmission(now) {
     return {
-      admission: this._admission,
+      admission: this.getAdmission(),
       anonymous: this.isAnonymous(),
       role: this.getSessionRole(now)
     };
@@ -124,12 +175,22 @@ export class SignalingService extends EventEmitter {
   setPeerCard(peerCard, opts = {}) {
     // D1: se normaliza al guardar; una exigencia declarada con truthy
     // no-booleano NO puede acabar valiendo `false` río abajo.
-    if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
-    if (opts.requireSeatSignature != null) {
-      this._requireSeatSignature = Boolean(opts.requireSeatSignature);
+    //
+    // WP-U251 (defecto 3): CADA opt se lee UNA sola vez y se trabaja sobre
+    // la copia. Con dos lecturas, un getter alternante pasaba el `!= null`
+    // devolviendo `true` y aterrizaba `false` en el campo: la exigencia
+    // declarada se caía en silencio (fail-open). `connect()` era inmune de
+    // rebote, porque su spread materializa el opt una vez; aquí no había
+    // spread. Ahora las dos vías leen igual, y a propósito.
+    const declaredSsbId = opts.requireSsbId;
+    const declaredSeat = opts.requireSeatSignature;
+    const declaredRole = opts.role;
+    if (declaredSsbId != null) this._requireSsbId = Boolean(declaredSsbId);
+    if (declaredSeat != null) {
+      this._requireSeatSignature = Boolean(declaredSeat);
     }
     const check = assertSignalingPeerCard(peerCard, {
-      role: opts.role ?? this._requiredRole ?? undefined,
+      role: declaredRole ?? this._requiredRole ?? undefined,
       now: opts.now,
       requireSsbId: this._requireSsbId,
       requireSeatSignature: this._requireSeatSignature
@@ -138,7 +199,7 @@ export class SignalingService extends EventEmitter {
       throw new Error(`SignalingService.setPeerCard: ${check.error}`);
     }
     this._peerCard = peerCard;
-    if (opts.role) this._requiredRole = opts.role;
+    if (declaredRole) this._requiredRole = declaredRole;
   }
 
   getPeerCard() {
@@ -282,7 +343,7 @@ export class SignalingService extends EventEmitter {
         card = { ...card, ssbId: handshakeSsbId };
       }
       const check = assertSignalingAdmission(card, {
-        admission: this._admission,
+        admission: this.getAdmission(),
         role: this._requiredRole ?? undefined,
         requireSsbId: this._requireSsbId,
         requireSeatSignature: this._requireSeatSignature,
@@ -355,7 +416,7 @@ export class SignalingService extends EventEmitter {
     if (!isPeerCardGatedType(message.type)) return message;
     const card = message.peerCard ?? this._peerCard;
     const check = assertSignalingAdmission(card, {
-      admission: this._admission,
+      admission: this.getAdmission(),
       role: this._requiredRole ?? undefined,
       requireSsbId: this._requireSsbId,
       requireSeatSignature: this._requireSeatSignature,
