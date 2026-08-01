@@ -8,6 +8,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { EXCEPTIONS } from './exceptions.mjs';
+import { GATE_RULES } from './reglas.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(__dirname, '../..');
@@ -30,7 +31,8 @@ const SKIP_DIRS = new Set([
   'vendor'
 ]);
 
-/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'|'tracking-id'|'licencia'} GateRule */
+/** WP-U257: una sola definición, en `reglas.mjs`. Aquí sólo se le da nombre local. */
+/** @typedef {import('./reglas.mjs').GateRule} GateRule */
 
 /**
  * @typedef {object} Offender
@@ -887,16 +889,14 @@ export function runAllGates(opts = {}) {
     ...scanTrackingIds(opts),
     ...scanLicenseCoherence(opts)
   ];
-  /** @type {Record<GateRule, Offender[]>} */
-  const byRule = {
-    ports: [],
-    transition: [],
-    'arg-import': [],
-    'two-games': [],
-    'google-stun': [],
-    'tracking-id': [],
-    licencia: []
-  };
+  // WP-U257: las claves salen de GATE_RULES, no de un literal paralelo. Antes
+  // eran la CUARTA copia de la lista de reglas: dar de alta una y olvidarse de
+  // este objeto tumbaba `runAllGates` entero en la primera ofensa de la regla
+  // nueva. El orden de GATE_RULES es el orden del informe, y es el mismo que
+  // tenía el literal.
+  const byRule = /** @type {Record<GateRule, Offender[]>} */ (
+    Object.fromEntries(GATE_RULES.map((rule) => [rule, /** @type {Offender[]} */ ([])]))
+  );
   for (const o of offenders) byRule[o.rule].push(o);
   return { ok: offenders.length === 0, offenders, byRule };
 }
