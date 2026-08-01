@@ -19,10 +19,14 @@
  *                    (git-ignored); logs por grupo en el mismo directorio.
  *   stop   <perfil>  Parada en orden inverso: taskkill /T /F del pid grabado
  *                    (win32) o kill de process-group (POSIX), barrido de
- *                    listeners residuales por puerto de catálogo, y prueba
- *                    real de re-bind de cada puerto. Limpia el estado.
+ *                    listeners residuales por puerto de catálogo — IPv4 e IPv6,
+ *                    incluido el grupo adoptado que no dejó pid en el estado
+ *                    (U234-B1) —, y veredicto de puerto liberado por doble
+ *                    lector: re-bind del host declarado Y enumeración sin
+ *                    listeners. Limpia el estado.
  *   status <perfil>  Una fila por entrada: {id, group, port, healthy,
- *                    listening, pids, managedPid}.
+ *                    listening, pids, managedPid}. `listening`/`pids` cubren
+ *                    IPv4 e IPv6 (U234-B1).
  *   health <perfil>  probeHealth por entrada (reusa health.mjs).
  *
  * Salida: progreso humano por stderr; UN documento JSON por stdout (los
@@ -30,11 +34,18 @@
  * operativo (health KO en start / residuos en stop / health KO en health) ·
  * 2 = uso, perfil o id desconocido, ciclo de deps.
  *
+ * Nota de contrato para V34/O22 (U234-B1): la forma del JSON no cambia — mismas
+ * claves, mismos tipos, mismos códigos. Lo que cambia es que ahora son ciertos:
+ * `stop` ve y mata listeners IPv6 que antes ignoraba (menos exit 1 espurio por
+ * `free:false` con `residualPids:[]`), y firma exit 1 si sobrevive un residuo
+ * que antes no miraba. `start` puede abortar con `puerto_ocupado_sin_health`
+ * donde antes spawneaba a ciegas sobre un puerto ya ocupado en ::1.
+ *
  * Perfiles: PROFILES (abajo). "all" = toda entrada lanzable del catálogo.
  * Fuente única: catalog.mjs — aquí no hay comandos de servicio ni puertos
  * escritos a mano (CA-3 U234); los únicos ejecutables literales son
- * primitivas del SO para teardown (taskkill/netstat), la misma clase que
- * process-manager.mjs:181.
+ * primitivas del SO para teardown (taskkill/netstat sin filtro de familia,
+ * ver listenerPids), la misma clase que process-manager.mjs:181.
  *
  * Env overrides: ZEUS_ORQ_TIMEOUT_MS (health total por grupo, def. 90000),
  * ZEUS_ORQ_POLL_MS (def. 500), ZEUS_ORQ_STATE_DIR (def. <repo>/data/orchestrator).
@@ -222,10 +233,30 @@ function clearState(stateDir, perfil) {
   }
 }
 
-/** Pids listening on a TCP port (OS primitive — same class as PM taskkill). */
+/**
+ * Pids listening on a TCP port, BOTH families (OS primitive — same class as
+ * PM taskkill). Single point of enumeration: start, stop, status and rollback
+ * all read occupancy through here, so a fix here reaches every one of them.
+ *
+ * ⚠ win32: do NOT add `-p tcp`. On Windows `-p tcp` selects the IPv4 family
+ * only, so a service bound to `::1` — which is what host `localhost` binds
+ * first under Node's default `verbatim` DNS order — is invisible. Measured on
+ * this repo (U234-B1): with a live `::1` listener, `-p tcp` yields no row while
+ * bare `-ano` yields `TCP [::1]:<port> [::]:0 LISTENING <pid>`. Bare `-ano` is
+ * also cheaper here (median 40ms vs 73ms for `-p tcp`, and 140ms for the
+ * `-p tcp` + `-p tcpv6` two-pass alternative).
+ *
+ * The parse below is family-agnostic on purpose: `[::1]:3017`, `0.0.0.0:3017`
+ * and `127.0.0.1:3017` all satisfy `cols[1].endsWith(':3017')`. `-ano` without
+ * `-p` also emits UDP rows; they carry no state column and are dropped by the
+ * `/LISTENING/i` guard.
+ *
+ * POSIX: `lsof -i tcp:<port>` already matches both families (restricting would
+ * need `-i 4tcp:`/`-i 6tcp:`), so that branch needs no change.
+ */
 export function listenerPids(port) {
   if (IS_WIN) {
-    const r = spawnSync('netstat', ['-ano', '-p', 'tcp'], {
+    const r = spawnSync('netstat', ['-ano'], {
       windowsHide: true,
       encoding: 'utf8'
     });
@@ -294,7 +325,23 @@ export async function killTree(pid) {
   return { pid, ok: !isAlive(pid), method: 'SIGTERM→SIGKILL (group)' };
 }
 
-/** True if the port can be bound right now (real bind, then release). */
+/**
+ * True if `host` can be bound right now on `port` (real bind, then release).
+ *
+ * ⚠ Single-family by construction, and NOT an occupancy oracle. A bind probe
+ * only ever tests the address its host resolves to. Measured (U234-B1, win32,
+ * dns order `verbatim`, so localhost → ::1 first):
+ *
+ *   ocupante ::1        → portFree(_,'localhost') false · portFree(_,'127.0.0.1') TRUE
+ *   ocupante :: comodín → portFree(_,'localhost') TRUE  · portFree(_,'127.0.0.1') TRUE
+ *   ocupante 127.0.0.1  → portFree(_,'localhost') TRUE  · portFree(_,'127.0.0.1') false
+ *
+ * Every catalog entry carries host 'localhost', so on its own this probe is
+ * blind to exactly the two shapes the fleet uses most: the `::` wildcard that
+ * every presets-sdk MCP binds, and a plain IPv4 loopback residue. Use
+ * portReleased() for verdicts; portFree stays exported because the IPv4 e2e
+ * asserts the raw re-bind.
+ */
 export function portFree(port, host = '127.0.0.1') {
   return new Promise((resolve) => {
     const srv = net.createServer();
@@ -305,13 +352,27 @@ export function portFree(port, host = '127.0.0.1') {
   });
 }
 
-async function waitPortFree(port, host, deadlineMs) {
+/**
+ * Occupancy oracle: the port is released iff BOTH lookers agree.
+ *   (a) `host` really re-binds — catches holders the enumeration cannot name
+ *       (system pids ≤ 4, which listenerPids filters out);
+ *   (b) the family-complete enumeration finds nobody — catches the families
+ *       `host` does not resolve to, which is (a)'s blind spot.
+ * Neither half subsumes the other; that is why both run. (a) goes first
+ * because it is the cheap one and short-circuits the occupied case.
+ */
+export async function portReleased(port, host = '127.0.0.1') {
+  if (!(await portFree(port, host))) return false;
+  return listenerPids(port).length === 0;
+}
+
+async function waitPortReleased(port, host, deadlineMs) {
   const deadline = Date.now() + deadlineMs;
   while (Date.now() < deadline) {
-    if (await portFree(port, host)) return true;
+    if (await portReleased(port, host)) return true;
     await sleep(200);
   }
-  return portFree(port, host);
+  return portReleased(port, host);
 }
 
 function spawnDetached(spec, logPath) {
@@ -506,7 +567,7 @@ export async function runStop(perfil, opts = {}) {
   const ports = [];
   for (const g of plan) {
     for (const e of g.entries) {
-      const free = await waitPortFree(e.port, e.host || 'localhost', 8_000);
+      const free = await waitPortReleased(e.port, e.host || 'localhost', 8_000);
       ports.push({
         id: e.id,
         port: e.port,
