@@ -636,6 +636,38 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   (cherry-pick). Ejecutor de la fusión: vigía Z con gorro de orquestador,
   origen declarado = orden expresa del custodio en consola.
 
+- **Decisión ⑧ (custodio, 2026-08-01) · el pack del pozo para U206 lo
+  construye Z.** Hallazgo que la motiva (reconocimiento previo al despacho de
+  la ola 4, verificado abriendo ficheros): el `startpack-pozo` **existe pero
+  no es importable** — su `manifest.json` es de esquema `zeus.startpack/v0`,
+  sin `name` ni `hashes`, y la guarda de `import.mjs` lo rechaza con
+  `pack_manifest_incompleto`. El productor del descriptor **no existe en G**
+  (cero `sha256` en `g-sdk/scripts`), y las WPs que lo construirían están en
+  P0 **sin arrancar**; una de ellas declara que **bloquea el adaptador
+  local-first**, o sea U206.
+  Lo que abarata la decisión: los **8 ficheros del pozo son byte a byte
+  idénticos** a la fixture con la que cerró el driver FORCES (los ocho sha256
+  recalculados coinciden). Lo que falta **no son los datos, es el
+  descriptor**.
+  **Resolución**: Z construye un adaptador que lee el pozo en **SOLO
+  LECTURA**, computa los hashes y emite el manifiesto v1. Con eso U206 deja
+  de depender de otro mundo y se cierra además la CA que **U203** dejó ⏳
+  («CA contra `startpack-pozo` REAL»).
+  **Se declara como reencuadre, no se cuela**: el reparto asignaba ese
+  descriptor a G, así que cuando G lo entregue habrá **dos productores que
+  reconciliar** — queda anotado aquí para que ese día no parezca un
+  accidente. **Frontera dura: `C:/S_LAB/g-sdk` es solo lectura, jamás
+  escritura.** No inaugura acoplamiento: `e2e/games-root.mjs` ya resuelve el
+  mundo hermano por env, y el runner debe reutilizar ese resolvedor en vez de
+  inventarse una ruta.
+  ✎ *Corrección al plan que sale del mismo reconocimiento*: «7 pasos verdes
+  con shape pozo» (`BACKLOG.md:267`) es **infalsable tal como está escrito** —
+  el paso 5 exige «divergencia reportada» y el pozo trae un único volumen
+  FORCES, familia que **por diseño no tiene camino de divergencia** (solo lo
+  tienen LINEAS y FIREHOSE). La shape del CA de U206 debe declarar **dos**
+  volúmenes: el pozo para los pasos 1-4, 6 y 7, y uno con divergencia para el
+  paso 5.
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
