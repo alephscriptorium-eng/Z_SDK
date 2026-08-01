@@ -47,9 +47,21 @@ $ grep -rniE "\bdelta\b" packages/engine/linea-kit/src packages/engine/volumes-o
 ```
 
 Antes daba 3. Y sin trucos: no hay concatenación, escape ni `String.fromCharCode` que
-reconstruya el nombre; el literal **se eliminó**, no se disfrazó. (Partirlo no habría
-funcionado de todos modos: la comilla es frontera de palabra y `\bdelta\b` lo seguiría
-cazando.)
+reconstruya el nombre; el literal **se eliminó de `src/`**, no se disfrazó. (Partirlo no
+habría funcionado de todos modos: la comilla es frontera de palabra y `\bdelta\b` lo
+seguiría cazando — comprobado, §5.)
+
+**Alcance exacto de esta medida, que la primera entrega no explicitó.** El grep está
+acotado a los dos `src/`, y el mismo commit **planta 6 ocurrencias del nombre** en
+`packages/engine/linea-kit/test/curation-sidecar.test.mjs` (líneas 41, 84, 196, 198, 251,
+253): el predicado *legacy* de P1 no se puede expresar sin escribir los dos nombres que
+comparaba, y la tabla de verdad tampoco. Están **legítimamente exentas por categoría**
+—`isTwoGamesPathExempt('packages/engine/linea-kit/test/curation-sidecar.test.mjs')` →
+`true`, ejecutado— igual que las que ya vivían en `import-lineas-driver.test.mjs`. Pero
+como este mismo reporte argumenta que **eliminar es mejor que excusar**, el argumento
+obliga a decirlo en vez de dejar que el recorte del grep lo tape: en `src/` el nombre
+desapareció; en `test/` sigue, amparado por una exención de categoría que yo no he tocado
+ni ampliado.
 
 ---
 
@@ -78,10 +90,19 @@ que es el **lector real** de la capa de curación, dice literalmente:
  * Avoids hardcoding game-named filenames in engine code (two-games gate).
 ```
 
-…y resuelve los sidecars **por forma** (`entries.filter((f) => f.endsWith('.md'))`,
-`loader.mjs:384`), conservando la clave de salida `delta_md` porque el guión bajo no
-colisiona. El precedente para este mismísimo nombre de fichero ya existía: **forma, no
-literal**. El predicado de U202 simplemente no lo siguió.
+…y lee los sidecars **por forma** (`entries.filter((f) => f.endsWith('.md'))`,
+`loader.mjs:383`), conservando la clave de salida `delta_md` porque el guión bajo no
+colisiona.
+
+**Matiz obligado, porque la primera entrega se pasó de ancha aquí** (y de paso la citó una
+línea más abajo de donde está: es `:383`, no `:384` — el mismo off-by-one que este WP le
+afeó al brief). El precedente es real pero **no es puro**: `loader.mjs` sigue hardcodeando
+`registro.md` en `:391` (`markdown['registro.md']`) y en `:397`
+(`name !== 'registro.md'`). Lo que evita es exactamente lo que dice su propio comentario
+—nombres **de juego**—, no todo nombre de fichero; `registro` no está en el léxico del
+gate y por eso puede permitirse el literal. Así que el precedente sostiene «no hardcodees
+el nombre de juego», que es lo que este WP necesita, y **no** el eslogan más ancho de
+«forma, nunca literal». El predicado de U202 no siguió ni siquiera la versión estrecha.
 
 ---
 
@@ -178,6 +199,23 @@ propio). Y ahí la asimetría manda.
   cambia el cajón del reporte y se pierde el par `destSha256`/`packSha256` para ese
   fichero; **no** cambia si se escribe o no.
 
+### Un efecto a favor que la primera entrega no declaró: cierra un crash preexistente
+
+Hallado al intentar falsar la afirmación de §3. Si el **destino** tiene un DIRECTORIO
+donde el pack trae un `.md` que el predicado de la base no consideraba curación, la base
+entra por `sha256File(destAbs)` → `readFileSync` sobre un directorio → **EISDIR**. El tip
+lo clasifica antes y ni lo toca. Ejecutado sobre el mismo árbol con los **dos** drivers
+(el de `87bd93f` reconstruido y el del tip):
+
+```
+BASE  (87bd93f) -> LANZA EISDIR: EISDIR: illegal operation on a directory, read
+TIP   (u202b2)  -> OK  moves=[] protected=["curacion_protegida"] divergences=0
+```
+
+Así que el ensanche no sólo no pierde protección: **elimina un modo de fallo no declarado
+por el contrato** para todo `*.md`. No era un objetivo del WP; es una consecuencia, y se
+declara como tal.
+
 ### Changeset: **SÍ** → `.changeset/curated-sidecar-por-forma.md`
 
 `isCuratedSidecarPath` es API pública publicada y su comportamiento cambia para entradas
@@ -209,18 +247,76 @@ da el bump por dependencia. `packages/engine/linea-kit/CHANGELOG.md` **no se toc
 Un detalle que decide su diseño: **un test de entrada/salida NO habría bastado.** Como el
 predicado ya devuelve `true` para todo `*.md`, reintroducir `base === 'delta.md'` **no
 cambia ninguna salida** — el gate volvería a rojo y ningún assert de comportamiento se
-enteraría. Por eso el fichero fija **tres** cosas:
+enteraría.
 
-1. **Tabla de verdad** — las 10 filas de §3, con los valores **atados a la vía A-BIS**
-   (incluido `demo/raw/linea.md` → `true`, el precio, escrito para que sea visible).
-2. **Propiedad de superconjunto** — reimplementa el predicado *legacy* y afirma sobre un
-   universo de rutas que *todo* lo que estaba protegido lo sigue estando. Es el guardián
-   de «no se ablanda»: se pondría rojo si alguien estrechara el conjunto más adelante.
-3. **Cero literales de nombre de fichero en el cuerpo del predicado** — inspecciona
-   `isCuratedSidecarPath.toString()` con `/['"`][a-z0-9_-]+\.md['"`]/gi` (que **no** casa
-   `'.md'`, pero **sí** `'registro.md'`). Éste es el que ata el arreglo al gate.
+> ### Corrección de la primera entrega
+> La versión anterior de este apartado afirmaba que su «propiedad de superconjunto»
+> *«se pondría roja si alguien estrechara el conjunto más adelante»*. **Era falso**, y la
+> devolución lo demostró con un vector: no era una propiedad sino **una lista de 9 rutas
+> fijas**, y un estrechamiento que las esquive pasa entero. Reproducido aquí sobre el
+> fichero de entonces, insertando `if (p.startsWith('borradores/')) return false;`:
+> **gate VERDE · test VERDE (4/4)** — y perdían protección 4 rutas que el predicado de la
+> base sí protegía (`borradores/registros/r1/{registro,notas,delta}.md`,
+> `borradores/x/delta.md`). Medía **la vuelta atrás que yo imaginé, no la propiedad.**
+> Reescrito a propiedades sobre universo generado, y **esta vez intentando esquivarlo yo**
+> antes de describirlo.
 
-### Probe rojo — ejecutado, no prometido
+El fichero fija ahora cuatro cosas (7 tests), sobre un universo generado de
+**466 prefijos × 56 nombres base = 26.096 rutas** (nombres fijos + pseudoaleatorios con
+semilla, deterministas):
+
+| | propiedad | qué garantiza |
+| --- | --- | --- |
+| **P1** | superconjunto vs. el predicado de `87bd93f` | nada de lo protegido dejó de estarlo (>500 rutas protegidas por el legacy en el universo) |
+| **P2** | independencia de ruta | el resultado sólo mira el nombre base |
+| **P3** | sólo la extensión decide | la especificación entera: `base.endsWith('.md')` |
+| **P4** | **sin ramas** | el cuerpo no tiene `if`, tiene un único `return`, y ese `return` es exactamente la forma |
+
+**Por qué hizo falta P4, y por qué es estructural.** Al intentar esquivar P1-P3 encontré
+**yo mismo** que mi primera redacción volvía a pasarse de ancha: escribí que P2 era
+«universal sobre la parte de directorio, no depende del alfabeto». **No lo es.** P1-P3
+recorren 26.096 rutas pero son exhaustivas **sólo sobre su propio alfabeto**, y dos
+vectores míos las pasaron en verde ablandando la protección:
+`p.startsWith('inventadisimo-zzz/')` (carpeta fuera del alfabeto de prefijos) y
+`base.startsWith('z')` (ningún nombre base generado empieza por `z`). Ningún muestreo del
+espacio de entradas cierra la clase. Pero **todo** estrechamiento —esté o no en el
+alfabeto— necesita una **rama**. Prohibir la rama cierra las dos vías a la vez sin
+adivinar ningún nombre.
+
+### Batería de evasión — 14 vectores ejecutados contra el guardián nuevo
+
+```
+A · ESTRECHAMIENTOS CON RAMA (el test DEBE ponerse rojo)
+  gate=VERDE  test=ROJO   | V1 startsWith('borradores/')            [vector del revisor]
+  gate=VERDE  test=ROJO   | V2 includes('/tmp/')
+  gate=VERDE  test=ROJO   | V3 carpeta FUERA de mi alfabeto         [antes ESCAPABA]
+  gate=VERDE  test=ROJO   | V4 profundidad > 3 segmentos
+  gate=VERDE  test=ROJO   | V5 longitud de ruta > 40
+  gate=VERDE  test=ROJO   | V6 base === 'notas.md'
+  gate=VERDE  test=ROJO   | V7 base.startsWith('z')                 [antes ESCAPABA]
+  gate=ROJO   test=ROJO   | V8 vuelve el literal de juego
+
+B · ESTRECHAMIENTOS SIN `if` (ternario / booleanos)
+  gate=VERDE  test=ROJO   | V10 ternario por directorio
+  gate=VERDE  test=ROJO   | V11 AND negado por directorio
+  gate=VERDE  test=ROJO   | V12 AND por nombre base
+
+C · CONTROL
+  gate=VERDE  test=ROJO   | V13 refactor sin ramas equivalente
+  gate=VERDE  test=VERDE  | V14 el predicado tal cual (control)
+```
+
+**11 de 11 estrechamientos caen**, incluidos los dos que escapaban antes. Nótese la
+columna `gate`: **sólo V8 pone el gate rojo**. Los otros diez ablandan la curación con el
+gate en verde — es decir, el gate **no** es una red para esta clase; el test sí.
+
+**Coste declarado (V13)**: P4 fija la expresión exacta del `return`, así que un refactor
+legítimo y equivalente (`return String(base).endsWith('.md');`) **también pone rojo**. Es
+un falso positivo consciente: prefiero que un cambio en un predicado de tres líneas exija
+volver a pasar por esta batería, a que se pueda estrechar en silencio. Quien refactorice
+de verdad, actualiza P4 y vuelve a correr los 14 vectores.
+
+### Probe rojo del literal — ejecutado, no prometido
 
 Replantado a mano `if (base === 'registro.md' || base === 'delta.md') return true;`:
 
@@ -230,19 +326,32 @@ gates: FAIL (1 offender(s))
   [two-games] packages/engine/linea-kit/src/curation.mjs:79 — matched delta: if (base === 'registro.md' || base === 'delta.md') return true;
 GATES_EXIT=1
 
-=== TEST NUEVO con el literal replantado ===
-        el predicado volvió a hardcodear nombres de fichero ('registro.md', 'delta.md'); eso reabre el offender two-games bajo packages/engine
+=== TEST NUEVO (version antigua) con el literal replantado ===
 not ok 1 - isCuratedSidecarPath · forma, no nombre (WP-U202-B2)
-# tests 4
-# pass 3
-# fail 1
+# tests 4 · pass 3 · fail 1
 ```
 
-Dos cosas quedan probadas: **(a)** el arreglo no se puede deshacer sin poner rojo, y
-**(b)** el gate **sigue viendo** `curation.mjs` — no se le cegó con ninguna excepción.
-Nótese que **3 de 4 tests siguieron pasando**: la confirmación empírica de que sin el
-guardián estructural la regresión habría sido invisible. Revertido con
-`git checkout --` sobre el fichero; tip limpio.
+Queda probado que **el gate sigue viendo `curation.mjs`** — no se le cegó con ninguna
+excepción. Revertido con `git checkout --`; tip limpio.
+
+### Alcance del guardián «cero literales» (P4, última aserción)
+
+Caza el literal de **una pieza** (`'registro.md'`). **No** caza la concatenación: con
+`base === 'registro' + '.md'` el **gate queda VERDE y el test también** (medido) — porque
+`registro` no es nombre de juego. Con el nombre de juego, `base === 'delta' + '.md'`, el
+**gate sí cae** (`FAIL, 1 offender`, medido) aunque esa aserción no lo vea. Es decir: para
+la concatenación la red es el gate, y sólo cuando el nombre es de juego. Se declara como
+aviso temprano barato, no como barrera.
+
+### Dónde corre esto de verdad — y dónde no
+
+`@zeus/linea-kit` y `@zeus/volumes-ops` **NO están en la matriz de workspaces de CI**
+(`ci.yml:44-75`, 25 entradas; ninguna es la de estos dos paquetes; `release.yml:83` repite
+el bloque). Consecuencia honesta: **ni este fichero de test ni los 56/56 de `volumes-ops`
+se ejecutan en CI**. La única barrera automática sobre este arreglo es `npm run gates` /
+`npm run test:gates` del job `quality` — que cubre el offender (V8) pero **no** los diez
+estrechamientos de la batería. Es preexistente y no lo arregla este WP, pero decirlo
+importa: sin ello, §5 se leería como una garantía automática que no existe.
 
 ---
 
@@ -255,9 +364,39 @@ paquete era, por tanto, ruido de entorno, no deuda de código:
 | suite | ANTES (worktree sin deps) | ANTES (con deps, base real) | DESPUÉS |
 | --- | --- | --- | --- |
 | `npm run test:gates` | 22 pass · **1 fail** | 22 pass · **1 fail** | **23 pass · 0 fail** |
-| `npm test -w @zeus/linea-kit` | 9 pass · 5 fail (`Cannot find package 'ajv'`) | 36 pass · 0 fail | **40 pass · 0 fail** |
+| `npm test -w @zeus/linea-kit` | 9 pass · 5 fail (`Cannot find package 'ajv'`) | 36 pass · 0 fail | **43 pass · 0 fail** |
 | `npm test -w @zeus/volumes-ops` | 0 pass · 7 fail | 56 pass · 0 fail | **56 pass · 0 fail** |
+| `npm run test:release` | — | **6 pass · 0 fail** | **5 pass · 1 fail** ⚠️ |
 | `npm run lint` | no ejecutable (eslint ausente) | — | **EXIT 0**, 0 errors |
+
+### ⚠️ `test:release` queda en 5/6, a propósito — declarado, no escondido
+
+**Esta fila faltaba en la primera entrega y su ausencia era el fallo**: §6 decía haber
+medido las suites «ANTES y DESPUÉS» y §9 cerraba las CA sin ella. La obra no cambia; la
+honestidad del reporte sí.
+
+El fallo es `not ok 6 - version tree prepared: protocol CHANGELOG after changesets
+consumed (WP-U105)`. Su aserto es `release-u53.test.mjs:127`:
+
+```js
+const pending = fs.readdirSync(path.join(root, '.changeset'))
+  .filter((f) => f.endsWith('.md') && f !== 'README.md');
+assert.equal(pending.length, 0, 'pending changesets should be consumed into version tree');
+```
+
+Causa **probada por aislamiento**: retirando mi changeset la suite vuelve a **6/6**;
+devolviéndolo, **5/6**. Es exactamente y sólo mi fichero.
+
+**No lo quito**, y la razón no es de comodidad: el predicado es API pública publicable y
+el changeset es el artefacto que hace viajar el cambio (CA-7). Quitarlo para dejar una
+suite verde sería colar el cambio de contrato, que es justo lo que CA-7 prohíbe.
+
+**Es el ciclo normal de este repo**, verificado en la historia y no supuesto: el aserto ya
+existía cuando `e873376` («release(p0): changesets publicación P0×4») **plantó**
+`.changeset/d42-go-publish-p0x4.md` dejando esta misma suite roja, y `3b6eb2f`
+(«chore(release): version packages») la **consumió** devolviéndola a verde borrando ese
+fichero y escribiendo los CHANGELOG. Mismo patrón en `6262f1d` → `73ac818` (15 changesets).
+Se cierra sola en el próximo `changeset version`; **no requiere acción de nadie**.
 
 - El único fallo de `test:gates` era `not ok 1 - CA verde: npm run gates / runAllGates
   limpio en el repo actual` (`gates.test.mjs:34`) — exactamente el que este WP cierra.
@@ -361,7 +500,8 @@ rastreados** que no son de este WP. **Revertidos todos** antes de commitear:
 | CA-2 `test:gates` 23/23 | ✅ | 22/23 → **23/23**; el que fallaba era `gates.test.mjs:34` |
 | CA-3 grep `\bdelta\b` = 0 | ✅ | §1; sin concatenación ni escapes |
 | CA-4 (guardia) volumes-ops | ✅ | 56/56, 0 ediciones de sus tests; CA-3 de `import-lineas-driver.test.mjs:261` en pass |
-| CA-5 test nuevo | ✅ | §5, valores atados a A-BIS + probe rojo ejecutado; linea-kit 40/40 |
+| CA-5 test nuevo | ✅ | §5, propiedades P1-P4 sobre 26.096 rutas + batería de 14 vectores de evasión; linea-kit 43/43 |
+| — `test:release` | ⚠️ **declarada** | 6/6 → **5/6** por el changeset de CA-7; ciclo normal del repo, se consume en el próximo `changeset version` (§6) |
 | CA-6 doc == código | ✅ | §3-§4; **estaba roja antes del WP** (fila `registros/r1/notas.md`) y queda cerrada |
 | CA-7 contrato declarado | ✅ | tabla ANTES/DESPUÉS por ejecución + changeset SÍ, con ruta |
 | CA-8 alcance del diff | ✅ | §8, base fijada `87bd93f`, 5 ficheros |
@@ -395,6 +535,25 @@ diga.**
   conviene que lo sepa: la protección real vive en la estructura de `merge`, no en el
   predicado, y quien copie el patrón sin copiar esa estructura perderá la garantía
   creyendo que la lleva puesta.
+
+  **Matiz obligado: lo que recomiendo heredar tiene un hueco, y hay que heredarlo sabiendo
+  cuál.** La primera entrega decía «hereden la estructura de `merge`» a secas. Esa
+  estructura **no lleva la guarda de ancestro bloqueante** que el driver FIREHOSE sí
+  añadió tras su defecto D3. Vector reproducido con los dos drivers, base y tip:
+
+  ```
+  destino: `demo/raw` existe como FICHERO · pack trae `demo/raw/linea.md`
+  BASE  (87bd93f) plan.moves = ["demo/raw/linea.md"] -> ejecucion LANZA EEXIST -> volumen a medias
+  TIP   (u202b2)  plan.moves = ["demo/raw/linea.md"] -> ejecucion LANZA EEXIST -> volumen a medias
+  ```
+
+  **Idéntico en base y tip: no lo introduce este WP y no es suyo arreglarlo** — se deja
+  escrito con vector para que el custodio lo enrute. FIREHOSE lo cubre con
+  `blockingAncestor` (`driver-firehose.mjs:367-375`) y lo documenta en `:143-149`:
+  «*sin esa guarda `importPack` LANZABA `EEXIST` a mitad de los renames, modo de fallo no
+  declarado por el contrato y volumen a medias*». LINEAS devuelve el `move` sin
+  comprobarlo. Quien generalice drivers en U242 debería subir esa guarda al contrato, no
+  reimplementarla por familia.
 - **`isCuratedSidecarPath` es API publicada** (`./curation`, v0.3.0, registry propio). No
   se pudo determinar si hay consumidores externos —no se consultó la red—; dentro del
   monorepo el único es `driver-lineas.mjs:37`. El changeset queda para que el cambio viaje
@@ -403,3 +562,33 @@ diga.**
   vivo tiene markdown fuera de `registros/`; `linea-aleph` (~48 MB, 677 registros) no está
   en este repo (U207). Con la vía A-BIS esa incógnita **deja de ser un riesgo**: cualquier
   markdown que aparezca donde sea queda protegido. Era el otro motivo para no estrechar.
+
+---
+
+## 11. Qué frases cambiaron en la devolución, y por qué
+
+**El código del arreglo no cambió ni una línea.** Lo que cayó fueron cuatro afirmaciones
+del reporte y una del test: todas de la misma clase —**alcance declarado más ancho que la
+evidencia**—, que es la que costó cuatro bloqueantes la ola pasada. Se dejan escritas por
+su nombre porque el punto no es que estuvieran mal, sino **por qué se pudieron escribir**.
+
+| # | frase que caía | por qué era más ancha que la evidencia | qué dice ahora |
+| --- | --- | --- | --- |
+| 1 | «se pondría rojo si alguien **estrechara el conjunto**» (§5, guardián de superconjunto) | Describía como **propiedad** lo que era **una lista de 9 rutas fijas**. Un estrechamiento que las esquive pasa: `startsWith('borradores/')` → gate y test **verdes**, 4 rutas desprotegidas | P1-P4 sobre 26.096 rutas + **P4 sin ramas**, con batería de 14 vectores y el alcance de cada propiedad escrito |
+| 2 | «medí las suites ANTES y DESPUÉS» (§6) + tabla de CA sin la fila | Omitía una suite que **yo dejé en rojo**: `test:release` 6/6 → 5/6. La medida no era falsa; era **incompleta en la dirección que me favorecía** | fila propia, causa aislada, precedente histórico verificado y razón de no quitar el changeset |
+| 3 | «resuelve los sidecars por forma (`loader.mjs:384`)» (§2) | Doble: cita **off-by-one** (es `:383`) y precedente presentado como **puro** cuando `loader.mjs:391,397` siguen hardcodeando `registro.md`. Sostiene «no hardcodees el **nombre de juego**», no «forma, nunca literal» | cita corregida y precedente acotado a lo que de verdad sostiene |
+| 4 | «el literal se eliminó, no se disfrazó» (CA-3) | Grep acotado a los dos `src/`, mientras el mismo commit planta **6 ocurrencias** del nombre en el test nuevo. Exentas por categoría, pero el recorte del grep las tapaba | alcance explícito: desapareció **de `src/`**; en `test/` sigue, amparado por exención que no toqué |
+| 5 | §10 «hereden la estructura de `merge`» | Recomendaba heredar justo la estructura **sin** la guarda de ancestro (D3) que FIREHOSE añadió. El consejo era bueno y el hueco iba de regalo | mismo consejo **con el hueco nombrado**, vector reproducido y ruta a `blockingAncestor` |
+
+**El corolario que este WP casi vuelve a morder.** La corrección hereda el vicio de lo
+corregido: al reescribir el guardián escribí que P2 era «universal sobre la parte de
+directorio, no depende del alfabeto» — **otra vez una propiedad afirmada, no medida**. Sólo
+apareció porque esta vez intenté esquivar mi propio guardián antes de describirlo, y dos
+vectores míos (`inventadisimo-zzz/`, `base.startsWith('z')`) lo pasaron en verde. De ahí
+sale P4. La regla operativa que queda, y que vale más que el arreglo: **un guardián no se
+describe, se ataca; y quien lo escribe es quien tiene que atacarlo primero.**
+
+Lo que **resistió** la devolución no se retocó: el superconjunto estricto (41 vectores
+hostiles ajenos + 1024 rutas generadas, 0 pérdidas), la identidad de `moves` entre base y
+tip, la afirmación fuerte sobre `merge`, la atribución corregida, la tabla de verdad y los
+números del gate.
