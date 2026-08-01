@@ -270,7 +270,7 @@ semilla, deterministas):
 | **P1** | superconjunto vs. el predicado de `87bd93f` | nada de lo protegido dejó de estarlo (>500 rutas protegidas por el legacy en el universo) |
 | **P2** | independencia de ruta | el resultado sólo mira el nombre base |
 | **P3** | sólo la extensión decide | la especificación entera: `base.endsWith('.md')` |
-| **P4** | **sin ramas** | el cuerpo no tiene `if`, tiene un único `return`, y ese `return` es exactamente la forma |
+| **P4** | **cuerpo exacto** | el cuerpo ENTERO del predicado es, carácter a carácter (normalizando espacios), la forma esperada |
 
 **Por qué hizo falta P4, y por qué es estructural.** Al intentar esquivar P1-P3 encontré
 **yo mismo** que mi primera redacción volvía a pasarse de ancha: escribí que P2 era
@@ -310,11 +310,84 @@ C · CONTROL
 columna `gate`: **sólo V8 pone el gate rojo**. Los otros diez ablandan la curación con el
 gate en verde — es decir, el gate **no** es una red para esta clase; el test sí.
 
-**Coste declarado (V13)**: P4 fija la expresión exacta del `return`, así que un refactor
-legítimo y equivalente (`return String(base).endsWith('.md');`) **también pone rojo**. Es
-un falso positivo consciente: prefiero que un cambio en un predicado de tres líneas exija
-volver a pasar por esta batería, a que se pueda estrechar en silencio. Quien refactorice
-de verdad, actualiza P4 y vuelve a correr los 14 vectores.
+### Tercera vuelta: quedaba una puerta, y era una línea más arriba
+
+Esa versión de P4 vigilaba **el `return`** (sin `if`, un solo `return`, forma exacta). Pero
+el predicado tiene **dos líneas de normalización antes**, y P4 no decía nada de ellas. El
+ablandamiento cabe entero ahí, sin `if`, con un solo `return` y con el `return` intacto.
+Vector del custodio, reproducido sobre mi tip:
+
+```js
+const base = p.startsWith('inventadisimo-zzz/') ? '' : (p.split('/').pop() || '');
+```
+
+```
+GATE: gates: OK (0 offenders)   ·   MI SUITE: 7 tests · 7 pass · 0 fail
+inventadisimo-zzz/registros/r1/registro.md → false   (la base lo protegía)
+inventadisimo-zzz/delta.md                 → false   (la base lo protegía)
+demo/wp/historia/registro.md               → true
+```
+
+Es **mi propio hallazgo del alfabeto movido una línea más arriba**: el prefijo cae fuera
+del alfabeto de P1-P3, y la mutación no toca nada de lo que P4 miraba. **Eran TRES vías
+—normalización, rama, retorno—, y yo había escrito «cierra las dos vías a la vez».**
+
+**Salida tomada: (a), cerrar la clase entera.** P4 pasa a asever­ar el **cuerpo completo**
+del predicado, normalizado sólo en espacios y saltos de línea (para que CRLF/LF no lo
+rompa en Windows):
+
+```js
+const EXPECTED = String.raw`function isCuratedSidecarPath(relPath) { const p = String(relPath || '').replace(/\\/g, '/').toLowerCase(); const base = p.split('/').pop() || ''; return base.endsWith('.md'); }`;
+```
+
+Se eligió (a) y no (b) porque el predicado son **tres líneas puras y es API pública
+publicada**: aquí la fragilidad no es un coste que haya que tolerar, es la garantía que se
+compra. Las aserciones granulares (`if`, número de `return`, ternario, literales) se
+conservan **delante** del cierre para que el fallo diga *qué* se rompió, no sólo *que* se
+rompió.
+
+### Batería final — las tres vías, 10 vectores
+
+```
+VIA 1 · RAMA (`if` insertado)
+  gate=VERDE test=ROJO  | V1 startsWith('borradores/')          [vector del revisor, ronda 2]
+  gate=VERDE test=ROJO  | V3 carpeta FUERA de mi alfabeto
+  gate=VERDE test=ROJO  | V6 base === 'notas.md'
+  gate=VERDE test=ROJO  | V7 base.startsWith('z')
+  gate=ROJO  test=ROJO  | V8 vuelve el literal de juego
+
+VIA 2 · RETORNO (sin `if`)
+  gate=VERDE test=ROJO  | V10 ternario por directorio
+  gate=VERDE test=ROJO  | V11 AND negado por directorio
+
+VIA 3 · NORMALIZACION  [la puerta que quedaba abierta]
+  gate=VERDE test=ROJO  | V15 ternario en `base`               [vector del revisor, ronda 3]
+  gate=VERDE test=ROJO  | V16 recorte por `replace` en `base`
+  gate=VERDE test=ROJO  | V17 estrechar en `p` (linea 1 de normalizacion)
+
+CONTROL
+  gate=VERDE test=VERDE | V14 el predicado tal cual (debe quedar VERDE)
+```
+
+**10 de 10 caen, en las tres vías. El gate queda verde en 9 de esos 10**: la constatación
+más útil de todo el WP es que **el gate no protege la curación** — sólo prohíbe el nombre
+de juego. Quien confíe en `npm run gates` para que no se ablande el predicado, confía en
+lo que no es.
+
+**Coste declarado**: P4 fija el cuerpo entero, así que **cualquier** edición del predicado
+—incluido un refactor equivalente— pone rojo. Es un falso positivo consciente y la razón
+de existir del guardián: que nadie toque estas tres líneas sin volver a pasar esta
+batería. El mensaje de fallo lo dice y remite a este apartado.
+
+### La cuarta vía: no la persigo, la anoto
+
+Como pedía el encargo, dejo anotado sin perseguirlo lo que P4 sigue sin cubrir, para que
+nadie lo lea como «cerrado del todo»: **P4 sólo mira el cuerpo de `isCuratedSidecarPath`**.
+Un ablandamiento podría venir de fuera de esa función —reasignando el export en
+`index.mjs`, envolviendo el módulo, o cambiando `merge` para que consulte otra cosa— y
+ninguna de las cuatro propiedades lo vería. Es ya un modelo de amenaza distinto
+(contribuyente hostil, no regresión) y arreglarlo sería la carrera armamentística que el
+encargo manda cortar. **No lo persigo; queda escrito.**
 
 ### Probe rojo del literal — ejecutado, no prometido
 
@@ -500,7 +573,7 @@ rastreados** que no son de este WP. **Revertidos todos** antes de commitear:
 | CA-2 `test:gates` 23/23 | ✅ | 22/23 → **23/23**; el que fallaba era `gates.test.mjs:34` |
 | CA-3 grep `\bdelta\b` = 0 | ✅ | §1; sin concatenación ni escapes |
 | CA-4 (guardia) volumes-ops | ✅ | 56/56, 0 ediciones de sus tests; CA-3 de `import-lineas-driver.test.mjs:261` en pass |
-| CA-5 test nuevo | ✅ | §5, propiedades P1-P4 sobre 26.096 rutas + batería de 14 vectores de evasión; linea-kit 43/43 |
+| CA-5 test nuevo | ✅ | §5, propiedades P1-P4 (P4 = cuerpo completo) sobre 26.096 rutas + batería final de 10 vectores en las TRES vías, todos en rojo; linea-kit 43/43 |
 | — `test:release` | ⚠️ **declarada** | 6/6 → **5/6** por el changeset de CA-7; ciclo normal del repo, se consume en el próximo `changeset version` (§6) |
 | CA-6 doc == código | ✅ | §3-§4; **estaba roja antes del WP** (fila `registros/r1/notas.md`) y queda cerrada |
 | CA-7 contrato declarado | ✅ | tabla ANTES/DESPUÉS por ejecución + changeset SÍ, con ruta |
@@ -580,13 +653,26 @@ su nombre porque el punto no es que estuvieran mal, sino **por qué se pudieron 
 | 4 | «el literal se eliminó, no se disfrazó» (CA-3) | Grep acotado a los dos `src/`, mientras el mismo commit planta **6 ocurrencias** del nombre en el test nuevo. Exentas por categoría, pero el recorte del grep las tapaba | alcance explícito: desapareció **de `src/`**; en `test/` sigue, amparado por exención que no toqué |
 | 5 | §10 «hereden la estructura de `merge`» | Recomendaba heredar justo la estructura **sin** la guarda de ancestro (D3) que FIREHOSE añadió. El consejo era bueno y el hueco iba de regalo | mismo consejo **con el hueco nombrado**, vector reproducido y ruta a `blockingAncestor` |
 
-**El corolario que este WP casi vuelve a morder.** La corrección hereda el vicio de lo
-corregido: al reescribir el guardián escribí que P2 era «universal sobre la parte de
-directorio, no depende del alfabeto» — **otra vez una propiedad afirmada, no medida**. Sólo
-apareció porque esta vez intenté esquivar mi propio guardián antes de describirlo, y dos
-vectores míos (`inventadisimo-zzz/`, `base.startsWith('z')`) lo pasaron en verde. De ahí
-sale P4. La regla operativa que queda, y que vale más que el arreglo: **un guardián no se
-describe, se ataca; y quien lo escribe es quien tiene que atacarlo primero.**
+| 6 | «prohibir la rama **cierra las dos vías a la vez**» (§5, P4 de la 2ª vuelta) | Eran **tres**. P4 vigilaba rama y retorno, pero el predicado tiene **dos líneas de normalización antes** y ahí cabía el ablandamiento entero: `const base = p.startsWith('…/') ? '' : (…)` dejaba gate VERDE y suite **7/7** desprotegiendo rutas | P4 asevera el **cuerpo completo**; batería de 10 vectores sobre las **tres** vías, todos en rojo |
+
+**El corolario que este WP mordió DOS veces.** La corrección hereda el vicio de lo
+corregido, y aquí pasó en cadena:
+
+1. Al reescribir el guardián escribí que P2 era «universal sobre la parte de directorio,
+   no depende del alfabeto» — propiedad afirmada, no medida. La cacé yo atacando mi propio
+   guardián: `inventadisimo-zzz/` y `base.startsWith('z')` la pasaban en verde. De ahí P4.
+2. **Y al describir P4 volví a hacerlo**: escribí que «cierra las dos vías a la vez»
+   cuando eran tres. Esa la cazó el custodio, con el mismo prefijo fuera de alfabeto
+   **movido una línea más arriba**. La lección no es que se me escapara una vía: es que la
+   frase «cierra la clase» se me escapó **dos veces seguidas**, incluso escribiéndola
+   justo después de haber sido corregido por escribirla.
+
+La regla operativa que queda, y que vale más que el arreglo: **un guardián no se describe,
+se ataca; y quien lo escribe es quien tiene que atacarlo primero.** Con un corolario que
+este WP demuestra empíricamente: **atacarlo una vez no basta si el ataque lo diseña quien
+escribió la defensa** — mis dos baterías sólo cubrían las vías que yo ya había imaginado.
+Por eso la anotación de la cuarta vía en §5 se deja **escrita y sin perseguir**: es la
+forma honesta de parar una carrera armamentística sin fingir que se ganó.
 
 Lo que **resistió** la devolución no se retocó: el superconjunto estricto (41 vectores
 hostiles ajenos + 1024 rutas generadas, 0 pérdidas), la identidad de `moves` entre base y

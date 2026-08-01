@@ -11,8 +11,8 @@
  *   P2 · INDEPENDENCIA DE RUTA: el resultado depende SÓLO del nombre base.
  *   P3 · SÓLO LA EXTENSIÓN: para cualquier nombre base el resultado es
  *        exactamente `base.endsWith('.md')`. Es la especificación entera.
- *   P4 · SIN RAMAS: el cuerpo del predicado no tiene `if`, tiene un único
- *        `return`, y ese `return` es exactamente la forma.
+ *   P4 · CUERPO EXACTO: el cuerpo entero del predicado es, carácter a carácter
+ *        (normalizando espacios), la forma esperada.
  *
  * ALCANCE HONESTO, medido intentando esquivar el guardián en vez de suponerlo.
  * P1-P3 recorren un universo generado (>20.000 rutas), pero **son exhaustivas
@@ -21,12 +21,16 @@
  * deducido: `p.startsWith('inventadisimo-zzz/')` y `base.startsWith('z')`
  * pasaban P1-P3 en verde mientras ablandaban la protección.
  *
- * Por eso existe P4, y por eso es estructural y no de comportamiento: ningún
- * muestreo del espacio de entradas cierra la clase, pero **todo**
- * estrechamiento —esté o no en el alfabeto— necesita una RAMA. Prohibir la
- * rama cierra las dos vías a la vez sin adivinar ningún nombre. Lo que P4 no
- * cubre es reescribir el predicado entero con otra forma sin ramas; para eso
- * queda P1, y para el nombre de juego, el gate.
+ * Por eso P4 es estructural y no de comportamiento: ningún muestreo del
+ * espacio de entradas cierra la clase. Y por eso mira el cuerpo ENTERO y no
+ * sólo el `return`: el predicado tiene TRES vías por donde estrecharlo
+ * —normalización, rama y retorno—, y una versión anterior de P4 que sólo
+ * vigilaba las dos últimas dejaba pasar la primera con la suite en 7/7 verde.
+ * Fijar el cuerpo completo las cierra las tres sin adivinar ningún nombre.
+ *
+ * Precio, asumido a propósito: cualquier edición del predicado —incluido un
+ * refactor equivalente— pone P4 rojo. En tres líneas de API pública eso es lo
+ * que se quiere: que nadie lo toque sin volver a pasar la batería de evasión.
  */
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
@@ -218,16 +222,30 @@ describe('isCuratedSidecarPath · forma, no nombre (WP-U202-B2)', () => {
     assert.equal(isCuratedSidecarPath([]), false);
   });
 
-  it('P4 · el predicado es SIN RAMAS: no puede discriminar por ruta ni por nombre', () => {
-    // Ésta es la propiedad que cierra de verdad la clase, y la razón de que
-    // exista: P1-P3 sólo son exhaustivas sobre el alfabeto generado, así que
-    // un estrechamiento cazado a un directorio o a un nombre base que no estén
-    // en ese alfabeto las pasa entera (comprobado: `p.startsWith('zzz-x/')` y
-    // `base.startsWith('z')` las pasan). Pero CUALQUIER estrechamiento —lo
-    // esté o no en el alfabeto— necesita una RAMA que devuelva algo distinto.
-    // Prohibiendo la rama se cierran las dos vías a la vez, sin adivinar nada.
+  it('P4 · el CUERPO COMPLETO del predicado es exactamente la forma', () => {
+    // Ésta es la propiedad que cierra la clase, y la razón de que exista:
+    // P1-P3 sólo son exhaustivas sobre el alfabeto generado, así que un
+    // estrechamiento cazado a un directorio o a un nombre base que no estén en
+    // él las pasa entera (comprobado: `p.startsWith('inventadisimo-zzz/')` y
+    // `base.startsWith('z')`).
+    //
+    // Vigilar sólo el `return` NO basta, y esto también está comprobado, no
+    // deducido: el ablandamiento cabe entero en las DOS LÍNEAS DE
+    // NORMALIZACIÓN de más arriba, sin `if`, con un solo `return` y con el
+    // `return` intacto —
+    //   const base = p.startsWith('<lo-que-sea>/') ? '' : (p.split('/').pop() || '');
+    // — que dejaba gate VERDE y esta suite en 7/7 mientras desprotegía
+    // `<lo-que-sea>/registros/r1/registro.md`. Son TRES vías (normalización,
+    // rama, retorno), no dos.
+    //
+    // Por eso se fija el cuerpo ENTERO. Es deliberadamente frágil: cualquier
+    // edición del predicado —incluido un refactor equivalente— pone esto rojo
+    // y obliga a volver a pasar por la batería de evasión. En un predicado de
+    // tres líneas que además es API pública publicada, esa fragilidad es la
+    // intención, no un efecto colateral.
     const body = isCuratedSidecarPath.toString();
 
+    // Diagnósticos específicos primero, para que el fallo diga QUÉ se rompió.
     assert.equal(
       /\bif\s*\(/.test(body),
       false,
@@ -238,25 +256,36 @@ describe('isCuratedSidecarPath · forma, no nombre (WP-U202-B2)', () => {
       1,
       'el predicado tiene más de un `return`: hay una salida temprana que excluye casos'
     );
-    // El único `return` devuelve EXACTAMENTE la forma, sin condicionales
-    // compuestos (ternario, `&&`, `||`) que pudieran recortar el conjunto.
-    assert.match(
-      body,
-      /\n\s*return\s+base\.endsWith\(\s*['"`]\.md['"`]\s*\)\s*;?\s*\n?\s*\}\s*$/,
-      'el `return` final ya no es exactamente `base.endsWith(".md")`'
+    assert.equal(
+      /\?/.test(body),
+      false,
+      'el predicado tiene un ternario: puede recortar el conjunto sin usar `if`'
     );
-
-    // Y, como aviso temprano barato, cero literales de nombre de fichero.
-    // ALCANCE: caza el literal de UNA pieza (`'registro.md'`); NO caza la
-    // concatenación (`'delta' + '.md'`) ni `String.fromCharCode`. Para ésas la
-    // barrera es el gate, que sí las ve cuando el nombre es de juego
-    // (comprobado: `'delta' + '.md'` → gates FAIL, 1 offender).
+    // Cero literales de nombre de fichero. ALCANCE: caza el literal de UNA
+    // pieza (`'registro.md'`); NO caza la concatenación (`'delta' + '.md'`)
+    // ni `String.fromCharCode` — para ésas la red es el gate, y sólo cuando
+    // el nombre es de juego (comprobado: `'delta' + '.md'` → gates FAIL).
     const filenameLiterals = body.match(/['"`][a-z0-9_-]+\.md['"`]/gi) ?? [];
     assert.deepEqual(
       filenameLiterals,
       [],
       `el predicado volvió a hardcodear nombres de fichero (${filenameLiterals.join(', ')}); ` +
         'eso reabre el offender two-games bajo packages/engine'
+    );
+
+    // Y el cierre: el cuerpo entero, normalizado sólo en espacios y saltos de
+    // línea (para que CRLF/LF no lo haga fallar en Windows).
+    const normalized = body
+      .replace(/\r\n/g, '\n')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const EXPECTED = String.raw`function isCuratedSidecarPath(relPath) { const p = String(relPath || '').replace(/\\/g, '/').toLowerCase(); const base = p.split('/').pop() || ''; return base.endsWith('.md'); }`;
+    assert.equal(
+      normalized,
+      EXPECTED,
+      'el cuerpo del predicado cambió. Si es un estrechamiento, no lo hagas: ablanda la ' +
+        'protección de curación (H-01 §④). Si es un refactor legítimo, actualiza esta ' +
+        'constante Y vuelve a pasar la batería de evasión del reporte WP-U202-B2 §5.'
     );
   });
 });
