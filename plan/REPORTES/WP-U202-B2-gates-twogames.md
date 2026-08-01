@@ -1,0 +1,405 @@
+# WP-U202-B2 · `npm run gates` en rojo — 3 offenders `two-games`
+
+- **Rama**: `wp/u202b2-gates-twogames` · **base fijada**: `87bd93f3ac7647912b6400ebfa9c34f2d06d83d6`
+- **Worktree**: `C:/S_LAB/wt/z-u202b2` · **Fecha**: 2026-08-01
+- **Vía elegida**: **A-BIS (ensanchar por forma)**. `scan.mjs` y `exceptions.mjs` **intactos**.
+
+---
+
+## 1. La medida real del gate (CA-1)
+
+El brief lo dejó dicho: ni el investigador ni la contrarrevisión ejecutaron el gate;
+las dos lo dedujeron leyendo la regla. Primer acto de este WP: ejecutarlo.
+
+### ANTES — `node scripts/gates/run.mjs` sobre `87bd93f`, stdout literal
+
+```
+gates: FAIL (3 offender(s))
+  [two-games] packages/engine/linea-kit/src/curation.mjs:56 — matched delta: * `registro.md` / `delta.md` anywhere in a LINEAS volume, plus ANY `*.md`
+  [two-games] packages/engine/linea-kit/src/curation.mjs:68 — matched delta: if (base === 'registro.md' || base === 'delta.md') return true;
+  [two-games] packages/engine/volumes-ops/src/driver-lineas.mjs:21 — matched delta: * - curación intocable: `registro.md`/`delta.md` (and any `*.md` under
+EXIT=1
+```
+
+**La deducción estática era correcta al carácter**: tres offenders, esos tres ficheros,
+esas tres líneas. La premisa del WP se sostiene y no hubo que re-medir el alcance.
+
+### DESPUÉS — mismo comando, tip `wp/u202b2-gates-twogames`
+
+```
+gates: OK (0 offenders)
+EXIT=0
+```
+
+### CA-0 · la secuencia del job `quality` de CI (`ci.yml:38-42`), en orden
+
+| paso | resultado |
+| --- | --- |
+| `npm run lint` | **EXIT 0** — 18 problems (**0 errors**, 18 warnings), ninguno en ficheros de este WP |
+| `npm run gates` | **EXIT 0** — `gates: OK (0 offenders)` |
+| `npm run test:gates` | **23 pass · 0 fail** |
+
+### CA-3 · el grep case-insensitive
+
+```
+$ grep -rniE "\bdelta\b" packages/engine/linea-kit/src packages/engine/volumes-ops/src
+(sin salida — exit 1)
+```
+
+Antes daba 3. Y sin trucos: no hay concatenación, escape ni `String.fromCharCode` que
+reconstruya el nombre; el literal **se eliminó**, no se disfrazó. (Partirlo no habría
+funcionado de todos modos: la comilla es frontera de palabra y `\bdelta\b` lo seguiría
+cazando.)
+
+---
+
+## 2. Por qué estaban ahí esos literales
+
+**No es un fixture filtrado a `src/`, ni un ejemplo hardcodeado.** Es una colisión
+léxica genuina, y verificarla decidió la forma del arreglo:
+
+- `plan/DATOS.md:45` da a `registro.md` / `delta.md` como **capa de curación humana**
+  del corpus LINEAS, con su ubicación viva en `linea-aleph/registros/`. Son nombres de
+  fichero canónicos del dato, no del juego.
+- El token que dispara es la cadena `delta.md`: el **punto** crea la frontera de palabra
+  que exige `GAME_EXCLUSIVE_RE` (`scan.mjs:285-286`, bandera `gi`). Por eso `delta_status`
+  (`curation.mjs:48`) o `delta_md` (`loader.mjs:406`) **no** disparan: el `_` es carácter
+  de palabra. El gate no está siendo tonto — `delta` **sí** es un nombre de juego en este
+  repo (`docs/games/delta.md`), y la regla D-8 prohíbe nombrarlo bajo `packages/engine`.
+
+Así que «borrar el dato» estaba descartado desde el principio: el predicado tiene que
+seguir protegiendo esos ficheros. La pregunta real era **cómo nombrarlos sin nombrarlos**.
+
+**Y el repo ya había contestado esa pregunta, en el mismo paquete.** `loader.mjs:360-362`,
+que es el **lector real** de la capa de curación, dice literalmente:
+
+```js
+ * Read curated markdown sidecars for a registro (any *.md in the registro dir).
+ * Avoids hardcoding game-named filenames in engine code (two-games gate).
+```
+
+…y resuelve los sidecars **por forma** (`entries.filter((f) => f.endsWith('.md'))`,
+`loader.mjs:384`), conservando la clave de salida `delta_md` porque el guión bajo no
+colisiona. El precedente para este mismísimo nombre de fichero ya existía: **forma, no
+literal**. El predicado de U202 simplemente no lo siguió.
+
+---
+
+## 3. Por qué esta vía y no las otras (CA-7)
+
+### El hallazgo que reordena los precios
+
+Antes de elegir, hay un dato que **ni el brief ni la contrarrevisión declaran**, y que
+cambia la aritmética de las tres vías. Leyendo `driver-lineas.mjs:160-193` y confirmándolo
+**ejecutando el `merge` real** sobre un árbol sintético:
+
+```
+moves            : [ 'demo/wp/historia/registros/r1/nuevo.md', 'demo/nodos/N01/meta.json' ]
+skips            : [ 'registry.yaml' ]
+divergences      : [ 'demo/wp/historia/manifest.json' ]
+protectedSidecars: [ 'demo/wp/historia/registros/r1/registro.md' ]
+
+rutas existentes en destino que merge MOVERÍA (=pisaría): []
+sidecar humano en destino tras el plan: "HUMANO"
+```
+
+**`merge` no mueve JAMÁS sobre un fichero que ya existe en el destino** — ni curado, ni
+divergente, ni idéntico. `moves` (lo único que `importPack` ejecuta, `import.mjs:391`)
+sólo recibe ausentes, y para los ausentes **las dos ramas del predicado hacen lo mismo**
+(`driver-lineas.mjs:167-172`).
+
+Corolario: **dentro de este monorepo el predicado no decide si se pisa; decide el cajón
+del reporte** (`curacion_protegida` vs `contenido_distinto`/`skips`). Eso rebaja el precio
+de *cualquiera* de las tres vías a una cuestión de clasificación, y **desmiente una frase
+del brief**: «con el ensanche `raw/linea.md` … deja de actualizarse por import» es falso
+en las dos direcciones — una vez presente en el destino, `raw/linea.md` no se actualizaba
+por import ni antes ni después.
+
+Donde el predicado **sí** puede decidir escrituras es fuera: es **API pública publicada**
+(`linea-kit/package.json:12`, subpath `./curation`; `src/index.mjs:14`; v0.3.0, registry
+propio). Y ahí la asimetría manda.
+
+### La decisión
+
+| vía | ¿quita el literal? | ¿ablanda la protección? | veredicto |
+| --- | --- | --- | --- |
+| **A** estrechar a `registro.md` | sí | **SÍ** — `registros/r1/delta.md` y `demo/wp/historia/delta.md` dejan de estar protegidos | descartada |
+| **A-BIS** ensanchar a `*.md` | sí | **no** — superconjunto estricto | **elegida** |
+| **B** excepción en `exceptions.mjs` | no (lo excusa) | no, pero **ciega el gate** sobre dos ficheros enteros | descartada |
+
+**Elijo A-BIS.** Las razones, en orden de peso:
+
+1. **Es la única vía de código que cumple el objetivo declarado del propio brief**
+   («SIN ablandar la protección de curación de U202»). La vía A lo incumple por
+   construcción: encoge el conjunto protegido. A-BIS es superconjunto estricto —
+   0 rutas pierden protección, y hay un test que lo afirma.
+2. **Dice lo que ya dice la regla de diseño del corpus.** `DATOS.md` cierra §2 con:
+   *«Regla de diseño heredada y vigente: **el wikitext (dato de autoridad) es la verdad;
+   el markdown es índice y curación**»*. «Todo `*.md` es curación» no es una política que
+   yo invente para esquivar el gate: es la frase del documento de datos, ahora ejecutable.
+3. **Sigue el precedente del propio paquete** (`loader.mjs:361`), que ya resolvió este
+   nombre de fichero por forma y por este mismo gate.
+4. **La asimetría de fallos, sobre API pública con consumidores externos desconocidos**:
+   un falso positivo sólo reclasifica una entrada del reporte; un falso negativo pisa
+   curación humana y **eso no se recupera**. Para un predicado que se llama
+   `isCuratedSidecarPath` y cuyo JSDoc promete «Import merges must NEVER overwrite these
+   paths», errar ancho es el único error tolerable.
+5. **Deja el gate viendo.** La vía B habría dejado `exceptions.mjs` —territorio compartido
+   por todos los carriles— con dos ficheros ciegos para la regla `two-games` entera: a
+   partir de ahí, cualquier nombre de juego que alguien escribiera en `curation.mjs`
+   pasaría inadvertido. Eliminar el offender es estrictamente mejor que excusarlo, y el
+   probe rojo de §5 demuestra que el gate **sigue mirando** ese fichero.
+
+### Tabla de verdad ANTES/DESPUÉS (CA-7), generada por ejecución
+
+| ruta relativa al volumen | ANTES (`87bd93f`) | DESPUÉS |
+| --- | --- | --- |
+| `demo/wp/historia/registros/r0001-oldid-2/cualquier-nombre.md` | true | true |
+| `demo/wp/historia/registros/r1/registro.md` | true | true |
+| `demo/wp/historia/registro.md` | true | true |
+| `registros/r1/delta.md` | true | true |
+| `registros/r1/notas.md` | **false** | **true** ←cambia |
+| `demo/wp/historia/delta.md` | true | true |
+| `demo/raw/linea.md` | **false** | **true** ←cambia |
+| `demo/wp/historia/registros/r1/data.json` | false | false |
+| `registry.yaml` | false | false |
+| `demo/cache/snapshots/1.wikitext` | false | false |
+
+**El conjunto se ENSANCHÓ. Rutas que perdieron protección: 0.** Los dos cambios son:
+
+- `registros/r1/notas.md` — **esto arregla una mentira preexistente**, no la introduce.
+  El JSDoc de `curation.mjs:57` prometía «ANY `*.md` inside a `registros/` directory»
+  mientras el código exigía `p.includes('/registros/')`, con barra **previa**: un
+  `registros/` colgando de la raíz del volumen no casaba. Como `DATOS.md:45` sitúa la capa
+  viva justo en `linea-aleph/registros/`, ese caso no era teórico. **CA-6 ya estaba roja
+  antes de este WP** y ahora doc y código coinciden en las 10 filas.
+- `demo/raw/linea.md` — **precio declarado**. `DATOS.md:46` lo da como export crudo del
+  historial, no como curación. Pasa a `curacion_protegida`. Efecto real, acotado por §3:
+  cambia el cajón del reporte y se pierde el par `destSha256`/`packSha256` para ese
+  fichero; **no** cambia si se escribe o no.
+
+### Changeset: **SÍ** → `.changeset/curated-sidecar-por-forma.md`
+
+`isCuratedSidecarPath` es API pública publicada y su comportamiento cambia para entradas
+reales ⇒ **minor** de `@zeus/linea-kit`. `@zeus/volumes-ops` no lleva entrada propia (sólo
+cambió un comentario); `updateInternalDependencies: "patch"` (`.changeset/config.json`) le
+da el bump por dependencia. `packages/engine/linea-kit/CHANGELOG.md` **no se toca a mano**
+— lo genera `changeset publish`.
+
+---
+
+## 4. La prosa, alineada con el código (CA-6)
+
+- `curation.mjs:53-75` — JSDoc reescrito nombrando el conjunto **por su forma**, con la
+  sobre-aproximación **declarada en el propio comentario** (incluye el caso `raw/linea.md`
+  y la razón de la asimetría). Coincide fila a fila con la tabla de §3.
+- `driver-lineas.mjs:21-22` — **sólo comentario, comportamiento cero**. Nota de alcance:
+  el offender está en la línea 21, pero el paréntesis que abre cierra en la 22, así que
+  **dos** líneas es la edición mínima sintácticamente coherente. El `merge` no se tocó
+  (territorio de U205 / WP ya aceptado): `git diff` de ese fichero = 2 líneas de bloque
+  de comentario.
+
+---
+
+## 5. El test que impide la regresión (CA-5)
+
+**Fichero nuevo**: `packages/engine/linea-kit/test/curation-sidecar.test.mjs`
+(recogido solo por `node --test test/*.test.mjs`, `package.json:23` del paquete).
+
+Un detalle que decide su diseño: **un test de entrada/salida NO habría bastado.** Como el
+predicado ya devuelve `true` para todo `*.md`, reintroducir `base === 'delta.md'` **no
+cambia ninguna salida** — el gate volvería a rojo y ningún assert de comportamiento se
+enteraría. Por eso el fichero fija **tres** cosas:
+
+1. **Tabla de verdad** — las 10 filas de §3, con los valores **atados a la vía A-BIS**
+   (incluido `demo/raw/linea.md` → `true`, el precio, escrito para que sea visible).
+2. **Propiedad de superconjunto** — reimplementa el predicado *legacy* y afirma sobre un
+   universo de rutas que *todo* lo que estaba protegido lo sigue estando. Es el guardián
+   de «no se ablanda»: se pondría rojo si alguien estrechara el conjunto más adelante.
+3. **Cero literales de nombre de fichero en el cuerpo del predicado** — inspecciona
+   `isCuratedSidecarPath.toString()` con `/['"`][a-z0-9_-]+\.md['"`]/gi` (que **no** casa
+   `'.md'`, pero **sí** `'registro.md'`). Éste es el que ata el arreglo al gate.
+
+### Probe rojo — ejecutado, no prometido
+
+Replantado a mano `if (base === 'registro.md' || base === 'delta.md') return true;`:
+
+```
+=== GATE con el literal replantado ===
+gates: FAIL (1 offender(s))
+  [two-games] packages/engine/linea-kit/src/curation.mjs:79 — matched delta: if (base === 'registro.md' || base === 'delta.md') return true;
+GATES_EXIT=1
+
+=== TEST NUEVO con el literal replantado ===
+        el predicado volvió a hardcodear nombres de fichero ('registro.md', 'delta.md'); eso reabre el offender two-games bajo packages/engine
+not ok 1 - isCuratedSidecarPath · forma, no nombre (WP-U202-B2)
+# tests 4
+# pass 3
+# fail 1
+```
+
+Dos cosas quedan probadas: **(a)** el arreglo no se puede deshacer sin poner rojo, y
+**(b)** el gate **sigue viendo** `curation.mjs` — no se le cegó con ninguna excepción.
+Nótese que **3 de 4 tests siguieron pasando**: la confirmación empírica de que sin el
+guardián estructural la regresión habría sido invisible. Revertido con
+`git checkout --` sobre el fichero; tip limpio.
+
+---
+
+## 6. Suites — medidas ANTES y DESPUÉS
+
+**Aviso de método, importante para leer estos números**: el worktree venía **sin
+`node_modules`** (`ls node_modules` → no existe). La primera medida de las suites de
+paquete era, por tanto, ruido de entorno, no deuda de código:
+
+| suite | ANTES (worktree sin deps) | ANTES (con deps, base real) | DESPUÉS |
+| --- | --- | --- | --- |
+| `npm run test:gates` | 22 pass · **1 fail** | 22 pass · **1 fail** | **23 pass · 0 fail** |
+| `npm test -w @zeus/linea-kit` | 9 pass · 5 fail (`Cannot find package 'ajv'`) | 36 pass · 0 fail | **40 pass · 0 fail** |
+| `npm test -w @zeus/volumes-ops` | 0 pass · 7 fail | 56 pass · 0 fail | **56 pass · 0 fail** |
+| `npm run lint` | no ejecutable (eslint ausente) | — | **EXIT 0**, 0 errors |
+
+- El único fallo de `test:gates` era `not ok 1 - CA verde: npm run gates / runAllGates
+  limpio en el repo actual` (`gates.test.mjs:34`) — exactamente el que este WP cierra.
+  Los otros 22 pasaban ya. **Incógnita (1) del brief resuelta.**
+- **Incógnita (2) del brief resuelta**: la suite de `linea-kit` **no** venía rota por otra
+  causa. Los 5 ficheros que fallaban lo hacían por `ERR_MODULE_NOT_FOUND: ajv` — declarado
+  en `linea-kit/package.json:30` pero no instalado. Con `npm install`: **36/36**. CA-5 no
+  estaba bloqueada por deuda ajena. Los 4 tests nuevos llevan la suite a 40/40, y las
+  **36 preexistentes siguen verdes contra el `src` nuevo** (medido por separado).
+- `volumes-ops` **56/56 con 0 ediciones de sus tests**, incluida la CA-3 de
+  `import-lineas-driver.test.mjs:261` (`registro.md`/`delta.md` jamás pisados). Verificado
+  además por qué no podía romperse: el pack sintético contiene 5 ficheros de fixture
+  (**ninguno `.md`**) más los 2 sidecars que crea `buildLineasPack:83-92`, ambos bajo
+  `registros/` — así que la lista exacta que afirma `deepEqual` no cambia con el ensanche.
+
+---
+
+## 7. Corrección de ficha (CA-10) — la atribución **era falsa**
+
+`BACKLOG.md:225` decía «introducidos por `ca698d0`/**U202**». **Falso para 2 de los 3.**
+
+```
+$ git show ca698d0 --stat
+ca698d03621fd988d33ac6bac6e836ac7c10f3a0
+wp(U202): volumes-ops — driver LINEAS (...)
+
+ packages/engine/volumes-ops/src/driver-lineas.mjs  | 201 ++++++++++++
+ packages/engine/volumes-ops/src/drivers.mjs        |  41 +++
+ packages/engine/volumes-ops/src/import.mjs         | 105 ++++++-
+ packages/engine/volumes-ops/src/index.mjs          |   2 +
+ .../volumes-ops/test/import-lineas-driver.test.mjs | 346 +++++++++++++++++++++
+ .../engine/volumes-ops/test/import-pack.test.mjs   |   3 +-
+ 6 files changed, 694 insertions(+), 4 deletions(-)
+```
+
+**Ninguno de los 6 ficheros es `curation.mjs`.** `ca698d03` no pudo introducir los
+offenders 1 y 2. El blame los sitúa en su commit **padre**:
+
+```
+$ git blame -L 56,56 -- packages/engine/linea-kit/src/curation.mjs
+b051991a (2026-07-31 19:16:27 +0200 56)  * `registro.md` / `delta.md` anywhere in a LINEAS volume, plus ANY `*.md`
+
+$ git blame -L 68,68 -- packages/engine/linea-kit/src/curation.mjs
+b051991a (2026-07-31 19:16:27 +0200 68)   if (base === 'registro.md' || base === 'delta.md') return true;
+
+$ git blame -L 21,21 -- packages/engine/volumes-ops/src/driver-lineas.mjs
+ca698d03 (2026-07-31 19:16:28 +0200 21)  * - curación intocable: `registro.md`/`delta.md` (and any `*.md` under
+
+$ git log -1 --format=%H ca698d0^
+b051991a13f31312daf3d958569c044ed63a33fb
+```
+
+**Reparto verdadero**: `b051991a` **2/3** (`curation.mjs:56`, `:68`) + `ca698d03` **1/3**
+(`driver-lineas.mjs:21`). Mismo WP (U202), dos commits consecutivos con 1 segundo de
+diferencia. El error venía arrastrado de `WP-U180-catalogo-ola1.md:327`.
+`BACKLOG.md:225` queda corregida con esta evidencia y la fila cerrada ✅.
+
+---
+
+## 8. Alcance del diff (CA-8) y limpieza
+
+Base fijada: **`87bd93f`**. `git diff --name-only 87bd93f..HEAD`:
+
+```
+.changeset/curated-sidecar-por-forma.md
+packages/engine/linea-kit/src/curation.mjs
+packages/engine/linea-kit/test/curation-sidecar.test.mjs
+packages/engine/volumes-ops/src/driver-lineas.mjs
+plan/BACKLOG.md
+```
+
+**5 ficheros, todos dentro del territorio.** Territorio prohibido con **0 ediciones**,
+verificado por `git diff --name-only` acotado: `scripts/gates/` (scan.mjs **y**
+exceptions.mjs), `volumes-ops/src/{drivers,import}.mjs` (U205), `linea-kit/src/index.mjs`
+(la lista de exports no cambia), `test/gates/`, `volumes-ops/test/`. `git status` final:
+**limpio**, sin residuo `packages/mesh/zz-pieza-fantasma-u233/`.
+
+### Contrabando evitado — nota para el orquestador
+
+`npm install` (necesario: el worktree venía sin `node_modules`) ensució **4 ficheros
+rastreados** que no son de este WP. **Revertidos todos** antes de commitear:
+
+- `packages/engine/{feed-kit/bin/jetstream-sync,linea-kit/bin/linea-kit,playbook-kit/bin/run-playbook}.mjs`
+  — sin diff de contenido, sólo finales de línea reescritos al enlazar los bins.
+- `package-lock.json` — **102 líneas**, y no son inocuas: `npm install` regeneró el lock y
+  **de paso arregló el defecto que describe `U237-B3`** (`"license":"AIPLv1"` → `"SEE
+  LICENSE IN LICENSE.md"`, más entradas de licencia que faltaban en los workspaces).
+  Revertido: **no es de este WP y cerrarlo de tapadillo habría dejado a U237-B3 sin
+  trazabilidad**. Dato útil gratis para quien lo tenga: el arreglo de U237-B3 parece ser
+  literalmente `npm install` + commitear el lock, y el diff coincide con el defecto
+  descrito en la ficha.
+
+---
+
+## 9. Estado de las CA
+
+| CA | estado | evidencia |
+| --- | --- | --- |
+| CA-0 job `quality` | ✅ | lint EXIT 0 (0 errors) → gates EXIT 0 → test:gates 23/23, en ese orden |
+| CA-1 stdout antes/después | ✅ | §1, literal, con EXIT |
+| CA-2 `test:gates` 23/23 | ✅ | 22/23 → **23/23**; el que fallaba era `gates.test.mjs:34` |
+| CA-3 grep `\bdelta\b` = 0 | ✅ | §1; sin concatenación ni escapes |
+| CA-4 (guardia) volumes-ops | ✅ | 56/56, 0 ediciones de sus tests; CA-3 de `import-lineas-driver.test.mjs:261` en pass |
+| CA-5 test nuevo | ✅ | §5, valores atados a A-BIS + probe rojo ejecutado; linea-kit 40/40 |
+| CA-6 doc == código | ✅ | §3-§4; **estaba roja antes del WP** (fila `registros/r1/notas.md`) y queda cerrada |
+| CA-7 contrato declarado | ✅ | tabla ANTES/DESPUÉS por ejecución + changeset SÍ, con ruta |
+| CA-8 alcance del diff | ✅ | §8, base fijada `87bd93f`, 5 ficheros |
+| CA-9 (sólo vía B) | n/a | no se tomó la vía B |
+| CA-10 ficha verdadera | ⚠️ **parcial** | `BACKLOG.md:225` corregida con evidencia; **`:263` NO tocada** — ver abajo |
+
+### Omisión declarada, no olvidada: `BACKLOG.md:263`
+
+CA-10 pide alinear también la fila **U202** (`:263`), que describe el predicado con el
+conjunto viejo («no pisa `registro.md`/`delta.md`»). **No la he tocado**, por dos razones
+que prefiero declarar antes que resolver por mi cuenta:
+
+1. El encargo acota `plan/BACKLOG.md` a **«SOLO la fila de U202-B2 … ni una línea más:
+   ese fichero lo escriben varios»**. Ensanchar el diff en un fichero con escritores
+   concurrentes, sin permiso explícito, es exactamente la clase de sobre-alcance que este
+   swarm penaliza — y arriesga conflicto de merge con otro carril.
+2. La fila `:263` es un **registro histórico ya aceptado** («Aceptado 2026-07-31»): dice
+   lo que U202 entregó *entonces*, y entonces era cierto.
+
+El conjunto nuevo queda documentado íntegro en la fila U202-B2 y en este reporte. **Si el
+custodio quiere `:263` alineada, es una edición de una celda y la ejecuto en cuanto lo
+diga.**
+
+---
+
+## 10. Lo que este WP deja dicho a los que vienen
+
+- **`merge` no pisa nunca un fichero existente** (§3, probado sobre el driver real). El
+  predicado de curación clasifica el reporte; no es el guardián de la escritura. Quien
+  vaya a U205 (driver SSB) o a U242 (generalización de drivers) y herede esta forma
+  conviene que lo sepa: la protección real vive en la estructura de `merge`, no en el
+  predicado, y quien copie el patrón sin copiar esa estructura perderá la garantía
+  creyendo que la lleva puesta.
+- **`isCuratedSidecarPath` es API publicada** (`./curation`, v0.3.0, registry propio). No
+  se pudo determinar si hay consumidores externos —no se consultó la red—; dentro del
+  monorepo el único es `driver-lineas.mjs:37`. El changeset queda para que el cambio viaje
+  declarado.
+- **Sigue abierta la incógnita (3) del brief**: no se puede saber leyendo si el corpus
+  vivo tiene markdown fuera de `registros/`; `linea-aleph` (~48 MB, 677 registros) no está
+  en este repo (U207). Con la vía A-BIS esa incógnita **deja de ser un riesgo**: cualquier
+  markdown que aparezca donde sea queda protegido. Era el otro motivo para no estrechar.
