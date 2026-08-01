@@ -32,6 +32,11 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      # WP-U263 · la deriva entre este flujo y el de publicación se caza AQUÍ,
+      # al empujar, y no sólo al publicar. El mismo paso vive en `release.yml`,
+      # que es justamente lo que este comando comprueba.
+      - name: Paridad de verificación CI ↔ publicación (WP-U263)
+        run: node scripts/verificacion-paridad.mjs
       - name: Install
         run: npm ci
       - name: Lint
