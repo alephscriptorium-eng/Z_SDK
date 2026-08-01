@@ -91,16 +91,26 @@ Invariantes que el modo anónimo **no** relaja:
    sólo lo invocan desde spikes y fixtures, no desde una ruta de datos
    viva — el motivo para no tocarlo es que **alguien lo importa**, no que
    proteja un carril en producción.
-6. **El carril SSB no admite modo anónimo**, y no por configuración sino
-   por construcción: `SsbPrivateSignalingService.setAdmission('anonymous')`
-   **lanza**. En un carril cuyo transporte *es* la identidad del feed,
-   anónimo no es un modo.
+6. **El carril SSB no admite modo anónimo**: `SsbPrivateSignalingService.setAdmission('anonymous')`
+   **lanza**, y **ninguna vía de configuración lo alcanza** — ni el
+   constructor, ni `connect()`, ni un modo con espacio de más. En un carril
+   cuyo transporte *es* la identidad del feed, anónimo no es un modo.
+   ✎ *Alcance exacto (contrarrevisión, 2026-07-31): el candado es un
+   `override` de método sobre un campo público, así que **no es «imposible
+   por construcción»** — quien escribe código en el proceso puede pincharlo
+   (`svc._admission = …`, `Prototype.setAdmission.call(…)`, subclase,
+   `setPrototypeOf`). Lo garantizado es que **no hay configuración que lo
+   abra**. Endurecerlo de verdad (campo privado o forzar el modo en las
+   opciones del torno) va en **U251**.*
 
 Estos invariantes valen **en los dos gemelos**. El de navegador
 (`@zeus/webrtc-viewer` · `BrowserSocketSignalingService`) acepta las
 mismas tres exigencias y expone `setAdmission` / `getSessionRole` /
-`describeAdmission` / `getSsbId`; un modo de admisión desconocido **lanza**
-en ambos.
+`describeAdmission` / `getSsbId`. ✎ *Matiz medido: un modo desconocido
+**lanza en ambos** cuando es una cadena no vacía; con `''`, `0` o `NaN` el
+lado Node acepta en silencio (cae a `peer-card`) y el de navegador lanza.
+Las dos direcciones son seguras, pero **no son idénticas** — divergencia
+anotada en U251.*
 
 ### Hook SSB (extensión Z_SDK #4)
 
