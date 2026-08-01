@@ -72,7 +72,22 @@ jobs:
           - '@zeus/player-ui'
           - '@zeus/player-3d-ui'
           - '@zeus/3d-monitor'
-          - '@zeus/ping-pong-bots'
+          - '@zeus/ping-pong-bots'
+          # WP-U256 — carril de datos (el que toca el disco del usuario).
+          # Estaban fuera de la matriz: 176 tests que solo corrian en local.
+          - '@zeus/linea-kit'
+          - '@zeus/volumes-ops'
+        # Solo el carril de datos recibe root de VOLUMES. No va en el `env`
+        # comun del step porque para los 25 workspaces anteriores la variable
+        # pasaria de «no definida» a «definida», y eso no esta medido. Via
+        # `include` los 25 la reciben VACIA — medido equivalente a no
+        # definirla: mismo exit code y mismo recuento pass/fail/skip en
+        # 25 de 25 (WP-U256 §5).
+        include:
+          - workspace: '@zeus/linea-kit'
+            needs_volumes_root: true
+          - workspace: '@zeus/volumes-ops'
+            needs_volumes_root: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -83,6 +98,10 @@ jobs:
         run: npm ci
       - name: Test workspace
         run: npm test -w "${{ matrix.workspace }}"
+        env:
+          # Sin este root, linea-kit/test/forces-loader.test.mjs:57 se
+          # auto-omite en silencio y se cuenta como `pass` (WP-U256 §4).
+          ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
 
   # WP-U158 — consumidor TS tipado desde registry real (no tarball).
   # Skip limpio (exit 0 · ⏳) si el registry no responde — patrón U122.
