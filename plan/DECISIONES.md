@@ -668,6 +668,45 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   volúmenes: el pozo para los pasos 1-4, 6 y 7, y uno con divergencia para el
   paso 5.
 
+- **⑧-bis · Las cuatro incógnitas operativas de U206, cerradas por el
+  orquestador (2026-08-01) al despachar la ola 5.** El reconocimiento las dejó
+  abiertas nombrándolas; ninguna es del worker, así que se deciden aquí y se
+  citan en su BRIEF.
+  1. **«Sin red» tiene predicado escrito**, o el CA-2 es infalsable: *cero
+     conexiones salientes a destino **no-loopback***, instrumentando
+     `net.Socket.prototype.connect`, `dns.lookup` y `globalThis.fetch`. **No**
+     es «cero sockets»: los MCP bindean loopback al arrancar, así que esa
+     lectura haría el paso imposible en vez de falsable. Y la trampa se arma
+     **también sin plantar nada**, corriendo el arranque real: si toca la red,
+     falla nombrando el módulo.
+  2. **El verificador de corrupción (paso 6) vive en
+     `packages/engine/volumes-ops/src/`, no sólo en `e2e/`.** Si vive en el
+     runner, el CA pasa y **el producto sigue desprotegido**; ahí lo hereda
+     además la generalización de drivers. El fail-closed que hay hoy es de
+     **ausencia**, no de **corrupción**: corromper una escena `.md` pasa la
+     validación sin una queja.
+  3. **La shape del CA declara DOS volúmenes**: el pozo (FORCES) para los
+     pasos 1-4, 6 y 7, y **uno con camino de divergencia** (LINEAS o FIREHOSE)
+     para el 5. **No** se declara volumen `ssb` aunque U205 ya registró el
+     cuarto driver: no hay fixture SSB válida en el árbol —la única que existe
+     **miente sobre la forma del dato**, ver `U254`— y montar el CA sobre ella
+     sería apoyarlo en material que ya sabemos falso.
+  4. **El §10.8 numerado no está en este árbol** (`DECISIONES.md:608-610` lo
+     remite a `scriptorium-cuadernos`). Mientras no vuelva, el texto operable
+     es la nota local `sincronia/notas/NOTA-Z-2026-07-26-H01-*.md`; **se cita
+     ésa y se declara que es la copia**, en vez de citar un § que aquí no
+     existe.
+  ✎ Operativa del mundo hermano: `e2e/games-root.mjs` ya resuelve G por
+  `ZEUS_GAMES_LIBRARY`, pero **su fallback busca un nombre de directorio que
+  no es el nuestro**, así que la variable es obligatoria. Se **reutiliza ese
+  resolvedor**; inventarse una ruta a `g-sdk` está prohibido.
+
+- **⑨ (custodio, 2026-08-01) · el VPS real sigue DEFERRED: la ola 5 es sólo
+  nuestra base de código.** Confirma y estrecha ④. Consecuencia directa para
+  U206: **la réplica A→B es LOCAL** —dos raíces en la misma máquina— y el WP
+  **no toca host remoto, ni Docker, ni imágenes, ni `U209`**. «Réplica» aquí
+  significa *el mismo material medido igual en dos rutas*, no *dos máquinas*.
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
