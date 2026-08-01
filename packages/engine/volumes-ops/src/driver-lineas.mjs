@@ -18,8 +18,8 @@
  * - divergencia se REPORTA, no se pisa: existing file with different
  *   content → `{ path, kind:'contenido_distinto', destSha256, packSha256 }`
  *   in the report; the destination file stays byte-identical;
- * - curación intocable: `registro.md`/`delta.md` (and any `*.md` under
- *   `registros/`) already present in the destination are DISCARDED from
+ * - curación intocable: TODO `*.md` del volumen (DATOS §2: el markdown
+ *   es índice y curación) already present in the destination are DISCARDED from
  *   the merge and reported as `curacion_protegida` — never overwritten;
  *   when absent in the destination they land («lo que falta»);
  * - a family pack is self-consistent: `registry.yaml` at the volume root
