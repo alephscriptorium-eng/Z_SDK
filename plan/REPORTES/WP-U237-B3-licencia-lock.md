@@ -32,6 +32,44 @@ gate es **estricto sin excepciones por paquete** — si algún día un paquete
 necesitara otra licencia, eso es una decisión del custodio sobre `LICENSE.md`,
 no un waiver de lint (por eso este gate **no** se cablea a `exceptions.mjs`).
 
+## 2ª entrega — qué frases corregí y por qué
+
+La devolución no encontró ningún defecto en el lock ni en la aritmética. **Los
+dos bloqueantes estaban en el gate nuevo**, y el defecto de fondo no era de
+lógica: eran **dos frases que prometían más de lo que el código sostenía**. Las
+enumero antes que nada, porque es la clase de error que costó cuatro bloqueantes
+la ola pasada.
+
+**Frase 1 — `:274` (diseño): «todo lo demás queda fuera por construcción, sin
+listas negras que envejezcan».** Falsa. El universo era «claves del lock **+ una
+ruta escrita a mano**», así que todo `package.json` que no fuese ninguna de las
+dos estaba exento **en silencio**, y esa lista solo fallaba cerrada **al borrar**,
+nunca **al añadir**. Mi propia auto-revisión (`:442-445`) describía la lista
+hardcodeada 170 líneas más abajo: el reporte se contradecía consigo mismo.
+Elegí la salida **(b)**: enumerar manifiestos y exigir que cada uno esté
+clasificado. Y reescribí la frase con su alcance real, incluida la vía de escape
+que queda (exenciones por clase de ruta), en vez de escribir «ahora sí es por
+construcción» — que sería heredar el vicio de lo corregido.
+
+**Frase 2 — `:301-307` (fail-closed): «tres formas de silenciar un gate […] están
+cerradas».** El número era correcto y la implicación no: sugería cobertura. La
+contrarrevisión encontró **una cuarta más barata que las tres**. Ahora la sección
+lista **once** guardas, cada una con vector rojo propio, **y dice explícitamente
+que no afirmo que la lista sea exhaustiva**.
+
+**Por qué el bloqueante 1 era grave y no cosmético**: `lock.packages ?? {}` no
+validaba nada, y el universo salía de ahí — universo vacío ⇒ cero offenders ⇒
+verde. De los cinco vectores, `npm ci` tapaba cuatro pero **no** el lock en forma
+npm 6 (`lockfileVersion: 1`), que pasa con exit 0 y un warning. Existía por tanto
+un estado alcanzable en el que **la licencia deja de viajar del todo** —
+literalmente lo que este WP vigila — con mi gate y `npm ci` los dos en verde.
+
+**Corrección adicional que me devolvió la propia devolución**: mi contraprueba
+original contra el glob («daría dos falsos rojos con `examples/external-consumer`
+y `examples/ts-registry-consumer`») **no aplicaba**. El glob enumera
+*manifiestos*, y esos directorios no tienen ninguno. Era un argumento que sonaba
+a evidencia y no lo era; por eso la salida (b) no costó nada.
+
 ## Qué se hizo
 
 1. Se regeneró `package-lock.json` con un comando limpio y reproducible. El
@@ -41,9 +79,13 @@ no un waiver de lint (por eso este gate **no** se cablea a `exceptions.mjs`).
 2. Se dio de alta el gate que **no existía**: regla `licencia` en
    `scripts/gates/scan.mjs`, que lee **las dos fuentes** (manifiesto y lock) por
    el campo `license` parseado, no por coincidencia de texto.
-3. Se creó `test/gates/licencia.test.mjs` (12 casos, fichero nuevo recogido por
-   el glob de `package.json:83`), con las **dos caras** del vector rojo.
+3. Se creó `test/gates/licencia.test.mjs` (fichero nuevo recogido por el glob de
+   `package.json:83`), con las **dos caras** del vector rojo.
 4. Se corrigió la fila `plan/BACKLOG.md:224` con las cifras medidas.
+5. **2ª entrega**: se cerraron los dos bloqueantes del gate y los menores m1–m3,
+   y se corrigieron las dos frases del reporte que prometían más de lo que el
+   código sostenía (ver la sección anterior). El lock y la aritmética **no se
+   tocaron**: la contrarrevisión los verificó enteros con parser propio.
 
 **No se tocó ningún `package.json`**: el `ALCANCE_DIFF` lo permitía, pero el
 análisis no lo justificaba — los 52 manifiestos ya declaraban el puntero desde
@@ -55,8 +97,13 @@ análisis no lo justificaba — los 52 manifiestos ya declaraban el puntero desd
   el puntero.
 - `scripts/gates/scan.mjs` — **modificado**: alta del scanner `scanLicenseCoherence`
   + la regla en las dos listas de registro + la séptima alternativa del typedef
-  `GateRule`. No se reescribió ningún scanner ajeno.
-- `test/gates/licencia.test.mjs` — **creado**: 12 casos.
+  `GateRule`. **2ª entrega**: validación de la forma de `lock.packages` y de la
+  presencia de la raíz (B1), enumeración de manifiestos con `collectManifests` +
+  `isManifestLicenseExempt` (B2), guarda de entrada no-objeto (m1), validación
+  real de `LICENSE.md` con `checkLicenseFile` (m2) y eliminación del `return`
+  temprano (m3). No se reescribió ningún scanner ajeno.
+- `test/gates/licencia.test.mjs` — **creado**: 12 casos en la 1ª entrega, **27**
+  tras la 2ª.
 - `plan/BACKLOG.md` — **modificado**: solo la fila `U237-B3`.
 - `plan/REPORTES/WP-U237-B3-licencia-lock.md` — **creado**: este reporte.
 
@@ -256,22 +303,44 @@ me dieron, y además el gate no lo necesita: no cablea `isExcepted`, por la raz�
 legal explicada arriba (`LICENSE.md:8` prohíbe el trato diferenciado). Es una
 divergencia consciente respecto del brief, que lo incluía en el territorio.
 
-### Diseño: por qué el gate no se puede engañar
+### Diseño: qué garantiza el gate, y con qué alcance exacto
 
-**El gate no enumera por glob ni recorre el repo.** Toma como universo las claves
-del propio lock, que es la ruta real por la que la licencia viaja a una
-instalación. Concretamente:
+> **Frase corregida en la 2ª entrega.** La primera versión decía «el gate no
+> enumera por glob ni recorre el repo […] todo lo demás queda fuera **por
+> construcción**, sin listas negras que envejezcan». Era **más ancha que el
+> código**: el universo real era «claves del lock **+ una ruta escrita a mano**»,
+> y todo `package.json` que no fuese ninguna de las dos quedaba exento **en
+> silencio**. Se corrige la frase **y el código** (ver «Bloqueante 2»).
 
-- Lado lock: `workspaceLockKeys()` = clave `""` + toda clave **ninguno de cuyos
-  segmentos** sea `node_modules` (partido por `/`, no `includes()` — un directorio
-  llamado `node_modulesish` no debe caer por accidente; hay test para eso).
-- Lado manifiesto: esas mismas rutas + `package.json` de la raíz + la ruta
-  explícita de la lib anidada (`EXTRA_LICENSED_MANIFESTS`), que `LICENSE.md:13`
-  incluye pero que no tiene entrada de lock.
-- La comparación es sobre el **campo `license` parseado de JSON**, nunca sobre la
-  cadena `"AIPLv1"` ni sobre un grep del fichero.
+El gate cruza **tres** fuentes, y ninguna sola manda:
 
-Todo lo demás queda fuera **por construcción**, sin listas negras que envejezcan.
+- **Lado lock** — universo: `workspaceLockKeys()` = clave `""` + toda clave
+  **ninguno de cuyos segmentos** sea `node_modules` (partido por `/`, no
+  `includes()`: un directorio `node_modulesish` no debe caer por accidente; hay
+  test). Es la ruta real por la que la licencia viaja a una instalación.
+- **Lado manifiesto** — esas mismas rutas + la raíz + la ruta explícita de la lib
+  anidada (`EXTRA_LICENSED_MANIFESTS`), que `LICENSE.md:13` incluye pero que no
+  tiene entrada de lock.
+- **Enumeración** — **todos** los manifiestos que git rastrea. El que no sea
+  clave de lock, ni esté en la lista, ni caiga en una clase eximida **por regla
+  escrita**, es offender: «manifiesto sin clasificar».
+
+La comparación es siempre sobre el **campo `license` parseado de JSON**, nunca
+sobre la cadena `"AIPLv1"` ni sobre un grep del fichero.
+
+**Alcance honesto de la garantía** (esto NO es «por construcción»): quedan
+eximidas dos clases de ruta, y son una vía de escape con nombre —
+
+1. cualquier segmento que empiece por `.` (utillaje: `.claude/`, `.changeset/`);
+2. cualquier segmento `test` / `tests` / `fixtures` / `__fixtures__`.
+
+Un manifiesto plantado bajo `…/test/` queda exento sin avisar. La diferencia con
+la primera entrega es de tamaño y de visibilidad: antes estaba exento **todo**
+manifiesto que no fuese clave de lock, y en silencio; ahora solo esa clase, y
+está escrita, con test que fija sus bordes. Cerrarla del todo exige decidir si
+una fixture debe declarar licencia — decisión del custodio sobre `LICENSE.md`,
+no de este gate.
+
 Las cuatro trampas conocidas, una a una, verificadas con el repo real
 (`byRule.licencia` = `[]`):
 
@@ -288,23 +357,42 @@ Las cuatro trampas conocidas, una a una, verificadas con el repo real
 - **T3 — fixture del skill de swarm.** Corrección al brief medida aquí:
   `.claude/` está en `.gitignore:59` y **no existe en un checkout limpio** (ni en
   este worktree ni en CI), así que la trampa solo muerde en entornos locales con
-  los skills instalados. Da igual: no se recorre el repo, así que no entra por
-  ninguna vía. Cubierta con un equivalente sintético en el árbol temporal.
+  los skills instalados. Doblemente fuera: git no la rastrea, y además cae en la
+  clase eximida de segmento con punto. Cubierta con equivalente sintético.
 - **T4 — fixture de test.** `packages/engine/protocol/test/fixtures/ts-subpath-smoke/package.json`,
-  `private:true`, sin campo `license`. No es clave de lock → fuera. Cubierta con
-  equivalente sintético.
+  `private:true`, sin campo `license`. **Sí está rastreada**, así que la
+  enumeración la ve; queda exenta por la clase `test`/`fixtures`, no por silencio.
+  Es el **único** manifiesto rastreado que necesita exención hoy — lo fija un test.
 - **Falsos negativos por glob.** `examples/external-consumer` y
   `examples/ts-registry-consumer` matchean `examples/*` y **no tienen manifiesto**.
-  Un gate que enumerase por glob daría dos falsos rojos; este no los ve porque no
-  tienen clave de lock (test 12 lo afirma explícitamente).
+  Nota de la 2ª entrega: mi contraprueba original —«un glob daría dos falsos
+  rojos»— **no aplicaba**, y la contrarrevisión tenía razón. El glob enumera
+  *manifiestos*, y esos directorios no tienen ninguno: nunca aparecen. Por eso se
+  pudo adoptar la enumeración sin coste.
 
-### Fail-closed
+### Fail-closed — once guardas, enumeradas
 
-Tres formas de silenciar un gate sin tocar su lógica están cerradas con offender
-propio: lock ausente, `LICENSE.md` ausente (el puntero apuntaría a la nada), y
-manifiesto declarado en `EXTRA_LICENSED_MANIFESTS` que desaparece. Si alguien
-mueve la lib anidada, el gate se pone rojo a propósito y la lista se actualiza a
-mano.
+La primera entrega decía «**tres** formas de silenciar un gate […] están
+cerradas». Eran tres, y la contrarrevisión encontró una cuarta más barata que las
+tres. La lista real, cada una con test:
+
+| # | vía de silenciamiento | guarda |
+| - | --------------------- | ------ |
+| 1 | `package-lock.json` ausente | offender |
+| 2 | lock con JSON ilegible | offender |
+| 3 | `lock.packages` ausente, `null` o array (incluye la forma npm 6) | offender |
+| 4 | `packages` sin la clave raíz `""` (universo amputado) | offender |
+| 5 | entrada de lock que no es objeto | offender (y no lanza) |
+| 6 | `LICENSE.md` ausente | offender |
+| 7 | `LICENSE.md` que no es fichero regular | offender |
+| 8 | `LICENSE.md` vacío | offender |
+| 9 | `LICENSE.md` con el texto de otra licencia | offender |
+| 10 | manifiesto de `EXTRA_LICENSED_MANIFESTS` que desaparece | offender |
+| 11 | manifiesto nuevo que no es miembro de workspace | offender |
+
+**No afirmo que la lista sea exhaustiva.** Es la lista de las que hoy tienen
+vector rojo en `test/gates/licencia.test.mjs`; la primera entrega ya demostró que
+una docena de vectores ajenos encuentra lo que el autor no busca.
 
 ### El vector rojo — las DOS caras
 
@@ -370,7 +458,7 @@ ok= false total= 3
 
 ```
 $ node --test test/gates/licencia.test.mjs
-ok 1 - CA verde: el repo real no tiene offenders de licencia
+ok 1 - CA verde: el repo commiteado no tiene offenders de licencia
 ok 2 - CA verde: la regla queda registrada en byRule
 ok 3 - CA verde: árbol sintético limpio, con las cuatro trampas presentes
 ok 4 - cara A (rojo): manifiesto de workspace mutado a AIPLv1 sin regenerar el lock
@@ -379,28 +467,48 @@ ok 6 - cara B (rojo): entrada de miembro del lock rancia frente a su manifiesto
 ok 7 - contraprueba T2: la lib anidada SÍ se vigila, contra el manifiesto
 ok 8 - fail-closed: la lib anidada declarada pero ausente es offender
 ok 9 - fail-closed: puntero que apunta a un LICENSE.md inexistente
-ok 10 - fail-closed: sin package-lock.json la licencia no viaja
-ok 11 - T1: el universo excluye toda clave con segmento node_modules
-ok 12 - el universo del repo real es la raíz más los directorios de workspace
-# tests 12
-# pass 12
+ok 10 - m2 fail-closed: LICENSE.md vacío
+ok 11 - m2 fail-closed: LICENSE.md con el texto de otra licencia
+ok 12 - m2 fail-closed: LICENSE.md siendo un directorio
+ok 13 - m3: sin package-lock.json la lista extra SIGUE revisándose
+ok 14 - B1 el gate NO se silencia con lock `{}`
+ok 15 - B1 el gate NO se silencia con `packages` vacío
+ok 16 - B1 el gate NO se silencia con `packages` como array
+ok 17 - B1 el gate NO se silencia con `packages` null
+ok 18 - B1 el gate NO se silencia con forma npm 6 (lockfileVersion 1, sin `packages`)
+ok 19 - m1: una entrada de lock null es offender, no TypeError que tumbe el arnés
+ok 20 - B2 manifiesto nuevo que no es miembro de workspace = offender
+ok 21 - B2 el mismo manifiesto tampoco pasa sin campo `license`
+ok 22 - B2 la exención es por clase de ruta, con nombre, y solo esas clases
+ok 23 - B2 la enumeración sale del índice de git: nada no rastreado la altera
+ok 24 - B2 sin git (árbol temporal) la reserva recorre el disco y ve MÁS, no menos
+ok 25 - B2 el repo commiteado: todo manifiesto está clasificado o eximido por regla escrita
+ok 26 - T1: el universo excluye toda clave con segmento node_modules
+ok 27 - el universo commiteado es la raíz más los directorios de workspace
+# tests 27
+# pass 27
 # fail 0
 ```
 
-### Suite completa de gates
+### Suite completa de gates — **cinco ejecuciones seguidas**
 
 ```
-$ npm run test:gates
-1..35
-# tests 35
-# pass 34
-# fail 1
+$ for i in 1..5; do npm run test:gates; done
+# tests 50 # pass 49 # fail 1
+# tests 50 # pass 49 # fail 1
+# tests 50 # pass 49 # fail 1
+# tests 50 # pass 49 # fail 1
+# tests 50 # pass 49 # fail 1
+
+$ npm run test:gates | grep '^not ok'
+not ok 1 - CA verde: npm run gates / runAllGates limpio en el repo actual
 ```
 
-El único fallo es `not ok 1 - CA verde: npm run gates / runAllGates limpio en el
-repo actual` (`test/gates/gates.test.mjs:34`), **el preexistente de `two-games`**.
-La suite pasa de 23 a 35 casos (23 + 12 nuevos) y el número de fallos sigue
-siendo **1**, el mismo.
+El único fallo es el de `test/gates/gates.test.mjs:34`, **el preexistente de
+`two-games`**. La suite pasa de 23 a 50 casos (23 + 27 nuevos) y el número de
+fallos sigue siendo **1**, el mismo. Se ejecutó **cinco veces** a propósito: ver
+el hallazgo fuera de alcance nº 5 sobre por qué las aserciones de este WP se
+hacen contra el estado **commiteado** y no contra el disco vivo.
 
 ### Verificación de las CA
 
@@ -441,16 +549,28 @@ justificación escrita).
 
 - **Puertos/URLs/rutas hardcodeados**: una ruta hardcodeada, deliberada y
   documentada: `EXTRA_LICENSED_MANIFESTS`. No es evitable (la lib anidada no tiene
-  clave de lock) y es **fail-closed**: si se mueve, el gate se pone rojo.
-- **Cadenas if/switch que debieron ser tabla**: el universo se deriva de una
-  función (`workspaceLockKeys`), no de una lista.
+  clave de lock) y es **fail-closed**: si se mueve, el gate se pone rojo. En la
+  1ª entrega esta línea **contradecía** a la de diseño, que decía «por
+  construcción, sin listas negras»: la lista existía y estaba descrita aquí, 170
+  líneas más abajo. Las dos frases dicen ahora lo mismo.
+- **Cadenas if/switch que debieron ser tabla**: el universo se deriva de dos
+  funciones (`workspaceLockKeys`, `collectManifests`) y una regla de clase
+  (`isManifestLicenseExempt`), no de una lista de instancias.
 - **Duplicación con otros paquetes**: busqué antes — no había *ninguna*
   comprobación de licencia en el repo (grep de `licen` en workflows y gates → 0).
 - **console.log / código comentado / TODO**: ninguno.
 - **Nombres fuera de glosario**: la regla se llama `licencia`, en la misma lengua
   que el resto del arnés.
-- **Tests prueban comportamiento, no «no explota»**: los 12 casos afirman sobre
-  `path`, `line` y `detail` del offender concreto, no sobre longitudes sueltas.
+- **Tests prueban comportamiento, no «no explota»**: los 27 casos afirman sobre
+  `path` y `detail` del offender concreto, no sobre longitudes sueltas.
+- **Defectos menores declarados y NO corregidos** (por indicación del
+  orquestador): **m4** — el `detail` no escapa espacios no separables, así que un
+  offender causado por un NBSP dentro del valor imprime dos cadenas visualmente
+  idénticas; es cosmético pero afecta justo al vector que más cuesta leer.
+  **m5** — `findLockKeyLine` casa la primera línea que abre esa clave, así que
+  con claves cortas en un lock escrito a mano puede señalar otro contexto: **la
+  línea es orientativa**, el offender se identifica por `path` + `detail`. Ambos
+  quedan anotados en el código, en el JSDoc de la función afectada.
 - **Arranque real verificado**: N/A (gate, no servicio). Sí se ejecutaron gates y
   suite completa, con salida literal arriba.
 - **El diff contiene solo el alcance del WP**: `git status` tras ejecutar todo →
@@ -462,13 +582,10 @@ justificación escrita).
 
 ## Hallazgos fuera de alcance
 
-1. **`GateRule` está duplicado** en `scripts/gates/scan.mjs:32` y
-   `scripts/gates/exceptions.mjs:16`. Tras este WP quedan **desincronizados**:
-   `scan.mjs` declara 7 alternativas y `exceptions.mjs` sigue en 6. Hoy es inocuo
-   —no hay `tsconfig` en la raíz ni job de typecheck en CI, así que el typedef es
-   documentación— y `exceptions.mjs` estaba fuera de mi `ALCANCE_DIFF`. Candidato
-   a WP: extraer `GateRule` a un módulo único que ambos importen. Lo señalo
-   explícitamente para que no se lea como descuido.
+1. **`GateRule` desincronizado** entre `scan.mjs` y `exceptions.mjs` —
+   **ya enrutado por el orquestador (m6)**, no es mío. Se deja la nota por
+   trazabilidad: `scan.mjs` declara 7 alternativas y `exceptions.mjs` sigue en 6;
+   hoy es inocuo porque no hay `tsconfig` en la raíz ni job de typecheck en CI.
 2. **`node_modules/@alephscript/mcp-core-sdk` publica `"license": "AIPLv1"`** a
    un registry vivo. `.npmrc` mapea `@alephscript` **y** `@zeus` al **mismo**
    registry privado, así que llamarlo «tercero» no lo sostiene la evidencia; es
@@ -484,16 +601,44 @@ justificación escrita).
    manifiestos dicen AIPLv1. Además llama «inconsistencia confirmada» a lo que
    `LICENSE.md:8` ya resolvió como composite intencional. **No lo corregí**: ese
    fichero no está en mi `ALCANCE_DIFF`. Lo dejo como item para el orquestador.
+5. **(NUEVO, hallado en la 2ª entrega — candidato a P1)
+   `test/gates/matriz-51.test.mjs` muta el repo real durante los tests**, y
+   `node --test` corre los ficheros **en paralelo**. Dos mutaciones:
+   - `:98-112` crea `packages/mesh/zz-pieza-fantasma-u233/package.json` (lo borra
+     en `:130`);
+   - `:137-153` **renombra fuera de sitio** un manifiesto rastreado y real,
+     `packages/mesh/blob-sync-harness/package.json`, y lo devuelve después.
+
+   Consecuencia: **cualquier test que lea el árbol de trabajo mientras esa suite
+   corre está midiendo una carrera, no un hecho.** Lo detecté porque mi primera
+   versión afirmaba sobre el disco vivo y fallaba de forma intermitente con dos
+   síntomas distintos («manifiesto sin clasificar» por la pieza fantasma, y
+   «manifiesto ausente» por el renombrado). **No lo arreglé** —`matriz-51.test.mjs`
+   no está en mi `ALCANCE_DIFF`, que me pedía crear un fichero nuevo y no tocar
+   el existente— y en su lugar hice inmunes mis propias aserciones: se ejecutan
+   contra el estado **commiteado** (`git cat-file --batch` de HEAD a un árbol
+   temporal, un solo proceso, 167 ms), que además es lo que viaja. La cobertura
+   del árbol de trabajo la sigue dando `npm run gates`, que en CI corre **solo y
+   antes** de los tests (`ci.yml:39-42`).
+
+   Riesgo residual que NO me corresponde cerrar: si esa suite se interrumpe entre
+   el renombrado y su reversión, deja el repo con un manifiesto de workspace
+   **ausente**. Con este WP en el árbol, `npm run gates` lo detectaría —que es lo
+   correcto—, pero la causa estaría en el arnés de tests, no en el gate.
 
 ## Dudas / bloqueos
 
-Ninguno. Dos divergencias conscientes respecto del brief, ambas por respetar el
-`ALCANCE_DIFF` que me dieron, y ambas declaradas arriba: no se tocó
-`scripts/gates/exceptions.mjs` ni `plan/GOBIERNO-EJECUCION-F2.md`.
+Ninguno. Tres divergencias conscientes, todas por respetar el `ALCANCE_DIFF` que
+me dieron y todas declaradas arriba: no se tocó `scripts/gates/exceptions.mjs`,
+ni `plan/GOBIERNO-EJECUCION-F2.md`, ni `test/gates/matriz-51.test.mjs`.
 
-Una pregunta concreta: el punto 4 de «hallazgos» (citas rancias en GOBIERNO) es
-trabajo de una sola pasada — ¿lo abre el orquestador como fila propia o lo asume
-la ola?
+Dos preguntas concretas:
+1. El punto 4 (citas rancias en GOBIERNO) es trabajo de una sola pasada — ¿fila
+   propia o lo asume la ola?
+2. El punto 5 (la suite que muta el repo real en paralelo) es una trampa para
+   **cualquier WP futuro** que quiera afirmar sobre el árbol de trabajo. ¿Se abre
+   como fila, o se acepta la convención de que las aserciones de repo se hagan
+   contra HEAD?
 
 ---
 
