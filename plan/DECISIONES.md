@@ -707,6 +707,29 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   **no toca host remoto, ni Docker, ni imágenes, ni `U209`**. «Réplica» aquí
   significa *el mismo material medido igual en dos rutas*, no *dos máquinas*.
 
+- **⑩ (custodio, 2026-08-01) · `GD` NO se abre con el verificador de
+  integridad sin cablear.** El worker de U206 lo declaró él mismo, sin que
+  nadie preguntara: **`assertRootIntegrity()` existe, está probado y no lo
+  llama nadie** — `packages/mesh/**` no estaba en su ALCANCE_DIFF, así que lo
+  demuestra desde el runner pero **el producto no lo usa**.
+  Por qué la orden es correcta y no cautela: el paso 6 del CA se llama
+  «**corrupción falla**» y existe **precisamente** porque el fail-closed
+  anterior era de **ausencia** y no de **corrupción**. Aceptar así dejaría un
+  CA que **pasa** sobre un producto que **no comprueba nada** — la clase de
+  defecto que este programa lleva seis olas persiguiendo: *la frase dice más
+  de lo que el estado sostiene*. Y sería peor que no tenerlo, porque el gate
+  `GD` daría fe de una protección inexistente.
+  **Resolución**: U206 **no se acepta** hasta que el verificador esté cableado
+  en el arranque real, con su rojo. El alcance de U206 se **amplía** a los
+  puntos de arranque que cargan un root de volúmenes; los puntos exactos los
+  fija la contrarrevisión en curso, a la que se le pidió localizarlos con
+  `fichero:línea` y responder **qué protege hoy el producto contra un root
+  corrompido**.
+  ✎ Consecuencia de método, a `L-H09`: **un verificador que nadie llama no es
+  una protección, es una biblioteca.** Cuando un CA diga «X falla», la CA debe
+  ejercitar **el camino del producto**, no una demostración paralela desde el
+  arnés. Vale para todo gate futuro.
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
