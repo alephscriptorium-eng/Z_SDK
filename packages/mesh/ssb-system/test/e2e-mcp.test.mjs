@@ -25,6 +25,31 @@ const PREV = {
 
 test('ssb-system e2e: fixture export → volume → MCP', async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-ssb-e2e-'));
+  // WP-U205: el export ya NO siembra `volumes.json` ni la entrada `ssb` — un
+  // root sin manifiesto no es operable y el exportador aborta (U199). La
+  // topología la siembra el import (U201); aquí la siembra el arnés, mismo
+  // patrón que `test-utils/src/smoke-env.mjs:52`. Y con la entrada COMPLETA,
+  // porque `resolveSsbBasePath` la resuelve desde el manifiesto.
+  fs.writeFileSync(
+    path.join(root, 'volumes.json'),
+    `${JSON.stringify(
+      {
+        root: '.',
+        volumes: {
+          ssb: {
+            disk: 'DISK_04',
+            path: 'DISK_04/SSB',
+            readonly: true,
+            label: 'SSB OASIS (Tribes & Parliament)',
+            corpora: []
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    'utf8'
+  );
   process.env.ZEUS_VOLUMES_ROOT = root;
   process.env.ZEUS_MCP_SSB = String(TEST_PORT);
   resetVolumesCache();

@@ -67,11 +67,26 @@ export function runSsbSync(opts = {}) {
     note: 'Sync copies typed tribe*/parliament*/votes* messages to JSON on disk; no live gossip daemon.'
   };
 
-  const result = exportSsbLogFile({
-    logPath,
-    volumesRoot,
-    provenance
-  });
+  // WP-U205 · el export es FALLO CERRADO (root sin manifiesto, volumen no
+  // declarado, clave divergente): antes salía como excepción no capturada con
+  // stack trace y este `return` mentía con `ok:true` incondicional. Un CLI
+  // honesto devuelve el mismo `{ok:false, error}` que ya usa arriba (:50-59),
+  // citando la ruta, y el bloque de main imprime y sale con código 1.
+  /** @type {any} */
+  let result;
+  try {
+    result = exportSsbLogFile({ logPath, volumesRoot, provenance });
+  } catch (err) {
+    return {
+      ok: false,
+      error: `SSB export aborted for volumes root ${path.resolve(volumesRoot)}: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+      volumesRoot: path.resolve(volumesRoot),
+      logPath: path.resolve(logPath),
+      provenance
+    };
+  }
 
   return { ok: true, ...result, provenance };
 }
