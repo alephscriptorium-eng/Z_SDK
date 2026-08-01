@@ -1086,6 +1086,11 @@ Recursivo, las tres extensiones ejecutables, insensible a la caja, y con el
 separador normalizado a `/` para que el sello no dependa del sistema de
 ficheros.
 
+> ✎ **INCOMPLETO — devolución DEF-A.** «Las tres extensiones ejecutables»
+> eran **seis**: Node 22.18+ strippea tipos de serie, así que `.mts`, `.ts`
+> y `.cts` también ejecutan. `src/puerta.mts` cargaba, emitía y era
+> invisible. Corregido en **§14**.
+
 **Aplicado en los dos sitios, y compartido a propósito.** Tenías razón en
 que «sin segunda lista» comparte el mismo `readdirSync`: en vez de arreglar
 dos veces el mismo `filter`, ambos tests llaman ahora al mismo enumerador.
@@ -1136,7 +1141,7 @@ del censo queda escrito, para quien venga:
 | `@zeus/webrtc-viewer` | 6/6 | **6/6** |
 | eslint `src/` + `test/` | 0/0 | **0 errores, 0 warnings** |
 | sello del censo | `c842ca2f…` | **`c842ca2f…` (sin cambio)** |
-| alcance del censo | `src/*.mjs` primer nivel | **`src/**` recursivo, `.mjs`/`.js`/`.cjs`** |
+| alcance del censo | `src/*.mjs` primer nivel | **`src/**` recursivo, `.mjs`/`.js`/`.cjs`** ✎ (seis extensiones desde §14) |
 | `relay.mjs` · `create-server.mjs` · `admin-ui.mjs` · `lifecycle.mjs` · `relay-trace.test.mjs` | 0 ediciones | **0 ediciones** |
 
 Regresión re-verificada tras el cambio: **D1** (backtick en `relay.mjs`) 2
@@ -1146,6 +1151,121 @@ sitio.
 
 ---
 
+---
+
+## 14 · Corrección de la 4.ª devolución (DEF-A) — cierre
+
+Un defecto, una línea, dos frases.
+
+### DEF-A · El enumerador cubría 3 de las 6 extensiones que este runtime ejecuta · **CORREGIDO**
+
+`/\.(mjs|js|cjs)$/i` daba por hecho que «ejecutable» = JavaScript. **Node
+22.18+ strippea tipos de serie**, sin flag ni loader: este repo corre
+`v22.21.1`, declara `engines: ">=22.0.0"` y CI usa `node-version: '22'`, así
+que `.mts`, `.ts` y `.cts` son extensiones ejecutables de este runtime.
+
+**Reproducido**, y comprobando primero que la premisa es real y no teórica:
+
+```
+$ node -e "import('./src/puerta.mts').then(...)"
+  .mts cargado y ejecutado; emitido: ["pwn:x"]
+
+$ npm test -w @zeus/socket-server     # con la puerta .mts puesta
+  # tests 23 · pass 23 · fail 0
+```
+
+Carga, emite, y la suite en verde. Eslint tampoco la veía.
+
+**Corrección — una línea:**
+
+```js
+.filter((f) => /\.(mjs|js|cjs|mts|ts|cts)$/i.test(f))
+```
+
+Más las dos frases que decían «tres extensiones»: el comentario de
+`fuentesDelPaquete` y el del ancla.
+
+**No re-ancla — verificado de forma independiente** antes de afirmarlo,
+reimplementando el censo fuera del test con ambas regex sobre el árbol
+actual:
+
+```
+ANCLADO EN EL TEST : c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0
+regex 3 extensiones: 10 ficheros  c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0
+regex 6 extensiones: 10 ficheros  c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0
+mismo inventario   : true
+NO RE-ANCLA        : true
+```
+
+**Vectores verificados en rojo:**
+
+```
+src/puerta.mts        → not ok 8   puerta.mts       emisiones=1  8b05a0ae227419a7…
+src/puerta.ts         → not ok 8   puerta.ts        emisiones=1  8b05a0ae227419a7…
+src/puerta.cts        → not ok 8   puerta.cts       emisiones=1  8b05a0ae227419a7…
+src/sub/Puerta.MTS    → not ok 7   "src/sub/Puerta.MTS declara 'SET_STATE'"
+   (subdir + caja +                "src/sub/Puerta.MTS declara 'track'"
+    tipos, a la vez)  → not ok 8   sub/Puerta.MTS   emisiones=1  68382bb3b78642df…
+```
+
+El último cae por **los dos tests a la vez**, que es la prueba de que
+compartir el enumerador funcionó: una sola línea arreglada cerró censo y
+«sin segunda lista» en las tres dimensiones —profundidad, extensión y caja—
+simultáneamente.
+
+**Regresión**: D1 (backtick en `relay.mjs`) 2 rojos · A (añadir sin
+re-sellar) 4 suites caen · D2 (`Set.prototype` rechazado, `instanceof Set`
+falso, `size` 8) · 23/23, consumidor 6/6, eslint 0/0.
+
+### No-defectos declarados (no perseguidos, por la regla de cierre)
+
+Trasladados de la contrarrevisión y compartidos:
+
+1. `src/package.json`, un `.d.ts` y un fichero **sin extensión** son
+   invisibles al enumerador, pero **no son vía de emisión**: no los ejecuta
+   este runtime como módulo.
+2. Un **directorio** llamado `trampa.js` revienta el barrido con `EISDIR`.
+   Feo, pero **fail-closed**: rojo, no verde.
+3. `readdirSync` recursivo sigue **junctions** en Windows y quizá no
+   symlinks en Linux: **riesgo nombrado y no reproducido**, no defecto. Si
+   alguien lo reproduce, entra por la regla de cierre — se declara con
+   dueño, no se amplía el WP.
+
+### La nota de método, que se aplicó a sí misma
+
+Cuatro bloqueantes en esta ola, **el mismo fallo las cuatro veces**:
+alcance declarado más ancho que el implementado. Ninguno error de lógica.
+
+El cuarto ocurrió **tres líneas por debajo del aviso que decía «es donde ha
+fallado dos veces»**, y el asunto de mi commit —«cubre `.mjs`/`.js`/`.cjs`»—
+era literalmente exacto: por eso no me saltó. Describía con precisión un
+alcance insuficiente.
+
+De ahí la conclusión que dejo escrita en el ancla, cambiada de forma:
+
+> Si tocas el alcance: la frase, el `readdirSync` y las extensiones que el
+> runtime ejecuta tienen que decir lo mismo. Comprobarlo **NO es leer esta
+> frase** — es poner el fichero en `src/` y ver la suite en rojo.
+
+Un aviso en prosa no protege de un error de prosa. Lo único que cerró cada
+una de las cuatro vueltas fue **poner el fichero y mirar el color**.
+
+### Estado de cierre
+
+| | valor |
+| --- | --- |
+| suite `@zeus/socket-server` | **23/23** |
+| tests propios de U194 | **13** |
+| `@zeus/webrtc-viewer` (consumidor) | **6/6** |
+| eslint `src/` + `test/` | **0 errores, 0 warnings** |
+| sello del contrato | `57adb96d…` v1.0.0 (sin cambio desde la 1.ª entrega) |
+| sello del censo | `c842ca2f…` (sin cambio desde §12) |
+| alcance del censo | `src/**` recursivo · 6 extensiones · insensible a la caja |
+| ficheros tocados | 5 del paquete + este reporte |
+| `relay.mjs` · `create-server.mjs` · `admin-ui.mjs` · `lifecycle.mjs` · `relay-trace.test.mjs` | **0 ediciones** |
+
+---
+
 *Worker Z · WP-U194 · rama `wp/u194-allowlist-contrato` · base `dc70cec` ·
-1.ª entrega + tres correcciones de devolución, 2026-08-01. Sin merge, sin
+1.ª entrega + cuatro correcciones de devolución, 2026-08-01. Sin merge, sin
 push, sin reescritura de historia.*
