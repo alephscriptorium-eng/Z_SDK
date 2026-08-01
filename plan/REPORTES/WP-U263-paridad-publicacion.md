@@ -175,7 +175,7 @@ que **cabe en su alcance y se puede demostrar hoy**.
 
 `release.yml` recibe, todo espejo exacto de `ci.yml`:
 
-- matriz **25 → 27** (`:60-93`) e `include` de **3 filas** (`:94-103`);
+- matriz **25 → 27** (`:61-88`, las 27 entradas) e `include` de **3 filas** (`:94-100`);
 - las **dos guardas** de root de VOLUMES (`:113`, `:127`), cada una con su `env`;
 - el `env` del paso `Test workspace` — sin él, `linea-system` seguía roto;
 - los jobs **`sello-root`** (`:153`) y **`smoke-ts-registry`** (`:177`);
