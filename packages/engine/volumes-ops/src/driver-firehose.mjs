@@ -102,6 +102,27 @@
  *    que una unidad heredada en la raíz sí deduplica y sí cuenta en
  *    `snapshot.units`. «Recorrible» es literal: ver D-B.
  *
+ * ── EL ÍNDICE DEL DESTINO NO ADMITE AGUJEROS (defecto D-F, cerrado)
+ * D2 y D-B taparon dos agujeros del índice; quedaba el tercero, y ahí este
+ * driver tomaba **la vía que él mismo rechaza por escrito**: un fichero del
+ * destino que no rendía clave se CONTABA (`destSinClave`) y se seguía, con lo
+ * que el pack replantaba el registro que ese fichero contenía —`moved` donde
+ * tocaba `dedup`, duplicado irreversible porque el sello ya se movió—. El
+ * vector más puro no tiene ni excusa de contenido: renombrar una unidad ya
+ * aterrizada `u1.json` → `u1.JSON`; mismos bytes, unidad válida, fuera del
+ * índice por una comparación de nombre. Igual con BOM UTF-8, sin extensión o
+ * en UTF-16LE.
+ * Cerrado con la MISMA doctrina que los enlaces: (a) `keyOfFile` ya no filtra
+ * por extensión — **el contenido manda, no el nombre**; (b) lo que no rinde
+ * clave y no es sidecar declarado ABORTA en el pase dry con
+ * `destino_sin_clave`. Queda simétrico con VALIDAR, que ya fallaba cerrado
+ * ante lo mismo en el PACK: no puede ser fallo-cerrado a la entrada y
+ * fallo-abierto en el destino.
+ * Precio declarado: un volumen que YA contenga material así (un `.md` suelto
+ * en un corpus, un JSON roto, un fichero con BOM) queda **no importable**
+ * hasta que el operador lo retire — con la ruta citada en el error. Es el
+ * mismo precio que la vía fuerte de D-B, y se paga por la misma razón.
+ *
  * ── ENLACES EN EL DESTINO (defecto D-B de la 2.ª contrarrevisión, cerrado)
  * `readdirSync` no sigue enlaces y el walk los descartaba **en silencio**
  * (`isDirectory()/isFile()` deja fuera junctions), a diferencia de
@@ -274,9 +295,12 @@ export function parseAtUri(value) {
  *
  * **UNA SOLA VÍA** (D-A): la clave sale SIEMPRE de la terna
  * `did` + `commit.collection` + `commit.rkey`, y los tres deben pasar
- * `keyComponent`. `uri` ya NO es una vía alternativa: cuando está presente
+ * `keyComponent`. `uri` ya NO es una vía alternativa: cuando está PRESENTE
  * solo puede CORROBORAR — si no coincide exactamente con la clave derivada,
- * el material es incoherente y no rinde clave.
+ * el material es incoherente y no rinde clave. «Presente» excluye `null` y
+ * `undefined` (M1): ambos son AUSENCIA por convención JSON, y un campo
+ * ausente no corrobora ni desmiente; el probe `M1` lo fija para que código y
+ * prosa no vuelvan a discrepar.
  *
  * Por qué se retiró el fallback: mientras existió, un registro con la terna
  * inválida (p.ej. `rkey:'x/y'`) keyaba por `uri` y **deduplicaba contra otro
@@ -286,9 +310,10 @@ export function parseAtUri(value) {
  * `uri` daba `null`, con `uri` daba clave. Dos vías que no se cruzaban.
  *
  * Consecuencia declarada (no es efecto colateral, es decisión): un registro
- * sin `commit.rkey` —forma que el productor tolera,
- * `feed-kit/src/jetstream-sync.mjs:143-147` cae a `norm.id` para NOMBRAR el
- * fichero— ya no se keya por su `uri`: se rechaza como `unidad_sin_clave`,
+ * sin `commit.rkey` —forma que el productor tolera: `writeJetstreamPost`
+ * (`feed-kit/src/jetstream-sync.mjs:139`) cae en `:144` a `norm.id` para
+ * NOMBRAR el fichero— ya no se keya por su `uri`: se rechaza como
+ * `unidad_sin_clave`,
  * citando su ruta. Es §2.4 aplicada: fallo-cerrado antes que adivinar. Se
  * revisará si alguna vez aparece material real así, con la evidencia delante.
  * Sustituye al «límite del fallback» que este driver declaraba antes (AT-URI
@@ -315,7 +340,16 @@ export function firehoseUnitKey(raw) {
   return derived;
 }
 
-/** Lee la clave de un fichero de unidad; null si no parsea o no rinde clave. */
+/**
+ * Lee la clave de un fichero; null si no parsea o no rinde clave.
+ *
+ * NO filtra por extensión (D-F): el CONTENIDO manda, no el nombre. La puerta
+ * `rel.endsWith('.json')` que había antes dejaba fuera del índice a una unidad
+ * real llamada `u1.JSON` —mismos bytes, perfectamente legible— y el pack la
+ * volvía a plantar. Coste declarado de «el contenido manda»: se intenta leer
+ * cada fichero del destino; en esta familia todos son posts de kilobytes, pero
+ * un fichero grande extraviado en el volumen se leería entero antes de fallar.
+ */
 function keyOfFile(abs) {
   try {
     return firehoseUnitKey(JSON.parse(readFileSync(abs, 'utf8')));
@@ -356,25 +390,27 @@ function blockingAncestor(destDir, rel) {
 function indexByKey(dir) {
   /** @type {Map<string,string>} */
   const byKey = new Map();
+  /** Ficheros del destino que no rinden clave y no son sidecar declarado. */
   /** @type {string[]} */
-  const unkeyed = [];
+  const unkeyable = [];
   /** @type {string[]} */
   const duplicated = [];
   /** @type {string[]} */
   const rootUnits = [];
   const { files, others } = walkRel(dir);
   for (const rel of files) {
-    const key = rel.endsWith('.json') ? keyOfFile(toAbs(dir, rel)) : null;
+    const key = keyOfFile(toAbs(dir, rel)); // D-F: por contenido, sin puerta de extensión
     if (!key) {
-      // Sidecar de raíz declarado: no es unidad y no es defecto.
-      if (isUnitSlot(rel)) unkeyed.push(rel);
+      // Sidecar de raíz DECLARADO (allowlist): no es unidad y no es defecto.
+      // Cualquier otra cosa deja el índice con un agujero → `merge` aborta.
+      if (isUnitSlot(rel) || !FIREHOSE_ROOT_FILES.includes(rel)) unkeyable.push(rel);
       continue;
     }
     if (!isUnitSlot(rel)) rootUnits.push(rel);
     if (byKey.has(key)) duplicated.push(rel);
     else byKey.set(key, rel);
   }
-  return { byKey, unkeyed, duplicated, rootUnits, links: others };
+  return { byKey, unkeyable, duplicated, rootUnits, links: others };
 }
 
 /**
@@ -516,6 +552,17 @@ function merge({ stagedDir, destDir, volumeFiles }) {
     return { error: { code: 'enlace_en_destino', detail: { links: dest.links } } };
   }
 
+  // D-F · MISMA doctrina, aplicada a la otra mitad del agujero: un fichero del
+  // destino que no rinde clave y no es sidecar declarado deja el índice
+  // incompleto, y el pack replantaría el registro que ese fichero contiene
+  // (`moved` donde tocaba `dedup`, duplicado irreversible tras SELLAR). Antes
+  // se CONTABA (`destSinClave`) y se seguía: era la vía débil que este mismo
+  // driver rechaza por escrito para los enlaces. Ahora aborta, simétrico con
+  // VALIDAR, que ya falla cerrado ante lo mismo en el PACK.
+  if (dest.unkeyable.length > 0) {
+    return { error: { code: 'destino_sin_clave', detail: { files: dest.unkeyable } } };
+  }
+
   /** @type {string[]} */
   const moves = [];
   /** @type {string[]} */
@@ -614,7 +661,9 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       unit: 'at-uri',
       units: sorted.length,
       unitsSha256: digest.digest('hex'),
-      ...(dest.unkeyed.length > 0 ? { destSinClave: dest.unkeyed.length } : {}),
+      // `destSinClave` DESAPARECE (D-F): ya no puede haber ficheros del destino
+      // sin clave al llegar aquí — `merge` aborta antes. Contarlos era la vía
+      // débil; el campo era la coartada.
       ...(dest.duplicated.length > 0 ? { destDuplicadas: dest.duplicated.length } : {}),
       // Unidades heredadas fuera de corpus en el destino: cuentan y deduplican
       // (D2), pero se declaran porque el layout de la familia no las admite.

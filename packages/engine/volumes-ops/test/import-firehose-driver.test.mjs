@@ -488,35 +488,51 @@ test('ROJO: familia desconocida declarada = error ANTES de staging, root intacto
 // afirmación de cabecera. No son arreglos de una vez: se quedan.
 
 /**
- * Ejercita un vector de clave por las DOS vías cruzadas (lección de D-A: los
- * probes de D1 usaban `withUri:false` y nunca cruzaban, mientras el material
- * real de este mundo SÍ trae `uri` — `feed-kit/src/jetstream-sync.mjs`).
- * Un componente inválido debe rendir `null` en las cuatro combinaciones.
+ * Terna INVÁLIDA: no rinde clave venga como venga el `uri`.
+ *
+ * Honestidad sobre lo que cada combinación aporta (medido por la
+ * contrarrevisión inyectando la regresión de D-A sobre los 8 vectores): contra
+ * el código actual **solo `uri` ajeno caza el defecto (8/8)**; las otras tres
+ * salen por el `return null` de la terna ANTES de mirar `uri`, así que hoy
+ * cazan 0/8. Se conservan porque FIJAN el contrato —si alguien reordena y la
+ * corroboración pasa a evaluarse primero, siguen siendo las que hablan— pero
+ * NO son cuatro ángulos: es uno efectivo y tres de fijación. El segundo ángulo
+ * real es `assertCorroboracionRechaza`, con terna VÁLIDA.
  * @param {object} fields — { did?, collection?, rkey }
  * @param {string} etiqueta
  */
-function assertSinClavePorAmbasVias(fields, etiqueta) {
+function assertTernaInvalidaSinClave(fields, etiqueta) {
   const sinUri = post({ ...fields, withUri: false });
   assert.equal(firehoseUnitKey(sinUri), null, `${etiqueta}: sin uri`);
-  // (a) con un `uri` que "arreglaría" el registro apuntando a otro sitio
+  // (a) EL ángulo que caza: un `uri` ajeno que "arreglaría" el registro.
   assert.equal(
     firehoseUnitKey(post({ ...fields, uri: `at://did:plc:alpha/${COLLECTION}/r1` })),
     null,
     `${etiqueta}: con uri ajeno (no puede resucitar)`
   );
-  // (b) con un `uri` construido desde los propios campos (auto-coherente)
+  // (b)/(c) fijación: uri auto-coherente (degenera en basura porque lleva el
+  // componente inválido dentro) y uri basura.
   const propio = `at://${fields.did ?? 'did:plc:alpha'}/${fields.collection ?? COLLECTION}/${fields.rkey}`;
   assert.equal(firehoseUnitKey(post({ ...fields, uri: propio })), null, `${etiqueta}: con uri propio`);
-  // (c) con `uri` presente pero basura
   assert.equal(firehoseUnitKey(post({ ...fields, uri: 'no-soy-un-at-uri' })), null, `${etiqueta}: con uri basura`);
+}
+
+/**
+ * Terna VÁLIDA + `uri` que no corrobora = sin clave. Éste es el segundo ángulo
+ * real: es el único que EJECUTA la rama de corroboración.
+ * @param {any} uri
+ * @param {string} etiqueta
+ */
+function assertCorroboracionRechaza(uri, etiqueta) {
+  assert.equal(firehoseUnitKey(post({ rkey: 'ok1', uri })), null, `corroboración: ${etiqueta}`);
 }
 
 test('D1: la clave es INYECTIVA — un `/` en cualquier componente NO rinde clave (ambas vías)', () => {
   // El vector: dos registros DISTINTOS que antes colapsaban en la misma clave
   // `at://did:plc:alpha/app.bsky.feed.post/x/y`.
-  assertSinClavePorAmbasVias({ rkey: 'x/y' }, 'rkey con /');
-  assertSinClavePorAmbasVias({ rkey: 'y', collection: `${COLLECTION}/x` }, 'collection con /');
-  assertSinClavePorAmbasVias({ did: 'did:plc:al/pha', rkey: 'z' }, 'did con /');
+  assertTernaInvalidaSinClave({ rkey: 'x/y' }, 'rkey con /');
+  assertTernaInvalidaSinClave({ rkey: 'y', collection: `${COLLECTION}/x` }, 'collection con /');
+  assertTernaInvalidaSinClave({ did: 'did:plc:al/pha', rkey: 'z' }, 'did con /');
 
   // Inyectividad por construcción: sin `/` en los componentes, la clave se
   // parte de forma única en exactamente 3 partes.
@@ -555,8 +571,20 @@ test('D-A: `uri` NO es vía alternativa — no resucita lo que la terna rechaza'
     `at://did:plc:alpha/${COLLECTION}/r2`
   );
   // `uri` de tipo hostil = no corrobora = null (nunca excepción).
-  for (const uri of [42, {}, [], true, `at://did:plc:alpha/${COLLECTION}/r1/extra`]) {
-    assert.equal(firehoseUnitKey(post({ rkey: 'r2', uri })), null, `uri hostil ${JSON.stringify(uri)}`);
+  // Segundo ángulo REAL (M2): terna VÁLIDA + `uri` que no corrobora. Es el
+  // único camino que ejecuta la rama de corroboración.
+  for (const uri of [
+    42,
+    {},
+    [],
+    true,
+    'no-soy-un-at-uri',
+    '../../etc/passwd',
+    `at://did:plc:alpha/${COLLECTION}/r1`,
+    `at://did:plc:alpha/${COLLECTION}/r1/extra`,
+    `at://did:plc:beta/${COLLECTION}/ok1`
+  ]) {
+    assertCorroboracionRechaza(uri, JSON.stringify(uri));
   }
 
   // Consecuencia DECLARADA: sin `rkey` ya no se keya por `uri`.
@@ -568,6 +596,16 @@ test('D-A: `uri` NO es vía alternativa — no resucita lo que la terna rechaza'
     }),
     null
   );
+});
+
+test('M1: `uri` ausente es `null`/`undefined`/no-declarado — los tres corroboran igual', () => {
+  const esperada = `at://did:plc:alpha/${COLLECTION}/m1`;
+  // Convención JSON: null y undefined son AUSENCIA, no un `uri` que discrepa.
+  assert.equal(firehoseUnitKey(post({ rkey: 'm1', uri: null })), esperada);
+  assert.equal(firehoseUnitKey(post({ rkey: 'm1', uri: undefined })), esperada);
+  assert.equal(firehoseUnitKey(post({ rkey: 'm1', withUri: false })), esperada);
+  // Y con el campo presente y coherente, la misma clave (corrobora).
+  assert.equal(firehoseUnitKey(post({ rkey: 'm1' })), esperada);
 });
 
 test('D-A: el resucitador no deduplica contra otro registro — importPack lo RECHAZA', () => {
@@ -657,11 +695,11 @@ test('D1: el par ambiguo no se descarta en silencio — importPack lo RECHAZA', 
 test('D1b: SIN trim — componentes con espacios se rechazan por AMBAS vías', () => {
   // El `trim()` retirado se había MUDADO al fallback: `rkey:'r1 '` sin uri daba
   // null y con uri daba clave. Las cuatro combinaciones deben dar null.
-  assertSinClavePorAmbasVias({ did: '  did:plc:alpha  ', rkey: 'z' }, 'did con espacios');
-  assertSinClavePorAmbasVias({ rkey: ' z ' }, 'rkey con espacios');
-  assertSinClavePorAmbasVias({ rkey: 'r1 ' }, 'rkey con espacio final (vector D1b)');
-  assertSinClavePorAmbasVias({ rkey: 'a\tb' }, 'rkey con tab');
-  assertSinClavePorAmbasVias({ rkey: '' }, 'rkey vacio');
+  assertTernaInvalidaSinClave({ did: '  did:plc:alpha  ', rkey: 'z' }, 'did con espacios');
+  assertTernaInvalidaSinClave({ rkey: ' z ' }, 'rkey con espacios');
+  assertTernaInvalidaSinClave({ rkey: 'r1 ' }, 'rkey con espacio final (vector D1b)');
+  assertTernaInvalidaSinClave({ rkey: 'a\tb' }, 'rkey con tab');
+  assertTernaInvalidaSinClave({ rkey: '' }, 'rkey vacio');
 });
 
 test('D1c: `parseAtUri` solo acepta AT-URI bien formado (y solo CORROBORA)', () => {
@@ -776,7 +814,14 @@ test('D3: ancestro que existe como FICHERO = fallo declarado, nunca excepción a
     const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
     assert.equal(first.ok, true);
     // `raw/zzz` existe como FICHERO en el destino; el pack trae `raw/zzz/y.json`.
-    fs.writeFileSync(rootFile(root, 'raw/zzz'), 'soy un fichero, no un dir\n', 'utf8');
+    // El fichero es una unidad VÁLIDA sin extensión (material heredado
+    // plausible): así el que caza es el guardián de ancestros y no el de
+    // `destino_sin_clave`, que desde D-F cubre el otro caso.
+    fs.writeFileSync(
+      rootFile(root, 'raw/zzz'),
+      `${JSON.stringify(post({ rkey: 'zzz-unidad' }), null, 2)}\n`,
+      'utf8'
+    );
     const manifestBefore = manifestBytes(root);
     const treeBefore = volumeFiles(root);
 
@@ -807,7 +852,96 @@ test('D3: ancestro que existe como FICHERO = fallo declarado, nunca excepción a
   }
 });
 
-test('D-B: enlace en el DESTINO = aborto en el pase dry, ANTES de sellar', () => {
+test('D-F: unidad del destino con la extensión en OTRA CAJA (u1.JSON) SÍ deduplica', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'u1' }) }] });
+  try {
+    assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
+    // Mismos bytes, unidad válida y legible: solo cambia la caja del nombre.
+    fs.renameSync(rootFile(root, 'raw/jetstream/u1.json'), rootFile(root, 'raw/jetstream/u1.JSON'));
+
+    // El pack la trae en OTRO batch (para aislar el índice de la comprobación
+    // de ruta): sin el arreglo, el índice no la ve y la replanta.
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-caja',
+      version: '2.0.0',
+      units: [
+        { batch: 'jetstream-2', raw: post({ rkey: 'u1' }) },
+        { batch: 'jetstream-2', raw: post({ rkey: 'u2' }) }
+      ]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, true, JSON.stringify(res.error ?? res.steps));
+
+    const fam = res.families.find((f) => f.id === 'firehose');
+    assert.equal(fam.moved, 1, 'solo u2 aterriza');
+    assert.deepEqual(fam.dedup.map((d) => d.at), ['raw/jetstream/u1.JSON']);
+    assert.ok(!fs.existsSync(rootFile(root, 'raw/jetstream-2/u1.json')));
+    assert.equal(volumeFiles(root).length, 2, 'cero copias de mas');
+
+    const snapshot = JSON.parse(manifestBytes(root)).volumes.firehose.source.imported.snapshot;
+    assert.equal(snapshot.units, 2);
+    assert.equal(snapshot.destSinClave, undefined, 'el campo-coartada ya no existe');
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D-F: fichero del destino que no rinde clave = destino_sin_clave, aborta en dry', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'u1' }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+
+    // (a) unidad con BOM UTF-8: JSON.parse la rechaza — en este mundo nadie
+    // pela BOM, y un `Set-Content` de PowerShell basta para producirlo;
+    // (b) nota suelta dentro de un corpus.
+    fs.writeFileSync(
+      rootFile(root, 'raw/jetstream/con-bom.json'),
+      `\uFEFF${JSON.stringify(post({ rkey: 'con-bom' }), null, 2)}\n`,
+      'utf8'
+    );
+    fs.writeFileSync(rootFile(root, 'raw/jetstream/nota.md'), '# nota suelta\n', 'utf8');
+
+    const manifestBefore = manifestBytes(root);
+    const sealBefore = hashManifest().sha256;
+    const treeBefore = volumeFiles(root);
+
+    const packB = buildFirehosePack({
+      name: 'pack-firehose-sin-clave-destino',
+      version: '2.0.0',
+      units: [
+        { batch: 'jetstream-2', raw: post({ rkey: 'con-bom' }) },
+        { batch: 'jetstream-2', raw: post({ rkey: 'u9' }) }
+      ]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+
+    // Antes: ok:true, con-bom REPLANTADO (duplicado irreversible) y el campo
+    // `destSinClave` como coartada. Ahora: aborta antes de mover y de sellar.
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'destino_sin_clave');
+    assert.deepEqual(res.files.sort(), ['raw/jetstream/con-bom.json', 'raw/jetstream/nota.md']);
+    assert.ok(!res.steps.some((s) => s.step === 'sellar'), 'no se llegó a SELLAR');
+
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.equal(hashManifest().sha256, sealBefore);
+    assert.deepEqual(volumeFiles(root), treeBefore);
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D-B: enlace en el DESTINO = aborto en el pase dry, ANTES de sellar', (t) => {
   const { root, restore } = setupRoot();
   const packA = buildFirehosePack({ units: [{ raw: post({ rkey: 'u1' }) }] });
   let planted = false;
@@ -829,9 +963,13 @@ test('D-B: enlace en el DESTINO = aborto en el pase dry, ANTES de sellar', () =>
       fs.symlinkSync(fuera, rootFile(root, 'raw/enlazado'), 'junction');
       planted = true;
     } catch {
-      planted = false; // sin privilegios para enlazar: el probe no aplica
+      planted = false;
     }
-    if (!planted) return;
+    if (!planted) {
+      // M3: abstenerse es `skip`, no `ok`. Un verde silencioso ES fingir.
+      t.skip('el entorno no permite plantar junctions');
+      return;
+    }
 
     const manifestBefore = manifestBytes(root);
     const sealBefore = hashManifest().sha256;
