@@ -58,14 +58,27 @@ function walkRel(rootDir) {
   return out.sort();
 }
 
-/** Content hash of a directory tree (sorted rel:sha lines). */
-function hashTree(rootDir) {
+/**
+ * Content hash of a directory tree (sorted rel:sha lines).
+ *
+ * Exported since WP-U206 **sin cambiar una coma de su cuerpo**: es el
+ * algoritmo con el que este driver sella `source.imported.snapshot`, y el
+ * verificador de integridad (src/verify.mjs) tiene que recomputarlo con el
+ * MISMO algoritmo. Reimplementarlo allí sería plantar dos copias que derivan
+ * — el defecto vive en la juntura, no en la pieza.
+ * @param {string} rootDir
+ * @returns {string} sha256 hex
+ */
+export function hashUnitTree(rootDir) {
   const h = createHash('sha256');
   for (const rel of walkRel(rootDir)) {
     h.update(`${rel}:${sha256File(toAbs(rootDir, rel))}\n`);
   }
   return h.digest('hex');
 }
+
+/** Alias interno histórico (el cuerpo del driver lo usa por este nombre). */
+const hashTree = hashUnitTree;
 
 /** Parse a registry.json into normalized units. */
 function readUnits(registryPath) {

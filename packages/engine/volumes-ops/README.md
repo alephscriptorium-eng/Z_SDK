@@ -61,6 +61,68 @@ manifiesto) → la operación aborta, no se inventa nada.
 
 JSONL append-only: `{volumesRoot}/.ops-ledger.jsonl` (configurable).
 
+## Adaptador de startpack → pack v1 (U206)
+
+`buildPackFromStartpack()` lee un startpack `zeus.startpack/v0` en **solo
+lectura**, computa los sha256 y emite el `manifest.json` v1 que `importPack`
+sí acepta (el del startpack carece de `name` y `hashes` → `pack_manifest_incompleto`).
+
+```js
+const pack = buildPackFromStartpack({
+  startpackRoot,          // SOLO LECTURA; nunca se escribe dentro
+  outDir,                 // fuera de la fuente, o `destino_dentro_de_origen`
+  name: 'mi-pack-v1', version: '1.0.0',
+  volumes: { forces: { disk: 'DISK_03', path: 'DISK_03/FORCES', corpora: [...] } }
+});
+importPack({ packRoot: pack.packRoot, role: 'operator' });
+```
+
+Dos reglas que no son cosmética:
+
+- **El árbol de datos son los DISCOS.** Un fichero suelto en el `volumes/` del
+  startpack (típicamente su `volumes.json`, que es manifiesto de ROOT) se
+  descarta **con reporte** en `pack.skipped`, nunca en silencio.
+- **Cero pérdida silenciosa.** Todo fichero debe caer bajo el `path` de algún
+  volumen declarado, o `fichero_fuera_de_volumen`. Sin esa guarda el fichero
+  se copia al staging, **pasa** la verificación de hash y **desaparece** al
+  borrarse el staging —ningún plan de fusión lo cubre— con `importPack`
+  devolviendo `ok:true`. Es la juntura, no la pieza.
+
+## Integridad del root (U206 · «la corrupción falla al arrancar»)
+
+`verifyRootIntegrity()` / `assertRootIntegrity()`. El fail-closed que había
+era de **ausencia**, no de **corrupción**: `validateVolumesTree` valida contra
+*schemas*, así que una escena `.md` corrompida byte a byte pasaba sin una
+queja. Legs: `manifiesto` · `sello_vs_ledger` · `sello_vs_estado` · `volumen` ·
+`snapshot` (recomputa `source.imported.snapshot` con `hashUnitTree`, el mismo
+algoritmo que lo selló) · `familia` (el `validate()` real del driver contra el
+árbol **vivo**) · `corpora` (remide contra los `files`/`bytes` sellados).
+
+El leg fuerte es **`sello_vs_ledger`**: el sello anotado en
+`volumes.state.json` se re-anota en silencio en cuanto alguien mide
+(`counters.mjs` → `state.mjs`), así que una edición a mano de `volumes.json`
+deja de verse en el estado; el ledger, que sólo escribe el import, sí la
+conserva.
+
+Fronteras declaradas: el snapshot con forma «árbol por unidad» sólo lo sella
+FORCES (FIREHOSE sella otra forma, LINEAS ninguna) → familia sin verificador
+se reporta `omitido`, **nunca se adivina el algoritmo** (`strictSnapshot:true`
+lo convierte en hallazgo). Y el ledger es append-only por convención, no a
+prueba de manipulación.
+
+## Cerco del root (U206)
+
+`scanRootCerco()` / `assertRootCerco()` — cuatro predicados escritos: enlace
+vivo (`lstat`, junctions de Windows incluidas) · ruta `node_modules` ·
+material de identidad (con **la** denylist de `import.mjs`, importada, no
+copiada) · **URL viva** = literal `http(s)://` salvo (a) autoridad
+`${VAR}` y (b) `volumes.<id>.source.imported.origin` dentro de `volumes.json`,
+que el contrato declara metadato inerte. La exención (b) es **por ruta de
+clave exacta**: la misma URL en otro campo, o en otro fichero, es URL viva.
+Binarios (byte NUL en los primeros 8 kB) no se escanean y se declaran en
+`binaries[]`. Un root inexistente devuelve `root_no_encontrado`: barrer la
+nada no es estar limpio.
+
 ## Tests
 
 ```bash

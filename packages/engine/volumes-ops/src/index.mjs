@@ -16,10 +16,21 @@ export {
   DEFAULT_SOFT_CORPUS_STATUSES
 } from './empty.mjs';
 export { syncVolumeCounters } from './counters.mjs';
-export { importPack } from './import.mjs';
+export { importPack, IDENTITY_DENYLIST } from './import.mjs';
 export { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
 export { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
-export { FORCES_DRIVER, FORCES_FAMILY } from './driver-forces.mjs';
+export { FORCES_DRIVER, FORCES_FAMILY, hashUnitTree } from './driver-forces.mjs';
+// WP-U206 · CA local-first: adaptador de pack, verificador de integridad
+// (paso 6) y cerco del root (paso 7). Los tres viven en `src/` a propósito:
+// en `e2e/` el CA pasaría y el producto seguiría desprotegido.
+export {
+  buildPackFromStartpack,
+  readStartpackIdentity,
+  PackAdapterError,
+  PACK_DATA_DIR
+} from './pack-adapter.mjs';
+export { verifyRootIntegrity, assertRootIntegrity } from './verify.mjs';
+export { scanRootCerco, assertRootCerco } from './cerco.mjs';
 export {
   FIREHOSE_DRIVER,
   FIREHOSE_FAMILY,
