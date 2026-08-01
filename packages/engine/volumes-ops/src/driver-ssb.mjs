@@ -94,13 +94,40 @@
  * mundo. Por eso VALIDAR exige profundidad exacta 2 (`<corpus>/<fichero>`, con
  * `<corpus>` ∈ `SSB_CORPUS_DIRS`) y `basename === messageFileName(key)`.
  *
+ * ── DÓNDE VIVE LA REGLA (decisión, tras la 1.ª devolución)
+ *
+ * Este volumen tiene DOS escritores: el import (este driver) y el sync vivo
+ * (`ssb-system/src/export.mjs`). No pueden compartir código —ninguno de los dos
+ * paquetes puede declarar al otro con los 48 manifests congelados— así que la
+ * regla se REPLICA, con nota de sitio, y se parte en dos niveles con
+ * consecuencias distintas **a propósito**:
+ *
+ * **Nivel 1 · ADMISIÓN DE LA UNIDAD** — clave usable, coordenada de feed
+ * (`author`+`sequence`), ruta canónica `<corpus>/messageFileName(key)`,
+ * unicidad de clave con `value` coherente, unicidad de POSICIÓN
+ * `(author, sequence)`. Un mensaje que no la pasa **no entra en el volumen por
+ * ningún camino**: el import ABORTA, y el export lo DESCARTA con motivo o
+ * aborta si es conflicto. Los dos escritores aplican las cinco.
+ *
+ * **Nivel 2 · COHERENCIA DEL CONJUNTO** — la cadena `previous ⟺ sequence`. Es
+ * propiedad del CONJUNTO, no de la unidad. El import **aborta** (un pack es
+ * material curado que alguien preparó). El export la **mide y la declara**
+ * (`feedIncoherencias`) pero NO tira dato: un volcado de pub llega con lo que
+ * llega, y descartar mensajes de gobernanza por una cadena que el productor
+ * numeró mal sería peor que aterrizarlos. Asimetría DECLARADA, con ejemplo
+ * medido: `ssb-system/fixtures/ssb-log.json` es exportable y su pack NO es
+ * importable (ver abajo).
+ *
  * ── Reglas de reconciliación
  * - clave NUEVA cuya posición de feed está libre → aterriza (unión aditiva);
  * - clave YA PRESENTE en cualquier parte del volumen **con el mismo `value`**
  *   → **dedup**: no se mueve nada, no se pisa nada, se reporta dónde vive ya.
  *   Es un no-op observable, no divergencia ni colisión;
  * - clave YA PRESENTE **con `value` DISTINTO** → `clave_divergente`: aborta;
- * - misma RUTA ocupada por clave DISTINTA → `colision_ruta`: aborta;
+ * - **no hay `colision_ruta`** (y no es un olvido): la ruta la DERIVA la clave y
+ *   `messageFileName` es inyectiva, luego dos claves distintas no pueden
+ *   reclamar la misma ruta. Es la diferencia estructural con FIREHOSE, donde la
+ *   ruta era libre y la colisión sí existía;
  * - `manifest.json` de la raíz del volumen: sidecar propio (schema REAL
  *   `ssb-manifest`, linea-kit/schemas/ssb-manifest.json). Falta → aterriza;
  *   idéntico → no-op; distinto → **divergencia reportada, jamás pisada**: la
@@ -115,17 +142,48 @@
  *   en el pase dry, simétrico con VALIDAR. Precio declarado, idéntico al de
  *   U204: un volumen que YA contenga material así queda NO IMPORTABLE hasta
  *   que el operador lo retire, con la ruta citada;
- * - material del destino que SÍ rinde clave pero vive fuera del layout (en la
- *   raíz, o bajo `<corpus>/<sub>/`): se INDEXA y se CUENTA —para que deduplique
- *   y no se replante— y se DECLARA en `snapshot.destFueraDeLayout`. Nota
- *   honesta: ese material es invisible para `loadSsbMessage`; el driver no
- *   repara el destino, lo denuncia.
+ * - material del destino que SÍ rinde clave pero NO vive en su ruta canónica
+ *   —raíz, `<corpus>/<sub>/`, o nombre que no deriva de la clave— →
+ *   `destino_fuera_de_layout`, aborto citando la ruta y la ESPERADA (D-G). No
+ *   se indexa y no se cuenta: el lector no puede resolverlo, así que
+ *   deduplicar contra él sería un `dedup` que miente —«la clave ya vive ahí»
+ *   cuando para el mundo no vive en ninguna parte—, que es el defecto D1 de
+ *   U204 trasladado a la juntura destino↔pack;
+ * - dos claves distintas en la MISMA posición de feed del destino →
+ *   `destino_con_feed_bifurcado` (D-G). Antes el índice hacía `feed.set(seq,
+ *   key)` y la segunda PISABA a la primera: la garantía central de la familia
+ *   se medía contra un índice que ya mentía.
  *
  * Garantía estructural antes de devolver el plan (D3 de U204): ningún `move`
- * apunta a ruta existente (`sobrescritura_imposible`) ni tiene un ancestro que
- * exista como FICHERO (`ruta_bloqueada_por_fichero`) — `importPack` ejecuta con
- * `renameSync` desnudo (import.mjs:459-461), que SÍ pisaría: la imposibilidad
- * la garantiza este guardián, no el sistema de ficheros.
+ * apunta a una ruta existente (`sobrescritura_imposible`) ni tiene un ancestro
+ * que exista como FICHERO (`ruta_bloqueada_por_fichero`) — `importPack` ejecuta
+ * con `renameSync` desnudo (import.mjs:459-461), que SÍ pisaría.
+ *
+ * **ALCANCE HONESTO de esos dos guardianes tras D-G** (se dice porque presentar
+ * como garantía activa lo que no se alcanza es la clase de defecto que este
+ * carril persigue):
+ * - `sobrescritura_imposible` es **alcanzable, y estrecho**: un FICHERO en la
+ *   ruta de destino ya salió antes por `dedup`, `clave_divergente` o
+ *   `destino_fuera_de_layout`; lo que sí llega hasta aquí es un **DIRECTORIO**
+ *   ocupando la ruta de una unidad (resto de una operación manual). Tiene probe.
+ * - `ruta_bloqueada_por_fichero` es hoy **INALCANZABLE por orden**: el único
+ *   ancestro posible de `<corpus>/<fichero>` es la entrada de raíz `<corpus>`, y
+ *   un fichero de raíz ya aborta antes por `destino_sin_clave` (si no rinde
+ *   clave) o por `destino_fuera_de_layout` (si la rinde). La protección no se
+ *   ha perdido: se ha ADELANTADO y es más precisa. Se conserva como última
+ *   línea por si el orden de comprobaciones cambiara — igual que
+ *   `unidad_sin_clave` dentro de `merge`, que también depende de que VALIDAR
+ *   corra antes.
+ *
+ * ── LO QUE ESTE DRIVER NO PUEDE PROMETER: LA AUTORÍA
+ * No hay verificación de firma en ninguna parte de este carril. `value.author`
+ * se toma como dicho. Consecuencia, con todas las letras: **cualquiera puede
+ * ocupar el feed de cualquiera, de forma permanente**. Un pack hostil que
+ * fabrique mensajes en `(@victima, 1..n)` aterriza (`ok:true`), y cuando llegue
+ * el material REAL de ese feed abortará con `reescritura_de_feed` **para
+ * siempre**, porque la posición es justamente lo único inviolable. La regla
+ * fuerte y la ausencia de autenticación se combinan mal: está medido en la
+ * suite (probe `m4`) y anotado como riesgo del eslabón siguiente.
  *
  * ── Cursor sellado
  * `snapshot = { unit:'ssb-key', units, unitsSha256, feeds, feedsSha256 }` —
@@ -331,8 +389,10 @@ function indexVolume(dir) {
   const withoutCoords = [];
   /** @type {string[]} */
   const duplicated = [];
-  /** @type {string[]} */
+  /** @type {{file:string, key:string, esperado:string|null}[]} */
   const outOfLayout = [];
+  /** @type {{author:string, sequence:number, keys:string[], files:string[]}[]} */
+  const forks = [];
   const { files, others } = walkRel(dir);
 
   for (const rel of files) {
@@ -346,7 +406,22 @@ function indexVolume(dir) {
       withoutCoords.push(rel);
       continue;
     }
-    if (!isUnitSlot(rel)) outOfLayout.push(rel);
+    // D-G · MISMA prueba de admisión que VALIDAR aplica al PACK. Antes esto
+    // solo miraba `isUnitSlot` (profundidad + corpus) y el fichero MAL NOMBRADO
+    // se indexaba como unidad de primera clase: el pack traía el mismo mensaje
+    // con el nombre bueno, deduplicaba contra él y el nombre bueno NUNCA
+    // aterrizaba — un `dedup` que decía «la clave ya vive ahí» cuando para el
+    // lector no vivía en ninguna parte. Idéntico defecto para el material de
+    // raíz o de profundidad 3, que antes se CONTABA en `destFueraDeLayout`: ese
+    // campo era la coartada, igual que el `destSinClave` que U204 mató en D-F.
+    if (!isUnitSlot(rel) || rel.split('/')[1] !== messageFileName(unit.key)) {
+      outOfLayout.push({
+        file: rel,
+        key: unit.key,
+        esperado: isUnitSlot(rel) ? `${rel.split('/')[0]}/${messageFileName(unit.key)}` : null
+      });
+      continue; // NO se indexa: `merge` aborta con la ruta y la ruta esperada
+    }
     if (byKey.has(unit.key)) {
       duplicated.push(rel);
       continue;
@@ -358,10 +433,25 @@ function indexVolume(dir) {
       sequence: unit.coords.sequence
     });
     const feed = feeds.get(unit.coords.author) ?? new Map();
+    const ocupante = feed.get(unit.coords.sequence);
+    if (ocupante !== undefined && ocupante !== unit.key) {
+      // BIFURCACIÓN YA ATERRIZADA. Antes esto era `feed.set(...)` a secas y la
+      // segunda clave PISABA a la primera en el Map: último en escribir gana,
+      // en silencio. Con el índice así, `reescritura_de_feed` comparaba contra
+      // un ganador arbitrario — la garantía central de esta familia medida
+      // contra un índice que ya mentía.
+      forks.push({
+        author: unit.coords.author,
+        sequence: unit.coords.sequence,
+        keys: [ocupante, unit.key],
+        files: [byKey.get(ocupante)?.rel ?? '(desconocido)', rel]
+      });
+      continue;
+    }
     feed.set(unit.coords.sequence, unit.key);
     feeds.set(unit.coords.author, feed);
   }
-  return { byKey, feeds, unkeyable, withoutCoords, duplicated, outOfLayout, links: others };
+  return { byKey, feeds, unkeyable, withoutCoords, duplicated, outOfLayout, forks, links: others };
 }
 
 /**
@@ -575,6 +665,21 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       error: { code: 'destino_sin_coordenada_de_feed', detail: { files: dest.withoutCoords } }
     };
   }
+  // D-G · material del destino que rinde clave pero NO vive en su ruta canónica
+  // `<corpus>/messageFileName(key)`: el lector no lo encuentra
+  // (loader.mjs:131-146), así que deduplicar contra él sería mentir. Aborta
+  // citando la ruta y la ruta ESPERADA — que es lo que el operador necesita
+  // para repararlo.
+  if (dest.outOfLayout.length > 0) {
+    return { error: { code: 'destino_fuera_de_layout', detail: { files: dest.outOfLayout } } };
+  }
+  // D-G · el volumen ya trae dos claves distintas en la MISMA posición de feed.
+  // No se puede planificar «la posición es inmutable» contra un índice que ya
+  // tiene una bifurcación: `reescritura_de_feed` compararía contra un ganador
+  // arbitrario.
+  if (dest.forks.length > 0) {
+    return { error: { code: 'destino_con_feed_bifurcado', detail: { forks: dest.forks } } };
+  }
 
   /** @type {string[]} */
   const moves = [];
@@ -652,16 +757,13 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       continue;
     }
 
-    if (existsSync(destAbs)) {
-      const other = unitOfFile(destAbs);
-      return {
-        error: {
-          code: 'colision_ruta',
-          detail: { file: rel, key: unit.key, destKey: other ? other.key : null }
-        }
-      };
-    }
-
+    // NO existe aquí un `colision_ruta` como el de FIREHOSE, y no es un olvido:
+    // la ruta la DERIVA la clave y `messageFileName` es inyectiva, luego dos
+    // claves distintas no pueden reclamar la misma ruta; y un ocupante de esa
+    // ruta con la MISMA clave ya salió por `dedup`/`clave_divergente`, o —si su
+    // nombre no derivaba de su clave— por `destino_fuera_de_layout`. Lo que sí
+    // puede ocupar la ruta sin rendir clave (un DIRECTORIO vacío, resto de una
+    // operación manual) lo caza el guardián estructural de abajo.
     incoming.push({ ...unit.coords, key: unit.key, rel });
     moves.push(rel);
     finalKeys.add(unit.key);
@@ -734,6 +836,13 @@ function merge({ stagedDir, destDir, volumeFiles }) {
     set.add(msg.sequence);
     finalFeeds.set(msg.author, set);
   }
+  // `feedsSha256` resume `<author>:<min>:<max>:<count>` por feed. NO es solo el
+  // máximo: con el máximo a secas, dos volúmenes con distinto relleno del mismo
+  // feed daban el MISMO cursor, y el eslabón de réplica A→B cuelga justo de
+  // aquí. Con min+max+count, dos volúmenes que coincidan en `unitsSha256` y en
+  // `feedsSha256` coinciden en claves y en frontera y densidad de cada feed.
+  // Lo que sigue sin probar: QUÉ posiciones exactas faltan (para eso está
+  // `unitsSha256`, que sí es el conjunto exacto de claves).
   const feedDigest = createHash('sha256');
   let feedsConHueco = 0;
   for (const author of [...finalFeeds.keys()].sort()) {
@@ -741,7 +850,7 @@ function merge({ stagedDir, destDir, volumeFiles }) {
     const max = Math.max(...seqs);
     const min = Math.min(...seqs);
     if (max - min + 1 !== seqs.size) feedsConHueco += 1;
-    feedDigest.update(`${author}:${max}\n`);
+    feedDigest.update(`${author}:${min}:${max}:${seqs.size}\n`);
   }
 
   return {
@@ -758,10 +867,11 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       // Agujeros: LEGÍTIMOS (el exportador filtra por tipo) pero declarados,
       // no callados — el siguiente eslabón de réplica los necesita ver.
       ...(feedsConHueco > 0 ? { feedsConHueco } : {}),
-      ...(dest.duplicated.length > 0 ? { destDuplicadas: dest.duplicated.length } : {}),
-      // Material del destino que rinde clave pero vive fuera del layout: cuenta
-      // y deduplica, pero es INVISIBLE para `loadSsbMessage`. Se declara.
-      ...(dest.outOfLayout.length > 0 ? { destFueraDeLayout: dest.outOfLayout.length } : {})
+      // `destFueraDeLayout` DESAPARECE (D-G): ya no puede haber material fuera
+      // de layout al llegar aquí — `merge` aborta antes. Contarlo era la vía
+      // débil; el campo era la coartada. Misma lección que `destSinClave` en
+      // D-F de U204.
+      ...(dest.duplicated.length > 0 ? { destDuplicadas: dest.duplicated.length } : {})
     }
   };
 }

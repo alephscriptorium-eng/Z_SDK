@@ -5,17 +5,65 @@ dice «no medido».
 
 ---
 
+> **2.ª vuelta (devolución).** Los tres bloqueantes eran **la misma cosa vista
+> tres veces**: al matar el borrado destructivo convertí el exportador en el
+> SEGUNDO escritor de un volumen que también escribe `importPack`, y las dos
+> mitades no se ponían de acuerdo sobre qué es una unidad válida. La respuesta
+> está en **§A · Dónde vive la regla**, escrita antes de tocar código. Todo lo
+> nuevo lleva marca «(2.ª vuelta)».
+
+---
+
+## A · DÓNDE VIVE LA REGLA (la decisión que faltaba)
+
+**La regla es del VOLUMEN, no de un escritor.** Los dos escritores —el import
+(driver) y el sync vivo (`export.mjs`)— la aplican **entera**. No pueden
+compartir el código: ninguno de los dos paquetes puede declarar al otro con los
+48 manifests congelados (owner U237), así que se **replica con nota de sitio** y
+—esto es lo que faltaba— **la juntura tiene probe propio**: la sección JUNTURA de
+`import-ssb-driver.test.mjs` exporta con el escritor REAL y luego importa el
+resultado.
+
+Se parte en dos niveles, con consecuencias distintas **a propósito**:
+
+**Nivel 1 · ADMISIÓN DE LA UNIDAD** — los dos escritores aplican las cinco, y lo
+que no las pasa **no entra en el volumen por ningún camino**:
+
+| # | regla | driver (import) | export (sync vivo) |
+|---|---|---|---|
+| 1 | clave usable (`key` no vacía + `value` objeto) | `unidad_sin_clave` | `clave_ausente` / `value_ausente` |
+| 2 | coordenada de feed (`author`+`sequence`) | `unidad_sin_coordenada_de_feed` · `destino_sin_coordenada_de_feed` | **`coordenada_de_feed_ausente`** (2.ª vuelta) |
+| 3 | ruta canónica `<corpus>/messageFileName(key)` | `nombre_no_deriva_de_clave` · **`destino_fuera_de_layout`** (2.ª vuelta) | por construcción + **`layout_invalido_en_volumen`** (2.ª vuelta) |
+| 4 | clave única con `value` coherente | `clave_duplicada_en_pack` · `clave_divergente` | `clave_duplicada_en_log` · `clave_divergente` |
+| 5 | **posición `(author, sequence)` única** | `secuencia_duplicada_en_pack` · `reescritura_de_feed` · **`destino_con_feed_bifurcado`** (2.ª vuelta) | **`posicion_duplicada_en_log`** · **`posicion_ocupada`** (2.ª vuelta) |
+
+**Nivel 2 · COHERENCIA DEL CONJUNTO** — la cadena `previous ⟺ sequence`. Es
+propiedad del CONJUNTO, no de la unidad.
+- **El import ABORTA** (`cadena_rota_en_pack`, `cadena_rota`): un pack es
+  material curado que alguien preparó.
+- **El export la MIDE y la DECLARA** (`feedIncoherencias`, y el conteo va al
+  sidecar) pero **no tira dato**: un volcado de pub llega con lo que llega, y
+  descartar gobernanza porque el productor numeró mal la cadena sería peor que
+  aterrizarla. Medido: aplicar el nivel 2 en el export dejaría
+  `fixtures/ssb-log.json` en **tribes 2 / parliament 0 / votes 0**.
+
+**Asimetría declarada, con ejemplo medido**: `ssb-log.json` es **exportable** y
+su pack **no es importable**. Es la única asimetría entre los dos escritores, es
+deliberada, y está escrita en la cabecera de los dos ficheros.
+
+---
+
 ## 0 · Resumen ejecutable
 
-| suite | antes (87bd93f) | después |
-|---|---|---|
-| `@zeus/volumes-ops` | 56/56 | **89/89** (+33) |
-| `@zeus/ssb-system` | 4/4 | **20/20** (+16) |
-| `@zeus/feed-kit` | 10/10 (no medido antes) | 10/10 |
-| `@zeus/linea-kit` | — | 36/36 |
-| `@zeus/firehose-core` | — | 12/12 |
-| `@zeus/presets-sdk` | — | 55/55 |
-| `npm run lint` | — | 0 errores · 18 warnings (**0 en ficheros de U205**) |
+| suite | antes (87bd93f) | 1.ª vuelta | 2.ª vuelta |
+|---|---|---|---|
+| `@zeus/volumes-ops` | 56/56 | 89/89 | **97/97** (+41) |
+| `@zeus/ssb-system` | 4/4 | 20/20 | **26/26** (+22) |
+| `@zeus/feed-kit` | 10/10 | 10/10 | 10/10 |
+| `@zeus/linea-kit` | — | 36/36 | 36/36 |
+| `@zeus/firehose-core` | — | 12/12 | 12/12 |
+| `@zeus/presets-sdk` | — | 55/55 | 55/55 |
+| `npm run lint` | — | 0 errores | **0 errores · 0 warnings en ficheros de U205** |
 
 Los 56/56 y 4/4 de «antes» son **medidos por mí**, no citados de BACKLOG:265
 (comando en §7). Aviso de entorno: el worktree venía **sin `node_modules`**; hice
@@ -42,11 +90,21 @@ Cuatro claves `{family, detect, validate, merge}`, `Object.freeze`, sin método
 Reglas: clave nueva → aterriza · clave presente con el mismo `value` → dedup
 (reportando dónde vive) · clave presente con `value` distinto → `clave_divergente`
 aborta · `(author, sequence)` ya ocupada por otra clave → `reescritura_de_feed`
-aborta · ruta ocupada por otra clave → `colision_ruta` · sidecar `manifest.json`
-de raíz: falta→aterriza, igual→no-op, distinto→**divergencia reportada, jamás
-pisada** · claves y secuencias duplicadas dentro del pack → abortan en VALIDAR.
-Índice del destino sin agujeros (doctrina D-B/D-F de U204 heredada entera:
-`enlace_en_destino`, `destino_sin_clave`, `destino_sin_coordenada_de_feed`).
+aborta · sidecar `manifest.json` de raíz: falta→aterriza, igual→no-op,
+distinto→**divergencia reportada, jamás pisada** · claves y secuencias duplicadas
+dentro del pack → abortan en VALIDAR. **No hay `colision_ruta`** y no es olvido:
+la ruta la deriva la clave y `messageFileName` es inyectiva (2.ª vuelta, §4bis·B2).
+Índice del destino sin agujeros (doctrina D-B/D-F de U204 heredada entera, y en
+2.ª vuelta aplicada de verdad): `enlace_en_destino`, `destino_sin_clave`,
+`destino_sin_coordenada_de_feed`, **`destino_fuera_de_layout`**,
+**`destino_con_feed_bifurcado`**.
+
+### 1.1bis Réplica declarada de la coordenada — `types.mjs` (2.ª vuelta)
+
+`feedCoords()` en `ssb-system/src/types.mjs` es **réplica exacta** de
+`ssbFeedCoords` del driver, con nota de sitio: las dos copias deben decir lo
+mismo o el export aterriza material que el import rechaza, y la nota dice **dónde
+está el probe que lo comprueba**.
 
 ### 1.2 El alta — `drivers.mjs`
 
@@ -75,15 +133,27 @@ incondicional (`:76`) y un `throw` salía como excepción no capturada.
 un `post` filtrado (agujero legítimo) y un DM cifrado. `ssb-log.json` **no se
 tocó**: dos suites vivas lo anclan con conteos exactos.
 
+### 1.7 El arnés siembra el manifiesto (m8, 2.ª vuelta)
+
+Consecuencia necesaria del fallo cerrado de §3: las suites tienen que sembrar
+`volumes.json` con la entrada `ssb` completa, porque el export ya no la crea.
+Los dos sitios, dichos en prosa y no solo en el diff:
+`packages/mesh/ssb-system/test/export.test.mjs` (`seedManifest()`) y
+`packages/mesh/ssb-system/test/e2e-mcp.test.mjs` (siembra en línea, con la
+entrada COMPLETA porque `resolveSsbBasePath` la resuelve desde el manifiesto).
+Patrón heredado de `test-utils/src/smoke-env.mjs:52`, que hace lo mismo.
+
 ---
 
 ## 2 · Tensión 1 — exportador destructivo vs. unión aditiva. **Resuelta: deja de borrar**
 
 El exportador borraba todos los `.json` de cada corpus antes de escribir
 (`87bd93f:export.mjs:93-96`, «sync replaces snapshot»). Decisión: **el borrado
-muere**; el export aplica la MISMA regla de unión que el driver (índice por clave
-sobre todo el volumen, cross-corpus; clave igual con el mismo `value` = no-op;
-clave con `value` distinto = **aborto en pase dry, antes de escribir un byte**).
+muere**; el export aplica **las cinco reglas de admisión del nivel 1** que aplica
+el driver — clave, coordenada de feed, ruta canónica, unicidad de clave con
+`value` coherente y **unicidad de posición** —, con la tabla de correspondencia
+en §A. *(En la 1.ª vuelta esta frase decía «la MISMA regla de unión» y enumeraba
+solo la de clave; eran los bloqueantes 1 y 3. Corregida y medida en §4bis.)*
 
 Tres razones, no una preferencia:
 
@@ -99,6 +169,16 @@ Tres razones, no una preferencia:
 
 Efecto lateral bueno: el export pasa a ser **idempotente** — un re-sync del mismo
 volcado no mueve ni un `mtime` (medido, §7.4).
+
+**Precio, decidido y declarado (m2, 2.ª vuelta):** al dejar de borrar aparecen
+**huérfanos** —material del volumen que un volcado posterior no trae— y
+`totals.exported` deja de concordar con `corpora[].files`, que antes concordaban
+*por construcción* porque el sync arrasaba el corpus. **El huérfano es semántica
+querida**: un mensaje SSB es inmutable y un feed no se despublica, así que borrar
+lo que este volcado no trajo sería pérdida de dato. Lo que sí era defecto es que
+el sidecar —que §3 designa como la marca de sync de este volumen— callara la
+diferencia: ahora `totals` lleva `volumeFiles`, `orphans` y `feedIncoherencias`.
+Riesgo asociado en §9: **no hay vía de retirada por clave**.
 
 ---
 
@@ -180,7 +260,9 @@ se asevera el **conteo**: `volumeFiles(root).length === 2` y
 Diseño verificado: el índice cubre **todo el volumen** porque el lector resuelve
 cross-corpus devolviendo el primer acierto en orden `SSB_CORPORA`
 (`loader.mjs:133-139`).
-Rojo añadido: misma clave con `value` distinto → `clave_divergente` (`ok 11`).
+Rojo añadido: misma clave con `value` distinto → `clave_divergente`. Y en 2.ª
+vuelta, el rojo que faltaba: un destino MAL NOMBRADO ya no deduplica, aborta
+(§4bis·B2).
 
 ### CA-4 · El manifiesto no se inventa — **PASA, y discrimina**
 
@@ -281,7 +363,166 @@ Dos hermanas: `(author,sequence)` repetida → `secuencia_duplicada_en_pack`
 
 ---
 
-## 5 · Prueba de que los tests discriminan (14 mutaciones)
+## 4bis · LOS TRES BLOQUEANTES (2.ª vuelta)
+
+### B1 · La posición no era inviolable — mi propio exportador creaba bifurcaciones
+
+Acusación exacta y **reproducida**. Dos mitades del mismo defecto:
+
+- **`export.mjs` deduplicaba SOLO por clave.** Dos claves distintas en
+  `(@alice, 1)` → `ok:true, added:2`. Arreglado: `partitionExportable` lleva
+  `seenPosition` y `duplicatePositions`; el pase dry lleva `landed.byPosition`.
+  Abortan `posicion_duplicada_en_log` y `posicion_ocupada` **antes de escribir un
+  byte**. El segundo error cita literalmente «es lo que el import llama
+  `reescritura_de_feed`», para que las dos mitades se lean juntas.
+- **`indexVolume` pisaba la posición en el Map.** `feed.set(sequence, key)` sin
+  mirar: último en escribir gana, en silencio. Con eso, `reescritura_de_feed`
+  —la garantía central de la familia— **se medía contra un índice que ya
+  mentía**. Arreglado: colisión detectada → `destino_con_feed_bifurcado`, aborto
+  en el pase dry citando ambas claves y ambos ficheros.
+- **El cursor tampoco lo veía**: `feedsSha256` codificaba solo `<author>:<max>`.
+  Ahora codifica `<author>:<min>:<max>:<count>` y hay test que lo mide (dos
+  volúmenes con el MISMO máximo y distinto relleno → cursores distintos). Es el
+  artefacto del que cuelga el 8.º eslabón.
+
+Mi §2 decía «el export aplica la MISMA regla de unión que el driver» enumerando
+solo la de clave. **Reescrita**: ahora es la tabla de §A, con las cinco.
+
+### B2 · Un `dedup` que miente — y mi §9.7 era falso
+
+Acusación exacta y **reproducida**. VALIDAR rechazaba `nombre_no_deriva_de_clave`
+en el PACK «porque ese material sería inalcanzable para el lector», y `indexVolume`
+**no aplicaba ese mismo test al DESTINO**: un fichero mal nombrado se indexaba
+como unidad de primera clase, el pack traía el nombre bueno, deduplicaba contra
+él y el nombre bueno **no aterrizaba nunca**.
+
+Arreglado (D-G): el índice del destino aplica **la misma prueba de admisión** que
+VALIDAR aplica al pack. Lo que no vive en su ruta canónica no se indexa y
+`merge` **aborta** con `destino_fuera_de_layout`, citando la ruta **y la ruta
+esperada**. Alcanza los tres casos —nombre malo, raíz, profundidad 3— con un solo
+código.
+
+Y **`snapshot.destFueraDeLayout` desaparece**: contar el material inalcanzable
+era la vía débil y el campo era la coartada. Exactamente la lección de D-F de
+U204 con `destSinClave`, que yo había citado en cabecera y no había aplicado.
+Con esto **§9.7 pasa a ser cierta**: sí queda no importable, sí se cita la ruta.
+El test que aseveraba el comportamiento anterior (`…deduplica, cuenta y se
+DECLARA`) está **reescrito**, no borrado.
+
+**Consecuencia colateral que declaro** (no es regresión, es la protección
+adelantada): con el índice arreglado, `colision_ruta` pasa a ser **imposible por
+construcción** —la ruta la deriva la clave y `messageFileName` es inyectiva— y lo
+**he eliminado**, con el porqué en cabecera. Y `ruta_bloqueada_por_fichero` pasa a
+ser **inalcanzable por orden**: el único ancestro posible de `<corpus>/<fichero>`
+es la entrada de raíz `<corpus>`, y un fichero de raíz ya aborta antes por
+`destino_sin_clave` o `destino_fuera_de_layout`. **Aviso al revisor: su mutación
+ya no cae, y no es un descuido** — está declarado en cabecera como última línea
+por si el orden cambiara, igual que `unidad_sin_clave` dentro de `merge`.
+
+### B3 · Mi exportador producía volúmenes que mi driver declara no importables
+
+Acusación exacta y **reproducida**. `classifyMessageDetailed` no exigía
+coordenada de feed; `ssbFeedCoords` sí; y `merge` abortaba **el volumen entero**
+con `destino_sin_coordenada_de_feed`. Un sync dejaba el volumen inimportable y
+nadie se enteraba.
+
+Arreglado: la coordenada es **nivel 1** y el export descarta con motivo
+`coordenada_de_feed_ausente`. `feedCoords` vive en `types.mjs` como **réplica
+declarada** de `ssbFeedCoords`, con la nota de sitio diciendo que las dos copias
+deben decir lo mismo y **dónde está el probe que lo comprueba**.
+
+### La juntura, ahora medida (y no solo arreglada)
+
+Dos pruebas nuevas cruzan la frontera de verdad, importando el exportador REAL:
+
+- **`JUNTURA: todo volumen que produce el export es importable por el driver`** —
+  exporta un log con `post` filtrado y DM cifrado, empaqueta el árbol aterrizado
+  tal cual y lo importa en un root limpio (el escenario de réplica A→B):
+  `ok:true`, `moved:3`, `feeds:2`, `feedsConHueco:1`.
+- **`JUNTURA: el export ya no puede fabricar los tres volúmenes que el driver
+  rechaza`** — los cuatro vectores del revisor, uno a uno.
+
+**Acoplamiento declarado**: import relativo entre paquetes, **solo en el test**.
+`@zeus/ssb-system` no es —ni puede ser— dependencia de volumes-ops; replicar el
+exportador en el test probaría la réplica, no la juntura. `export.mjs` solo
+importa `node:*` y su propio `types.mjs`, así que el import relativo resuelve sin
+tocar deps ni el `files:["src"]` del paquete.
+
+---
+
+## 4ter · LOS MENORES (2.ª vuelta)
+
+**m1 · guardas sin test.** Reproducido: borrar `destino_sin_coordenada_de_feed`,
+anular `corpus_incoherente` o anular la mitad de `cadena_rota` en merge dejaba la
+suite en verde. Añadidos cuatro tests: los tres anteriores más
+`sobrescritura_imposible`. Sobre este último, la acusación era «código muerto
+presentado como garantía» y **es correcta tal como estaba**; lo que hice no fue
+declararlo muerto sino encontrarle el vector que sí lo alcanza: **un DIRECTORIO
+vacío ocupando la ruta canónica de una unidad** (`walkRel` no lo ve, el índice
+queda limpio, el plan lo da por ruta libre, y solo el guardián estructural lo caza
+antes de que `renameSync` reviente a medias). Test `m1: sobrescritura_imposible
+SÍ es alcanzable`. El que sí queda declarado como inalcanzable-por-orden es
+`ruta_bloqueada_por_fichero` (ver B2). La mitad de `cadena_rota` en merge tiene
+ahora test que asevera `res.error === 'cadena_rota'` **exacto** —no una subcadena—
+y sus cinco campos de detalle.
+
+**m2 · huérfanos y sidecar contradictorio.** Decisión: **el huérfano es semántica
+querida**, y por qué — un mensaje SSB es inmutable y un feed no se despublica;
+que un volcado posterior no traiga material anterior (ventana temporal más corta,
+o material que llegó por `importPack`) no es motivo para borrarlo. Lo que sí era
+un defecto es que el sidecar callara la diferencia: `totals` gana **`volumeFiles`**
+y **`orphans`** (= `volumeFiles − exported`), más `feedIncoherencias`. La
+diferencia tiene nombre en vez de ser implícita. Test `m2: el sidecar NOMBRA la
+diferencia…`, validado contra el schema real. Y a §9 como riesgo: **no hay vía de
+retirada por clave**.
+
+**m4 · falsificación y ocupación permanente.** A la cabecera de los dos ficheros
+y a §9, con esas palabras. Además, **probe permanente** que lo MIDE: un pack
+hostil con 5 mensajes fabricados en el feed de la víctima → `ok:true, moved:5`;
+y después el material REAL de ese feed → `reescritura_de_feed` **para siempre**.
+La regla fuerte y la ausencia de autenticación se combinan mal, y ahora está
+fijado en la suite para que no cambie en silencio.
+
+**m5 · CA-6 mal titulada.** Corregido: «cero material de identidad **EN EL CORPUS
+DEL REPO**», y el comentario dice que mide `src/` + `fixtures/` de este paquete
+—corpus que escribimos nosotros—, no lo que un pub emita.
+
+**m6 · «muerto en `src/`».** Aceptada entera. El probe salta `test|tests|fixtures`
+y mi diff mete en `export.test.mjs` una réplica **verbatim** del escritor
+demolido. Test nuevo `CA-5c · el escritor legado está muerto EN src/` que
+**asevera las dos cosas**: que el predicado endurecido SÍ marcaría este fichero de
+test, y que en `src/` no queda ni la definición ni la llamada ni la escritura
+contra `configPath`. La frase de §3 dice ahora «en `src/`».
+
+**m8 · el arnés que siembra el manifiesto** está ahora en §1.
+
+---
+
+## 4quater · m7 · ENRUTADO, no arreglado (dos evasiones que ningún probe ve)
+
+Heredadas, **sin ofensor actual**, y **fuera de mi ALCANCE_DIFF** (`manifest.mjs`,
+`ledger.mjs`, `import.mjs`). Verificadas abriendo los ficheros:
+
+1. **`resolveManifestPath()` es público.** `manifest.mjs:35-37` lo exporta y
+   `volumes-ops/src/index.mjs:35` lo reexporta. Vector:
+   `writeFileSync(resolveManifestPath(), x)` — **no contiene el literal
+   `'volumes.json'` ni `MANIFEST_FILE_NAME`**, así que el probe estático de CA-5c
+   no lo marca; y como no pasa por `exportSsbLogFile`, el probe dinámico de CA-5a
+   tampoco lo ve. Cierre posible: que el probe siga también `resolveManifestPath`
+   como token, o que la función deje de exportarse.
+2. **El ledger acepta su ruta verbatim y sin validar.**
+   `ledger.mjs:16-20` — `if (opts.ledgerPath) return opts.ledgerPath;`, cero
+   comprobación — y `:43` hace `appendFileSync(path, …)`. `importPack` pasa
+   `ledgerOpts` tal cual desde `opts.ledger` (`import.mjs:125`, `:568`). Vector:
+   `importPack({ packRoot, role:'operator', ledger:{ ledgerPath: '<root>/volumes.json' } })`
+   **añade JSONL encima del manifiesto sellado**, rompiendo el sello sin que
+   ningún probe lo marque (`ledger.mjs` no contiene el literal). Cierre posible:
+   que `resolveOpsLedgerPath` rechace cualquier ruta cuyo basename sea
+   `MANIFEST_FILE_NAME`.
+
+---
+
+## 5 · Prueba de que los tests discriminan (14 + 11 mutaciones)
 
 Los 33 + 20 tests salieron verdes **a la primera**, lo cual no prueba nada por sí
 solo. Mutación por mutación, con la mutación aplicada y revertida (fichero
@@ -309,6 +550,31 @@ usaba un árbol firehose real (`raw/jetstream/…`), que no es ranura SSB, así 
 lectura de contenido nunca se ejercitaba. Añadí el vector del disfraz
 (`tribes/u1.json` con un post dentro) y M7 pasa a caerse. Es exactamente el modo de
 fallo que el brief describe: un test que verifica lo implementado y no lo prometido.
+
+### 5bis · Mutación EN LA JUNTURA (2.ª vuelta)
+
+La advertencia del revisor era exacta: **las 14 mutaciones de la 1.ª vuelta las
+hice sobre el driver, no sobre la frontera**, y ahí es donde estaban las guardas
+sin test. Once mutaciones más, esta vez cruzando:
+
+| # | mutación | dónde | test que la caza |
+|---|---|---|---|
+| J1 | export sin `posicion_duplicada_en_log` | export | `not ok` JUNTURA + `NIVEL 1: la POSICIÓN…` |
+| J2 | export sin `posicion_ocupada` | export | `not ok` JUNTURA + `NIVEL 1: la POSICIÓN…` |
+| J3 | export sin coordenada obligatoria | export | `not ok` JUNTURA + `NIVEL 1: sin coordenada…` |
+| J4 | export sin `layout_invalido_en_volumen` | export | `not ok` JUNTURA + `NIVEL 1: layout inválido…` |
+| J5 | índice del destino sin la prueba de layout | driver | `D-G: … MAL NOMBRADO` + `D-G: … profundidad 3` |
+| J6 | índice sin detección de bifurcación | driver | `D-G: dos claves en la MISMA posición` |
+| J7 | sin `destino_sin_coordenada_de_feed` | driver | `m1: destino sin coordenada…` |
+| J8 | sin `corpus_incoherente` | driver | `m1: corpus incoherente…` |
+| J9 | sin la mitad **merge** de `cadena_rota` | driver | `m1: cadena_rota en MERGE…` |
+| J10 | sin `sobrescritura_imposible` | driver | `m1: sobrescritura_imposible SÍ es alcanzable` |
+| J11 | cursor con solo `<author>:<max>` | driver | `cursor: feedsSha256 distingue el RELLENO` |
+
+**J11 no lo cazaba nadie hasta que escribí su test.** Se reporta porque es el
+mismo modo de fallo que M7 en la vuelta anterior: la propiedad estaba
+implementada y ningún test la medía. Es exactamente el artefacto del que cuelga
+el 8.º eslabón, así que lo hice caer antes de entregarlo.
 
 ---
 
@@ -367,8 +633,8 @@ $ npm test -w @zeus/volumes-ops     → # tests 56 # pass 56 # fail 0
 ### 7.2 · Después
 
 ```
-$ npm test -w @zeus/volumes-ops     → # tests 89 # pass 89 # fail 0 # skipped 0
-$ npm test -w @zeus/ssb-system      → # tests 20 # pass 20 # fail 0 # skipped 0
+$ npm test -w @zeus/volumes-ops     → # tests 97 # pass 97 # fail 0 # skipped 0
+$ npm test -w @zeus/ssb-system      → # tests 26 # pass 26 # fail 0 # skipped 0
 $ npm test -w @zeus/feed-kit        → # tests 10 # pass 10 # fail 0
 $ npm test -w @zeus/linea-kit       → # tests 36 # pass 36 # fail 0
 $ npm test -w @zeus/firehose-core   → # tests 12 # pass 12 # fail 0
@@ -514,11 +780,13 @@ una línea). El resto de citas del brief que reutilizo las abrí una a una.
    dependencia declarable de ssb-system.
 4. **El cursor de réplica ya existe y está sellado**:
    `snapshot = {unit:'ssb-key', units, unitsSha256, feeds, feedsSha256}`, donde
-   `feedsSha256` resume `<author>:<maxSeq>` ordenado — exactamente «hasta dónde
-   está replicado cada feed». `feedsConHueco` avisa de que **`maxSeq` no implica
-   completitud**: comparar solo `feedsSha256` entre A y B puede dar «iguales»
-   siendo distintos por dentro. Si la réplica necesita completitud, el snapshot
-   O(1) **no basta** y hace falta otro artefacto.
+   `feedsSha256` resume **`<author>:<min>:<max>:<count>`** ordenado (2.ª vuelta;
+   antes era solo `<author>:<max>`, y dos volúmenes con el mismo frente y
+   distinta densidad daban el MISMO cursor — hay test que lo mide).
+   `feedsConHueco` sigue avisando de que **la frontera no implica completitud**.
+   Lo que el cursor **sí** prueba: mismo `unitsSha256` ⇒ mismo conjunto exacto de
+   claves; mismo `feedsSha256` ⇒ misma frontera y densidad por feed. Lo que **no**
+   prueba por sí solo: qué posiciones concretas faltan.
 5. **`clave_divergente` y `reescritura_de_feed` son abortos duros**: una réplica
    A→B entre nodos con historia bifurcada **no convergerá sola**; el import
    abortará citando la clave o la posición. Es intencional (fusionar forks en
@@ -530,7 +798,30 @@ una línea). El resto de citas del brief que reutilizo las abrí una a una.
    (`grep -rn "@zeus/ssb-system" --include=*.mjs packages e2e scripts` → una sola
    llamada fuera del paquete).
 7. **Material heredado bloqueante**: un volumen SSB vivo que ya contenga un
-   fichero sin clave bajo un corpus, un enlace, o un mensaje con nombre no
-   derivado, queda **no importable** hasta que el operador lo retire (con la ruta
-   citada). Mismo precio que pagó U204 con D-B/D-F, por la misma razón: un índice
-   con agujeros no puede sostener «jamás duplicar».
+   fichero sin clave bajo un corpus, un enlace, un mensaje con nombre no derivado,
+   uno fuera de layout, uno sin coordenada de feed, o una bifurcación ya
+   aterrizada, queda **no importable** hasta que el operador lo retire — con la
+   ruta citada, y con la ruta ESPERADA cuando la hay. **Y desde la 2.ª vuelta
+   también bloquea el SYNC** (`layout_invalido_en_volumen`): es el precio de que
+   los dos escritores apliquen la misma regla, y es deliberado — un volumen que
+   el lector no puede resolver no debe recibir más material encima. Mismo precio
+   que pagó U204 con D-B/D-F, por la misma razón.
+8. **(2.ª vuelta) OCUPACIÓN PERMANENTE DE FEED AJENO — no hay verificación de
+   firma en ninguna parte de este carril.** `value.author` se toma como dicho.
+   Como la posición `(author, sequence)` es lo único inviolable, **cualquiera
+   puede ocupar el feed de cualquiera de forma permanente**: un pack hostil con
+   mensajes fabricados en `(@victima, 1..n)` aterriza (`ok:true, moved:5`,
+   medido), y cuando llegue el material REAL de ese feed abortará con
+   `reescritura_de_feed` **para siempre**. La regla fuerte y la ausencia de
+   autenticación se combinan mal. Está fijado como probe permanente (`m4`) para
+   que no cambie en silencio, pero **cerrarlo es un WP**: sin verificar la firma
+   del mensaje, ninguna réplica A→B entre nodos no confiados es segura.
+9. **(2.ª vuelta) No hay vía de retirada por clave.** El único primitivo de
+   retirada que existía —el borrado destructivo— arrasaba el corpus entero, y lo
+   maté. Un mensaje aterrizado por error (o el material de un feed ocupado, punto
+   8) **se retira a mano**. Los huérfanos son semántica querida y ahora tienen
+   nombre en el sidecar (`totals.orphans`), pero un `emptyVolume` por clave no
+   existe.
+10. **(2.ª vuelta, enrutado) Dos evasiones que ningún probe de CA-5 ve** — §4quater:
+    `resolveManifestPath()` público, y el ledger aceptando su ruta verbatim. Sin
+    ofensor actual, fuera de mi alcance, con vector escrito.

@@ -63,6 +63,52 @@
  * (3) EL DESCARTE, REPORTADO. `partitionExportable` ya no devuelve solo cuántos
  * se saltó: devuelve POR QUÉ (`skippedReasons`, `skippedDetail`). Ver
  * `types.mjs` `SKIP_REASONS`.
+ *
+ * ── DÓNDE VIVE LA REGLA (decisión, tras la 1.ª devolución) ─────────────────
+ *
+ * Al matar el borrado destructivo, este fichero pasó a ser el SEGUNDO escritor
+ * de un volumen que también escribe `importPack` con el driver SSB. Dos
+ * escritores con reglas distintas es exactamente lo que produjo los tres
+ * bloqueantes: el export deduplicaba SOLO por clave, así que podía crear
+ * bifurcaciones de feed que el driver prohíbe, aterrizar mensajes sin
+ * coordenada que el driver rechaza abortando el volumen ENTERO, y deduplicar
+ * contra ficheros mal nombrados que el lector no encuentra.
+ *
+ * Decisión: **la regla es del VOLUMEN, no de un escritor**, y se parte en dos
+ * niveles con consecuencias distintas a propósito. Los dos paquetes NO pueden
+ * compartir el código (ninguno declara al otro; los 48 manifests están
+ * congelados), así que se REPLICA con nota de sitio y la juntura tiene probe:
+ * `volumes-ops/test/import-ssb-driver.test.mjs`, sección JUNTURA, exporta con
+ * ESTE fichero y luego importa el resultado con el driver.
+ *
+ * **Nivel 1 · ADMISIÓN DE LA UNIDAD** — los dos escritores aplican las cinco:
+ *   1. clave usable (`key` cadena no vacía + `value` objeto);
+ *   2. coordenada de feed (`value.author` + `value.sequence`) — sin ella el
+ *      mensaje se DESCARTA con motivo `coordenada_de_feed_ausente`;
+ *   3. ruta canónica `<corpus>/messageFileName(key)` — aquí por construcción, y
+ *      el volumen entero se verifica antes de escribir (`layout_invalido_en_
+ *      volumen`), porque un fichero mal nombrado hace mentir al índice;
+ *   4. clave única con `value` coherente (`clave_duplicada_en_log`,
+ *      `clave_divergente`);
+ *   5. **posición `(author, sequence)` única** (`posicion_duplicada_en_log`,
+ *      `posicion_ocupada`) — es lo que el import llama `reescritura_de_feed`.
+ * Todo lo que falla en el nivel 1 aborta **en pase dry, sin escribir un byte**,
+ * o se descarta con motivo.
+ *
+ * **Nivel 2 · COHERENCIA DEL CONJUNTO** — la cadena `previous ⟺ sequence`. El
+ * import ABORTA (un pack es material curado). Este exportador la **mide y la
+ * declara** (`feedIncoherencias`, y el conteo va al sidecar) pero NO tira dato:
+ * un volcado de pub llega con lo que llega y descartar gobernanza por una
+ * cadena que el productor numeró mal sería peor que aterrizarla. Asimetría
+ * DECLARADA con ejemplo medido: `fixtures/ssb-log.json` es exportable y su pack
+ * NO es importable (`cadena_rota_en_pack`) — su `sequence` es un contador
+ * global y su `previous` cruza de feed cuatro veces.
+ *
+ * LO QUE SIGUE SIN VERIFICARSE: la AUTORÍA. No hay comprobación de firma en
+ * ninguna parte; `value.author` se toma como dicho. Con la posición como única
+ * regla inviolable, eso significa que cualquiera puede OCUPAR el feed de
+ * cualquiera de forma permanente. Está medido en la suite y anotado como
+ * riesgo, no disimulado.
  */
 
 import fs from 'node:fs';
@@ -77,6 +123,7 @@ import {
   SSB_VOLUME_PATH,
   SKIP_REASONS,
   classifyContent,
+  feedCoords,
   messageFileName
 } from './types.mjs';
 
@@ -131,7 +178,13 @@ export function classifyMessageDetailed(msg) {
   const content = value.content;
   const { corpus, reason } = classifyContent(content);
   if (!corpus) return { ok: false, reason, key };
-  return { ok: true, key, value, content, corpus };
+  // NIVEL 1 de la admisión (ver cabecera): sin coordenada de feed el mensaje no
+  // entra en el volumen POR NINGÚN CAMINO. Es la misma exigencia que
+  // `ssbFeedCoords` hace en el driver; si esta mitad no la aplicara, el export
+  // aterrizaría material que el import rechaza abortando el volumen entero.
+  const coords = feedCoords(value);
+  if (!coords) return { ok: false, reason: SKIP_REASONS.COORDENADA_DE_FEED_AUSENTE, key };
+  return { ok: true, key, value, content, corpus, coords };
 }
 
 /**
@@ -167,8 +220,16 @@ export function partitionExportable(messages) {
   const skippedDetail = [];
   /** @type {{ key: string, corpus: string, kind: string }[]} */
   const duplicateKeys = [];
+  /** @type {{ author: string, sequence: number, keys: string[] }[]} */
+  const duplicatePositions = [];
+  /** @type {{ key: string, author: string, sequence: number, previous: string|null, motivo: string }[]} */
+  const feedIncoherencias = [];
   /** @type {Map<string, { corpus: string, sha: string }>} */
   const seen = new Map();
+  /** @type {Map<string, string>} `author#seq` → clave */
+  const seenPosition = new Map();
+  /** @type {Map<string, {author:string, sequence:number}>} clave → coordenada */
+  const coordsByKey = new Map();
   let skipped = 0;
 
   for (let index = 0; index < messages.length; index += 1) {
@@ -189,17 +250,72 @@ export function partitionExportable(messages) {
       });
       continue;
     }
+    // NIVEL 1 · la POSICIÓN también es única. Dos claves distintas en
+    // `(author, sequence)` son una BIFURCACIÓN del feed: el driver la prohíbe
+    // (`reescritura_de_feed`) y este escritor la dejaba pasar en silencio.
+    const posId = `${classified.coords.author}#${classified.coords.sequence}`;
+    const posBefore = seenPosition.get(posId);
+    if (posBefore !== undefined) {
+      duplicatePositions.push({
+        author: classified.coords.author,
+        sequence: classified.coords.sequence,
+        keys: [posBefore, classified.key]
+      });
+      continue;
+    }
+    seenPosition.set(posId, classified.key);
     seen.set(classified.key, { corpus: classified.corpus, sha });
+    coordsByKey.set(classified.key, {
+      author: classified.coords.author,
+      sequence: classified.coords.sequence
+    });
     byCorpus[classified.corpus].push({
       key: classified.key,
       value: classified.value,
       content: classified.content,
       valueSha256: sha,
+      coords: classified.coords,
       type:
         typeof classified.content?.type === 'string' ? classified.content.type : 'unknown'
     });
   }
-  return { byCorpus, skipped, total: messages.length, skippedReasons, skippedDetail, duplicateKeys };
+
+  // NIVEL 2 · coherencia del CONJUNTO: se MIDE y se DECLARA, no se tira dato.
+  // Ver la decisión «dónde vive la regla» en la cabecera. Un pack con este
+  // material sí es rechazado por el VALIDAR del driver: la asimetría es
+  // deliberada y está declarada.
+  for (const corpus of Object.keys(byCorpus)) {
+    for (const row of byCorpus[corpus]) {
+      const { author, sequence, previous } = row.coords;
+      if (previous === null && sequence !== 1) {
+        feedIncoherencias.push({ key: row.key, author, sequence, previous, motivo: 'previous_null_con_sequence_distinta_de_1' });
+        continue;
+      }
+      if (previous !== null && sequence === 1) {
+        feedIncoherencias.push({ key: row.key, author, sequence, previous, motivo: 'sequence_1_con_previous' });
+        continue;
+      }
+      if (previous === null) continue;
+      const target = coordsByKey.get(previous);
+      if (!target) continue; // el anterior no viaja en el volcado: no verificable
+      if (target.author !== author) {
+        feedIncoherencias.push({ key: row.key, author, sequence, previous, motivo: 'previous_de_otro_feed' });
+      } else if (target.sequence >= sequence) {
+        feedIncoherencias.push({ key: row.key, author, sequence, previous, motivo: 'previous_no_es_anterior' });
+      }
+    }
+  }
+
+  return {
+    byCorpus,
+    skipped,
+    total: messages.length,
+    skippedReasons,
+    skippedDetail,
+    duplicateKeys,
+    duplicatePositions,
+    feedIncoherencias
+  };
 }
 
 /**
@@ -263,32 +379,80 @@ export function requireDeclaredSsbVolume(volumesRoot) {
  * resolución dependiente del orden de `SSB_CORPORA`.
  * @param {string} ssbRoot
  */
-function indexLandedByKey(ssbRoot) {
+function indexLanded(ssbRoot) {
   /** @type {Map<string, { rel: string, valueSha256: string }>} */
   const byKey = new Map();
-  for (const corpus of SSB_CORPORA) {
-    const dir = path.join(ssbRoot, corpus.path);
-    if (!fs.existsSync(dir)) continue;
-    for (const name of fs.readdirSync(dir)) {
-      if (!name.endsWith('.json')) continue;
-      const abs = path.join(dir, name);
+  /** @type {Map<string, { rel: string, key: string }>} `author#seq` → ocupante */
+  const byPosition = new Map();
+  /** @type {{ file: string, motivo: string, esperado?: string }[]} */
+  const anomalias = [];
+
+  /** @param {string} dir @param {string} rel */
+  function walk(dir, rel) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+      const childAbs = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(childAbs, childRel);
+        continue;
+      }
+      if (!entry.isFile()) {
+        anomalias.push({ file: childRel, motivo: 'enlace_en_volumen' });
+        continue;
+      }
       /** @type {any} */
-      let row;
+      let row = null;
       try {
-        row = JSON.parse(fs.readFileSync(abs, 'utf8'));
+        row = JSON.parse(fs.readFileSync(childAbs, 'utf8'));
       } catch {
-        continue; // material ilegible del destino: el export no lo repara ni lo cuenta
+        row = null;
       }
-      if (typeof row?.key !== 'string' || !row.key || !row.value) continue;
-      if (!byKey.has(row.key)) {
-        byKey.set(row.key, {
-          rel: `${corpus.path}/${name}`,
-          valueSha256: valueSha256(row.value)
+      const key =
+        row && typeof row.key === 'string' && row.key && row.value && typeof row.value === 'object'
+          ? row.key
+          : null;
+      const parts = childRel.split('/');
+      if (!key) {
+        // El sidecar propio del volumen es lo ÚNICO que puede vivir en la raíz.
+        if (!(parts.length === 1 && parts[0] === MANIFEST_NAME)) {
+          anomalias.push({ file: childRel, motivo: 'fichero_sin_clave' });
+        }
+        continue;
+      }
+      const coords = feedCoords(row.value);
+      if (!coords) {
+        anomalias.push({ file: childRel, motivo: 'sin_coordenada_de_feed' });
+        continue;
+      }
+      // MISMA prueba de admisión que aplica el driver al destino (D-G): un
+      // fichero que no vive en su ruta canónica es INALCANZABLE para el lector
+      // (loader.mjs:131-146). Deduplicar contra él sería un `dedup` que miente.
+      const corpusOk = parts.length === 2 && SSB_CORPORA.some((c) => c.path === parts[0]);
+      const esperado = corpusOk ? `${parts[0]}/${messageFileName(key)}` : null;
+      if (!corpusOk || parts[1] !== messageFileName(key)) {
+        anomalias.push({
+          file: childRel,
+          motivo: 'fuera_de_layout',
+          ...(esperado ? { esperado } : {})
         });
+        continue;
       }
+      if (byKey.has(key)) {
+        anomalias.push({ file: childRel, motivo: 'clave_duplicada_en_volumen' });
+        continue;
+      }
+      byKey.set(key, { rel: childRel, valueSha256: valueSha256(row.value) });
+      const posId = `${coords.author}#${coords.sequence}`;
+      const ocupante = byPosition.get(posId);
+      if (ocupante && ocupante.key !== key) {
+        anomalias.push({ file: childRel, motivo: 'feed_bifurcado_en_volumen' });
+        continue;
+      }
+      byPosition.set(posId, { rel: childRel, key });
     }
   }
-  return byKey;
+  if (fs.existsSync(ssbRoot)) walk(ssbRoot, '');
+  return { byKey, byPosition, anomalias };
 }
 
 /**
@@ -306,14 +470,29 @@ export function exportSsbLogToVolumes(opts) {
   requireDeclaredSsbVolume(volumesRoot);
 
   const messages = normalizeSsbLog(opts.log);
-  const { byCorpus, skipped, total, skippedReasons, skippedDetail, duplicateKeys } =
-    partitionExportable(messages);
+  const {
+    byCorpus,
+    skipped,
+    total,
+    skippedReasons,
+    skippedDetail,
+    duplicateKeys,
+    duplicatePositions,
+    feedIncoherencias
+  } = partitionExportable(messages);
 
   const divergentInLog = duplicateKeys.filter((d) => d.kind === 'divergente');
   if (divergentInLog.length > 0) {
     throw new Error(
       `clave_duplicada_en_log: el volcado trae ${divergentInLog.length} clave(s) repetida(s) con contenido DISTINTO ` +
         `(${divergentInLog.map((d) => d.key).join(', ')}) — dos mensajes distintos bajo la misma clave se pisarían en silencio; abortando sin escribir.`
+    );
+  }
+  if (duplicatePositions.length > 0) {
+    throw new Error(
+      `posicion_duplicada_en_log: el volcado trae ${duplicatePositions.length} posición(es) de feed reclamada(s) por claves DISTINTAS ` +
+        `(${duplicatePositions.map((d) => `${d.author}#${d.sequence}: ${d.keys.join(' vs ')}`).join('; ')}) — ` +
+        'es una bifurcación de feed, y la posición aterrizada es inmutable; abortando sin escribir.'
     );
   }
 
@@ -324,21 +503,47 @@ export function exportSsbLogToVolumes(opts) {
   }
 
   // ── PASE DRY: se planifica entero antes de escribir un solo byte ──────────
-  const landed = indexLandedByKey(ssbRoot);
+  const landed = indexLanded(ssbRoot);
+  if (landed.anomalias.length > 0) {
+    // MISMA doctrina que el driver ante un destino con agujeros: sin índice
+    // completo no se puede planificar «jamás duplicar». Aterrizar encima de un
+    // volumen así produciría material duplicado o inalcanzable.
+    throw new Error(
+      `layout_invalido_en_volumen: ${landed.anomalias.length} anomalía(s) en ${ssbRoot} ` +
+        `(${landed.anomalias
+          .map((a) => `${a.file}: ${a.motivo}${a.esperado ? ` (esperado ${a.esperado})` : ''}`)
+          .join('; ')}) — el lector no puede resolver ese material; abortando sin escribir.`
+    );
+  }
   /** @type {{ abs: string, payload: string }[]} */
   const writes = [];
   /** @type {{ key: string, at: string, corpus: string }[]} */
   const conflicts = [];
+  /** @type {{ author: string, sequence: number, key: string, at: string, destKey: string }[]} */
+  const posConflicts = [];
   /** @type {{ key: string, at: string }[]} */
   const unchanged = [];
   for (const corpus of SSB_CORPORA) {
     const dir = path.join(ssbRoot, corpus.path);
     for (const row of byCorpus[corpus.id] || []) {
       const rel = `${corpus.path}/${messageFileName(row.key)}`;
-      const before = landed.get(row.key);
+      const before = landed.byKey.get(row.key);
       if (before) {
         if (before.valueSha256 === row.valueSha256) unchanged.push({ key: row.key, at: before.rel });
         else conflicts.push({ key: row.key, at: before.rel, corpus: corpus.id });
+        continue;
+      }
+      // NIVEL 1 · la posición aterrizada es INMUTABLE, también por este camino.
+      const posId = `${row.coords.author}#${row.coords.sequence}`;
+      const ocupante = landed.byPosition.get(posId);
+      if (ocupante && ocupante.key !== row.key) {
+        posConflicts.push({
+          author: row.coords.author,
+          sequence: row.coords.sequence,
+          key: row.key,
+          at: ocupante.rel,
+          destKey: ocupante.key
+        });
         continue;
       }
       writes.push({
@@ -349,13 +554,21 @@ export function exportSsbLogToVolumes(opts) {
           2
         )}`
       });
-      landed.set(row.key, { rel, valueSha256: row.valueSha256 });
+      landed.byKey.set(row.key, { rel, valueSha256: row.valueSha256 });
+      landed.byPosition.set(posId, { rel, key: row.key });
     }
   }
   if (conflicts.length > 0) {
     throw new Error(
       `clave_divergente: ${conflicts.length} clave(s) del volcado ya viven en el volumen con contenido DISTINTO ` +
         `(${conflicts.map((c) => `${c.key} @ ${c.at}`).join('; ')}) — sobrescribirlas sería pérdida de dato; abortando sin escribir.`
+    );
+  }
+  if (posConflicts.length > 0) {
+    throw new Error(
+      `posicion_ocupada: ${posConflicts.length} posición(es) de feed ya aterrizada(s) con OTRA clave ` +
+        `(${posConflicts.map((c) => `${c.author}#${c.sequence}: ${c.key} vs ${c.destKey} @ ${c.at}`).join('; ')}) — ` +
+        'la posición aterrizada es inmutable (es lo que el import llama `reescritura_de_feed`); abortando sin escribir.'
     );
   }
 
@@ -381,12 +594,26 @@ export function exportSsbLogToVolumes(opts) {
       kind: 'ssb-log-export',
       ...(opts.provenance && typeof opts.provenance === 'object' ? opts.provenance : {})
     },
+    // `exported` cuenta los mensajes DE ESTE VOLCADO que están en el volumen;
+    // `corpora[].files` cuenta TODOS los ficheros del volumen. Antes de U205
+    // concordaban por construcción porque el sync arrasaba el corpus; al dejar
+    // de borrar dejan de concordar, y callarlo haría mentir al sidecar —que es
+    // justamente la marca de sync de este volumen—. `volumeFiles` y `orphans`
+    // nombran la diferencia en vez de dejarla implícita: `orphans` es material
+    // que vive en el volumen y que este volcado NO trajo (import previo, o un
+    // volcado con ventana temporal más corta). NO es un error: un mensaje SSB
+    // es inmutable y un feed no se despublica. Ver §9 del reporte: no hay vía
+    // de retirada por clave.
     totals: {
       input: total,
       exported: writes.length + unchanged.length,
       skipped,
       added: writes.length,
-      unchanged: unchanged.length
+      unchanged: unchanged.length,
+      volumeFiles: Object.values(counts).reduce((a, b) => a + b, 0),
+      orphans:
+        Object.values(counts).reduce((a, b) => a + b, 0) - (writes.length + unchanged.length),
+      feedIncoherencias: feedIncoherencias.length
     },
     corpora: SSB_CORPORA.map((c) => ({
       id: c.id,
@@ -413,7 +640,8 @@ export function exportSsbLogToVolumes(opts) {
     unchanged: unchanged.length,
     skippedReasons,
     skippedDetail,
-    duplicateKeys
+    duplicateKeys,
+    feedIncoherencias
   };
 }
 

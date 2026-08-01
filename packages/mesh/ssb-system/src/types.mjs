@@ -50,8 +50,41 @@ export const SKIP_REASONS = Object.freeze({
   CONTENIDO_CIFRADO: 'contenido_cifrado',
   CONTENIDO_NO_OBJETO: 'contenido_no_objeto',
   TIPO_AUSENTE: 'tipo_ausente',
-  TIPO_NO_EXPORTABLE: 'tipo_no_exportable'
+  TIPO_NO_EXPORTABLE: 'tipo_no_exportable',
+  // WP-U205 · 2.ª vuelta: sin coordenada de feed el mensaje no es admisible en
+  // el volumen. Antes el export lo aterrizaba y el driver abortaba el volumen
+  // ENTERO al importarlo (`destino_sin_coordenada_de_feed`): un sync dejaba el
+  // volumen inimportable y nadie se enteraba.
+  COORDENADA_DE_FEED_AUSENTE: 'coordenada_de_feed_ausente'
 });
+
+/**
+ * Coordenada de feed `{author, sequence, previous}`, o `null`.
+ *
+ * Nota de sitio: réplica EXACTA de `ssbFeedCoords`
+ * (`@zeus/volumes-ops/src/driver-ssb.mjs`), que es el otro escritor de este
+ * volumen. No se puede importar —volumes-ops no es dependencia declarada de
+ * ssb-system y los 48 manifests están congelados (GOBIERNO-EJECUCION-F2 §2,
+ * owner U237)— así que se replica. Las dos copias DEBEN decir lo mismo: si
+ * divergen, el export aterriza material que el import rechaza. La juntura tiene
+ * probe en `volumes-ops/test/import-ssb-driver.test.mjs`.
+ * @param {unknown} value — el `value` del mensaje
+ * @returns {{ author: string, sequence: number, previous: string|null }|null}
+ */
+export function feedCoords(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const v = /** @type {Record<string, unknown>} */ (value);
+  const author = v.author;
+  if (typeof author !== 'string' || author.length === 0) return null;
+  const sequence = v.sequence;
+  if (!Number.isInteger(sequence) || /** @type {number} */ (sequence) < 1) return null;
+  const previous = v.previous;
+  if (previous === undefined || previous === null) {
+    return { author, sequence: /** @type {number} */ (sequence), previous: null };
+  }
+  if (typeof previous !== 'string' || previous.length === 0) return null;
+  return { author, sequence: /** @type {number} */ (sequence), previous };
+}
 
 /**
  * Clasifica un `content` en corpus, o dice por qué no se puede.

@@ -143,9 +143,10 @@ test('CA-6a: un DM cifrado no se exporta y se dice POR QUÉ — motivo distinto 
   }
 });
 
-test('CA-6b: cero material de identidad en el paquete (probe de BACKLOG:266, patrones declarados)', () => {
-  // Alcance HONESTO: esto mide el PAQUETE (src/ + fixtures/), no el contenido
-  // exportado. Ver el test siguiente para el límite real.
+test('CA-6b: cero material de identidad EN EL CORPUS DEL REPO (probe de BACKLOG:266, patrones declarados)', () => {
+  // Alcance HONESTO, y el título lo dice: esto mide `src/` + `fixtures/` de
+  // ESTE paquete —corpus que escribimos nosotros—, no el material que un pub
+  // real emita ni el contenido exportado. Ver el test siguiente para el límite.
   const PATRONES = [
     /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
     /\bprivateKey\b/,
@@ -397,6 +398,26 @@ function marcaEscritorDeManifiesto(source) {
   return PRIMITIVAS_DE_ESCRITURA.test(source) && TOKEN_DE_MANIFIESTO.test(source);
 }
 
+test('CA-5c · el escritor legado está muerto EN `src/` — el probe excluye `test/`, y ahí vive una copia', () => {
+  // Honestidad sobre el alcance del probe de abajo: salta cualquier directorio
+  // `test|tests|fixtures`, y este mismo fichero contiene una réplica VERBATIM
+  // del escritor demolido (el contraste de CA-4). Esa copia recibe la ruta como
+  // PARÁMETRO y solo apunta a un temporal del propio test: no es escritor vivo.
+  // Pero la frase que se puede sostener es «muerto en `src/`», no «muerto».
+  const probeVeElTest = ['test', 'tests', '__tests__', 'fixtures'].includes('test');
+  assert.equal(probeVeElTest, true, 'el probe salta `test/` por diseño');
+  const esteFichero = fs.readFileSync(path.join(PKG_ROOT, 'test', 'export.test.mjs'), 'utf8');
+  assert.equal(marcaEscritorDeManifiesto(esteFichero), true, 'la copia existe y el predicado la vería');
+  // Y en `src/` no queda ninguna: la función demolida no existe y no hay
+  // escritura contra `configPath`. Lo que SÍ queda es prosa que cita el código
+  // viejo en la nota de demolición — por eso esta asersión mira DEFINICIONES y
+  // LLAMADAS, no menciones. El comportamiento lo prueba CA-5a por ruta derivada.
+  const src = fs.readFileSync(path.join(PKG_ROOT, 'src', 'export.mjs'), 'utf8');
+  assert.doesNotMatch(src, /function upsertVolumesJsonEntry/);
+  assert.doesNotMatch(src, /upsertVolumesJsonEntry\s*\(/);
+  assert.doesNotMatch(src, /writeFileSync\s*\(\s*configPath/);
+});
+
 test('CA-5c · repo entero: cada fichero marcado está en la ALLOWLIST, razonado uno a uno', () => {
   // El probe sobre-aproxima a propósito (co-ocurrencia por FICHERO, no
   // dataflow): prefiere falsos positivos a ceguera. Por eso la allowlist es
@@ -573,6 +594,144 @@ test('unión aditiva: misma clave con `value` DISTINTO aborta ANTES de escribir 
       () => exportSsbLogToVolumes({ log: [base, impostor], volumesRoot: root }),
       /clave_duplicada_en_log/
     );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('NIVEL 1: la POSICIÓN de feed también es única en el export (bifurcación, dentro del volcado y contra el volumen)', () => {
+  const root = tempRoot('zeus-ssb-posicion-');
+  try {
+    seedManifest(root);
+    const uno = {
+      key: '%p1=.sha256',
+      value: { author: '@alice.ed25519', sequence: 1, previous: null, content: { type: 'tribe', t: 'a' } }
+    };
+    const gemelo = {
+      key: '%p2=.sha256',
+      value: { author: '@alice.ed25519', sequence: 1, previous: null, content: { type: 'tribe', t: 'b' } }
+    };
+    // (a) dentro del MISMO volcado: dos claves distintas en (@alice, 1).
+    assert.throws(
+      () => exportSsbLogToVolumes({ log: [uno, gemelo], volumesRoot: root }),
+      /posicion_duplicada_en_log/
+    );
+    assert.ok(!fs.existsSync(path.join(root, 'DISK_04', 'SSB', 'tribes', messageFileName('%p1=.sha256'))));
+
+    // (b) contra el volumen ya aterrizado.
+    const first = exportSsbLogToVolumes({ log: [uno], volumesRoot: root });
+    assert.equal(first.added, 1);
+    const bytes = fs.readFileSync(path.join(first.ssbRoot, 'tribes', messageFileName('%p1=.sha256')));
+    assert.throws(
+      () => exportSsbLogToVolumes({ log: [gemelo], volumesRoot: root }),
+      /posicion_ocupada/
+    );
+    assert.deepEqual(
+      fs.readFileSync(path.join(first.ssbRoot, 'tribes', messageFileName('%p1=.sha256'))),
+      bytes
+    );
+    assert.ok(!fs.existsSync(path.join(first.ssbRoot, 'tribes', messageFileName('%p2=.sha256'))));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('NIVEL 1: sin coordenada de feed el mensaje NO entra — antes aterrizaba y volvía el volumen inimportable', () => {
+  const root = tempRoot('zeus-ssb-coords-');
+  try {
+    seedManifest(root);
+    const sinCoords = { key: '%q1=.sha256', value: { content: { type: 'tribe' } } };
+    const sano = {
+      key: '%q2=.sha256',
+      value: { author: '@alice.ed25519', sequence: 1, previous: null, content: { type: 'tribe' } }
+    };
+    assert.equal(classifyMessageDetailed(sinCoords).reason, SKIP_REASONS.COORDENADA_DE_FEED_AUSENTE);
+    // Discrimina: secuencia 0 o autor vacío tampoco valen.
+    assert.equal(
+      classifyMessageDetailed({ key: '%q3', value: { author: '@a', sequence: 0, content: { type: 'tribe' } } }).reason,
+      SKIP_REASONS.COORDENADA_DE_FEED_AUSENTE
+    );
+
+    const res = exportSsbLogToVolumes({ log: [sinCoords, sano], volumesRoot: root });
+    assert.equal(res.added, 1);
+    assert.equal(res.skippedReasons.coordenada_de_feed_ausente, 1);
+    assert.ok(!fs.existsSync(path.join(res.ssbRoot, 'tribes', messageFileName('%q1=.sha256'))));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('NIVEL 1: un volumen con layout inválido bloquea el sync (mismo criterio que el driver)', () => {
+  const root = tempRoot('zeus-ssb-layout-');
+  try {
+    seedManifest(root);
+    const m = {
+      key: '%r1=.sha256',
+      value: { author: '@alice.ed25519', sequence: 1, previous: null, content: { type: 'tribe' } }
+    };
+    const first = exportSsbLogToVolumes({ log: [m], volumesRoot: root });
+    // Nombre que no deriva de la clave: para `loadSsbMessage` no existe.
+    fs.renameSync(
+      path.join(first.ssbRoot, 'tribes', messageFileName('%r1=.sha256')),
+      path.join(first.ssbRoot, 'tribes', 'legado.json')
+    );
+    assert.throws(
+      () => exportSsbLogToVolumes({ log: [m], volumesRoot: root }),
+      /layout_invalido_en_volumen[\s\S]*fuera_de_layout[\s\S]*esperado/
+    );
+    // Sigue sin haber una segunda copia: aborta en pase dry.
+    assert.equal(fs.readdirSync(path.join(first.ssbRoot, 'tribes')).length, 1);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('NIVEL 2: la cadena se MIDE y se DECLARA, no se tira dato (asimetría deliberada con el import)', () => {
+  const log = JSON.parse(fs.readFileSync(FIXTURE, 'utf8'));
+  const part = partitionExportable(log);
+  // La fixture del repo tiene contador GLOBAL y `previous` que cruza de feed.
+  assert.ok(part.feedIncoherencias.length > 0);
+  const motivos = new Set(part.feedIncoherencias.map((i) => i.motivo));
+  assert.ok(motivos.has('previous_null_con_sequence_distinta_de_1'));
+  assert.ok(motivos.has('previous_de_otro_feed'));
+  // Y aun así se exporta ENTERA: no se descarta gobernanza por una cadena que
+  // el productor numeró mal. El pack de ese árbol SÍ lo rechaza el driver.
+  assert.equal(part.byCorpus.tribes.length, 2);
+  assert.equal(part.byCorpus.parliament.length, 5);
+  assert.equal(part.byCorpus.votes.length, 2);
+  // La fixture NUEVA, en cambio, es coherente: cero incoherencias.
+  const feedLog = JSON.parse(fs.readFileSync(FEED_FIXTURE, 'utf8'));
+  assert.deepEqual(partitionExportable(feedLog).feedIncoherencias, []);
+});
+
+test('m2: el sidecar NOMBRA la diferencia entre lo exportado y lo que hay en el volumen (huérfanos)', () => {
+  const root = tempRoot('zeus-ssb-huerfanos-');
+  try {
+    seedManifest(root);
+    const a = {
+      key: '%h1=.sha256',
+      value: { author: '@alice.ed25519', sequence: 1, previous: null, content: { type: 'tribe' } }
+    };
+    const b = {
+      key: '%h2=.sha256',
+      value: { author: '@alice.ed25519', sequence: 2, previous: '%h1=.sha256', content: { type: 'tribe' } }
+    };
+    const first = exportSsbLogToVolumes({ log: [a, b], volumesRoot: root });
+    assert.equal(first.manifest.totals.orphans, 0, 'primer sync: todo lo del volumen viene del volcado');
+
+    // Segundo volcado con ventana más corta (solo trae `b`). Antes de U205 el
+    // borrado destructivo hacía concordar `exported` y `files` por construcción;
+    // al dejar de borrar dejan de concordar, y el sidecar lo DICE en vez de
+    // callarlo. El huérfano NO es un error: un mensaje SSB es inmutable y un
+    // feed no se despublica.
+    const second = exportSsbLogToVolumes({ log: [b], volumesRoot: root });
+    assert.equal(second.manifest.totals.input, 1);
+    assert.equal(second.manifest.totals.exported, 1);
+    assert.equal(second.manifest.totals.volumeFiles, 2);
+    assert.equal(second.manifest.totals.orphans, 1, 'la diferencia tiene nombre');
+    assert.equal(second.counts.tribes, 2);
+    const schema = validate('ssb-manifest', second.manifest);
+    assert.equal(schema.ok, true, JSON.stringify(schema.errors));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

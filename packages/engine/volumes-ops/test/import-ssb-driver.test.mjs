@@ -1026,34 +1026,45 @@ test('destino: fichero que no rinde clave = destino_sin_clave, aborta en el pase
   }
 });
 
-test('destino: fichero mal NOMBRADO ocupando la ruta de otra clave = colision_ruta', () => {
+test('D-G: fichero del destino MAL NOMBRADO = destino_fuera_de_layout, jamás un dedup que mienta', () => {
   const { root, restore } = setupRoot();
   const packA = buildSsbPack({ units: [{ msg: msg({ key: '%viejo=.sha256' }) }] });
   try {
     const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
     assert.equal(first.ok, true);
-    // Material heredado: el fichero de `%viejo` renombrado al nombre derivado
-    // de OTRA clave. Su contenido sigue siendo `%viejo`, así que el índice lo
-    // ve bajo su propia clave y la ruta queda ocupada por un extraño.
+    // Material heredado: el fichero de `%viejo` con un nombre que NO deriva de
+    // su clave. Para `loadSsbMessage` ese mensaje no existe en ninguna parte.
     fs.renameSync(
       rootFile(root, unitRel('tribes', '%viejo=.sha256')),
-      rootFile(root, unitRel('tribes', '%nuevo=.sha256'))
+      rootFile(root, 'tribes/nombre-legado.json')
     );
     const manifestBefore = manifestBytes(root);
+    const treeBefore = volumeFiles(root);
 
+    // El pack trae EL MISMO mensaje con el nombre BUENO. Antes de D-G esto daba
+    // `ok:true, moved:0, dedup:1`: el nombre bueno no aterrizaba nunca y el
+    // lector seguía sin encontrar nada, con un `dedup` diciendo que la clave ya
+    // vivía ahí.
     const packB = buildSsbPack({
-      name: 'pack-ssb-colision',
+      name: 'pack-ssb-mal-nombrado',
       version: '2.0.0',
-      units: [{ msg: msg({ key: '%nuevo=.sha256', author: BOB, sequence: 1 }) }]
+      units: [{ msg: msg({ key: '%viejo=.sha256' }) }]
     });
     const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
     assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
     assert.equal(res.step, 'fusionar');
-    assert.equal(res.error, 'colision_ruta');
-    assert.equal(res.file, unitRel('tribes', '%nuevo=.sha256'));
-    assert.equal(res.key, '%nuevo=.sha256');
-    assert.equal(res.destKey, '%viejo=.sha256');
+    assert.equal(res.error, 'destino_fuera_de_layout');
+    assert.deepEqual(res.files, [
+      {
+        file: 'tribes/nombre-legado.json',
+        key: '%viejo=.sha256',
+        esperado: unitRel('tribes', '%viejo=.sha256')
+      }
+    ]);
+    assert.ok(!res.steps.some((s) => s.step === 'sellar'), 'no se llegó a SELLAR');
     assert.equal(manifestBytes(root), manifestBefore);
+    assert.equal(hashManifest().sha256, first.manifestSha256);
+    assert.deepEqual(volumeFiles(root), treeBefore);
     assert.ok(noStagingLeft(root));
 
     fs.rmSync(packB.packRoot, { recursive: true, force: true });
@@ -1063,13 +1074,14 @@ test('destino: fichero mal NOMBRADO ocupando la ruta de otra clave = colision_ru
   }
 });
 
-test('destino: mensaje heredado FUERA del layout deduplica, cuenta y se DECLARA', () => {
+test('D-G: mensaje del destino con profundidad 3 o en la raíz = destino_fuera_de_layout', () => {
   const { root, restore } = setupRoot();
   const packA = buildSsbPack({ units: [{ msg: msg({ key: '%l1=.sha256' }) }] });
   try {
     assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
     // Mensaje aterrizado con profundidad 3 (layout anterior): invisible para
-    // `loadSsbMessage`, pero el índice DEBE verlo o el pack lo replantaría.
+    // `loadSsbMessage`. Antes se INDEXABA y se contaba en `destFueraDeLayout` —
+    // ese campo era la coartada, como el `destSinClave` que U204 mató en D-F.
     const huerfano = msg({ key: '%l2=.sha256', author: BOB, sequence: 1 });
     const abs = rootFile(root, `tribes/heredado/${messageFileName(huerfano.key)}`);
     fs.mkdirSync(path.dirname(abs), { recursive: true });
@@ -1081,15 +1093,15 @@ test('destino: mensaje heredado FUERA del layout deduplica, cuenta y se DECLARA'
       units: [{ msg: huerfano }]
     });
     const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
-    assert.equal(res.ok, true, JSON.stringify(res.error ?? res.steps));
-    const fam = res.families.find((f) => f.id === 'ssb');
-    assert.equal(fam.moved, 0, 'el mensaje ya vive en el volumen: no se duplica');
-    assert.deepEqual(fam.dedup.map((d) => d.at), [`tribes/heredado/${messageFileName('%l2=.sha256')}`]);
-    assert.equal(volumeFiles(root).length, 2);
-
-    const snapshot = JSON.parse(manifestBytes(root)).volumes.ssb.source.imported.snapshot;
-    assert.equal(snapshot.units, 2);
-    assert.equal(snapshot.destFueraDeLayout, 1);
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'destino_fuera_de_layout');
+    assert.equal(res.files[0].file, `tribes/heredado/${messageFileName('%l2=.sha256')}`);
+    assert.equal(res.files[0].key, '%l2=.sha256');
+    assert.equal(res.files[0].esperado, null, 'no hay ruta canónica que sugerir: ni el corpus vale');
+    // Y el campo-coartada ya no existe en ningún snapshot.
+    assert.ok(!JSON.stringify(res).includes('destFueraDeLayout'));
+    assert.ok(noStagingLeft(root));
 
     fs.rmSync(packB.packRoot, { recursive: true, force: true });
   } finally {
@@ -1098,38 +1110,179 @@ test('destino: mensaje heredado FUERA del layout deduplica, cuenta y se DECLARA'
   }
 });
 
-test('destino: ancestro que existe como FICHERO = fallo declarado, nunca excepción a medias', () => {
+test('D-G: dos claves en la MISMA posición del destino = destino_con_feed_bifurcado', () => {
   const { root, restore } = setupRoot();
-  const packA = buildSsbPack({ units: [{ msg: msg({ key: '%p1=.sha256' }) }] });
+  const packA = buildSsbPack({ units: [{ msg: msg({ key: '%f1=.sha256', sequence: 1 }) }] });
   try {
     const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
     assert.equal(first.ok, true);
-    // `votes` existe como FICHERO y ADEMÁS es un mensaje válido (material
-    // heredado plausible): así el que caza es el guardián de ancestros y no
-    // `destino_sin_clave`.
-    const bloqueante = msg({ key: '%bloqueante=.sha256', author: BOB, sequence: 1 });
+    // Bifurcación YA aterrizada (la puede haber dejado un escritor externo).
+    // Antes el índice hacía `feed.set(seq, key)` y la segunda clave PISABA a la
+    // primera en el Map: `reescritura_de_feed` comparaba contra un ganador
+    // arbitrario y la bifurcación no se veía ni desde el cursor de réplica.
+    const gemelo = msg({ key: '%f1-bis=.sha256', sequence: 1, body: { title: 'bifurcado' } });
     fs.writeFileSync(
-      rootFile(root, 'votes'),
-      JSON.stringify(landed(bloqueante, 'votes'), null, 2),
+      rootFile(root, unitRel('tribes', gemelo.key)),
+      JSON.stringify(landed(gemelo, 'tribes'), null, 2),
       'utf8'
     );
     const manifestBefore = manifestBytes(root);
-    const treeBefore = volumeFiles(root);
 
     const packB = buildSsbPack({
-      name: 'pack-ssb-bloqueado',
+      name: 'pack-ssb-fork-destino',
       version: '2.0.0',
-      units: [{ corpus: 'votes', msg: msg({ key: '%p2=.sha256', author: BOB, sequence: 2, previous: '%bloqueante=.sha256', type: 'votes' }) }]
+      units: [{ msg: msg({ key: '%f2=.sha256', author: BOB, sequence: 1 }) }]
     });
     const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
     assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
     assert.equal(res.step, 'fusionar');
-    assert.equal(res.error, 'ruta_bloqueada_por_fichero');
-    assert.equal(res.file, unitRel('votes', '%p2=.sha256'));
-    assert.equal(res.blockedBy, 'votes');
+    assert.equal(res.error, 'destino_con_feed_bifurcado');
+    assert.equal(res.forks.length, 1);
+    assert.equal(res.forks[0].author, ALICE);
+    assert.equal(res.forks[0].sequence, 1);
+    assert.deepEqual(res.forks[0].keys.sort(), ['%f1-bis=.sha256', '%f1=.sha256']);
     assert.equal(manifestBytes(root), manifestBefore);
     assert.equal(hashManifest().sha256, first.manifestSha256);
-    assert.deepEqual(volumeFiles(root), treeBefore);
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('m1: destino sin coordenada de feed = destino_sin_coordenada_de_feed (guarda antes sin test)', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildSsbPack({ units: [{ msg: msg({ key: '%c1=.sha256' }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    // Mensaje con clave y ruta canónica pero SIN author/sequence: el driver no
+    // puede protegerle la posición, así que no lo admite en el índice.
+    const sinCoords = { key: '%c2=.sha256', value: { content: { type: 'tribe' } } };
+    fs.writeFileSync(
+      rootFile(root, unitRel('tribes', sinCoords.key)),
+      JSON.stringify({ ...sinCoords, type: 'tribe', corpus: 'tribes' }, null, 2),
+      'utf8'
+    );
+    const manifestBefore = manifestBytes(root);
+
+    const packB = buildSsbPack({
+      name: 'pack-ssb-sin-coords-destino',
+      version: '2.0.0',
+      units: [{ msg: msg({ key: '%c3=.sha256', author: BOB, sequence: 1 }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'destino_sin_coordenada_de_feed');
+    assert.deepEqual(res.files, [unitRel('tribes', '%c2=.sha256')]);
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('m1: `corpus` del fichero incoherente con su directorio = corpus_incoherente (guarda antes sin test)', () => {
+  const { root, restore } = setupRoot();
+  const m = msg({ key: '%ci=.sha256' });
+  const { packRoot } = buildSsbPack({
+    units: [{ msg: msg({ key: '%sano=.sha256', author: BOB, sequence: 1 }) }],
+    mutate(dataDir) {
+      const abs = path.join(dataDir, 'tribes', messageFileName(m.key));
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      // Vive bajo `tribes` y se declara de `votes`: fichero contradictorio.
+      fs.writeFileSync(abs, JSON.stringify(landed(m, 'votes'), null, 2), 'utf8');
+    }
+  });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.steps));
+    assert.equal(res.step, 'validar');
+    assert.equal(res.error, 'familia_invalida');
+    assert.match(
+      JSON.stringify(res.results),
+      /corpus_incoherente: tribes\/.* declara corpus \\"votes\\" y vive bajo \\"tribes\\"/
+    );
+    assert.equal(manifestBytes(root), before);
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+test('m1: `cadena_rota` en MERGE (no en validar) — el previous vive en el DESTINO y no encadena', () => {
+  const { root, restore } = setupRoot();
+  // Destino: un mensaje de ALICE en seq 1.
+  const packA = buildSsbPack({ units: [{ msg: msg({ key: '%ancla=.sha256', sequence: 1 }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    const manifestBefore = manifestBytes(root);
+
+    // Pack: mensaje de BOB cuyo `previous` apunta al ancla de ALICE. Dentro del
+    // pack la cadena NO es verificable (el anterior no viaja), así que VALIDAR
+    // lo deja pasar: solo `merge`, que ve el destino, puede cazarlo. Antes,
+    // los dos aciertos de `cadena_rota` en esta suite eran subcadenas de
+    // `cadena_rota_en_pack` y esta mitad tenía cobertura CERO.
+    const packB = buildSsbPack({
+      name: 'pack-ssb-cadena-merge',
+      version: '2.0.0',
+      units: [{ msg: msg({ key: '%b2=.sha256', author: BOB, sequence: 2, previous: '%ancla=.sha256' }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'cadena_rota', 'exactamente cadena_rota, NO cadena_rota_en_pack');
+    assert.equal(res.author, BOB);
+    assert.equal(res.sequence, 2);
+    assert.equal(res.previous, '%ancla=.sha256');
+    assert.equal(res.previousAuthor, ALICE);
+    assert.equal(res.previousSequence, 1);
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.equal(hashManifest().sha256, first.manifestSha256);
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('m1: `sobrescritura_imposible` SÍ es alcanzable — un DIRECTORIO ocupando la ruta de una unidad', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildSsbPack({ units: [{ msg: msg({ key: '%s1=.sha256' }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    // Resto de una operación manual: un directorio VACÍO con el nombre canónico
+    // de una unidad. `walkRel` no lo ve (no tiene ficheros dentro), así que el
+    // índice está limpio y el plan lo da por ruta libre; solo el guardián
+    // estructural lo caza antes de que `renameSync` reviente a medias.
+    const ocupada = rootFile(root, unitRel('tribes', '%s2=.sha256'));
+    fs.mkdirSync(ocupada, { recursive: true });
+    const manifestBefore = manifestBytes(root);
+
+    const packB = buildSsbPack({
+      name: 'pack-ssb-dir-ocupando',
+      version: '2.0.0',
+      units: [{ msg: msg({ key: '%s2=.sha256', author: BOB, sequence: 1 }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'sobrescritura_imposible');
+    assert.equal(res.file, unitRel('tribes', '%s2=.sha256'));
+    assert.ok(!res.steps.some((s) => s.step === 'sellar'));
+    assert.equal(manifestBytes(root), manifestBefore);
     assert.ok(noStagingLeft(root));
 
     fs.rmSync(packB.packRoot, { recursive: true, force: true });
@@ -1218,6 +1371,240 @@ test('registro: el driver expone las CUATRO claves del contrato y sus constantes
   assert.ok(Object.isFrozen(SSB_DRIVER));
   assert.deepEqual([...SSB_CORPUS_DIRS], ['tribes', 'parliament', 'votes']);
   assert.deepEqual([...SSB_ROOT_FILES], ['manifest.json']);
+});
+
+test('cursor: `feedsSha256` distingue el RELLENO del feed, no solo su frontera', () => {
+  // Lo que el 8.º eslabón (réplica A→B) va a comparar. Con el máximo a secas,
+  // dos volúmenes con el mismo frente y distinta densidad daban el MISMO cursor
+  // y la réplica los habría dado por iguales.
+  const snapshotDe = (secuencias) => {
+    const { root, restore } = setupRoot();
+    const { packRoot } = buildSsbPack({
+      name: `pack-cursor-${secuencias.join('-')}`,
+      units: secuencias.map((seq) => ({
+        msg: msg({
+          key: `%cur${seq}=.sha256`,
+          sequence: seq,
+          previous: seq === 1 ? null : `%cur${seq - 1}=.sha256`
+        })
+      }))
+    });
+    try {
+      const res = importPack({ packRoot, role: 'operator' });
+      assert.equal(res.ok, true, JSON.stringify(res.error ?? res.results));
+      return JSON.parse(manifestBytes(root)).volumes.ssb.source.imported.snapshot;
+    } finally {
+      restore();
+      fs.rmSync(packRoot, { recursive: true, force: true });
+    }
+  };
+
+  const completo = snapshotDe([1, 2, 3]);
+  const conHueco = snapshotDe([1, 3]);
+  assert.equal(completo.feeds, 1);
+  assert.equal(conHueco.feeds, 1);
+  assert.equal(completo.feedsConHueco, undefined);
+  assert.equal(conHueco.feedsConHueco, 1);
+  // MISMA frontera (max=3), MISMO autor, distinto relleno → cursores DISTINTOS.
+  assert.notEqual(
+    completo.feedsSha256,
+    conHueco.feedsSha256,
+    'el cursor debe ver el relleno, no solo el máximo'
+  );
+  assert.notEqual(completo.unitsSha256, conHueco.unitsSha256);
+});
+
+// ── LA JUNTURA export ↔ import ─────────────────────────────────────────────
+// Los tres bloqueantes de la 1.ª devolución eran la misma cosa: dos escritores
+// del mismo volumen con reglas distintas. Estas pruebas cruzan la frontera de
+// verdad — exportan con el escritor REAL y luego importan el resultado.
+//
+// ACOPLAMIENTO DECLARADO: import relativo entre paquetes, y solo en el test.
+// `@zeus/ssb-system` no es dependencia de volumes-ops (ni puede serlo: los 48
+// manifests están congelados, owner U237), y replicar aquí el exportador no
+// probaría nada — probaría la réplica. `export.mjs` solo importa `node:*` y su
+// propio `types.mjs`, así que el import relativo resuelve sin tocar deps.
+
+test('JUNTURA: todo volumen que produce el export es importable por el driver', async () => {
+  const { exportSsbLogToVolumes } = await import('../../../mesh/ssb-system/src/export.mjs');
+  const { root, restore } = setupRoot();
+  try {
+    // El root debe declarar `ssb`: el export es fallo cerrado (U205 · CA-4).
+    fs.writeFileSync(
+      path.join(root, 'volumes.json'),
+      `${JSON.stringify(
+        {
+          root: '.',
+          volumes: {
+            ssb: { disk: 'DISK_04', path: VOL_REL, readonly: true, label: 'ssb', corpora: [] }
+          }
+        },
+        null,
+        2
+      )}\n`,
+      'utf8'
+    );
+    const log = [
+      { key: '%j1=.sha256', value: { author: ALICE, sequence: 1, previous: null, content: { type: 'tribe' } } },
+      { key: '%j2=.sha256', value: { author: ALICE, sequence: 2, previous: '%j1=.sha256', content: { type: 'post' } } },
+      { key: '%j3=.sha256', value: { author: ALICE, sequence: 3, previous: '%j2=.sha256', content: { type: 'parliamentTerm' } } },
+      { key: '%j4=.sha256', value: { author: BOB, sequence: 1, previous: null, content: 'cifrado==.box' } },
+      { key: '%j5=.sha256', value: { author: BOB, sequence: 2, previous: '%j4=.sha256', content: { type: 'votesVote' } } }
+    ];
+    const exported = exportSsbLogToVolumes({ log, volumesRoot: root });
+    assert.equal(exported.ok, true);
+    assert.equal(exported.added, 3, 'el `post` y el DM cifrado no aterrizan');
+
+    // El árbol aterrizado, empaquetado tal cual, DEBE pasar VALIDAR y FUSIONAR.
+    const landedRels = volumeFiles(root).filter((rel) => rel !== 'manifest.json');
+    const units = landedRels.map((rel) => {
+      const [corpus, name] = rel.split('/');
+      const raw = JSON.parse(fs.readFileSync(rootFile(root, rel), 'utf8'));
+      return { corpus, name, msg: { key: raw.key, value: raw.value } };
+    });
+    const pack = buildSsbPack({ name: 'pack-juntura', units, declareFamily: SSB_FAMILY });
+
+    // Se importa sobre un root LIMPIO: es el escenario de réplica A→B.
+    const destino = setupRoot();
+    try {
+      const res = importPack({ packRoot: pack.packRoot, role: 'operator' });
+      assert.equal(res.ok, true, JSON.stringify(res.error ?? res.results ?? res.steps));
+      const fam = res.families.find((f) => f.id === 'ssb');
+      assert.equal(fam.moved, 3);
+      const snapshot = JSON.parse(manifestBytes(destino.root)).volumes.ssb.source.imported.snapshot;
+      assert.equal(snapshot.units, 3);
+      assert.equal(snapshot.feeds, 2);
+      // alice queda {1,3}: el `post` filtrado deja un hueco LEGÍTIMO, declarado.
+      assert.equal(snapshot.feedsConHueco, 1);
+    } finally {
+      destino.restore();
+      fs.rmSync(pack.packRoot, { recursive: true, force: true });
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('JUNTURA: el export ya no puede fabricar los tres volúmenes que el driver rechaza', async () => {
+  const { exportSsbLogToVolumes } = await import('../../../mesh/ssb-system/src/export.mjs');
+  const { root, restore } = setupRoot();
+  try {
+    fs.writeFileSync(
+      path.join(root, 'volumes.json'),
+      `${JSON.stringify(
+        {
+          root: '.',
+          volumes: {
+            ssb: { disk: 'DISK_04', path: VOL_REL, readonly: true, label: 'ssb', corpora: [] }
+          }
+        },
+        null,
+        2
+      )}\n`,
+      'utf8'
+    );
+    const ssbRoot = path.join(root, ...VOL_REL.split('/'));
+
+    // (1) BIFURCACIÓN: dos claves distintas en (@alice, 1). Antes: ok:true,
+    // added:2, y el import posterior no lo veía (el Map se pisaba).
+    assert.throws(
+      () =>
+        exportSsbLogToVolumes({
+          log: [
+            { key: '%x1=.sha256', value: { author: ALICE, sequence: 1, previous: null, content: { type: 'tribe', t: 'a' } } },
+            { key: '%x2=.sha256', value: { author: ALICE, sequence: 1, previous: null, content: { type: 'tribe', t: 'b' } } }
+          ],
+          volumesRoot: root
+        }),
+      /posicion_duplicada_en_log/
+    );
+    assert.ok(!fs.existsSync(path.join(ssbRoot, 'tribes')) || fs.readdirSync(path.join(ssbRoot, 'tribes')).length === 0);
+
+    // (2) SIN COORDENADA: antes aterrizaba y el import abortaba el volumen
+    // ENTERO con `destino_sin_coordenada_de_feed`. Ahora se DESCARTA con motivo.
+    const r2 = exportSsbLogToVolumes({
+      log: [
+        { key: '%y1=.sha256', value: { content: { type: 'tribe' } } },
+        { key: '%y2=.sha256', value: { author: ALICE, sequence: 1, previous: null, content: { type: 'tribe' } } }
+      ],
+      volumesRoot: root
+    });
+    assert.equal(r2.added, 1);
+    assert.equal(r2.skippedReasons.coordenada_de_feed_ausente, 1);
+    assert.ok(!fs.existsSync(path.join(ssbRoot, 'tribes', messageFileName('%y1=.sha256'))));
+
+    // (3) POSICIÓN OCUPADA en el volumen (no solo dentro del volcado).
+    assert.throws(
+      () =>
+        exportSsbLogToVolumes({
+          log: [
+            { key: '%y3=.sha256', value: { author: ALICE, sequence: 1, previous: null, content: { type: 'tribe', t: 'otro' } } }
+          ],
+          volumesRoot: root
+        }),
+      /posicion_ocupada/
+    );
+
+    // (4) LAYOUT INVÁLIDO en el volumen: mismo criterio que `destino_fuera_de_
+    // layout` del driver — el export tampoco deduplica contra lo inalcanzable.
+    fs.renameSync(
+      path.join(ssbRoot, 'tribes', messageFileName('%y2=.sha256')),
+      path.join(ssbRoot, 'tribes', 'legado.json')
+    );
+    assert.throws(
+      () =>
+        exportSsbLogToVolumes({
+          log: [
+            { key: '%y2=.sha256', value: { author: ALICE, sequence: 1, previous: null, content: { type: 'tribe' } } }
+          ],
+          volumesRoot: root
+        }),
+      /layout_invalido_en_volumen[\s\S]*fuera_de_layout/
+    );
+  } finally {
+    restore();
+  }
+});
+
+test('m4 · LÍMITE MEDIDO: sin verificación de firma, cualquiera OCUPA el feed de otro para siempre', () => {
+  const { restore } = setupRoot();
+  // Pack hostil: 5 mensajes fabricados en el feed de la víctima. No hay
+  // comprobación de firma en ninguna parte del carril, así que aterrizan.
+  const victima = '@victima.ed25519';
+  const hostil = buildSsbPack({
+    name: 'pack-hostil',
+    units: Array.from({ length: 5 }, (_, i) => ({
+      msg: msg({
+        key: `%falso${i + 1}=.sha256`,
+        author: victima,
+        sequence: i + 1,
+        previous: i === 0 ? null : `%falso${i}=.sha256`,
+        body: { title: 'fabricado' }
+      })
+    }))
+  });
+  try {
+    const res = importPack({ packRoot: hostil.packRoot, role: 'operator' });
+    assert.equal(res.ok, true, 'medido: el material fabricado ATERRIZA');
+    assert.equal(res.families.find((f) => f.id === 'ssb').moved, 5);
+
+    // Y ahora el material REAL de ese feed queda fuera PARA SIEMPRE, porque la
+    // posición aterrizada es justamente lo único inviolable.
+    const real = buildSsbPack({
+      name: 'pack-real',
+      version: '2.0.0',
+      units: [{ msg: msg({ key: '%real1=.sha256', author: victima, sequence: 1, previous: null }) }]
+    });
+    const rechazo = importPack({ packRoot: real.packRoot, role: 'operator' });
+    assert.equal(rechazo.ok, false);
+    assert.equal(rechazo.error, 'reescritura_de_feed');
+    assert.equal(rechazo.author, victima);
+    assert.equal(rechazo.destKey, '%falso1=.sha256');
+    fs.rmSync(real.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(hostil.packRoot, { recursive: true, force: true });
+  }
 });
 
 // ── Cota realista ──────────────────────────────────────────────────────────
