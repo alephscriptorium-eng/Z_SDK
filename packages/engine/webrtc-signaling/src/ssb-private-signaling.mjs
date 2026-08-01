@@ -201,9 +201,13 @@ export class SsbPrivateSignalingService extends SignalingService {
       throw new Error('Not connected to SSB private signaling transport');
     }
     let card = peerCard;
-    // Amarrar ssbId al feed local si la card aún no lo trae
-    if (card && typeof card === 'object' && !isSsbId(card.ssbId) && isSsbId(this.userId)) {
-      card = { ...card, ssbId: this.userId };
+    // Amarrar ssbId al feed local si la card aún no lo trae.
+    // WP-U262: `card.ssbId` y `this.userId` se leen UNA vez cada uno — el
+    // feed que se comprueba ausente y el que se estampa son el mismo dato.
+    const localFeed = this.userId;
+    const cardSsbId = card && typeof card === 'object' ? card.ssbId : undefined;
+    if (card && typeof card === 'object' && !isSsbId(cardSsbId) && isSsbId(localFeed)) {
+      card = { ...card, ssbId: localFeed };
     }
     this.setPeerCard(card);
     this.roomId = roomId;
@@ -240,10 +244,11 @@ export class SsbPrivateSignalingService extends SignalingService {
       throw new Error(`Unknown signaling message type for SSB: ${gated.type}`);
     }
 
+    const outFrom = gated.from || this.userId;
     const content = {
       type: SSB_WEBRTC_SIGNAL_TYPE,
       signal,
-      from: gated.from || this.userId,
+      from: outFrom,
       to,
       roomId: gated.roomId || this.roomId || undefined,
       timestamp: gated.timestamp ?? Date.now(),
@@ -255,10 +260,16 @@ export class SsbPrivateSignalingService extends SignalingService {
     if (gated.answer != null) content.answer = gated.answer;
     if (gated.candidate != null) content.candidate = gated.candidate;
     if (gated.data != null) content.data = gated.data;
-    if (gated.peerCard != null) content.peerCard = gated.peerCard;
-    if (isSsbId(gated.ssbId)) content.ssbId = gated.ssbId;
-    else if (isSsbId(gated.peerCard?.ssbId)) content.ssbId = gated.peerCard.ssbId;
-    else if (isSsbId(gated.from || this.userId)) content.ssbId = gated.from || this.userId;
+    // WP-U262 · lo que se comprueba es lo que se publica. La cascada leía
+    // `gated.peerCard` ×3, `gated.ssbId` ×2 y `gated.from` ×3 para elegir
+    // UN feed id: podía validarse uno y publicarse otro por el DM.
+    const outCard = gated.peerCard;
+    const outSsbId = gated.ssbId;
+    const outCardSsbId = outCard?.ssbId;
+    if (outCard != null) content.peerCard = outCard;
+    if (isSsbId(outSsbId)) content.ssbId = outSsbId;
+    else if (isSsbId(outCardSsbId)) content.ssbId = outCardSsbId;
+    else if (isSsbId(outFrom)) content.ssbId = outFrom;
 
     await this._transport.publishPrivate(content, [to]);
   }
@@ -287,11 +298,17 @@ export class SsbPrivateSignalingService extends SignalingService {
     const to = content.to;
     if (to && to !== this.userId) return;
 
-    if (!this._allowTrickle && content.signal === 'ice-candidate') return;
+    const signal = content.signal;
+    if (!this._allowTrickle && signal === 'ice-candidate') return;
 
-    const abstractType = SSB_SIGNAL_TO_ABSTRACT[content.signal] || content.signal;
+    // WP-U262: `content.signal` se leía ×2 y `content.data` ×2; la card y
+    // el feed id se extraían con dos recorridos independientes del MISMO
+    // contenido (`content.peerCard` ×4), así que el mensaje podía nacer con
+    // la card de una lectura y el `ssbId` de otra.
+    const abstractType = SSB_SIGNAL_TO_ABSTRACT[signal] || signal;
     const peerCard = peerCardFromMessage(content);
-    const ssbId = ssbIdFromMessage(content) || (isSsbId(from) ? from : null);
+    const ssbId = ssbIdFromMessage(content, peerCard) || (isSsbId(from) ? from : null);
+    const data = content.data;
     /** @type {import('./signaling-service.mjs').SignalingMessage} */
     const message = {
       type: abstractType,
@@ -300,15 +317,15 @@ export class SsbPrivateSignalingService extends SignalingService {
       roomId: content.roomId || this.roomId,
       timestamp: content.timestamp ?? msg.value.timestamp ?? Date.now(),
       messageId: content.messageId || createMessageId(from || 'peer'),
-      data: content.data,
+      data,
       ...(peerCard != null ? { peerCard } : {}),
       ...(ssbId ? { ssbId } : {})
     };
 
-    if (abstractType === 'offer') message.offer = content.offer ?? content.data;
-    if (abstractType === 'answer') message.answer = content.answer ?? content.data;
+    if (abstractType === 'offer') message.offer = content.offer ?? data;
+    if (abstractType === 'answer') message.answer = content.answer ?? data;
     if (abstractType === 'ice-candidate') {
-      message.candidate = content.candidate ?? content.data;
+      message.candidate = content.candidate ?? data;
     }
 
     this.handleMessage(message);
