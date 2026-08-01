@@ -197,10 +197,10 @@ const log = (...a) => {
 };
 const green = (msg) => CURRENT.verde.push(msg);
 const red = (msg) => CURRENT.rojos.push(msg);
-const nota = (msg) => {
-  CURRENT.notas = CURRENT.notas || [];
-  CURRENT.notas.push(msg);
-};
+// U259 · `nota()` se retira con su único uso: el «informativo, FUERA del
+// alcance del paso 7» del root LINEAS, que ahora es una ASERCIÓN. El canal de
+// notas del reporte (`CURRENT.notas`, línea 190) se conserva por si vuelve a
+// hacer falta; lo que se quita es el helper sin llamadas, que lint marcaba.
 const evid = (k, v) => {
   CURRENT.evidencia[k] = v;
 };
@@ -1267,24 +1267,62 @@ async function paso7() {
     assert.equal(after.ok, true, JSON.stringify(after.findings));
     green('tras el vector rojo, el cerco de B vuelve a 0 hallazgos');
 
-    // ── Hallazgo declarado, NO fallo del paso: el root LINEAS no pasa este
-    // predicado hoy. La fixture canónica lleva URLs de PROCEDENCIA de revisión
-    // (`urls.revision`) que el predicado, tal como está escrito, no distingue
-    // de un ancla de arranque. El paso 7 cubre A y B (shape declarada); esto
-    // se entrega al siguiente con fichero y clave.
+    // ── U259 · el root LINEAS ENTRA en el paso, con ASERCIÓN.
+    // U206 lo dejó fuera y lo dijo: la fixture canónica lleva URLs de
+    // PROCEDENCIA de revisión (`urls.revision`) que el predicado de entonces no
+    // distinguía de un ancla de arranque, así que aseverar «0 URLs vivas» aquí
+    // habría sido exigir un rojo permanente. Con el predicado reescrito
+    // (cerco.mjs · I1-I4) esas URLs quedan clasificadas POR REGLA —coordinan
+    // `?oldid=N` con el `oldid` de su propio registro—, así que el root C se
+    // asevera como A y B. Ya no hay «informativo» que arrastrar.
     if (CTX.rootC) {
       const repC = scanRootCerco({ root: CTX.rootC });
-      evid('cercoLineasInformativo', {
-        ok: repC.ok,
-        urlsVivas: repC.liveUrls,
-        nota:
-          'FUERA del alcance del paso 7 (que es A y B). Se reporta: el predicado no ' +
-          'distingue una URL de procedencia registrada (urls.revision) de un ancla de arranque.'
-      });
-      nota(
-        `[informativo, FUERA del alcance del paso 7] root LINEAS: ${repC.liveUrls.length} URL(s) ` +
-          `de procedencia (urls.revision) que el predicado marcaría — ver reporte`
+      assert.equal(
+        repC.ok,
+        true,
+        `cerco roto en el root LINEAS (C): ${JSON.stringify(repC.findings, null, 2)}`
       );
+      evid('cercoLineas', { ok: repC.ok, files: repC.files, urlsVivas: repC.liveUrls.length });
+      green(
+        `root C (LINEAS): ${repC.files} ficheros barridos · urlsVivas=${repC.liveUrls.length} — ` +
+          'el paso 7 ya cubre las URLs de procedencia por REGLA, no por excepción'
+      );
+
+      // ── ROJO · y no es vacuo: un ancla de verdad en el mismo root sí cae.
+      // La diferencia con `urls.revision` es la regla, no el fichero: esta URL
+      // no repite ninguna coordenada del registro que la contiene.
+      expectRed(
+        'C con un endpoint que NO coordina con su registro → URL viva, y el gate aborta',
+        () => {
+          const ancla = path.join(CTX.rootC, ...LINEAS_VOL_REL.split('/'), 'endpoint.json');
+          fs.writeFileSync(
+            ancla,
+            `${JSON.stringify({ oldid: 2, endpoint: 'https://servidor.real/v1/feed' }, null, 2)}\n`,
+            'utf8'
+          );
+          try {
+            const rep = scanRootCerco({ root: CTX.rootC });
+            let threw = false;
+            try {
+              assertRootCerco({ root: CTX.rootC });
+            } catch {
+              threw = true;
+            }
+            return { rep, threw };
+          } finally {
+            fs.rmSync(ancla, { force: true });
+          }
+        },
+        (o) =>
+          !o.threw &&
+          o.value.threw === true &&
+          o.value.rep.ok === false &&
+          o.value.rep.liveUrls.some((u) => u.url === 'https://servidor.real/v1/feed')
+      );
+
+      const despues = scanRootCerco({ root: CTX.rootC });
+      assert.equal(despues.ok, true, JSON.stringify(despues.findings));
+      green('tras el vector rojo, el cerco de C vuelve a 0 hallazgos');
     }
   });
 }

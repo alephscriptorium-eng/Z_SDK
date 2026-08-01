@@ -27,13 +27,16 @@
           "name": "volumes-root-referencia",
           "version": "1.0.0",
           "packHash": "26f215e8d111b44babcc7b033fd48ee76d06c6e5dd863e7f1fc0bd5b2245ea89",
-          "importedAt": "2026-08-01T18:31:50.466Z",
+          "importedAt": "2026-08-01T20:55:28.116Z",
           "hashes": {
             "demo/manifest.json": "76a1693d54a604a548132d19e5deb09db35a3af7e0ddaab0b7a421c8e302897c",
             "demo/nodos/N01/meta.json": "db17c6dbafd7386577a4cf606cc0cc5b2fa3fcffa088492da6c66e6913a697b3",
             "demo/wp/historia/manifest.json": "21fa761aa338ccdcb92a86ed51bf8a0f0924f6f3f05f6262a58a251bef1ea5b5",
             "demo/wp/historia/nodo-sections.json": "c97ffa73b7202bf41da0aeed343761db2b40fd9f74d0ae97edc6207d9e747d33",
             "registry.yaml": "1e2fb932ae5bb57946a7aebe6883463087d6f865f6bd7e98cd44a9b516926e91"
+          },
+          "snapshot": {
+            "demo": "dc820b8a5ba16aada7ab95c0bece41d8bd29b2c240623fddc9089434f4c2fd94"
           }
         }
       },
@@ -51,7 +54,7 @@
           "name": "volumes-root-referencia",
           "version": "1.0.0",
           "packHash": "26f215e8d111b44babcc7b033fd48ee76d06c6e5dd863e7f1fc0bd5b2245ea89",
-          "importedAt": "2026-08-01T18:31:50.468Z",
+          "importedAt": "2026-08-01T20:55:28.124Z",
           "hashes": {
             "cotas/sima/cota.json": "e81c78f3bfb41c826b1b973d20232b2a477f6f8fa2fd2885da22fb4ad98a13a1",
             "cotas/sima/manifest.json": "16c4710b8972d6976a21fe4f00434c5c17144b3b8ae9f98bb9e5220cc748f268",

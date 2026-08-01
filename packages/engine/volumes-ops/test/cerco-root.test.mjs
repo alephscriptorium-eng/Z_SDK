@@ -132,6 +132,150 @@ test('URL VIVA · el predicado, con sus dos exenciones y el límite de cada una'
   assert.ok(rep.liveUrls.some((u) => u.path === 'volumes.json'));
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// WP-U259 · EL PREDICADO DE URL VIVA, reescrito — el «hermano menor» del WP.
+//
+// U206 dejó escrito, con la medida delante, que «0 URLs vivas» NO distingue
+// procedencia registrada de ancla de arranque, y por eso el cerco no puede
+// abortar (boot.mjs). Aquí se fija la regla nueva CASO A CASO: cada exención
+// con su límite, y el caso que ANTES pasaba y ahora cae.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Planta ficheros en un root nuevo y devuelve el reporte. */
+function cercoCon(ficheros) {
+  const root = mkRoot();
+  for (const [rel, contenido] of Object.entries(ficheros)) {
+    const abs = path.join(root, rel.split('/').join(path.sep));
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(
+      abs,
+      typeof contenido === 'string' ? contenido : `${JSON.stringify(contenido, null, 2)}\n`,
+      'utf8'
+    );
+  }
+  return scanRootCerco({ root });
+}
+
+test('U259·I1 · el placeholder exenta por HOST, no por prefijo — `${VAR}@host.real` CAE', () => {
+  // EL CASO QUE HOY PASA Y CON LA REGLA NUEVA CAE. La regla vieja era
+  // `/^https?:\/\/\$\{/i` («empieza por https://${»), así que una URL cuya
+  // autoridad de verdad está DETRÁS del `@` quedaba exenta: el `${…}` estaba en
+  // la userinfo, no en el host. Y el literal ni siquiera se capturaba entero,
+  // porque el patrón cortaba en `}`.
+  const rep = cercoCon({
+    'DISK_09/nota.txt': 'ancla: https://${TOKEN}@servidor.real/pack.tgz\n'
+  });
+  assert.equal(rep.ok, false, 'un `${…}` en la userinfo sigue exentando una autoridad REAL');
+  assert.equal(rep.liveUrls.length, 1);
+  assert.equal(
+    rep.liveUrls[0].url,
+    'https://${TOKEN}@servidor.real/pack.tgz',
+    'el literal se captura entero: `}` ya no corta cuando cierra un `${`'
+  );
+});
+
+test('U259·I1 · el placeholder EN EL HOST sigue exento (la exención legítima no se pierde)', () => {
+  for (const url of ['https://${ZEUS_HOST}/pack.tgz', 'https://${A}.${B}/x']) {
+    const rep = cercoCon({ 'DISK_09/nota.txt': `plantilla: ${url}\n` });
+    assert.equal(rep.ok, true, `${url} dejó de estar exenta: ${JSON.stringify(rep.findings)}`);
+  }
+});
+
+test('U259·I2 · una URL COORDINADA con su registro es procedencia, no ancla', () => {
+  // El caso legítimo que hoy sale rojo sobre el root de referencia:
+  // `registros[i].urls.revision = "…?oldid=2"` junto a `registros[i].oldid = 2`.
+  // La regla no nombra el campo: exige que la URL REPITA una coordenada del
+  // registro que la contiene — o sea que apunte al MISMO objeto que el registro
+  // describe, no a un servicio.
+  const rep = cercoCon({
+    'DISK_09/manifest.json': {
+      registros: [
+        { id: 'r1', oldid: 2, urls: { revision: 'https://example.test/w/index.php?oldid=2' } }
+      ]
+    }
+  });
+  assert.equal(rep.ok, true, JSON.stringify(rep.findings));
+});
+
+test('U259·I2 · los CUATRO límites de la coordinación', () => {
+  const casos = [
+    [
+      'la coordenada NO casa (oldid=99 junto a oldid:2)',
+      {
+        'DISK_09/manifest.json': {
+          registros: [
+            { id: 'r1', oldid: 2, urls: { revision: 'https://example.test/w/index.php?oldid=99' } }
+          ]
+        }
+      }
+    ],
+    [
+      'un ENDPOINT junto a escalares que no coordinan',
+      { 'DISK_09/manifest.json': { kind: 'ssb-pub-export', id: 1, pubUrl: 'https://pub.example/v1/x' } }
+    ],
+    [
+      'la URL va INCRUSTADA en prosa dentro del campo (no es valor completo)',
+      {
+        'DISK_09/manifest.json': {
+          oldid: 2,
+          nota: 'baja el pack de https://example.test/w/index.php?oldid=2 antes de arrancar'
+        }
+      }
+    ],
+    [
+      'un ancestro LEJANO no exenta: el registro termina en el elemento de array',
+      {
+        'DISK_09/manifest.json': {
+          oldid: 2,
+          entradas: [{ id: 'a' }, { id: 'b', hijo: { nieto: { url: 'https://e.test/x?oldid=2' } } }]
+        }
+      }
+    ]
+  ];
+  for (const [titulo, ficheros] of casos) {
+    const rep = cercoCon(ficheros);
+    assert.equal(rep.ok, false, `la exención por coordenada se aplica de más: ${titulo}`);
+  }
+});
+
+test('U259·I2 · YAML no obtiene la exención: sin estructura leída, todo es URL viva', () => {
+  // Fallo-cerrado declarado: antes de exentar hay que poder leer el registro, y
+  // el cerco no parsea YAML. Se dice en vez de dar una exención a ciegas.
+  const rep = cercoCon({
+    'DISK_09/registry.yaml': '- id: demo\n  oldid: 2\n  url: https://e.test/x?oldid=2\n'
+  });
+  assert.equal(rep.ok, false);
+});
+
+test('U259·I4 · prosa de RAÍZ enlazada es inerte; la URL desnuda y el `.md` de DATOS no', () => {
+  // (a) `.md` suelto en la RAÍZ: categoría que el constructor de packs ya
+  //     declara (`manifiesto_de_root` — «un pack sólo transporta discos»), o sea
+  //     material que no viaja en ninguna réplica y que ningún cargador abre.
+  // (b) dentro de un ENLACE de Markdown: dirigido a una persona.
+  assert.equal(
+    cercoCon({ 'README.md': 'Ver [la library](https://github.com/org/repo).\n' }).ok,
+    true
+  );
+  // Falta (b): una URL desnuda en el mismo README NO está exenta.
+  assert.equal(cercoCon({ 'README.md': 'Ver https://github.com/org/repo\n' }).ok, false);
+  // Falta (a): un `.md` de DATOS bajo un disco NO está exento, aunque sea enlace.
+  assert.equal(
+    cercoCon({ 'DISK_09/escena/think.md': 'Ver [esto](https://github.com/org/repo).\n' }).ok,
+    false
+  );
+});
+
+test('U259 · el alcance de U206 NO se recorta: ledger y estado se siguen barriendo enteros', () => {
+  // I4 exenta PROSA de raíz. El ledger y el estado también viven en la raíz y
+  // NO son prosa: siguen siendo material cercado como cualquier otro, que es
+  // exactamente lo que U206 declaró.
+  for (const rel of ['.ops-ledger.jsonl', 'volumes.state.json']) {
+    const rep = cercoCon({ [rel]: '{"kind":"import_pack","origin":"https://evil.test/x"}\n' });
+    assert.equal(rep.ok, false, `${rel} dejó de barrerse: el alcance de U206 se recortó`);
+    assert.ok(rep.liveUrls.some((u) => u.path === rel));
+  }
+});
+
 test('ROJO · una URL viva detrás de un byte NUL NO obtiene salvoconducto', () => {
   // Antes: el fichero se clasificaba binario, se declaraba en `binaries[]` y
   // NO se escaneaba — así que un solo NUL inicial escondía una URL viva y el

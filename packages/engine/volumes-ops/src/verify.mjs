@@ -32,20 +32,34 @@
  *  5. `ficheros`        — (U258) recomputa el sha256 de cada fichero sellado en
  *                         `source.imported.hashes` con la MISMA primitiva que
  *                         lo selló (`sha256File`, importada de import.mjs).
- *  6. `snapshot`        — recomputa el árbol de cada unidad sellada en
- *                         `source.imported.snapshot` con el MISMO algoritmo
- *                         del driver que lo selló (hashUnitTree).
+ *  6. `snapshot`        — (U259) recomputa el snapshot sellado en
+ *                         `source.imported.snapshot` llamando al
+ *                         `verifySnapshot()` **del driver de la familia**, que
+ *                         es el mismo cuerpo con el que `snapshotOf()` lo
+ *                         selló. Las CUATRO familias lo tienen.
  *  7. `familia`         — corre el `validate()` REAL del driver de familia
  *                         contra el árbol VIVO (no contra el staging).
  *  8. `corpora`         — remide y compara con los `files`/`bytes` que el
  *                         import selló en el manifiesto (import.mjs:539-552).
  *
+ * ── U259 · EL LEG 6 CUBRE LAS CUATRO FAMILIAS ────────────────────────────
+ * Hasta U259 este fichero llevaba una tabla `SNAPSHOT_VERIFIERS` mantenida A
+ * MANO con una sola entrada (`forces`), así que FIREHOSE y SSB salían
+ * `omitido: sin_verificador_de_snapshot` y LINEAS `omitido:
+ * sin_snapshot_sellado` — 1 de 4 familias. La tabla era la juntura: una familia
+ * nueva se colaba en silencio como omitida y nadie se enteraba. Ya no hay
+ * tabla: el verificador se pide al driver (`FAMILY_DRIVERS[f].verifySnapshot`),
+ * que es quien selló. Un driver sin ese par de funciones no puede sellar
+ * snapshot, y hay un test de CONTRATO que recorre `FAMILY_DRIVERS` y lo exige
+ * — para que esto no se reabra con la quinta familia.
+ *
  * Fronteras declaradas (lo que este verificador NO garantiza):
- * - `source.imported.snapshot` sólo tiene forma «árbol por unidad» en la
- *   familia FORCES. FIREHOSE sella otra cosa (`{unit,units,unitsSha256}`) y
- *   LINEAS no sella nada. Con familia sin verificador de snapshot el leg se
- *   reporta `omitido` con motivo — **nunca se adivina el algoritmo**. Con
- *   `strictSnapshot:true` ese omitido pasa a ser hallazgo.
+ * - Un root sellado por una versión ANTERIOR puede no llevar snapshot: el leg
+ *   se reporta `omitido: sin_snapshot_sellado` con motivo — **nunca se inventa
+ *   un verde**. Con `strictSnapshot:true` ese omitido pasa a ser hallazgo
+ *   (`snapshot_no_sellado`) **sólo** cuando la familia del volumen SÍ sabe
+ *   sellar; para un volumen genérico (sin familia) sigue siendo omisión
+ *   honesta, porque ahí no hay nada que sellar.
  * - (U258 estrecha esta frontera, no la cierra.) Los ficheros que no caen bajo
  *   ninguna unidad del snapshot ni bajo ningún corpus declarado —en FORCES,
  *   `registry.json`— ya no dependen SÓLO del leg de familia: si el import los
@@ -71,57 +85,11 @@ import {
   resolveVolumesRoot
 } from '@zeus/presets-sdk/volumes';
 import { FAMILY_DRIVERS } from './drivers.mjs';
-import { hashUnitTree } from './driver-forces.mjs';
 import { sha256File } from './import.mjs';
 import { hashManifest } from './manifest.mjs';
 import { loadVolumesState } from './state.mjs';
 import { readOpsLedger } from './ledger.mjs';
 import { measurePath } from './measure.mjs';
-
-/** ¿sha256 hex? */
-const isSha256 = (v) => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
-
-/**
- * Verificadores de snapshot por familia. Sólo entra aquí la familia cuyo
- * driver sella un mapa `{ <dirDeUnidad>: <sha256 del árbol> }`.
- * @type {Record<string, (volumeAbsPath: string, snapshot: object) => object[]>}
- */
-const SNAPSHOT_VERIFIERS = {
-  forces: verifyUnitTreeSnapshot
-};
-
-/**
- * Snapshot con forma «árbol por unidad»: recomputa cada unidad.
- * @param {string} volumeAbsPath
- * @param {Record<string,string>} snapshot
- * @returns {object[]} hallazgos (vacío = íntegro)
- */
-function verifyUnitTreeSnapshot(volumeAbsPath, snapshot) {
-  /** @type {object[]} */
-  const findings = [];
-  for (const [unitDir, sealed] of Object.entries(snapshot)) {
-    const abs = join(volumeAbsPath, unitDir.split('/').join(sep));
-    if (!existsSync(abs)) {
-      findings.push({ error: 'unidad_ausente', unit: unitDir, sealed });
-      continue;
-    }
-    const actual = hashUnitTree(abs);
-    if (actual !== sealed) {
-      findings.push({ error: 'unidad_corrupta', unit: unitDir, sealed, actual });
-    }
-  }
-  return findings;
-}
-
-/**
- * ¿El snapshot tiene forma «árbol por unidad»?
- * @param {unknown} snapshot
- */
-function isUnitTreeSnapshot(snapshot) {
-  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return false;
-  const entries = Object.entries(snapshot);
-  return entries.length > 0 && entries.every(([, v]) => isSha256(v));
-}
 
 /**
  * Verifica la integridad del volumes root canónico.
@@ -343,49 +311,76 @@ export function verifyRootIntegrity(opts = {}) {
       }
     }
 
-    // 6 · snapshot
+    // 6 · snapshot (U259 · el verificador lo pone el DRIVER, no una tabla)
     const snapshot = imported.snapshot ?? null;
     const family = entry.family ?? null;
+    const driver = family ? FAMILY_DRIVERS[family] : null;
+    // «Sabe sellar» = el driver expone el par sellar/verificar. Es lo que
+    // distingue «aquí no hay nada que sellar» (volumen genérico) de «este root
+    // es anterior al contrato de snapshot», y sin la distinción el modo
+    // estricto marcaría volúmenes que nunca podrán tener snapshot.
+    const sabeSellar = Boolean(driver?.snapshotOf && driver?.verifySnapshot);
     if (!snapshot) {
-      skipped.push({
+      const skip = {
         check: 'snapshot',
         volume: id,
         reason: 'sin_snapshot_sellado',
         family,
-        note: 'el driver de esta familia no sella snapshot (LINEAS) o el volumen es genérico'
-      });
-    } else {
-      const verifier = family ? SNAPSHOT_VERIFIERS[family] : null;
-      if (!verifier) {
-        const skip = {
-          check: 'snapshot',
-          volume: id,
-          reason: 'sin_verificador_de_snapshot',
-          family,
-          note: 'la forma del snapshot de esta familia no es «árbol por unidad»; no se adivina el algoritmo'
-        };
-        if (strictSnapshot) {
-          push({ check: 'snapshot', ok: false, volume: id, error: 'snapshot_no_verificable', family });
-        } else {
-          skipped.push(skip);
-        }
-      } else if (!isUnitTreeSnapshot(snapshot)) {
+        note: sabeSellar
+          ? 'la familia sabe sellar snapshot pero este volumen no lo lleva: root sellado ' +
+            'por una versión anterior al contrato de U259 (re-impórtalo para anclarlo)'
+          : 'volumen sin familia con driver: no hay unidad de familia que sellar'
+      };
+      if (strictSnapshot && sabeSellar) {
         push({
           check: 'snapshot',
           ok: false,
           volume: id,
           family,
-          error: 'snapshot_ilegible',
-          note: 'la familia declara verificador de árbol por unidad pero el snapshot sellado no tiene esa forma'
+          error: 'snapshot_no_sellado',
+          note: skip.note
         });
       } else {
-        const found = verifier(absPath, snapshot);
-        if (found.length === 0) {
-          push({ check: 'snapshot', ok: true, volume: id, family, units: Object.keys(snapshot).length });
-        } else {
-          for (const f of found) {
-            push({ check: 'snapshot', ok: false, volume: id, family, ...f });
-          }
+        skipped.push(skip);
+      }
+    } else if (!driver) {
+      // Snapshot sellado en un volumen cuya familia ya no tiene driver: no se
+      // adivina el algoritmo. Es hallazgo, no omisión — hay evidencia sellada
+      // que nadie puede contrastar, y llamarlo «omitido» sería la coartada.
+      push({
+        check: 'snapshot',
+        ok: false,
+        volume: id,
+        family,
+        error: 'snapshot_sin_driver',
+        note:
+          'el volumen lleva snapshot sellado y su familia no tiene driver en este árbol: ' +
+          'no se adivina el algoritmo con el que se selló'
+      });
+    } else if (!driver.verifySnapshot) {
+      push({
+        check: 'snapshot',
+        ok: false,
+        volume: id,
+        family,
+        error: 'driver_sin_verificador',
+        note:
+          'el driver de esta familia no expone verifySnapshot(): quien sella tiene que ' +
+          'poder verificar, o el sello es decorativo'
+      });
+    } else {
+      const found = driver.verifySnapshot(absPath, snapshot);
+      if (found.length === 0) {
+        push({
+          check: 'snapshot',
+          ok: true,
+          volume: id,
+          family,
+          units: typeof snapshot.units === 'number' ? snapshot.units : Object.keys(snapshot).length
+        });
+      } else {
+        for (const f of found) {
+          push({ check: 'snapshot', ok: false, volume: id, family, ...f });
         }
       }
     }

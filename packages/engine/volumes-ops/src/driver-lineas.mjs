@@ -24,6 +24,29 @@
  *   when absent in the destination they land («lo que falta»);
  * - a family pack is self-consistent: `registry.yaml` at the volume root
  *   is REQUIRED in the pack (identical files skip by themselves).
+ *
+ * ── U259 · ESTA FAMILIA YA SELLA SNAPSHOT DE UNIDAD ───────────────────────
+ * Hasta U259 el plan de este driver no devolvía `snapshot`, y eso dejaba a la
+ * familia sin el único tramo que caza un ALTA: medido sobre un root sellado,
+ * copiar un `meta.json` VÁLIDO a `demo/nodos/N02/meta.json` **arrancaba** —el
+ * schema no se queja (el fichero es válido), el leg `ficheros` de U258 sólo
+ * comprueba PERTENENCIA de lo sellado (un fichero nuevo no es hallazgo) y sin
+ * snapshot no hay igualdad de conjunto que romper—. Con el snapshot de unidad
+ * ese mismo vector niega el arranque.
+ *
+ * **La UNIDAD de LINEAS es la LÍNEA**: cada entrada de `registry.yaml`, por su
+ * `path`. La elección no es cómoda, es la del índice: `registry.yaml` es lo que
+ * el validador real recorre (`lineas-registry` + `entry.path` en `validate`), lo
+ * que el lector del mundo resuelve, y lo que este mismo driver ya usa para
+ * validar. Misma doctrina que FORCES, cuyas unidades salen de `registry.json`.
+ *
+ * **Consecuencia deliberada, medida y declarada**: lo que NO está en
+ * `registry.yaml` NO es unidad, así que una línea local no registrada
+ * (`LINEAS/espana/…`, que `.gitignore:26-32` permite a propósito como copia de
+ * operador) **no entra en el snapshot y sigue arrancando**. El snapshot cierra
+ * el perímetro de lo DECLARADO, no del directorio; es exactamente la asimetría
+ * que FORCES ya tenía y que U258 midió al declarar por qué el sello no exige
+ * igualdad de conjunto de volumen.
  * Node-only.
  */
 
@@ -35,6 +58,11 @@ import {
   readYamlFile
 } from '@zeus/linea-kit/validate';
 import { isCuratedSidecarPath } from '@zeus/linea-kit/curation';
+import {
+  hashUnitTree,
+  isUnitTreeSnapshot,
+  verifyUnitTreeSnapshot
+} from './unit-tree.mjs';
 
 export const LINEAS_FAMILY = 'lineas';
 
@@ -193,9 +221,85 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   return { moves, skips, divergences, protectedSidecars };
 }
 
+/**
+ * Directorios de línea DECLARADOS por el índice del volumen, normalizados a
+ * posix sin barra final. `null` si no hay índice legible: sin `registry.yaml`
+ * no hay unidades declaradas y no se inventa ninguna (el leg `familia` es quien
+ * denuncia un índice ausente o roto — cada tramo dice una cosa).
+ * @param {string} volumeDir
+ * @returns {string[]|null}
+ */
+function declaredLineDirs(volumeDir) {
+  const registryPath = join(volumeDir, 'registry.yaml');
+  if (!existsSync(registryPath)) return null;
+  /** @type {any} */
+  let registry;
+  try {
+    registry = readYamlFile(registryPath);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(registry)) return null;
+  /** @type {string[]} */
+  const dirs = [];
+  for (const entry of registry) {
+    const raw = entry?.path ?? entry?.id;
+    if (typeof raw !== 'string' || raw.length === 0) continue;
+    const dir = raw.replace(/\\/g, '/').replace(/\/+$/, '');
+    // Una entrada cuyo `path` escapa del volumen no es una unidad de este
+    // volumen: no se hashea nada fuera del árbol que se está sellando.
+    if (dir === '' || dir === '.' || dir.startsWith('/') || dir.split('/').includes('..')) continue;
+    if (!dirs.includes(dir)) dirs.push(dir);
+  }
+  return dirs.length > 0 ? dirs : null;
+}
+
+/**
+ * snapshotOf (U259) — `{ <dirDeLínea>: sha256 del árbol de la línea }`,
+ * calculado desde el volumen VIVO.
+ *
+ * **Se calcula del DESTINO, jamás del staging, y ésta es la familia por la que
+ * la regla existe.** LINEAS conserva el fichero del destino cuando diverge
+ * (`merge` :184) y NUNCA pisa un `.md` curado (:169): el árbol que queda tras
+ * fusionar **no es** el del pack. Sellar el hash del staging anotaría un árbol
+ * que el volumen no tiene, y el root dejaría de arrancar **por haber importado
+ * bien** — el mismo defecto que U258 cerró para el sello por fichero, aquí para
+ * el sello por unidad. Hay un test por cada una de las dos reglas.
+ * @param {string} volumeDir
+ * @returns {Record<string,string>|null}
+ */
+export function snapshotOf(volumeDir) {
+  const dirs = declaredLineDirs(volumeDir);
+  if (!dirs) return null;
+  /** @type {Record<string,string>} */
+  const snapshot = {};
+  for (const dir of dirs) snapshot[dir] = hashUnitTree(toAbs(volumeDir, dir));
+  return snapshot;
+}
+
+/**
+ * verifySnapshot (U259) — misma forma y mismo verificador que FORCES: «árbol
+ * por unidad». Recomputa con `hashUnitTree`, la primitiva que lo selló.
+ * @param {string} volumeDir @param {unknown} sealed
+ * @returns {object[]}
+ */
+export function verifySnapshot(volumeDir, sealed) {
+  if (!isUnitTreeSnapshot(sealed)) {
+    return [
+      {
+        error: 'snapshot_ilegible',
+        note: 'la familia LINEAS sella «árbol por unidad» y el snapshot sellado no tiene esa forma'
+      }
+    ];
+  }
+  return verifyUnitTreeSnapshot(volumeDir, /** @type {Record<string,string>} */ (sealed));
+}
+
 export const LINEAS_DRIVER = Object.freeze({
   family: LINEAS_FAMILY,
   detect,
   validate,
-  merge
+  merge,
+  snapshotOf,
+  verifySnapshot
 });

@@ -1625,8 +1625,19 @@ test('registro: familia desconocida declarada = error ANTES de staging, root int
   }
 });
 
-test('registro: el driver expone las CUATRO claves del contrato y sus constantes', () => {
-  assert.deepEqual(Object.keys(SSB_DRIVER).sort(), ['detect', 'family', 'merge', 'validate']);
+test('registro: el driver expone las SEIS claves del contrato y sus constantes', () => {
+  // U259 · el contrato del driver creció de cuatro a SEIS: `snapshotOf` y
+  // `verifySnapshot`. Sellar sin poder verificar era exactamente el hueco de
+  // este WP (FIREHOSE y SSB sellaban cursor y nadie lo contrastaba), así que el
+  // par entra en el contrato, no en el buen criterio de cada driver.
+  assert.deepEqual(Object.keys(SSB_DRIVER).sort(), [
+    'detect',
+    'family',
+    'merge',
+    'snapshotOf',
+    'validate',
+    'verifySnapshot'
+  ]);
   assert.equal(SSB_DRIVER.family, SSB_FAMILY);
   assert.ok(Object.isFrozen(SSB_DRIVER));
   assert.deepEqual([...SSB_CORPUS_DIRS], ['tribes', 'parliament', 'votes']);

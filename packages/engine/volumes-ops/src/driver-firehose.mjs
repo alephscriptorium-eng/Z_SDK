@@ -160,6 +160,19 @@
  * amarrado por `importPack` en `source.imported.snapshot`. El driver NO sella
  * ni mueve nada: devuelve un PLAN (semilla U242, herencia U202/U203).
  *
+ * ── U259 · EL CURSOR YA SE VERIFICA (antes no lo miraba nadie)
+ * Sellar sin verificar es sello decorativo, y eso era exactamente el estado:
+ * `verify.mjs` llevaba una tabla de verificadores mantenida a mano con una sola
+ * entrada (`forces`), así que este cursor salía `omitido:
+ * sin_verificador_de_snapshot` en cada arranque. Consecuencia medida sobre un
+ * root sellado por el camino del producto: **plantar una unidad nueva ARRANCABA**
+ * — el leg `ficheros` de U258 sólo comprueba pertenencia de lo sellado, y un
+ * ALTA no es hallazgo suyo.
+ * Se cierra con el par `snapshotOf()` / `verifySnapshot()`, que ahora es
+ * CONTRATO del driver (hay un test que recorre el registro y lo exige). El
+ * porqué de verificar EXACTO —y no «por pertenencia»— está en `verifySnapshot`,
+ * con la medida que lo sostiene.
+ *
  * ── Nota de sitio (razonada, como en U202)
  * `isFirehoseUnit`/`firehoseUnitKey` REPLICAN aquí el predicado canónico de
  * `@zeus/firehose-core/schema.mjs` (`isJetstreamPost` :58-61,
@@ -672,9 +685,115 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   };
 }
 
+/**
+ * snapshotOf (U259) — el cursor de la familia, calculado desde el volumen
+ * VIVO. Mismo cuerpo que el que `merge` devuelve en su plan: allí el conjunto
+ * es `destino ∪ nuevas`, aquí es el índice del volumen ya fusionado, que es el
+ * MISMO conjunto. Un test lo asevera comparando plan y destino tras importar.
+ *
+ * Devuelve `{ snapshot, agujeros }`: los agujeros del índice NO se cuelan
+ * dentro del snapshot. Un cursor calculado sobre un índice con agujeros es un
+ * verde que no vale nada —«contar lo inalcanzable es la coartada», y este
+ * mismo driver ya mató por eso los campos `destSinClave` (D-F) y
+ * `destFueraDeLayout`—, así que quien llama decide: `importPack` no llega aquí
+ * con agujeros (el `merge` aborta antes) y `verifySnapshot` los convierte en
+ * hallazgo con nombre.
+ * @param {string} volumeDir
+ * @returns {{ snapshot: object|null, agujeros: object[] }}
+ */
+export function snapshotIndexOf(volumeDir) {
+  const idx = indexByKey(volumeDir);
+  /** @type {object[]} */
+  const agujeros = [];
+  if (idx.links.length > 0) agujeros.push({ kind: 'enlace_en_volumen', files: idx.links });
+  if (idx.unkeyable.length > 0) agujeros.push({ kind: 'material_sin_clave', files: idx.unkeyable });
+  const keys = [...idx.byKey.keys()].sort();
+  const digest = createHash('sha256');
+  for (const key of keys) digest.update(`${key}\n`);
+  return {
+    snapshot: {
+      unit: 'at-uri',
+      units: keys.length,
+      unitsSha256: digest.digest('hex'),
+      ...(idx.duplicated.length > 0 ? { destDuplicadas: idx.duplicated.length } : {}),
+      ...(idx.rootUnits.length > 0 ? { destUnidadesEnRaiz: idx.rootUnits.length } : {})
+    },
+    agujeros
+  };
+}
+
+/** @param {string} volumeDir @returns {object|null} */
+export function snapshotOf(volumeDir) {
+  const { snapshot } = snapshotIndexOf(volumeDir);
+  return snapshot && snapshot.units > 0 ? snapshot : null;
+}
+
+/**
+ * verifySnapshot (U259) — recomputa el cursor sobre el árbol vivo y lo compara
+ * con el sellado, campo a campo.
+ *
+ * ── POR QUÉ EXACTO Y NO «POR PERTENENCIA» (decisión, con la medida delante)
+ * La familia declara por contrato que el volumen CRECE y que el corpus es
+ * estado de triage VIVO, así que la pregunta legítima era si exigir igualdad de
+ * conjunto rompe la operación normal. Medido sobre un volumen sellado por el
+ * camino del producto, ANTES de este WP:
+ *   · triage `raw/b1/u1.json` → `labeled/b1/u1.json` → **SE NIEGA** ya hoy
+ *     (`ficheros: fichero_ausente`, leg de U258);
+ *   · crecimiento con corpora declarados en el pack → **SE NIEGA** ya hoy
+ *     (`corpora: corpus_desviado`, files/bytes sellados por el import).
+ * O sea: **un volumen FIREHOSE sellado ya está congelado** por los tramos que
+ * existían. Verificar el cursor exacto no añade una clase de rotura nueva;
+ * añade la única que faltaba —el **ALTA** en un volumen sin corpora
+ * declarados, que hoy ARRANCA— y lo hace nombrando la deriva en unidades, no
+ * en bytes. La forma legítima de crecer un volumen sellado sigue siendo la de
+ * siempre: volver a importar, que re-sella el cursor.
+ * **Frontera declarada**: si algún día se quiere un volumen SELLADO que crezca
+ * en vivo, hay que rediseñar los TRES tramos a la vez (`ficheros`, `corpora`,
+ * `snapshot`), no sólo éste. Este WP no lo hace y no lo promete.
+ * @param {string} volumeDir @param {any} sealed
+ * @returns {object[]}
+ */
+export function verifySnapshot(volumeDir, sealed) {
+  if (!sealed || typeof sealed !== 'object' || sealed.unit !== 'at-uri') {
+    return [
+      {
+        error: 'snapshot_ilegible',
+        note: 'la familia FIREHOSE sella un cursor `{unit:"at-uri", units, unitsSha256}`'
+      }
+    ];
+  }
+  const { snapshot, agujeros } = snapshotIndexOf(volumeDir);
+  /** @type {object[]} */
+  const findings = agujeros.map((a) => ({
+    error: 'indice_con_agujero',
+    kind: a.kind,
+    files: a.files.slice(0, 20),
+    note:
+      'el índice por clave del volumen no es completo, así que el cursor recomputado ' +
+      'no prueba nada: se declara en vez de dar un verde construido sobre un hueco'
+  }));
+  if (snapshot.units !== sealed.units || snapshot.unitsSha256 !== sealed.unitsSha256) {
+    findings.push({
+      error: 'cursor_desviado',
+      unit: 'at-uri',
+      sealed: { units: sealed.units, unitsSha256: sealed.unitsSha256 },
+      actual: { units: snapshot.units, unitsSha256: snapshot.unitsSha256 },
+      note:
+        snapshot.units > sealed.units
+          ? 'el volumen tiene MÁS unidades que las selladas (alta fuera del pipeline de import)'
+          : snapshot.units < sealed.units
+            ? 'el volumen tiene MENOS unidades que las selladas (baja)'
+            : 'mismo número de unidades y conjunto de claves DISTINTO (suplantación)'
+    });
+  }
+  return findings;
+}
+
 export const FIREHOSE_DRIVER = Object.freeze({
   family: FIREHOSE_FAMILY,
   detect,
   validate,
-  merge
+  merge,
+  snapshotOf,
+  verifySnapshot
 });

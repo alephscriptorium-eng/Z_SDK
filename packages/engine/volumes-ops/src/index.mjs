@@ -20,6 +20,16 @@ export { importPack, IDENTITY_DENYLIST } from './import.mjs';
 export { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
 export { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
 export { FORCES_DRIVER, FORCES_FAMILY, hashUnitTree } from './driver-forces.mjs';
+// WP-U259 · el hash de árbol de unidad vive en su propia pieza porque lo usan
+// DOS familias (FORCES y LINEAS) y el verificador: tres copias de un hash de
+// árbol divergen, y la divergencia se manifiesta como «el root que sellé no
+// arranca». `driver-forces.mjs` lo re-exporta para no romper a nadie.
+export {
+  hashUnitTree as hashUnitTreeCanonico,
+  verifyUnitTreeSnapshot,
+  isUnitTreeSnapshot,
+  walkUnitFiles
+} from './unit-tree.mjs';
 // WP-U206 · CA local-first: adaptador de pack, verificador de integridad
 // (paso 6) y cerco del root (paso 7). Los tres viven en `src/` a propósito:
 // en `e2e/` el CA pasaría y el producto seguiría desprotegido.

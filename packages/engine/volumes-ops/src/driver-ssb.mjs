@@ -210,6 +210,16 @@
  * A→B necesita comparar. El driver NO sella ni mueve nada: devuelve un PLAN
  * (herencia U202/U203/U204).
  *
+ * ── U259 · EL CURSOR YA SE VERIFICA, Y EL FEED APARTE
+ * Igual que en FIREHOSE, este cursor se sellaba y **no lo miraba nadie**
+ * (`verify.mjs` llevaba una tabla a mano con una sola familia), así que plantar
+ * un mensaje nuevo en un volumen sellado ARRANCABA. El par
+ * `snapshotOf()` / `verifySnapshot()` es ahora contrato del driver. Aquí hay
+ * además un segundo eje que ninguna otra familia tiene y que ningún otro tramo
+ * mira: la POSICIÓN de feed. Se comprueba APARTE (`feed_desviado`) porque puede
+ * desviarse con el MISMO conjunto de claves — la clave SSB es opaca, así que
+ * reescribir `value.sequence` no la cambia y `unitsSha256` no se entera.
+ *
  * ── Nota de sitio (razonada, como en U202 y U204)
  * `SSB_CORPUS_DIRS`, `SSB_MANIFEST_FILE` y `messageFileName` REPLICAN aquí lo
  * canónico de `@zeus/ssb-system/src/types.mjs` (`SSB_CORPORA`, `MANIFEST_NAME`,
@@ -979,9 +989,144 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   };
 }
 
+/**
+ * snapshotOf (U259) — el cursor de la familia (claves + fronteras de feed)
+ * calculado desde el volumen VIVO, con los agujeros del índice APARTE.
+ *
+ * `feedsSha256` resume `<author>:<min>:<max>:<count>` por feed, exactamente
+ * como en el plan de `merge` — el mismo cuerpo, no una réplica: si aquí y allí
+ * se escribiera dos veces, el sello y su verificación divergirían a la primera
+ * decisión sobre el relleno de un feed.
+ * @param {string} volumeDir
+ * @returns {{ snapshot: object, agujeros: object[] }}
+ */
+export function snapshotIndexOf(volumeDir) {
+  const idx = indexVolume(volumeDir);
+  /** @type {object[]} */
+  const agujeros = [];
+  if (idx.links.length > 0) agujeros.push({ kind: 'enlace_en_volumen', files: idx.links });
+  if (idx.unkeyable.length > 0) agujeros.push({ kind: 'material_sin_clave', files: idx.unkeyable });
+  if (idx.withoutCoords.length > 0) {
+    agujeros.push({ kind: 'material_sin_coordenada_de_feed', files: idx.withoutCoords });
+  }
+  if (idx.outOfLayout.length > 0) {
+    agujeros.push({ kind: 'material_fuera_de_layout', files: idx.outOfLayout.map((o) => o.file) });
+  }
+  if (idx.forks.length > 0) {
+    agujeros.push({
+      kind: 'feed_bifurcado',
+      files: idx.forks.map((f) => `${f.author}#${f.sequence}`)
+    });
+  }
+  if (idx.caseCollisions.length > 0) {
+    agujeros.push({
+      kind: 'colision_de_caja',
+      files: idx.caseCollisions.map((c) => c.files.join(' ~ '))
+    });
+  }
+
+  const sortedKeys = [...idx.byKey.keys()].sort();
+  const keyDigest = createHash('sha256');
+  for (const key of sortedKeys) keyDigest.update(`${key}\n`);
+
+  const feedDigest = createHash('sha256');
+  let feedsConHueco = 0;
+  for (const author of [...idx.feeds.keys()].sort()) {
+    const seqs = new Set(idx.feeds.get(author).keys());
+    const max = Math.max(...seqs);
+    const min = Math.min(...seqs);
+    if (max - min + 1 !== seqs.size) feedsConHueco += 1;
+    feedDigest.update(`${author}:${min}:${max}:${seqs.size}\n`);
+  }
+
+  return {
+    snapshot: {
+      unit: 'ssb-key',
+      units: sortedKeys.length,
+      unitsSha256: keyDigest.digest('hex'),
+      feeds: idx.feeds.size,
+      feedsSha256: feedDigest.digest('hex'),
+      ...(feedsConHueco > 0 ? { feedsConHueco } : {}),
+      ...(idx.duplicated.length > 0 ? { destDuplicadas: idx.duplicated.length } : {})
+    },
+    agujeros
+  };
+}
+
+/** @param {string} volumeDir @returns {object|null} */
+export function snapshotOf(volumeDir) {
+  const { snapshot } = snapshotIndexOf(volumeDir);
+  return snapshot.units > 0 ? snapshot : null;
+}
+
+/**
+ * verifySnapshot (U259) — recomputa el cursor sobre el árbol vivo y lo compara
+ * con el sellado. Exacto, por la misma razón medida que en FIREHOSE (ver
+ * `driver-firehose.mjs`, «POR QUÉ EXACTO Y NO POR PERTENENCIA»): un volumen SSB
+ * sellado **ya estaba congelado** por `ficheros` (U258) y por `corpora`, así que
+ * el cursor exacto no añade una clase de rotura nueva — añade la que faltaba,
+ * el ALTA, y además nombra la deriva de FEED, que es la garantía central de
+ * esta familia y la que ningún otro tramo mira.
+ * @param {string} volumeDir @param {any} sealed
+ * @returns {object[]}
+ */
+export function verifySnapshot(volumeDir, sealed) {
+  if (!sealed || typeof sealed !== 'object' || sealed.unit !== 'ssb-key') {
+    return [
+      {
+        error: 'snapshot_ilegible',
+        note:
+          'la familia SSB sella un cursor `{unit:"ssb-key", units, unitsSha256, feeds, feedsSha256}`'
+      }
+    ];
+  }
+  const { snapshot, agujeros } = snapshotIndexOf(volumeDir);
+  /** @type {object[]} */
+  const findings = agujeros.map((a) => ({
+    error: 'indice_con_agujero',
+    kind: a.kind,
+    files: a.files.slice(0, 20),
+    note:
+      'el índice por clave del volumen no es completo, así que el cursor recomputado ' +
+      'no prueba nada: se declara en vez de dar un verde construido sobre un hueco'
+  }));
+  if (snapshot.units !== sealed.units || snapshot.unitsSha256 !== sealed.unitsSha256) {
+    findings.push({
+      error: 'cursor_desviado',
+      unit: 'ssb-key',
+      sealed: { units: sealed.units, unitsSha256: sealed.unitsSha256 },
+      actual: { units: snapshot.units, unitsSha256: snapshot.unitsSha256 },
+      note:
+        snapshot.units > sealed.units
+          ? 'el volumen tiene MÁS mensajes que los sellados (alta fuera del pipeline de import)'
+          : snapshot.units < sealed.units
+            ? 'el volumen tiene MENOS mensajes que los sellados (baja)'
+            : 'mismo número de mensajes y conjunto de claves DISTINTO (suplantación)'
+    });
+  }
+  // El segundo eje de la familia: la frontera y la densidad de cada feed. Se
+  // comprueba APARTE porque puede desviarse con el mismo conjunto de claves
+  // (un `value.sequence` reescrito no cambia la clave: la clave es opaca).
+  if (sealed.feedsSha256 !== undefined) {
+    if (snapshot.feeds !== sealed.feeds || snapshot.feedsSha256 !== sealed.feedsSha256) {
+      findings.push({
+        error: 'feed_desviado',
+        sealed: { feeds: sealed.feeds, feedsSha256: sealed.feedsSha256 },
+        actual: { feeds: snapshot.feeds, feedsSha256: snapshot.feedsSha256 },
+        note:
+          'cambió la frontera (min/max) o la densidad de algún feed: la posición ' +
+          '(author, sequence) aterrizada es lo único inviolable de esta familia'
+      });
+    }
+  }
+  return findings;
+}
+
 export const SSB_DRIVER = Object.freeze({
   family: SSB_FAMILY,
   detect,
   validate,
-  merge
+  merge,
+  snapshotOf,
+  verifySnapshot
 });
