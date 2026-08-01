@@ -876,3 +876,185 @@ obra + los de corrección), `main` sin tocar, árbol limpio. La decisión **Z-D9
 sigue en pie y sin cambio de clave canónica**: AT-URI derivado de la terna,
 inyectivo, con **una sola vía** de producción y `uri` degradado a
 corroboración.
+
+---
+
+# 12 · Corrección de la TERCERA devolución (D-F + M1-M4)
+
+## 12.1 · D-F (BLOQUEANTE) · el agujero del índice sobrevivía por la puerta de al lado
+
+**Lo acepto entero, y el argumento que lo cierra es mío.** `indexByKey`
+indexaba solo si `rel.endsWith('.json')`, y `keyOfFile` se traga cualquier
+fallo de parseo: una unidad **real** del destino que el índice no podía keyar
+se contaba en `destSinClave` **y el pack la volvía a plantar**. El vector más
+puro no tiene ni excusa de contenido —renombrar `raw/jetstream/u1.json` →
+**`u1.JSON`**, mismos bytes, unidad válida y legible— y produce `moved:2`
+donde tocaba `moved:1 + dedup:1`, sello movido, reintento no-op, **duplicado
+para siempre**. Mismo resultado con BOM UTF-8 (que en este mundo nadie pela),
+sin extensión, o en UTF-16LE. Que un JSON roto **no** duplicara era casualidad
+de que tampoco keyaba en el pack.
+
+Lo que lo hace indiscutible es que yo mismo había escrito por qué esta salida
+no vale, al justificar la vía fuerte de D-B en §11.2: *«si solo se cuenta, la
+duplicación sigue ocurriendo y sigue siendo irreversible; una caché cuyo
+contrato es "unión aditiva, jamás duplicar" no puede planificar sobre un
+índice con agujeros»*. Vía fuerte para los enlaces, débil para esto. Y la
+asimetría era **interna**: `validate` falla **cerrado** ante un fichero de
+corpus sin clave **en el pack**; `indexByKey`/`merge` fallaban **abiertos**
+ante lo mismo **en el destino**. No puede ser fallo-cerrado a la entrada y
+fallo-abierto en casa.
+
+**El arreglo, con la misma doctrina, en tres piezas:**
+
+1. **`keyOfFile` ya no filtra por extensión** (`driver-firehose.mjs:353`): **el
+   contenido manda, no el nombre**. La puerta no se hace insensible a la caja
+   —eso solo movería el problema a la siguiente forma del nombre—: desaparece.
+2. **`merge` aborta con `destino_sin_clave`** (`:563`) cuando algún fichero del
+   destino no rinde clave y no es sidecar declarado. En el pase dry, antes de
+   mover y **antes de sellar**, exactamente como `enlace_en_destino`.
+3. **`destSinClave` desaparece del snapshot.** No puede haber ficheros sin
+   clave al llegar ahí: el campo era la coartada del comportamiento débil.
+
+**Precio declarado, porque lo tiene:** un volumen que **ya** contenga material
+así (un `.md` suelto en un corpus, un JSON roto, un fichero con BOM) queda
+**no importable** hasta que el operador lo retire — con la ruta citada en el
+error. Es el mismo precio que la vía fuerte de D-B y se paga por la misma
+razón. Está escrito en la cabecera del driver, no solo aquí.
+
+**Coste declarado de «el contenido manda»:** ahora se intenta leer **cada**
+fichero del destino, no solo los `.json`. En esta familia todos son posts de
+kilobytes, pero un fichero grande extraviado en el volumen se leería entero
+antes de fallar. No lo acoto por tamaño a propósito: usar el tamaño para
+decidir es exactamente lo que U225 prohíbe, y prefiero la exposición declarada
+a una heurística por nombre o por bytes.
+
+**Probes permanentes (2):**
+- `D-F: unidad del destino con la extensión en OTRA CAJA (u1.JSON) SÍ
+  deduplica` — el vector puro. El pack la trae en **otro batch**, para aislar
+  el índice de la comprobación de ruta. Verifica `moved:1` (solo lo nuevo),
+  `dedup[0].at === 'raw/jetstream/u1.JSON'`, dos ficheros en disco,
+  `snapshot.units === 2` y que **`destSinClave` ya no existe**.
+- `D-F: fichero del destino que no rinde clave = destino_sin_clave, aborta en
+  dry` — planta una unidad con **BOM** y una `nota.md`; verifica
+  `step:'fusionar'`, `error:'destino_sin_clave'`, **las dos rutas citadas**,
+  ausencia del paso `sellar`, y sello + árbol + staging intactos.
+
+**Aislamiento verificado** (revirtiendo las dos mitades del arreglo): caen
+**exactamente los 2 probes de D-F**, nada más.
+
+**Efecto lateral en el probe de D3, corregido:** el vector de D3 plantaba
+`raw/zzz` con texto plano, que desde D-F es `destino_sin_clave` y ya no llegaba
+al guardián de ancestros. Ahora planta una **unidad válida sin extensión**
+(material heredado plausible), de modo que lo cace `ruta_bloqueada_por_fichero`
+y el probe siga probando lo suyo.
+
+## 12.2 · Menores
+
+**M1 · `uri: null` — código y prosa alineados, y con probe.** El código trataba
+`null`/`undefined` como AUSENCIA (convención JSON normal) mientras la prosa
+decía que un `uri` presente que no coincide no rinde clave. Discrepaban y no
+había probe. Corregida la prosa del driver («*presente* excluye `null` y
+`undefined`: un campo ausente no corrobora ni desmiente») y añadido el probe
+`M1`, que fija las cuatro formas: `null`, `undefined`, campo no declarado y
+campo presente y coherente → **la misma clave derivada**.
+
+**M2 · «4 combinaciones por vector» era 1 efectiva y 3 de fijación. Duele, y
+es exacto.** La medida de la contrarrevisión, inyectando la regresión de D-A
+sobre los 8 vectores: `sin uri` **0/8**, `uri ajeno` **8/8**, `uri propio`
+**0/8**, `uri basura` **0/8**. Las razones son las que da: contra el código
+actual las cuatro salen por el `return null` de la terna **antes de leer
+`raw.uri`**, así que la corroboración ni se ejecuta; y `propio` se construye
+con el componente inválido dentro, así que degenera en `basura`. §11.1 vendía
+cuatro ángulos donde había uno. Es **la misma clase de error que D-A**: afirmar
+del todo lo que se probó de un camino. Correcciones:
+
+- el helper se llama ahora `assertTernaInvalidaSinClave` y **lleva escrito en
+  su docblock** qué caza cada combinación (1 efectiva + 3 de fijación, que se
+  conservan porque hablan si alguien reordena y la corroboración pasa a
+  evaluarse primero);
+- nace `assertCorroboracionRechaza(uri, etiqueta)`: **terna VÁLIDA** + `uri`
+  que no corrobora. Es el **segundo ángulo real** —el único camino que ejecuta
+  la rama de corroboración— y el probe de D-A lo recorre con **9 formas**
+  (`42`, `{}`, `[]`, `true`, string cualquiera, `../../etc/passwd`, AT-URI
+  ajeno, AT-URI de 4 componentes, AT-URI con otro DID).
+
+**M3 · abstenerse es `skip`, no `ok`.** Tienes razón: TAP reportaba `ok` y eso
+**es** fingir. El probe de D-B usa `t.skip('el entorno no permite plantar
+junctions')`. (Aquí no se ejerce: las junctions se crean sin privilegios y el
+probe cae bajo las dos regresiones.)
+
+**M4 · cita corrida, arreglada con ancla.** `jetstream-sync.mjs:143-147` →
+anclas **`:139`** (`writeJetstreamPost`) y **`:144`** (la línea del fallback a
+`norm.id`). Justo el tipo de rango que §11.4 decía haber sustituido por
+anclas: lo era, y se me escapó uno.
+
+## 12.3 · Dos anotaciones que la devolución pide dejar escritas
+
+**A · Reparse points: el precio de la vía fuerte.** libuv marca como enlace
+**cualquier** entrada con reparse point. Un volumen sobre **OneDrive
+Files-On-Demand**, con **deduplicación de Windows**, o cualquier filtro que use
+reparse points, caería en `enlace_en_destino` y **abortaría todo import, sin
+vía de reparación desde el driver**. No está reproducido y no es defecto —es la
+consecuencia deliberada de haber elegido rechazar en vez de contar (§11.2)—
+pero es el escenario en el que la elección se paga cara. Queda **anotado como
+riesgo para U206/U209/U240** (los que decidirán dónde vive el root real): si el
+root vive en un volumen con reparse points, la vía fuerte necesita una válvula
+declarada (p.ej. distinguir reparse point de symlink real, o un opt-in
+explícito del operador), y esa decisión no es de este eslabón.
+
+**B · El reloj no es evidencia reproducible.** La contrarrevisión midió la cota
+por su cuenta: las **aserciones** reproducen (8.388 ficheros contados por ella,
+`snapshot.units` cuadrando en 8 layouts), pero el **tiempo de pared** le salió
+el triple, con carga en paralelo. Confirma lo que ya concedí en §10.7 y lo dejo
+como regla, no como anécdota: en este reporte los tiempos son **contexto**, no
+evidencia; lo que sostiene una afirmación son las aserciones.
+
+## 12.4 · Suites tras la tercera corrección
+
+| paquete | base | 1.ª | tras D1-D4 | tras D-A/D-B | **tras D-F** |
+| ------- | ---- | --- | ---------- | ------------ | ------------ |
+| `@zeus/volumes-ops` | 27/27 | 40/40 | 49/49 | 53/53 | **56/56** |
+| `@zeus/feed-kit` | 9/9 | 10/10 | 10/10 | 10/10 | **10/10** |
+| `@zeus/firehose-core` | 11/11 | 12/12 | 12/12 | 12/12 | **12/12** |
+| `@zeus/linea-kit` | 36/36 | 36/36 | 36/36 | 36/36 | **36/36** |
+| `@zeus/presets-sdk` | 55/55 | 55/55 | 55/55 | 55/55 | **55/55** |
+| `@zeus/linea-firehose` | 1/1 | 1/1 | 1/1 | 1/1 | **1/1** |
+| `@zeus/firehose-browser` | 5/5 | 5/5 | 5/5 | 5/5 | **5/5** |
+
+**175/175 verdes · 0 skipped.** La suite del driver pasa de 26 a **29 tests**
+(+3: los dos de D-F y el de M1; el ángulo de corroboración de M2 se integra en
+el probe de D-A ya existente). `npx eslint` sobre los tres paquetes tocados:
+**0 hallazgos** — el BOM del probe va como escape `﻿`, no como carácter
+literal, para no disparar `no-irregular-whitespace` ni depender de la
+codificación del fichero.
+
+### Cota re-ejecutada a 8.388 tras D-F
+
+```
+# [U204·cota] unidades=8388 · import A (5032 nuevas)=15409ms · import B (5032 dedup + 3356 nuevas)=21694ms
+# pass 1 · fail 0
+```
+
+Las aserciones —lo que sí sostiene la afirmación— siguen: 5.032 dedup, 3.356
+moved, **8.388 ficheros exactos en disco**, `snapshot.units === 8388`, tercer
+pase `noop` con sello idéntico. Los tiempos son los más bajos de toda la serie
+(A ∈ [15,4 · 36,8] s, B ∈ [21,7 · 101,4] s en 9 corridas de este worker sobre
+dos commits), lo que refuerza justo lo dicho en §12.3.B: **la dispersión es de
+la máquina y el reloj no es evidencia**. Retirar la puerta de extensión no
+encarece nada medible: el índice ya leía todos los `.json`, que en esta familia
+son todos los ficheros.
+
+## 12.5 · Alcance respetado
+
+Nada heredado tocado. Siguen enrutados sin cambio los seis de §11.6 (bucle sin
+rollback y volúmenes anidados → U201/U242 · cadena de prototipos en
+`state.mjs`/`counters.mjs` → U201 · `@zeus/feed-kit` en 0.3.0 con la API rota y
+sin changeset → U237 + gate de banda major · `ssb-system/export.mjs` → U205 ·
+`test-utils/smoke-env.mjs` · `e2e/feed-families-demo.mjs` rojo desde la base),
+y se añade el riesgo de reparse points (§12.3.A) para el eslabón que fije el
+root real.
+
+**Z-D9 sigue en pie, sin cambio de clave canónica**: AT-URI derivado de la
+terna, inyectivo, con una sola vía de producción, `uri` como corroboración, y
+un índice de destino **sin agujeros** — ni por profundidad (D2), ni por
+enlaces (D-B), ni por nombre de fichero (D-F).
