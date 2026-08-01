@@ -281,7 +281,7 @@ Dos hermanas: `(author,sequence)` repetida → `secuencia_duplicada_en_pack`
 
 ---
 
-## 5 · Prueba de que los tests discriminan (13 mutaciones)
+## 5 · Prueba de que los tests discriminan (14 mutaciones)
 
 Los 33 + 20 tests salieron verdes **a la primera**, lo cual no prueba nada por sí
 solo. Mutación por mutación, con la mutación aplicada y revertida (fichero
