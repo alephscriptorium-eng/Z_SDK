@@ -522,10 +522,20 @@ Convenciones de este documento:
 **U237 (P0 · :325) Licencia SPDX por workspace**
 - deps int.: ninguna. deps ext.: **el custodio decide** la licencia
   (BACKLOG :325) — despacho tras esa decisión.
-- paths: `package.json:157` (`"license": "AIPLv1"` — no es identificador
-  SPDX válido), los 48 `packages/*/*/package.json` (48/48 con
-  `"license": "AIPLv1"`, medido por grep), `LICENSE.md:1` («Animus
-  Iocandi (composite)» — inconsistencia confirmada), docs.
+- paths: `package.json` raíz, los `packages/*/*/package.json` y los dos
+  miembros de `examples/*`, `package-lock.json`, `LICENSE.md`, docs.
+  ✎ **Estas citas se reescribieron al aceptar U237-B3 (2026-08-01) porque
+  estaban rancias**, y dos agentes independientes lo confirmaron: decían
+  `package.json:157` para un `"license": "AIPLv1"` que **ya no existe**, y
+  «48/48 con `AIPLv1`, medido por grep» cuando hoy la cifra es **0** — todos
+  declaran ya el puntero `SEE LICENSE IN LICENSE.md`. El «48» además **omitía
+  los dos miembros de `examples/*`**: los miembros de workspace son **50**, y
+  con la raíz son **51** claves en el lock. Se anota como instancia del
+  defecto que esta fase persigue: *la frase decía más de lo que el estado
+  sostenía*, y lo correcto era arreglar la frase cuando el estado ya había
+  cambiado. **Regla que sale de aquí: una cifra «medida por grep» caduca; o
+  se re-mide al citarla, o se cita el gate que la sostiene** — que desde
+  U237-B3 existe (regla `licencia` en `scripts/gates/scan.mjs`).
 
 **U238 (P1 · :326) SBOM / provenance / reproducibilidad**
 - deps int.: U237 (licencia coherente antes de sellar artefactos).
