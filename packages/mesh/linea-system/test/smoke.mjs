@@ -13,7 +13,12 @@ import { connectMcp, toolResultJson } from '@zeus/test-utils';
 import { resolveMcpApprovalToken } from '@zeus/presets-sdk';
 import { resolveNodo, resolveOldid, resolveRegistrosForYear, validateNodoSectionMappings, loadLineaData } from '@zeus/linea-system/loader';
 import { startAll } from '../src/start.mjs';
-import { hasLiveLineasRegistry, SKIP_NO_LIVE_LINEAS } from './helpers/live-volumes.mjs';
+import {
+  hasLiveLineasRegistry,
+  requireLineasBasePath,
+  SKIP_NO_LIVE_LINEAS,
+  SKIP_LIVE_LINEAS_PRESENT
+} from './helpers/live-volumes.mjs';
 
 const TEST_PORTS = { espana: 14111, wpHistoria: 14112 };
 const PREV_ENV = {
@@ -376,3 +381,46 @@ test('linea-system smoke', { skip: hasLiveLineasRegistry() ? false : SKIP_NO_LIV
 
   console.log('SMOKE TEST PASSED');
 });
+
+/**
+ * WP-U261 · el complemento EXACTO del `skip` de arriba, y la razón de existir.
+ *
+ * En CI el corpus vivo `espana` no está ni puede estar (candado de whitelist,
+ * `.gitignore:18-24`), así que el smoke se omite. Un job cuyo único resultado
+ * es «omitido» es un verde que no asevera nada — peor que el rojo que sustituye.
+ * Este caso corre justo cuando aquél se omite, y viceversa: el job SIEMPRE
+ * ejecuta uno de los dos cuerpos, nunca ninguno.
+ *
+ * Qué asevera: que el root declarado resuelve, que su registry se lee de
+ * verdad (líneas > 0), que `espana` NO está — y que `startAll()` se NIEGA a
+ * levantar los dos servidores sin su línea, con error nombrado, en vez de
+ * servir un MCP vacío. Qué NO asevera: absolutamente nada de la superficie MCP
+ * (health, tools, resources, prompts): eso vive en el caso de arriba.
+ *
+ * `t.plan(4)` no es adorno: si el cuerpo se fuera por una salida temprana el
+ * caso se pone ROJO en vez de pasar mudo. Por eso las aserciones son `t.assert`
+ * (las de `node:assert` no cuentan para el plan).
+ */
+test(
+  'linea-system fail-closed sin corpus vivo',
+  { skip: hasLiveLineasRegistry() ? SKIP_LIVE_LINEAS_PRESENT : false },
+  async (t) => {
+    t.plan(4);
+
+    const base = requireLineasBasePath();
+    t.assert.ok(base, 'ZEUS_VOLUMES_ROOT debe resolver a un DISK_02/LINEAS');
+
+    const { lineas } = await loadLineaData();
+    const ids = Object.keys(lineas);
+    t.assert.ok(ids.length > 0, `el root declarado (${base}) no expone ninguna línea`);
+    t.assert.equal(ids.includes('espana'), false, 'sin corpus vivo no puede haber id:espana');
+
+    await t.assert.rejects(
+      startAll(),
+      /Line data not found for "espana"/,
+      'startAll() debe fallar cerrado, no levantar un MCP sin su línea'
+    );
+
+    console.log(`FAIL-CLOSED CASE PASSED: 4 aserciones · líneas en ${base}: ${ids.join(', ')}`);
+  }
+);

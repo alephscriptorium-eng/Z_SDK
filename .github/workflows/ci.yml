@@ -83,10 +83,22 @@ jobs:
         # `include` los 25 la reciben VACIA — medido equivalente a no
         # definirla: mismo exit code y mismo recuento pass/fail/skip en
         # 25 de 25 (WP-U256 §5).
+        # WP-U261 saca a `@zeus/linea-system` de ese conjunto (pasa a recibir
+        # root de verdad), asi que hoy son 24 los que la reciben vacia. El
+        # «25 de 25» es la medida historica de U256 y no se re-mide aqui.
         include:
           - workspace: '@zeus/linea-kit'
             needs_volumes_root: true
           - workspace: '@zeus/volumes-ops'
+            needs_volumes_root: true
+          # WP-U261 — tercer consumidor del carril de datos. Sus dos ficheros de
+          # test importan `src/start.mjs`, que resuelve el root de VOLUMES en
+          # TIEMPO DE IMPORT (`src/loader.mjs:28`): sin root declarado el fichero
+          # ni se carga y el job cae con el fail-closed de U200. El root NO le
+          # trae el corpus vivo `espana` (no puede: candado `.gitignore:18-24`);
+          # le trae la línea `demo`, que es contra la que asevera el caso
+          # fail-closed de `test/smoke.mjs`.
+          - workspace: '@zeus/linea-system'
             needs_volumes_root: true
     steps:
       - uses: actions/checkout@v4
@@ -118,11 +130,39 @@ jobs:
           echo "root declarado y completo: $ZEUS_VOLUMES_ROOT"
         env:
           ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
+      # WP-U261 · misma disciplina que la guarda de arriba, paso aparte porque la
+      # precondición es OTRA: linea-system no lee DISK_03/FORCES, lee
+      # DISK_02/LINEAS/registry.yaml. Exigirle un volumen que no usa sería un
+      # rojo falso; compartir un paso con tres condiciones unidas, también.
+      #
+      # El `if` se ancla en `matrix.workspace` (valor ORIGINAL de la matriz) y NO
+      # en `matrix.needs_volumes_root`, que es justo lo que verifica: si el merge
+      # del `include` fallara, esta guarda corre igual y se pone ROJA en vez de
+      # saltarse a sí misma.
+      #
+      # La tercera comprobación es la que importa: `registry.yaml` es LITERALMENTE
+      # el fichero que `test/helpers/live-volumes.mjs:34-35,50` abre para decidir entre
+      # aseverar y omitir. Sin él, el helper lanza y el job cae — pero cae con un
+      # rastro de node; aquí cae con un mensaje que dice qué falta.
+      - name: linea-system exige su root de VOLUMES (WP-U261)
+        if: matrix.workspace == '@zeus/linea-system'
+        run: |
+          test -n "$ZEUS_VOLUMES_ROOT" \
+            || { echo "::error::ZEUS_VOLUMES_ROOT no llego al job: el include no aplico"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/volumes.json" \
+            || { echo "::error::$ZEUS_VOLUMES_ROOT no es un root de VOLUMES"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/DISK_02/LINEAS/registry.yaml" \
+            || { echo "::error::sin DISK_02/LINEAS/registry.yaml no hay carril de lineas: smoke.mjs no puede aseverar el fail-closed"; exit 1; }
+          echo "root declarado y con carril de lineas: $ZEUS_VOLUMES_ROOT"
+        env:
+          ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
       - name: Test workspace
         run: npm test -w "${{ matrix.workspace }}"
         env:
           # Sin este root, linea-kit/test/forces-loader.test.mjs:57 se
           # auto-omite en silencio y se cuenta como `pass` (WP-U256 §4).
+          # Y linea-system ni carga sus ficheros de test: `src/loader.mjs:28`
+          # resuelve el root en tiempo de import (WP-U261 §1).
           ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
 
   # WP-U158 — consumidor TS tipado desde registry real (no tarball).
