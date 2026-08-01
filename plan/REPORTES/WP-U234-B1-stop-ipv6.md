@@ -128,7 +128,7 @@ ocupante real de cada forma:
 | `127.0.0.1` llano | `[pid]` | **`true` miente** | `false` acierta |
 
 **Esto es lo que el brief no llegaba a enunciar y es la mitad que faltaba.** La
-sonda de `runStop:509` siempre se llama con `e.host || 'localhost'`, y *todas*
+sonda de `runStop:509` (base) siempre se llama con `e.host || 'localhost'`, y *todas*
 las entradas del catálogo traen `host:'localhost'`. Luego la «prueba real de
 re-bind» sólo probaba `::1`: un residuo en `127.0.0.1` o en `0.0.0.0` salía
 declarado **libre**. No es una hipótesis condicional (`ZEUS_HOST=127.0.0.1`);
@@ -276,8 +276,9 @@ tenía que evitar), CA-4 seguiría roja y el agujero de la sonda seguiría vivo.
 ```
 
 21→28 (+5 CA de defecto, +2 guardias de la ronda de cierre), 0 fallos, mismo
-`skip` preexistente. Tres pasadas completas consecutivas con el mismo
-resultado.
+`skip` preexistente. **Con la salvedad honesta de §9.7**: la suite tiene dos
+tests preexistentes intermitentes, ajenos a este WP y reproducibles con mi
+fichero de test fuera. Ninguna de mis siete CA falló nunca, ni el e2e IPv4.
 
 **El e2e IPv4 (`test/orchestrator.test.mjs:96-144` en la base, `:105-153` en el
 tip) sigue verde sin editar ni uno de sus asertos.** No es una afirmación de
@@ -593,20 +594,44 @@ lo había declarado; queda dicho.
 
 ### 9.7 · Fuera de los cuatro puntos — anotado y NO tocado
 
-Una única observación, que **no toco** por la regla de cierre:
+**La suite de `@zeus/mcp-launcher` tiene fragilidad preexistente, ajena a este
+WP.** Lo detecté al cerrar y lo caractericé en vez de llamarlo «flake» y seguir.
 
-`test/tool-call-launch.test.mjs` («eje I: tool call launch_mcp_server starts
-tronco + satelite») **falló una vez** en una de las cinco pasadas completas de
-esta ronda, y volvió a verde en las tres pasadas siguientes y en ejecución
-aislada. **No pasa por ningún fichero de este WP**: no importa `orchestrator.mjs`
-ni ninguno de sus símbolos (comprobado por grep en §1). Arranca procesos reales
-en puertos fijos, y esta máquina tiene varios worktrees del swarm corriendo
-suites a la vez, así que la hipótesis natural es colisión de puertos entre
-worktrees. **No investigado a fondo, no tocado, queda enrutado al orquestador.**
+Dos tests distintos fallan de forma intermitente:
 
-En la misma pasada anómala, el e2e IPv4 preexistente tardó 30 s frente a los
-~1 s habituales, lo que refuerza la hipótesis de carga/colisión ambiental. Dos
-pasadas inmediatamente posteriores: 3.3 s.
+- `test/tool-call-launch.test.mjs:58` — «eje I: tool call launch_mcp_server
+  starts tronco + satelite». Error real capturado:
+  `{"ok":false,"error":"Health check failed after launch",
+  "spawnGroup":"linea-system","health":[{"port":19121,"ok":false,
+  "error":"fetch failed"},{"port":19122,"ok":false,"error":"fetch failed"}]}`,
+  y falla **rápido** (409 ms), o sea el proceso lanzado no llegó a escuchar.
+- `test/intentional-stops-read.test.mjs` — «intentionalStops: crash without stop
+  ≠ intentional».
+
+**Prueba de que no es mío, y no es una conjetura:**
+
+1. **El camino de código está intacto.** Mi diff contra `87bd93f` toca cuatro
+   ficheros: `orchestrator.mjs`, su test, el fixture nuevo y este reporte. Esos
+   dos tests importan `launcher-server.mjs` y `process-manager.mjs`, que **no
+   cambian ni un byte**. El último commit que tocó esas rutas es `2e1883a`,
+   anterior a mi base.
+2. **Reproduce sin mi fichero de test.** Ejecuté la suite **excluyendo
+   `orchestrator.test.mjs`**: 6 pasadas → **3 fallos**. La fragilidad existe con
+   mi código de test completamente fuera del proceso, así que tampoco es
+   interferencia de concurrencia mía (`node --test test/*.mjs` corre los
+   ficheros en paralelo, que era la única vía plausible por la que yo podría
+   haber influido).
+3. **Mis siete CA nunca fallaron** en ninguna de las ~14 ejecuciones de esta
+   ronda, ni el e2e IPv4 preexistente.
+
+Hipótesis más probable, **no confirmada**: los dos tests arrancan procesos
+reales en puertos fijos (19121/19122) y esta máquina tiene varios worktrees del
+swarm corriendo suites a la vez. No lo investigué más: está fuera de los cuatro
+puntos. **No tocado, enrutado al orquestador.**
+
+Nota relacionada: en una pasada anómala el e2e IPv4 preexistente tardó 30 s
+frente a los ~1-3 s habituales, lo que encaja con la misma hipótesis de
+contención ambiental.
 
 ### 9.8 · Números de la ronda de cierre
 
@@ -615,6 +640,11 @@ pasadas inmediatamente posteriores: 3.3 s.
 | línea base (`87bd93f`) | 21 | 20 | 0 | 1 |
 | primera entrega (`1c6879b`) | 26 | 25 | 0 | 1 |
 | **cierre** | **28** | **27** | **0** | 1 |
+
+La fila de cierre es el resultado modal: de las ~14 pasadas completas de esta
+ronda, la mayoría salieron así y **dos** salieron con un fallo, siempre en uno
+de los dos tests preexistentes intermitentes de §9.7 — nunca en una CA de este
+WP ni en el e2e IPv4. Se declara aquí en vez de publicar sólo la pasada buena.
 
 `eslint` sobre los tres ficheros tocados: **0 problemas**. `status minimo` por
 CLI sigue devolviendo su JSON de nueve claves con exit 0 (el fail-closed no
