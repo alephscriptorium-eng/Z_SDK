@@ -7,7 +7,7 @@
 | rama | `wp/u251-menores-signaling` (worktree `C:\S_LAB\wt\z-u251`, base `main`) |
 | fila | BACKLOG :263 · secuela de **U197** ✅ (BACKLOG :265) sobre **U186** ✅ (BACKLOG :233) |
 | alcance tocado | `packages/engine/webrtc-signaling/**` (src · test · types · README) · este reporte · fila U251 del BACKLOG |
-| estado propuesto | **entregado** — 6/6 cerrados, 0 descartados |
+| estado propuesto | **devuelto y corregido** — 6/6 cerrados + los 3 bloqueantes y los 5 menores de la devolución (§11); ficha **U262** abierta |
 
 ---
 
@@ -127,12 +127,13 @@ retrato cubre `admission`, `requiredRole`, `requireSsbId`,
 el tramo de política: un `connect` que no abre cable tampoco debe dejar
 política nueva aplicada.
 
-> ✎ **Alcance exacto, para no afirmar de más:** el rollback cubre la
-> **política de exigencias y la card**. **No** revierte `this.userId`,
-> `this._client` / `this._transport` ni `this._allowTrickle`. No son
-> exigencias —no relajan ningún torno— pero es media verdad decir que el
-> estado «vuelve al de antes»: vuelve **el estado que decide quién pasa**.
-> Anotado en §9 como abierto.
+> ⛔ **Esta nota decía una falsedad y la devolución la tumbó. Ver §11.1 y
+> §11.4.** Decía: *«el rollback cubre la política de exigencias y la card;
+> no revierte `userId`, `_client`/`_transport` ni `_allowTrickle` — no son
+> exigencias»*. **`userId` sí decide lo que se exige después** (acuña la
+> identidad que satisface `requireSsbId`, y gobierna el `claimedFrom` del
+> arreglo (1)); `_allowTrickle` y `_transport` también muerden. El
+> inventario definitivo está en §11.1/§11.4: **8 campos**, no 5.
 
 ---
 
@@ -216,6 +217,14 @@ gemelos, los 9 valores de la tabla): **9/9 idénticos** en veredicto y modo
 resultante. Sólo difiere el prefijo del mensaje (`SignalingService.` vs
 `BrowserSocketSignalingService.`), que es correcto y deliberado.
 
+> ✎ **Acotado tras la devolución (M4).** Ese 9/9 es **sobre `admission`, y
+> nada más** — mi redacción original invitaba a leerlo como paridad de los
+> gemelos. **No lo es: divergen en `requireSsbId`**, medido:
+> `setPeerCard(card, { requireSsbId: true })` aplica la exigencia en Node y
+> el gemelo de navegador **la ignora en silencio**, porque su `setPeerCard`
+> **no acepta `opts`** (`browser-signaling.mjs:215`). Es otro eje, no el de
+> este defecto; va al abierto (§9.1) y a la tabla del README.
+
 ---
 
 ## 6. Defecto (2) — el candado SSB, de verdad
@@ -248,9 +257,26 @@ DESPUÉS: ambos → 'peer-card', y D2b comprueba además que el TORNO actúa en
 2. **Ruidosa** — `setAdmission('anonymous')` **sigue lanzando** en el carril
    SSB, para que la vía de configuración se entere (guarda `D2c`).
 
-**Lo que sigue sin garantizarse, dicho:** una **subclase propia** puede
-volver a sobrescribir `getAdmission()`. Eso ya no es pinchar este servicio;
-es escribir otro. README actualizado con esta frontera exacta (invariante 6).
+**Lo que sigue sin garantizarse, dicho con precisión** (corregido en la
+devolución, M1 — mi primera redacción sólo mencionaba subclases y eso
+sugería que las demás vías estaban cerradas): **el candado pasó de campo
+público a método público, no a estructural.** Tres vías medidas, una línea
+cada una:
+
+| bypass | medido |
+| ------ | ------ |
+| subclase que re-sobrescriba `getAdmission()` | (es escribir otro servicio) |
+| **sombra de instancia** — `svc.getAdmission = () => 'anonymous'` | `getAdmission()` → **`anonymous`** |
+| **borrar el método del prototipo** — `delete SsbPrivateSignalingService.prototype.getAdmission` + `SignalingService.prototype.setAdmission.call(svc,'anonymous')` | `getAdmission()` → **`anonymous`** |
+
+Lo garantizado sigue siendo exactamente: **no hay configuración que lo
+abra**, y ahora tampoco lo abre una **escritura de campo** (que era el
+agujero que la ficha pedía cerrar). README actualizado con las tres.
+
+> ✎ No lo cierro. `Object.defineProperty(this,'getAdmission',{writable:false,
+> configurable:false})` en el constructor mataría las dos últimas, pero
+> rompe la sobrescritura legítima en subclases y en dobles de prueba, y el
+> coordinador acotó M1 a *declarar*. Queda dicho, no enterrado.
 
 ---
 
@@ -336,24 +362,30 @@ cable: 0 coincidencias de /peerCard|seatSignature|token|ssbId/
 
 ## 9. Qué queda abierto
 
-1. **El gemelo de navegador conserva los defectos (1) y (3).**
-   `browser-signaling.mjs:270` sigue sin `claimedFrom` en `joinRoom`, y
-   `:125` (`_applyPolicy`) sigue con la doble lectura del opt. Están en
-   `packages/mesh/**`, fuera de mi reparto. **Los dos son portables tal
-   cual**: una línea `claimedFrom: this.userId` en `_gateOpts()` del
-   `joinRoom`, y tres `const` locales en `_applyPolicy`. El defecto (5)
-   quedó cerrado sin tocarlo porque el correcto era él.
-2. **El rollback de (4) no revierte `userId` / `_client` / `_transport` /
-   `_allowTrickle`** (§3). No son exigencias, pero un `connect` fallido deja
-   esos campos movidos.
-3. **La doble lectura del opt vive también dentro de `peer-card-gate.mjs`**
-   (`assertSignalingPeerCard` lee `opts.role` hasta 3 veces; `assertSignalingAdmission`
-   lee los opts y luego los reenvía al torno, que vuelve a leerlos). **No lo
-   toqué a propósito**: es el portero de otro carril. Medido antes de
-   afirmarlo: ahí el getter alternante falla **cerrado**, porque
-   `peerCardGrantsRole(card, undefined)` devuelve `false`
-   (`protocol/src/peer-card.mjs:285`). No es un fail-open hoy; sí es la
-   misma forma, y merece ficha propia si alguna vez esa rama cambia.
+1. **El gemelo de navegador conserva (1) y (3), y además diverge en
+   `requireSsbId`.** Están en `packages/mesh/**`, fuera de mi reparto.
+   - `browser-signaling.mjs:270` — `joinRoom` sin `claimedFrom`. ⚠
+     **Corregido el calificativo tras la devolución (M3):** lo llamé «doble
+     lectura», y no lo es: allí es **fail-open vivo**, el mismo defecto (1)
+     que aquí se cerró — con `userId` de forma feed, el `join-room` anónimo
+     **saca el feed al cable**. Arreglo portable: una línea
+     `claimedFrom: this.userId` en su `_gateOpts()`.
+   - `browser-signaling.mjs:125` (`_applyPolicy`) — ésa sí es la doble
+     lectura del defecto (3). Arreglo portable: tres `const` locales.
+   - `browser-signaling.mjs:215` — `setPeerCard(peerCard)` **no acepta
+     `opts`**: `{ requireSsbId: true }` se ignora en silencio (§5, M4).
+   El defecto (5) quedó cerrado sin tocarlo porque el correcto era él.
+2. ~~**El rollback de (4) no revierte `userId` / `_client` / `_transport` /
+   `_allowTrickle`.** No son exigencias…~~ **CERRADO en la devolución**
+   (§11.1, §11.4): `userId`, `_transport` y `_allowTrickle` **sí** deciden lo
+   que se exige después y están ya en el retrato. `_client` se queda fuera,
+   **medido y con motivo**: ver §11.4.
+3. ~~**La doble lectura del opt vive también dentro de `peer-card-gate.mjs`**
+   … ahí el getter alternante falla **cerrado**…~~ **AFIRMACIÓN FALSA,
+   corregida en §11.3.** Medí **una** alternancia y generalicé a la rama
+   entera. Con otra alternancia el portero **falla ABIERTO**. Ficha propia
+   abierta: **U262** (BACKLOG :264), con sus dos vectores medidos y dos
+   pruebas de evidencia en la suite.
 4. **El sensor TS depende de un `typescript` transitivo** (4.9.5, pinado en
    el lockfile pero no declarado en `devDependencies` de la raíz). Es el
    mismo apoyo que usa `packages/engine/protocol/test/subpath-types-smoke.test.mjs`.
@@ -368,9 +400,9 @@ cable: 0 coincidencias de /peerCard|seatSignature|token|ssbId/
 
 | suite / sonda | antes | después |
 | ------------- | ----- | ------- |
-| `@zeus/webrtc-signaling` (`npm test -w`) | **48/48** | **67/67** |
-| — de ellos, nuevos de U251 | — | **19** (`u251-menores` 18 + `u251-tipos` 1) |
-| rojos demostrados antes del arreglo | **13** de 19 | 0 |
+| `@zeus/webrtc-signaling` (`npm test -w`) | **48/48** | **75/75** (67 tras la 1.ª ronda, +8 en la devolución) |
+| — de ellos, nuevos de U251 | — | **27** (`u251-menores` 18 + `u251-tipos` 1 + `u251-devolucion` 8) |
+| rojos demostrados antes del arreglo | **18** (13 + 5 de la devolución) | 0 |
 | `@zeus/webrtc-viewer` (gemelo, sin tocar) | 17/17 | **17/17** |
 | `@zeus/blob-sync-harness` | — | **11/11** |
 | `@zeus/blobstore-client` | — | **19/19** |
@@ -393,3 +425,131 @@ cambio.
 como ` M` en `git status`. **No es contrabando**: `git diff` sale vacío — es
 la renormalización LF→CRLF que hace `npm ci` al reescribir los shims de bin.
 No van en ningún commit mío.
+
+---
+
+## 11. Devolución — *un rollback vale lo que valga su inventario*
+
+El revisor reprodujo los cuatro rojos medibles con vector propio, la
+frontera aguantó su ataque completo (8/8) y `peer-card-gate.mjs` quedó con 0
+líneas. Pero tres bloqueantes, y tenía razón en los tres. **Reproduje cada
+vector antes de tocar nada**; ninguno era una lectura, todos eran medibles.
+
+El diagnóstico del revisor es el que me llevo: el mecanismo del retrato
+estaba bien —los campos retratados restauraban— y el fallo estaba en **qué
+decidí que era «política»**. Escribí que `userId` «no es una exigencia».
+Nadie lo mide hasta que alguien mide que **acuña identidad**.
+
+### 11.1 · B1 — `userId` dentro del retrato, en los dos carriles
+
+Reproducido tal cual, con `whoami()` vacío para partir sin identidad:
+
+```
+SSB      joinRoom(card sin ssbId)         → DENIEGA (/ssbId missing or malformed/)
+         connect(FEED,{admission:anonymous}) → LANZA · política restaurada
+         userId tras el fallo             = "@Vt0z…ed25519"   ← NO revertido
+         la MISMA card → joinRoom         → ACEPTADA · getSsbId()=FEED · rol 'player'
+```
+**Un `connect()` que falló acuñó la identidad que satisface la exigencia
+estructural del carril** (`joinRoom` estampa `this.userId` como `ssbId` en
+una card que no lo trae, `ssb-private-signaling.mjs:141-143`).
+
+En socket es peor, porque **deshacía mi propio arreglo de (1)**:
+
+```
+anonymous + userId=FEED  → joinRoom DENIEGA (/unproven identity claim/)
+connect('alice', modo inválido) → LANZA · admission restaurado · userId='alice'
+         → joinRoom ADMITIDO · from:'alice' al cable   ← (1) DESHECHO
+```
+
+**Arreglo:** `userId` entra en `_policySnapshot()` / `_policyRestore()`.
+Rojos `B1a`, `B1b` en `test/u251-devolucion.test.mjs`.
+
+### 11.2 · B2 — `setPeerCard()` valida antes de escribir
+
+Mismo fail-open que (4), preexistente e idéntico a la base: mi (3) cambió
+las dobles lecturas por `const` **conservando el orden escribir→validar**.
+`connect()` lo tapaba con el retrato; la llamada directa no.
+
+```
+servicio requireSsbId:true
+setPeerCard(card,{requireSsbId:false, role:'operator'}) → LANZA
+setPeerCard(cardSinSsbId)                              → ACEPTADA  ← rebajada
+```
+
+**Arreglo:** se calcula la política efectiva en locales, se valida con ella
+y **sólo se escribe si la card pasa**. Aquí no hace falta retrato: no
+escribir hasta saber es más barato que deshacer. Rojo `B2`; guarda `B2b`
+(una llamada que ACEPTA sí aplica lo declarado — no cierro de más).
+
+### 11.3 · B3 — corrijo §9.3 y abro la ficha
+
+Registré la rama del portero como *fail-closed* tras medir **una** sola
+alternancia. Falso. Medido ahora, con la card acreditando `player`:
+
+| vector | veredicto | lecturas del opt |
+| ------ | --------- | ---------------- |
+| `role` `'operator'→undefined` (**el mío**) | `ok:false` — cierra | 2 |
+| `role` `'operator'→'player'` | **`{ok:true, role:'player'}`** habiendo exigido `operator` | 2 |
+| `expectedSsbId` `AJENO→AJENO→PROPIO` | **`ok:true`** — card de otro feed pasa el amarre | 3 |
+| controles con valor **fijo** | `ok:false` los dos | — |
+
+Es defecto de **lectura repetida**, no de política. **No lo arreglo**: el
+portero es también el del carril LAN de blobs y tocarlo cambia el veredicto
+de un consumidor ajeno — eso quiere su propio WP. Lo que sí es mío es **no
+enterrarlo**:
+
+- §9.3 **corregida** (tachada y sustituida, no reescrita en silencio).
+- **Ficha U262 abierta** en `plan/BACKLOG.md:264`, P2, con los dos vectores,
+  la explotabilidad real (baja: exige entregar getters al portero, que hoy
+  sólo recibe literales) y por qué está fuera del alcance de U251.
+- **Dos pruebas de evidencia** en la suite (`evidencia U262: …`), que
+  **afirman el defecto** y llevan escrito que **deben invertirse al cerrar
+  U262**. Están para ponerse rojas ese día, no para bendecirlo.
+
+> Nota de método, porque es la que me costó el bloqueante: una sola
+> alternancia no describe una rama. `peerCardGrantsRole(card, undefined)`
+> devuelve `false` y por eso *mi* vector cerraba; con **otro rol válido** la
+> misma línea acredita. Medir un caso y escribir «fail-closed» es
+> exactamente *una afirmación más ancha que la evidencia*.
+
+### 11.4 · M5 — los otros dos campos, resueltos (y el que no)
+
+| campo | qué hace un `connect()` fallido (medido) | resolución |
+| ----- | ---------------------------------------- | ---------- |
+| `_allowTrickle` (SSB) | deja el **trickle ICE encendido** sobre un carril que lo cierra a propósito: `sendIceCandidate` pasa de **0 → 1** publicaciones | **al retrato** |
+| `_transport` (SSB) | queda instalado; como `_connected` sigue en pie, el `sendOffer` siguiente **publica la peer-card local con `token` dentro** por el transporte que instaló la llamada que falló (medido: 1 publicación, `token: tok-SECRETO`) | **al retrato** |
+| `_client` (socket) | **nada equivalente, medido**: `connect()` no lee `config.client` (sólo el constructor), así que no hay swap; y `createClient` sólo corre cuando `_client` es nulo, caso en que no había sesión previa. **Queda fuera del retrato con motivo**, no por olvido | fuera, declarado |
+
+El retrato pasa de **5 a 8 campos** (`userId`, `admission`, `requiredRole`,
+`requireSsbId`, `requireSeatSignature`, `peerCard` en la base; `transport` y
+`allowTrickle` añadidos por el carril SSB, que **extiende** el par en vez de
+duplicarlo). Rojos `M5a`, `M5b`.
+
+### 11.5 · M1 y M2 — afirmaciones acotadas
+
+- **M1** — dos bypasses más del candado (2), medidos y ahora declarados en
+  §6 y en el README: **sombra de instancia** y **borrado del método del
+  prototipo**. Mi residual sólo hablaba de subclases, lo que sugería que el
+  resto estaba cerrado. La frase exacta ahora es: *el candado pasó de campo
+  público a **método** público, no a estructural*.
+- **M2** — mi comentario decía que «la única escritura desde fuera es
+  `setAdmission()`», y `_policyRestore()` es una segunda vía sin validar.
+  Dirección fail-closed (sólo devuelve un valor que ya pasó por el setter en
+  este mismo objeto), así que **no mueve ningún veredicto**: era una
+  **afirmación falsa**, no un defecto. Comentario corregido en
+  `signaling-service.mjs`.
+
+### 11.6 · Números de la devolución
+
+| | antes de la devolución | después |
+| --- | --- | --- |
+| `@zeus/webrtc-signaling` | 67/67 | **75/75** (+8) |
+| rojos nuevos demostrados | — | **5** (`B1a`, `B1b`, `B2`, `M5a`, `M5b`) |
+| pruebas de evidencia U262 (verdes, a invertir) | — | **2** |
+| guardas de no-cerrar-de-más | — | **1** (`B2b`) |
+| `@zeus/webrtc-viewer` · `blob-sync-harness` · `blobstore-client` · `oasis-webrtc` | 17 · 11 · 19 · 3 | **17 · 11 · 19 · 3** |
+| `peer-card-gate.mjs` | 0 líneas | **0 líneas** |
+
+Total del WP: **75/75**, con **18 vectores rojos** demostrados contra la
+base a lo largo de las dos rondas (13 + 5).
