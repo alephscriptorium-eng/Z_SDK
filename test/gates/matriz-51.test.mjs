@@ -32,12 +32,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync, execFileSync } from 'node:child_process';
 import {
+  conjuntoDeLectura,
+  PATHSPECS_LECTURA,
+  DIRS_IGNORADOS
+} from './conjunto-lectura.mjs';
+import {
   REPO_ROOT,
   EXPECTED_TOTAL,
-  CONTRASTE_PATH,
-  ALLOWLIST_PATH,
-  CATALOG_PATH,
-  CATALOG_EXTEND_PATH,
   runMatriz51,
   buildJson,
   validarCeldas,
@@ -62,33 +63,6 @@ function runCli(args = []) {
 // ---------------------------------------------------------------------------
 
 /**
- * Rutas que el gate lee y que NO se pueden derivar de un patrón del índice.
- * @type {string[]}
- */
-const LECTURAS_FIJAS = [
-  'package.json',
-  CONTRASTE_PATH,
-  ALLOWLIST_PATH,
-  CATALOG_PATH,
-  CATALOG_EXTEND_PATH,
-  // El propio gate: al vivir en <tmp>/scripts/gates/matriz-51.mjs su REPO_ROOT
-  // (`path.resolve(__dirname, '../..')`, matriz-51.mjs:52) es <tmp>. Así el CLI
-  // se ejercita de verdad —exit code incluido— sin tocar el repo.
-  'scripts/gates/matriz-51.mjs'
-];
-
-/** @param {string[]} args @returns {string[]} rutas del índice, sin vacíos */
-function lsFiles(args) {
-  return execFileSync('git', ['ls-files', '-z', ...args], {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024
-  })
-    .split('\0')
-    .filter(Boolean);
-}
-
-/**
  * Materializa un árbol temporal con el conjunto EXACTO de rutas que
  * `runMatriz51` lee, enumeradas desde el índice de git y volcadas desde el
  * estado commiteado con un solo `git cat-file --batch`.
@@ -99,6 +73,9 @@ function lsFiles(args) {
  *      de cada pieza (`mcpFileSignal`, matriz-51.mjs:428-436, decide con ellos
  *      si el tipo de una pieza es MCP);
  *   3. LECTURAS_FIJAS.
+ * Las tres salen de `conjuntoDeLectura` (`./conjunto-lectura.mjs`), que es la
+ * MISMA fuente que censa el guardián dinámico: dos definiciones del conjunto de
+ * lectura es una de más, y la de más fue justo la que se quedó a un cuarto.
  * Más el esqueleto de directorios de nivel 1 bajo cada glob de `workspaces`:
  * un directorio rastreado SIN package.json (hoy `examples/external-consumer` y
  * `examples/ts-registry-consumer`) es un «excluido con motivo» del gate, y sin
@@ -112,25 +89,7 @@ function lsFiles(args) {
  * @returns {string} raíz temporal (responsabilidad del llamante borrarla)
  */
 function materializarCommiteado() {
-  const rastreados = lsFiles(['--']);
-  const rutas = [
-    ...new Set([
-      ...rastreados.filter((p) => p === 'package.json' || p.endsWith('/package.json')),
-      ...rastreados.filter((p) => /\/src\/(server|mcp-server|start)\.mjs$/.test(p)),
-      ...LECTURAS_FIJAS
-    ])
-  ];
-
-  const raiz = JSON.parse(
-    execFileSync('git', ['cat-file', 'blob', 'HEAD:package.json'], {
-      cwd: REPO_ROOT,
-      encoding: 'utf8'
-    })
-  );
-  const bases = (Array.isArray(raiz.workspaces) ? raiz.workspaces : [])
-    .filter((g) => g.endsWith('/*'))
-    .map((g) => g.slice(0, -2));
-
+  const { rutas, bases, rastreados } = conjuntoDeLectura(REPO_ROOT);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'u252-matriz51-head-'));
   for (const p of rastreados) {
     for (const base of bases) {
@@ -260,19 +219,49 @@ test('CA verde: el árbol COMMITEADO también da 51/51 — control de las probes
  * @returns {string[]}
  */
 function lecturasDivergentes() {
-  return execFileSync(
+  const porGit = execFileSync(
     'git',
-    [
-      'status', '--porcelain', '-z', '--untracked-files=all', '--',
-      '*package.json', CONTRASTE_PATH, ALLOWLIST_PATH, CATALOG_PATH, CATALOG_EXTEND_PATH,
-      '*/src/server.mjs', '*/src/mcp-server.mjs', '*/src/start.mjs',
-      'scripts/gates/matriz-51.mjs'
-    ],
+    ['status', '--porcelain', '-z', '--untracked-files=all', '--', ...PATHSPECS_LECTURA],
     { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }
   )
     .split('\0')
     .filter(Boolean)
     .filter((e) => e.length > 3);
+
+  // Los pathspecs de arriba sólo ven FICHEROS del conjunto de lectura. Pero el
+  // gate hace `readdir` de las bases de `workspaces`, así que un directorio sin
+  // rastrear y SIN manifiesto —un borrador cualquiera bajo `examples/`— cambia
+  // la lista de «excluidos con motivo» del árbol vivo y no la del commiteado.
+  // Sin esta segunda mitad el test no se omitía: caía en rojo acusando a la
+  // materialización de quedarse corta, que es exactamente la confusión que este
+  // detector existe para evitar, sólo que al revés — culpando al arnés del
+  // borrador del desarrollador y mandando a depurar al sitio equivocado.
+  const { rastreados, bases } = conjuntoDeLectura(REPO_ROOT);
+  const divergencias = [...porGit];
+  for (const base of bases) {
+    const enIndice = new Set(
+      rastreados
+        .filter((p) => p.startsWith(`${base}/`))
+        .map((p) => p.slice(base.length + 1).split('/')[0])
+        .filter(Boolean)
+    );
+    let enDisco = [];
+    try {
+      enDisco = fs
+        .readdirSync(path.join(REPO_ROOT, base), { withFileTypes: true })
+        .filter((e) => e.isDirectory() && !DIRS_IGNORADOS.has(e.name))
+        .map((e) => e.name);
+    } catch {
+      divergencias.push(`?? ${base}/ (base de workspaces ausente del disco)`);
+      continue;
+    }
+    for (const nombre of enDisco) {
+      if (!enIndice.has(nombre)) {
+        divergencias.push(`?? ${base}/${nombre}/ (directorio sin rastrear bajo un glob de workspaces)`);
+      }
+    }
+  }
+  return divergencias;
 }
 
 test('equivalencia árbol vivo ↔ árbol commiteado: mismo JSON, byte a byte', { timeout: 120_000 }, (t) => {
@@ -350,6 +339,9 @@ test('fail-probe (b): pieza ocultada → exit ≠ 0 (sin tocar el repo)', { time
     assert.ok(result.fallos.some((f) => f.codigo === 'denominador-total'));
     const cli = runCliEn(root);
     assert.notEqual(cli.status, 0, 'el CLI debe salir ≠ 0 con la pieza ocultada');
+    // Igual que la probe (a): el código de salida sin el mensaje deja pasar un
+    // rojo por cualquier otra razón. Las dos probes exigen lo mismo.
+    assert.match(cli.stdout, /matriz-51: FAIL/);
   });
 });
 

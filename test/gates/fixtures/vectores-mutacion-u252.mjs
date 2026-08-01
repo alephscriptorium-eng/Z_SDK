@@ -39,7 +39,29 @@ export const CAZADOS = [
   ['iteración sobre una lista anclada', "const dirs = [path.join(REPO_ROOT, 'a')];\nfor (const d of dirs) fs.rmSync(d);"],
   ['chdir + ruta literal del repo', "process.chdir(REPO_ROOT);\nfs.renameSync('packages/x/package.json', 'z');"],
   ['escritura delegada a git', "execFileSync('git', ['mv', a, b], { cwd: REPO_ROOT });"],
-  ['escritura delegada a npm', "spawnSync('npm', ['install', '-w', '@zeus/x'], { cwd: REPO_ROOT });"]
+  ['escritura delegada a npm', "spawnSync('npm', ['install', '-w', '@zeus/x'], { cwd: REPO_ROOT });"],
+  // --- El idioma corriente del repo. Cruzaba el guardián ENTERO, y con él dos
+  // --- de los cuatro mutadores del censo de este mismo WP (parte-kit).
+  [
+    'import CON NOMBRE de node:path (el vector que se me escapó)',
+    "import { join, dirname, resolve } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nconst RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');\nconst v = join(RAIZ, 'plan', 'PUBLISH-ALLOWLIST.md');\nfs.renameSync(v, v + '.oculto');"
+  ],
+  [
+    'import con nombre y alias',
+    "import { join as unir } from 'node:path';\nconst d = unir(REPO_ROOT, 'packages');\nfs.rmSync(d, { recursive: true });"
+  ],
+  [
+    'espacio de nombres de path con otro nombre',
+    "import * as p from 'node:path';\nconst d = p.join(REPO_ROOT, 'plan');\nfs.rmSync(d);"
+  ],
+  [
+    'fs.promises (la rama de la API que no se miraba)',
+    "const m = path.join(REPO_ROOT, 'plan', 'MATRIZ-RUNTIME-51.md');\nawait fs.promises.rename(m, m + '.bak');"
+  ],
+  [
+    'node:fs/promises con import por defecto renombrado',
+    "import fsPromesas from 'node:fs/promises';\nconst m = path.join(REPO_ROOT, 'package.json');\nawait fsPromesas.writeFile(m, '{}');"
+  ]
 ];
 
 /** Arnés legítimo: NINGUNO debe marcarse. @type {[string, string][]} */
@@ -68,7 +90,14 @@ export const LIMPIOS = [
  * @type {[string, string][]}
  */
 export const FUGAS = [
-  ['acceso computado a la API', "fs['rename' + 'Sync'](a, b);"],
+  // Los argumentos van ANCLADOS a propósito. Con `(a, b)` sueltos el test era
+  // tautológico: no había forma de que se pusiera rojo ni cerrando la vía por
+  // completo, porque tampoco había ruta que reconocer. Así, lo único que lo
+  // salva del detector es el nombre construido — cierra eso y el test gira.
+  [
+    'acceso computado a la API',
+    "const m = path.join(REPO_ROOT, 'plan', 'PUBLISH-ALLOWLIST.md');\nfs['rename' + 'Sync'](m, m + '.oculto');"
+  ],
   [
     'ruta cruzando frontera de módulo',
     "import { ocultar } from './helper.mjs';\nocultar(path.join(REPO_ROOT, 'a'));"

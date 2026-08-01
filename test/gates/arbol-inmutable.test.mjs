@@ -12,19 +12,28 @@
  *
  * Dos guardianes, con alcances distintos y declarados:
  *
- *   1. ESTÁTICO — lee el fuente de cada `test/gates/*.test.mjs` y busca la
+ *   1. ESTÁTICO — lee el fuente de cada `.mjs` de `test/gates/` y busca la
  *      OPERACIÓN (escribir, renombrar, borrar, crear) sobre una ruta anclada al
  *      repo, propagando taint por asignaciones. Determinista y sin ventana
- *      temporal, pero rodeable: ver LÍMITES abajo, y los vectores de fuga están
- *      escritos y aseverados como fuga, no ocultos.
+ *      temporal, pero rodeable: ver LÍMITES abajo, donde los vectores de fuga
+ *      están aseverados como fuga, no ocultos.
  *
  *   2. DINÁMICO — corre el resto de la suite en un hijo y censa el conjunto de
- *      lectura del gate mientras corre. Cachea el defecto por su EFECTO, así que
- *      no lo rodea ninguna indirección de código; a cambio muestrea, y una
- *      mutación más corta que su intervalo puede escapársele. El test declara
- *      cuántas muestras tomó en vez de afirmar que vigiló «siempre».
+ *      lectura del gate mientras corre. Caza por EFECTO, así que no lo rodea
+ *      ninguna indirección de CÓDIGO; pero sólo ve lo que censa (el conjunto de
+ *      lectura) y muestrea, así que una mutación fuera de ese conjunto, o más
+ *      corta que su intervalo, se le escapa. El test declara cuántas muestras
+ *      tomó en vez de afirmar que vigiló «siempre».
  *
- * Ninguno de los dos es completo por separado. Juntos cubren la fuga del otro.
+ * LO QUE ESTA CABECERA DECÍA Y ERA FALSO: «juntos cubren la fuga del otro».
+ * No es un teorema, es una aspiración, y la contrarrevisión la rompió con el
+ * idioma más corriente del repo —`import { join } from 'node:path'` sobre un
+ * fichero del conjunto de lectura— que los cegaba A LOS DOS a la vez: al
+ * estático porque sólo propagaba el ancla por `path.join` (miembro) y no por el
+ * import con nombre, y al dinámico porque censaba los manifiestos llamándolos
+ * «el conjunto de lectura» cuando eran un cuarto de él. Ambos agujeros están
+ * cerrados y aseverados; la lección que queda es que la cobertura conjunta se
+ * MIDE con vectores, no se declara en una cabecera.
  */
 
 import test from 'node:test';
@@ -34,6 +43,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync, spawn } from 'node:child_process';
 import { CAZADOS, LIMPIOS, FUGAS } from './fixtures/vectores-mutacion-u252.mjs';
+import { conjuntoDeLectura } from './conjunto-lectura.mjs';
 
 const AQUI = fileURLToPath(import.meta.url);
 const DIR_GATES = path.dirname(AQUI);
@@ -54,12 +64,21 @@ const MUTADORES = [
   'createWriteStream', 'open', 'openSync', 'opendirSync'
 ];
 
-/** Operaciones cuyos DOS primeros argumentos son rutas (origen y destino). En
- *  el resto sólo el primero lo es. */
-const DOS_RUTAS = new Set([
-  'rename', 'renameSync', 'cp', 'cpSync', 'copyFile', 'copyFileSync',
-  'link', 'linkSync', 'symlink', 'symlinkSync'
+/** Operaciones donde sólo se ESCRIBE el segundo argumento: copiar o enlazar
+ *  DESDE el repo hacia un temporal es una lectura del repo, no una mutación.
+ *  Marcar el origen inventa 7 ofensas de las 8 falsas medidas en el corpus. */
+const SOLO_DESTINO = new Set([
+  'cp', 'cpSync', 'copyFile', 'copyFileSync', 'link', 'linkSync', 'symlink', 'symlinkSync'
 ]);
+/** `rename` es la excepción: además de escribir el destino BORRA el origen. */
+const ORIGEN_Y_DESTINO = new Set(['rename', 'renameSync']);
+
+/** Índices de los argumentos que la operación escribe. @param {string} op */
+function argumentosEscritos(op) {
+  if (ORIGEN_Y_DESTINO.has(op)) return [0, 1];
+  if (SOLO_DESTINO.has(op)) return [1];
+  return [0];
+}
 
 /** Expresiones que anclan una ruta al repo de trabajo. `mkdtempSync` sobre
  *  cualquiera de éstas NO es temporal: es un directorio dentro del repo. */
@@ -71,6 +90,52 @@ const VERBOS_ESCRITORES = [
   ['git', /\b(checkout|apply|add|rm|mv|stash|reset|clean|restore|commit|switch)\b/],
   ['npm', /\b(install|ci|link|dedupe|prune|pkg)\b/]
 ];
+
+/** Funciones de `node:path` que CONSTRUYEN una ruta a partir de otra. */
+const CONSTRUCTORAS_DE_RUTA = ['join', 'resolve', 'normalize', 'dirname', 'format', 'toNamespacedPath'];
+
+/**
+ * Nombres locales que un fichero ata a `node:path`, `node:url` y `node:fs`.
+ *
+ * Por qué hace falta resolver los imports en vez de fijar `path.` y `fs.`: el
+ * guardián reconocía el import CON NOMBRE de `fs` (`writeFileSync(…)`) pero no
+ * el de `path` (`join(…)`), y esa asimetría no estaba escrita en ninguna parte.
+ * Con ella, el idioma más corriente del repo —`import { join, dirname, resolve }
+ * from 'node:path'`— cruzaba el guardián entero; y de hecho cruzaban DOS de los
+ * cuatro mutadores del censo de este mismo WP (`parte-kit`). El import es un
+ * detalle de estilo, no una excusa, en los dos módulos.
+ *
+ * @param {string} src @returns {{rutaFns: Set<string>, rutaNs: Set<string>, fsNs: Set<string>}}
+ */
+function enlacesDeModulo(src) {
+  const rutaFns = new Set(['fileURLToPath']);
+  const rutaNs = new Set(['path']);
+  const fsNs = new Set(['fs', 'fsp', 'fsPromises']);
+  const re = /import\s+([\s\S]*?)\s+from\s*['"]([^'"]+)['"]/g;
+  for (let m; (m = re.exec(src)); ) {
+    const [, clausula, spec] = m;
+    const esPath = /^(node:)?path(\/(posix|win32))?$/.test(spec);
+    const esUrl = /^(node:)?url$/.test(spec);
+    const esFs = /^(node:)?fs(\/promises)?$/.test(spec);
+    if (!esPath && !esUrl && !esFs) continue;
+    const ns = clausula.match(/^(?:\*\s+as\s+)?([A-Za-z_$][\w$]*)\s*(?:,|$)/);
+    if (ns) {
+      if (esPath || esUrl) rutaNs.add(ns[1]);
+      if (esFs) fsNs.add(ns[1]);
+    }
+    const llaves = clausula.match(/\{([\s\S]*?)\}/);
+    if (!llaves) continue;
+    for (const parte of llaves[1].split(',')) {
+      const mm = parte.trim().match(/^([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?$/);
+      if (!mm) continue;
+      const [, original, alias] = mm;
+      const local = alias || original;
+      if (esPath && CONSTRUCTORAS_DE_RUTA.includes(original)) rutaFns.add(local);
+      if (esUrl && original === 'fileURLToPath') rutaFns.add(local);
+    }
+  }
+  return { rutaFns, rutaNs, fsNs };
+}
 
 /** Primeros segmentos rastreados por git en la raíz: el vocabulario de una ruta
  *  literal «del repo». Derivado del índice, no transcrito a mano. */
@@ -184,11 +249,17 @@ function ladoDerecho(src, desde) {
  * alias directo o de pegar cadenas; no de una llamada cualquiera.
  * @param {string} rhs @returns {string[]}
  */
-function fragmentosDeRuta(rhs) {
+function fragmentosDeRuta(rhs, enlaces) {
   const frags = [];
   const t = rhs.trim();
   if (/^[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*$/.test(t)) frags.push(t); // alias directo
-  const re = /\b(?:path\s*\.\s*(?:join|resolve|normalize|dirname)|fileURLToPath)\s*\(/g;
+  const alternativas = [
+    ...[...enlaces.rutaNs].map(
+      (n) => `${n}\\s*\\.\\s*(?:${[...CONSTRUCTORAS_DE_RUTA, 'fileURLToPath'].join('|')})`
+    ),
+    ...enlaces.rutaFns
+  ].join('|');
+  const re = new RegExp(`(?:^|[^\\w$.])(?:${alternativas})\\s*\\(`, 'g');
   for (let m; (m = re.exec(rhs)); ) frags.push(argumentos(rhs, m.index + m[0].length - 1));
   for (const m of rhs.matchAll(/`[^`]*`/g)) frags.push(m[0]); // plantilla
   if (/['"`]\s*\+|\+\s*['"`]/.test(rhs)) frags.push(rhs); // concatenación de cadenas
@@ -201,7 +272,7 @@ function fragmentosDeRuta(rhs) {
  * `` const c = `${b}.bak` `` quedan los tres marcados.
  * @param {string} src @returns {Set<string>}
  */
-function identificadoresAnclados(src) {
+function identificadoresAnclados(src, enlaces) {
   const anclados = new Set();
   const asignaciones = [];
   const re = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=/g;
@@ -221,7 +292,7 @@ function identificadoresAnclados(src) {
     let creció = false;
     for (const { nombre, rhs } of asignaciones) {
       if (anclados.has(nombre)) continue;
-      const frags = fragmentosDeRuta(rhs);
+      const frags = fragmentosDeRuta(rhs, enlaces);
       const toca = frags.some(
         (f) =>
           SEMILLAS.some((s) => f.includes(s)) ||
@@ -246,7 +317,8 @@ function identificadoresAnclados(src) {
  */
 export function ofensasDeFuente(fuente, etiqueta, segmentosRaiz) {
   const src = sinComentarios(fuente);
-  const anclados = identificadoresAnclados(src);
+  const enlaces = enlacesDeModulo(src);
+  const anclados = identificadoresAnclados(src, enlaces);
   const ofensas = [];
   const linea = (i) => src.slice(0, i).split('\n').length;
   const recorta = (s) => s.replace(/\s+/g, ' ').trim().slice(0, 110);
@@ -265,14 +337,22 @@ export function ofensasDeFuente(fuente, etiqueta, segmentosRaiz) {
     return null;
   };
 
+  // `fs.X(`, `fsp.X(`, `<ns>.X(` de cualquier import de fs, `fs.promises.X(`
+  // —que se escapaba entero— y `X(` suelto del import con nombre.
+  const raizFs = [...enlaces.fsNs].join('|');
   for (const op of MUTADORES) {
-    const re = new RegExp(`(?:\\bfs(?:p|Promises)?\\s*\\.\\s*|(?:^|[^\\w$.]))${op}\\s*\\(`, 'g');
+    const re = new RegExp(
+      `(?:\\b(?:${raizFs})(?:\\s*\\.\\s*promises)?\\s*\\.\\s*|(?:^|[^\\w$.]))${op}\\s*\\(`,
+      'g'
+    );
     for (let m; (m = re.exec(src)); ) {
       const abre = src.indexOf('(', m.index + m[0].length - 1);
       // Sólo los argumentos que SON rutas. El resto es contenido y opciones:
       // mirarlos convertiría cada `{ cwd: REPO_ROOT }` en un falso positivo.
-      const rutas = porArgumentos(argumentos(src, abre))
-        .slice(0, DOS_RUTAS.has(op) ? 2 : 1)
+      const partes = porArgumentos(argumentos(src, abre));
+      const rutas = argumentosEscritos(op)
+        .map((i) => partes[i])
+        .filter(Boolean)
         .join(', ');
       const motivo = apuntaAlRepo(rutas);
       if (motivo) ofensas.push({ etiqueta, linea: linea(m.index), op, motivo, texto: recorta(rutas) });
@@ -283,6 +363,11 @@ export function ofensasDeFuente(fuente, etiqueta, segmentosRaiz) {
   const reSpawn = /\b(?:execFileSync|execFile|execSync|exec|spawnSync|spawn)\s*\(/g;
   for (let m; (m = reSpawn.exec(src)); ) {
     const args = argumentos(src, m.index + m[0].length - 1);
+    // Un `cwd:` que NO apunta al repo manda la escritura a otra parte: un
+    // `npm install` con `cwd: tmp` no toca el árbol. Sin esto el corpus daba
+    // dos ofensas falsas más.
+    const cwd = args.match(/(?:^|[\s{,])cwd\s*:\s*([^,}\n]+)/);
+    if (cwd && !apuntaAlRepo(cwd[1])) continue;
     for (const [bin, verbos] of VERBOS_ESCRITORES) {
       if (!new RegExp(`['"\`]${bin}(\\.cmd|\\.exe)?['"\`]`).test(args)) continue;
       if (!verbos.test(args)) continue;
@@ -298,7 +383,7 @@ export function ofensasDeFuente(fuente, etiqueta, segmentosRaiz) {
   return ofensas.sort((a, b) => a.linea - b.linea);
 }
 
-/** Ficheros de la suite que `npm run test:gates` glob-ea. */
+/** Ficheros que `npm run test:gates` glob-ea y ejecuta. */
 function ficherosDeLaSuite() {
   return fs
     .readdirSync(DIR_GATES)
@@ -307,10 +392,35 @@ function ficherosDeLaSuite() {
     .map((f) => path.join(DIR_GATES, f));
 }
 
+/** Lo que el guardián estático BARRE: todo `.mjs` de `test/gates/`, no sólo las
+ *  suites. Un módulo de apoyo que mutase el árbol mutaría igual. */
+function ficherosVigilados() {
+  return fs
+    .readdirSync(DIR_GATES)
+    .filter((f) => f.endsWith('.mjs'))
+    .sort()
+    .map((f) => path.join(DIR_GATES, f));
+}
+
 test('guardián estático: ningún test de gates escribe sobre el árbol de trabajo', () => {
   const segmentosRaiz = segmentosRaizRastreados();
-  const ficheros = ficherosDeLaSuite();
-  assert.ok(ficheros.length >= 3, `la suite debe tener ficheros que vigilar: ${ficheros.length}`);
+  const ficheros = ficherosVigilados();
+  assert.ok(ficheros.length >= 4, `la suite debe tener ficheros que vigilar: ${ficheros.length}`);
+
+  // `test/gates/fixtures/` queda FUERA del barrido a propósito: guarda fuentes
+  // de ataque como cadenas, y el guardián se denunciaría a sí mismo. La
+  // exclusión no se deja a la buena fe — se comprueba que ahí no puede haber
+  // mutación porque no se importa nada capaz de escribir.
+  const dirFixtures = path.join(DIR_GATES, 'fixtures');
+  for (const f of fs.readdirSync(dirFixtures)) {
+    const texto = fs.readFileSync(path.join(dirFixtures, f), 'utf8');
+    const importa = [...texto.matchAll(/(?:^|\n)\s*import\s[\s\S]*?from\s*['"]([^'"]+)['"]/g)].map((m) => m[1]);
+    assert.deepEqual(
+      importa.filter((s) => /^(node:)?(fs|child_process)(\/.*)?$/.test(s)),
+      [],
+      `test/gates/fixtures/${f} importa un módulo capaz de escribir: o deja de hacerlo o entra al barrido`
+    );
+  }
 
   const ofensas = ficheros.flatMap((abs) =>
     ofensasDeFuente(fs.readFileSync(abs, 'utf8'), path.relative(REPO, abs).split(path.sep).join('/'), segmentosRaiz)
@@ -379,13 +489,18 @@ test('LÍMITES declarados del guardián estático: por dónde SÍ se le escapa',
 // ---------------------------------------------------------------------------
 
 /**
- * Censo del conjunto de lectura del gate: existencia + tamaño + mtime de cada
- * manifiesto rastreado, más el contenido de los directorios de nivel 1 bajo los
- * globs de `workspaces` (para ver aparecer una pieza fantasma). Es el alcance
- * declarado: exactamente donde una mutación provoca la carrera que motivó el WP.
- * @param {string[]} manifiestos @param {string[]} bases @returns {string}
+ * Censo del conjunto de lectura del gate: existencia + tamaño + mtime de CADA
+ * ruta que el gate lee —no sólo los manifiestos— más el contenido de los
+ * directorios de nivel 1 bajo los globs de `workspaces` (para ver aparecer una
+ * pieza fantasma).
+ *
+ * Censaba sólo los manifiestos y el comentario decía «el conjunto de lectura del
+ * gate»: una cuarta parte con nombre de entero. `plan/PUBLISH-ALLOWLIST.md` se
+ * podía renombrar 1,5 s con el guardián en verde. La lista viene ahora de
+ * `conjuntoDeLectura`, que es la MISMA que usa la materialización.
+ * @param {string[]} rutas @param {string[]} bases @returns {string}
  */
-function censar(manifiestos, bases) {
+function censar(rutas, bases) {
   const partes = [];
   for (const base of bases) {
     let entradas = [];
@@ -396,7 +511,7 @@ function censar(manifiestos, bases) {
     }
     partes.push(`${base}/[${entradas.join(',')}]`);
   }
-  for (const rel of manifiestos) {
+  for (const rel of rutas) {
     try {
       const s = fs.statSync(path.join(REPO, rel));
       partes.push(`${rel}:${s.size}:${s.mtimeMs}`);
@@ -411,26 +526,15 @@ test(
   'guardián dinámico: el árbol no se mueve mientras la suite de gates corre',
   { timeout: 300_000 },
   async () => {
-    const rastreados = execFileSync('git', ['ls-files', '-z'], {
-      cwd: REPO,
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024
-    })
-      .split('\0')
-      .filter(Boolean);
-    const manifiestos = rastreados.filter((p) => p === 'package.json' || p.endsWith('/package.json'));
-    const raiz = JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf8'));
-    const bases = (Array.isArray(raiz.workspaces) ? raiz.workspaces : [])
-      .filter((g) => g.endsWith('/*'))
-      .map((g) => g.slice(0, -2));
-    assert.ok(manifiestos.length >= 50 && bases.length >= 3, 'censo vacío = vigilancia vacía');
+    const { rutas, bases } = conjuntoDeLectura(REPO);
+    assert.ok(rutas.length >= 60 && bases.length >= 3, 'censo vacío = vigilancia vacía');
 
     // El resto de la suite, en un hijo: ventana de observación acotada y
     // conocida. Se excluye este fichero — vigilar al vigilante es recursión.
     const otros = ficherosDeLaSuite().filter((f) => f !== AQUI);
     assert.ok(otros.length >= 2, `nada que observar: ${otros.length} ficheros`);
 
-    const base = censar(manifiestos, bases);
+    const base = censar(rutas, bases);
     const t0 = Date.now();
     // Sin limpiar NODE_TEST_CONTEXT el nieto se cree un worker del runner
     // padre: sale 0 en ~96 ms sin ejecutar NADA. Medido — y era un falso verde
@@ -439,9 +543,14 @@ test(
     delete env.NODE_TEST_CONTEXT;
     const hijo = spawn(process.execPath, ['--test', ...otros], {
       cwd: REPO,
-      stdio: 'ignore',
+      stdio: ['ignore', 'pipe', 'pipe'],
       env
     });
+    let tap = '';
+    hijo.stdout.on('data', (c) => {
+      tap += c;
+    });
+    hijo.stderr.on('data', () => {});
     const salida = new Promise((res) => hijo.on('exit', (code) => res(code)));
     let corriendo = true;
     hijo.on('exit', () => {
@@ -451,7 +560,7 @@ test(
     let muestras = 0;
     let desviacion = null;
     while (corriendo) {
-      const ahora = censar(manifiestos, bases);
+      const ahora = censar(rutas, bases);
       muestras++;
       if (ahora !== base) {
         const b = base.split('\n');
@@ -468,14 +577,20 @@ test(
     const duracion = Date.now() - t0;
     const resolucion = muestras > 0 ? Math.round(duracion / muestras) : Infinity;
 
-    // Un hijo que muere al instante deja una ventana de cero muestras y el
-    // guardián pasaría en verde sin haber mirado nada. Eso es un falso verde,
-    // así que la ventana se asevera igual que el censo.
+    // Oráculo del hijo. Un hijo que no ejecuta nada sale 0 y el guardián daría
+    // verde habiendo supervisado una suite que no prueba nada. La duración NO
+    // sirve para cerrar esa clase: medido, un hijo vacuo cuesta ~250 ms en
+    // descarga pero 4-8 s bajo carga, o sea POR ENCIMA de cualquier umbral
+    // temporal razonable justo en la condición en la que este guardián corre.
+    // Lo que no depende de la carga es cuántos tests dijo haber corrido.
+    const declarados = Number((tap.match(/^# tests (\d+)$/m) || [])[1] ?? NaN);
+    assert.equal(codigo, 0, `el hijo salió ${codigo}: la observación no es fiable\n${tap.slice(-1200)}`);
     assert.ok(
-      duracion >= 500 && muestras >= 10,
-      `ventana de observación insuficiente: ${muestras} muestras en ${duracion} ms ` +
-        `(hijo salió ${codigo}). El verde no significaría nada.`
+      declarados >= 40,
+      `el hijo declaró ${declarados} tests (esperaba ≥40 de ${otros.length} ficheros): ` +
+        'salió con éxito sin trabajar, y vigilar eso no significa nada'
     );
+    assert.ok(muestras >= 10, `sólo ${muestras} muestras en ${duracion} ms`);
     assert.equal(
       desviacion,
       null,

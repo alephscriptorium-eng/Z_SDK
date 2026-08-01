@@ -5,9 +5,14 @@
 | agente | worker (chat WP-U252) |
 | fecha | 2026-08-01 |
 | rama | `wp/u252-gates-sin-mutar` · base `28397b8` |
-| commit(s) | `1fdd3da` fix(U252) — obra; este reporte + fila de BACKLOG en el siguiente |
-| estado propuesto | listo para revisión |
+| commit(s) | `1fdd3da` obra · `c488be0` reporte · **ronda 2 (devolución)**: guardianes ciegos a la vez + M1–M6 |
+| estado propuesto | listo para verificación de cierre |
 | push | no intentado · sin merge |
+
+> **Ronda 2.** La contrarrevisión rompió el guardián con el idioma más corriente
+> del repo. Lo reproduje antes de tocar nada (5/5 en verde con
+> `plan/PUBLISH-ALLOWLIST.md` renombrado 1,5 s), lo cerré por las dos causas y lo
+> volví a atacar. Ver §4.4 y §7.
 
 ## CA de cierre
 
@@ -108,14 +113,18 @@ nombre de una función, y clasificando cada destino en *temporal de SO* vs
 144 `*.test.mjs`/`*.spec.mjs` de `packages/**` y `examples/**`. Cada ofensor de
 abajo lo he abierto y confirmado en su línea.
 
-| # | fichero:línea | operación | destino | ¿rastreado? | ¿arreglado? |
-| - | ------------- | --------- | ------- | ----------- | ----------- |
+Todas las rutas de la columna «destino» son **relativas a la raíz del repo**
+(en la ronda 1 mezclaba raíces: las de `parte-kit` estaban escritas relativas al
+paquete y se leían como si colgaran de la raíz).
+
+| # | fichero:línea | operación | destino (desde la raíz del repo) | ¿rastreado? | ¿arreglado? |
+| - | ------------- | --------- | -------------------------------- | ----------- | ----------- |
 | 1 | `test/gates/matriz-51.test.mjs:137-153` (histórico) | `renameSync` ida y vuelta | `packages/mesh/blob-sync-harness/package.json` | **sí** | **sí** |
 | 2 | `test/gates/matriz-51.test.mjs:98-112` (histórico) | `mkdirSync`+`writeFileSync`+`rmSync` | `packages/mesh/zz-pieza-fantasma-u233/` | no, pero **ni ignorado** | **sí** |
-| 3 | `test/release/release-u53.test.mjs:27,29,46,51,53,77` | `mkdtempSync` **con prefijo en la raíz del repo** + write + `rmSync` | `<repo>/.release-dry-test-*/` | no, ni ignorado | **no** — fuera de ALCANCE_DIFF |
+| 3 | `test/release/release-u53.test.mjs:27,29,46,51,53,77` | `mkdtempSync` **con prefijo en la raíz del repo** + write + `rmSync` | `.release-dry-test-*/` (en la raíz) | no, ni ignorado | **no** — fuera de ALCANCE_DIFF |
 | 4 | `packages/engine/http-contract/test/core.test.mjs:101-112` | `writeFileSync`+`unlinkSync` | `packages/engine/http-contract/test/.tmp-spec.yaml` | no, ni ignorado | **no** — `packages/**` prohibido |
-| 5 | `packages/engine/parte-kit/test/determinismo.test.mjs:22-24` | `writeFileSync` condicionado a `!existsSync` | `test/snapshots/parte-50.json` | **sí** | **no** — `packages/**` prohibido |
-| 6 | `packages/engine/parte-kit/test/consumidores.test.mjs:23-25` | íd. | `test/snapshots/prosa-golden.md` | **sí** | **no** — `packages/**` prohibido |
+| 5 | `packages/engine/parte-kit/test/determinismo.test.mjs:22-24` | `writeFileSync` condicionado a `!existsSync` | `packages/engine/parte-kit/test/snapshots/parte-50.json` | **sí** | **no** — `packages/**` prohibido |
+| 6 | `packages/engine/parte-kit/test/consumidores.test.mjs:23-25` | íd. | `packages/engine/parte-kit/test/snapshots/prosa-golden.md` | **sí** | **no** — `packages/**` prohibido |
 | 7 | `packages/engine/linea-kit/test/validate-loader.test.mjs:136,141,183` | `process.chdir` a un dir del repo | — (estado de proceso) | — | **no** — no escribe |
 
 Notas que cambian la lectura del censo, no sólo su longitud:
@@ -184,13 +193,24 @@ El índice no ve **lo que no está en el índice**. Concretamente:
 
 Para no confundir «materialización incompleta» con «el desarrollador tiene
 trabajo encima» —que son bugs distintos y uno de los dos no es un bug—, el test
-de equivalencia consulta primero `lecturasDivergentes()` (`:262`,
-`git status --porcelain --untracked-files=all` restringido por pathspec al
+de equivalencia consulta primero `lecturasDivergentes()`
+(`git status --porcelain --untracked-files=all` restringido por pathspec al
 conjunto de lectura). Si hay divergencia **se declara omitido nombrando las
 rutas**; si no la hay, asevera identidad byte a byte. En CI el checkout está
-limpio, así que allí **siempre** corre. Verificado en ambos sentidos: con
-`package.json` modificado se omitió nombrando la ruta; con el árbol limpio corrió
-y pasó.
+limpio, así que allí **siempre** corre.
+
+**Tenía un hueco que producía justo la confusión que dice evitar, del revés.**
+Los pathspecs sólo ven **ficheros** del conjunto de lectura, pero el gate hace
+`readdir` de las bases de `workspaces`: un directorio sin rastrear y **sin
+manifiesto** —un borrador cualquiera bajo `examples/`— cambia la lista de
+«excluidos con motivo» del árbol vivo y no la del commiteado. El detector
+devolvía vacío, el test no se omitía y caía en **rojo acusando a la
+materialización de quedarse corta**: culpaba al arnés del borrador del
+desarrollador y mandaba a depurar al sitio equivocado. Cerrado comparando además
+los directorios de nivel 1 del disco contra los del índice. Verificado: con
+`examples/zz-borrador-u252/` presente el test ahora se **omite** diciendo
+`?? examples/zz-borrador-u252/ (directorio sin rastrear bajo un glob de
+workspaces)`, y sin él corre y pasa.
 
 Cobertura complementaria del árbol vivo, para tenerlo asentado: `npm run gates`
 (`ci.yml:40`) **no incluye matriz-51** — `scripts/gates/run.mjs` sólo corre
@@ -219,18 +239,31 @@ nombre además de `fs.X`, y cubre la escritura delegada (`git mv`, `npm install`
 el `mkdirSync` **y** que al menos una ofensa venga por «identificador anclado» —
 es decir, que la indirección por variable no le pase por encima. Verde.
 
-### 4.2 Guardián dinámico (`:411`)
+### 4.2 Guardián dinámico
 
 Corre el resto de la suite en un hijo (`node --test`, ventana acotada y conocida)
-y censa mientras tanto el conjunto de lectura: tamaño y `mtime` de cada
-manifiesto rastreado, más el contenido de los directorios de nivel 1 bajo los
-globs de `workspaces` (para ver **aparecer** una pieza fantasma). Caza por
-**efecto**, así que ninguna indirección de código lo rodea.
+y censa mientras tanto **las 81 rutas del conjunto de lectura del gate** —tamaño
+y `mtime`— más el contenido de los 4 directorios base de `workspaces` (para ver
+**aparecer** una pieza fantasma). Caza por **efecto**, así que no lo rodea
+ninguna indirección de **código**; pero sólo ve **lo que censa**, y ése era el
+segundo agujero de la ronda 1 (§4.4).
 
-Declara su propia resolución en vez de afirmar que vigiló «siempre»: asevera
-ventana mínima (≥10 muestras y ≥500 ms) y resolución (≤400 ms/muestra). Es un
-muestreo: **una mutación más breve que su intervalo puede escapársele**. La que
-motivó el WP duraba ~1,3 s.
+La lista sale de `test/gates/conjunto-lectura.mjs`, que es **la misma** que usa
+la materialización del árbol commiteado: dos definiciones del conjunto de lectura
+era una de más, y la de más fue justo la que se quedó a un cuarto.
+
+Declara su resolución en vez de afirmar que vigiló «siempre»: coste medido
+**1,40 ms/muestra en descarga** sobre las 81 rutas. Es un muestreo: **una
+mutación más breve que su intervalo puede escapársele**. La que motivó el WP
+duraba ~1,3 s.
+
+**El oráculo del hijo, rehecho.** La ronda 1 aseveraba «ventana ≥500 ms», y eso
+no cierra la clase: un hijo que **no registra ningún test** sale con éxito, y
+medido cuesta ~250 ms en descarga pero **4-8 s bajo carga** — o sea, por encima
+de cualquier umbral temporal justo en la condición en la que este guardián corre.
+Peor: el hijo se lanzaba con la salida ignorada y **su código de retorno no se
+aseveraba nunca**. Ahora se capta su TAP y se exige `exit 0` **y** que declare
+`# tests ≥ 40`. Es un oráculo que no depende de la carga.
 
 ### 4.3 El intento de burlarlo
 
@@ -279,10 +312,77 @@ borrado tras medir; árbol verificado limpio.
 fuga** en `test/gates/fixtures/vectores-mutacion-u252.mjs` (`FUGAS`): acceso
 computado a la API · ruta cruzando frontera de módulo · `chdir` + ruta relativa
 sin forma de repo · ruta reconstruida en caliente. Si alguien cierra uno, su test
-se pone rojo y le señala este párrafo. La afirmación del guardián no es más ancha
-que su evidencia: los 11 vectores que **sí** caza y los 6 de arnés legítimo que
-**no** debe marcar están en el mismo fichero, como datos, fuera de
-`*.test.mjs` para que el guardián no se denuncie a sí mismo.
+se pone rojo y le señala este párrafo.
+
+Una de esas cuatro era **tautológica** y la contrarrevisión lo vio: el vector de
+nombre construido usaba `fs['rename'+'Sync'](a, b)` con argumentos **sin ancla ni
+literal del repo**, así que ni cerrando esa vía por completo podía ponerse roja —
+la fixture era más débil que mi propia demostración de §4.3, que sí usaba la
+forma anclada. Corregida: ahora es
+`const m = path.join(REPO_ROOT, 'plan', 'PUBLISH-ALLOWLIST.md'); fs['rename'+'Sync'](m, m + '.oculto')`,
+donde lo único que la salva del detector es el nombre construido. Las cuatro son
+reversibles de verdad.
+
+### 4.4 El bloqueante de la ronda 2: ciegos LOS DOS, con código idiomático
+
+La cabecera del guardián decía «juntos cubren la fuga del otro». **No era un
+teorema, era una aspiración**, y este vector la rompió — sin una sola API
+exótica, sobre un fichero rastreado del conjunto de lectura del propio gate:
+
+```js
+import { join, dirname, resolve } from 'node:path';
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+fs.renameSync(join(RAIZ, 'plan', 'PUBLISH-ALLOWLIST.md'), v + '.oculto');  // 1,5 s
+```
+
+Reproducido antes de tocar nada: **5/5 en verde**. Ninguna de mis cuatro fugas
+declaradas. Dos causas independientes, cada una en su mitad:
+
+1. **Estática** — el ancla sólo se propagaba por acceso de miembro
+   (`path.join`, `path.dirname`). El **import con nombre de `node:path`** no
+   propagaba… mientras que el de `fs` **sí** se reconocía. Una asimetría que no
+   estaba escrita en ninguna parte. Fuga hermana, tampoco declarada: **toda la
+   rama `fs.promises.*`**, porque el prefijo admitía `fs.`, `fsp.` y
+   `fsPromises.` pero no `fs.promises.`.
+2. **Dinámica** — censaba manifiestos y directorios base, y el comentario lo
+   llamaba «el conjunto de lectura del gate». Ese conjunto **lo defino yo mismo**
+   y tiene 81 rutas; se censaban 53. `plan/PUBLISH-ALLOWLIST.md`,
+   `plan/MATRIZ-RUNTIME-51.md`, los dos catálogos y el propio gate estaban fuera.
+
+**Y la prueba que lo cierra, que es la que me llevo**: pasé mi propio detector por
+los **145** tests rastreados del repo y **no cazaba los ofensores #5 y #6 de mi
+propio censo** — los dos `parte-kit` que yo mismo había listado como mutadores de
+ficheros **rastreados**. Usan `import { join, dirname } from 'node:path'`. Mi
+guardián no veía dos de los cuatro mutadores que yo mismo había encontrado, y eso
+además falseaba mi §6·4 («ampliarlo a `packages/**` lo pondría rojo el primer
+día»): por esa vía **no se habría puesto rojo, no los veía**.
+
+**Cerrado, no declarado** (el revisor daba las dos opciones y pedía la primera):
+
+- `enlacesDeModulo()` resuelve los imports reales del fichero — `node:path` /
+  `node:url` / `node:fs` — con espacio de nombres, nombres y **alias**, y de ahí
+  salen tanto las funciones que construyen ruta como las raíces de `fs`. El
+  import es un detalle de estilo, no una excusa, **en los dos módulos**.
+- El prefijo de los mutadores admite ahora `<ns>.promises.<op>(`.
+- El censo dinámico usa `conjuntoDeLectura()`, la misma fuente que la
+  materialización: 81 rutas + 4 bases, aseverado `rutas.length >= 60`.
+- El barrido estático pasa de `test/gates/*.test.mjs` a **todo `test/gates/*.mjs`**
+  (un módulo de apoyo que mutase, mutaría igual). `test/gates/fixtures/` sigue
+  fuera —guarda fuentes de ataque como cadenas—, pero la exclusión **ya no se
+  deja a la buena fe**: se comprueba que ahí no se importa nada capaz de escribir.
+
+**Re-ataque contra el guardián arreglado**, con el vector literal del revisor:
+
+```
+not ok 1 - guardián estático: ningún test de gates escribe sobre el árbol
+    test/gates/zz-ataque2.test.mjs:11 · renameSync · identificador anclado `v` · v, v + '.oculto'
+    test/gates/zz-ataque2.test.mjs:18 · renameSync · identificador anclado `v` · v + '.oculto', v
+not ok 5 - guardián dinámico: el árbol no se mueve mientras la suite corre
+```
+
+Las dos mitades, cada una por su vía. Fichero de ataque borrado; árbol limpio.
+Y los cuatro ofensores de mi censo —incluidos los dos `parte-kit`— **ahora se
+cazan**, verificado uno a uno.
 
 ---
 
@@ -290,7 +390,11 @@ que su evidencia: los 11 vectores que **sí** caza y los 6 de arnés legítimo q
 
 - modificado `test/gates/matriz-51.test.mjs` — probes (a)/(b) sobre árbol
   commiteado; `materializarCommiteado`/`conArbolCommiteado`/`runCliEn`; dos CA
-  nuevos (control commiteado + equivalencia)
+  nuevos (control commiteado + equivalencia); ronda 2: detector de divergencia
+  que además ve **directorios sin rastrear** bajo los globs de `workspaces`, y
+  las dos probes exigen ya lo mismo del CLI (código **y** mensaje)
+- creado `test/gates/conjunto-lectura.mjs` — el conjunto de lectura del gate en
+  **un** sitio, compartido por la materialización y por el censo dinámico
 - creado `test/gates/arbol-inmutable.test.mjs` — guardián estático + dinámico
 - creado `test/gates/fixtures/vectores-mutacion-u252.mjs` — vectores como datos
   (`CAZADOS` / `LIMPIOS` / `FUGAS`); no es suite, `test:gates` glob-ea
@@ -313,6 +417,60 @@ limpio (exit 0). Sin `git stash`.
    ponerse rojo si el snapshot falta.
 3. **`packages/engine/http-contract/test/core.test.mjs:101-112`** —
    `.tmp-spec.yaml` dentro del árbol, ni rastreado ni ignorado.
-4. **El guardián sólo vigila `test/gates/**`**, que es lo que `test:gates`
-   ejecuta en paralelo. Ampliarlo a `packages/**` lo pondría rojo el primer día
-   por (2) y (3): esa ampliación es un WP con arreglo, no un cambio de glob.
+4. **El guardián sólo vigila `test/gates/*.mjs`**, que es lo que `test:gates`
+   ejecuta en paralelo. Ampliarlo a `packages/**` es un WP con arreglo, no un
+   cambio de glob — y ahora con el número **medido**, no estimado.
+
+   Pasado el detector arreglado por los **145** ficheros de test rastreados:
+   **11 ofensas en 5 ficheros**. Diez son ciertas y son exactamente las cuatro
+   filas del censo (§2): `release-u53` (6) · `http-contract/core` (2) ·
+   `parte-kit/determinismo` (1) · `parte-kit/consumidores` (1). **Una es falsa**:
+   `packages/mesh/ssb-system/test/export.test.mjs:391`, que es
+   `assert.equal(marcaEscritorDeManifiesto('fs.writeFileSync(abs, payload);'), false)`
+   — código **dentro de una cadena**, no código. Es la misma razón por la que mis
+   propios vectores viven en `fixtures/`: el detector lee texto, no AST.
+
+   La primera medición dio **18 en 9 ficheros**, y las 7 de más eran mías: al
+   ampliar el barrido marqué `copyFileSync(<fixture del repo>, <tmp>)` y
+   `npm install` con `cwd: tmp`. Copiar o enlazar **desde** el repo es una
+   lectura, y un `cwd` que no apunta al repo manda la escritura a otra parte.
+   Corregido (`argumentosEscritos()` y el filtro de `cwd`): sólo `rename` mira
+   origen y destino, porque además de escribir el destino **borra el origen**.
+
+## 7 · Coste conocido, que nadie había medido
+
+El guardián dinámico **re-ejecuta la suite entera en un hijo**, así que los gates
+corren **dos veces por invocación**. Medido en esta máquina, en descarga:
+
+| | tiempo |
+| - | ------ |
+| suite sin guardián (3 ficheros) | 4429 ms |
+| `npm run test:gates` con guardián | 6140 ms |
+
+**+1,7 s, ~1,4×.** No está medido en CI y no lo declaro por él. Es el precio de
+cazar por efecto en vez de por texto; si en CI resultara caro, la palanca natural
+es correr sólo el guardián estático allí y dejar el dinámico en local, pero eso
+es una decisión de quien opere el CI, no mía.
+
+## 8 · La lección, que no es el arreglo
+
+Construí el guardián, lo ataqué, encontré **tres defectos propios** —incluido un
+falso verde silencioso que habría dado verde para siempre sin mirar nada— y aun
+así se me escapó **la vía más corriente de todas**: `import { join } from
+'node:path'`. No fue por falta de rigor al atacar: fue que **ataqué las vías que
+imaginé**, y todas las que imaginé eran exóticas — acceso computado, frontera de
+módulo, `chdir`, ruta reconstruida. La que faltaba estaba escrita en el idioma
+que yo mismo uso en el fichero de al lado.
+
+Hay un detalle que lo vuelve incontestable y que quiero dejado por escrito: **mi
+guardián no detectaba dos de los cuatro mutadores que yo mismo había censado**,
+en el mismo WP, a unas líneas de distancia. Tenía el oráculo delante —mi propio
+censo— y no lo usé para probar mi propio detector. La regla que se me escapó no
+es «ataca más», es **«pasa el detector por los ofensores que ya conoces»**: si un
+guardián no caza lo que su autor ya encontró a mano, no caza nada.
+
+Y la segunda mitad de la lección va en la prosa: escribí «juntos cubren la fuga
+del otro» en una cabecera. La cobertura conjunta de dos detectores **es una
+medida, no una frase**; si no está aseverada con vectores, es una afirmación más
+ancha que su evidencia — la regla 1-bis del método, demostrada sobre quien la
+estaba escribiendo.
