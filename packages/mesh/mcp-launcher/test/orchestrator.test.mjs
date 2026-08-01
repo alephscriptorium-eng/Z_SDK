@@ -28,7 +28,8 @@ import {
   listenerPids,
   portFree,
   portReleased,
-  killTree
+  killTree,
+  enumerationStdout
 } from '../src/orchestrator.mjs';
 import { resolveCatalog } from '../src/catalog.mjs';
 
@@ -262,6 +263,12 @@ test('U234-B1 CA-2: status no miente sobre un listener ::1 (healthy Y listening)
   const status = await runStatus('fixture-v6-status', { catalog, stateDir });
   const row = status.rows.find((r) => r.id === 'fixture-v6-status');
   assert.ok(row, JSON.stringify(status));
+  // La cabecera enumera las claves de la fila; que las enumere BIEN.
+  assert.deepEqual(
+    Object.keys(row).sort(),
+    ['group', 'healthy', 'id', 'listening', 'managedPid', 'pids', 'port', 'status', 'url'],
+    'la fila de status ya no casa con las nueve claves que promete la cabecera'
+  );
   // Esta mitad ya pasaba: el health viaja por localhost → ::1.
   assert.equal(row.healthy, true, JSON.stringify(row));
   // Estas dos son el vector rojo: antes salían false / [] con el proceso vivo.
@@ -377,5 +384,84 @@ test('U234-B1 CA-5: la guardia puerto_ocupado_sin_health despierta ante un ocupa
   ]);
   // no spawneó nada encima: sin estado escrito
   assert.equal(fs.existsSync(path.join(stateDir, 'state-fixture-v6-guard.json')), false);
+});
+
+test('U234-B1 CA-9 (invariante con guardia): un solo punto de enumeración', () => {
+  // El invariante «un solo netstat» era cierto pero NO tenía guardia: se
+  // afirmaba en prosa y nada se ponía rojo al añadir un segundo punto. Esto
+  // es la guardia. Si mañana alguien enumera puertos desde otro sitio, el
+  // arreglo de familia de U234-B1 deja de alcanzarlo y este test cae.
+  const src = fs.readFileSync(path.join(__dirname, '../src/orchestrator.mjs'), 'utf8');
+
+  const count = (re) => (src.match(re) || []).length;
+
+  // 1 · exactamente una invocación por herramienta, y ninguna que se salte la
+  //     primitiva llamando a spawnSync a pelo.
+  assert.equal(
+    count(/enumerationStdout\(\s*['"`]netstat['"`]/g),
+    1,
+    'más de una invocación de netstat: la ceguera de familia puede volver por la vía nueva'
+  );
+  assert.equal(count(/enumerationStdout\(\s*['"`]lsof['"`]/g), 1, 'más de una invocación de lsof');
+  assert.equal(
+    count(/spawnSync\(\s*['"`](?:netstat|lsof|ss|netstat\.exe)['"`]/g),
+    0,
+    'alguien enumera con spawnSync directo y se salta el guard de «no pude mirar»'
+  );
+
+  // 2 · toda la enumeración entra por enumerationStdout, y sólo desde
+  //     listenerPids: eso es lo que hace que start, stop, status y rollback
+  //     hereden cualquier arreglo gratis.
+  const bodyOf = (decl) => {
+    const start = src.indexOf(decl);
+    assert.ok(start > 0, `no encuentro «${decl}»`);
+    const rest = src.slice(start + 1);
+    const next = rest.search(/\n(?:export |function |const |async function )/);
+    return next === -1 ? rest : rest.slice(0, next);
+  };
+  const listenerBody = bodyOf('export function listenerPids(');
+  assert.equal(
+    (listenerBody.match(/enumerationStdout\(/g) || []).length,
+    2,
+    'listenerPids ya no contiene las dos ramas de enumeración'
+  );
+  assert.equal(
+    count(/enumerationStdout\(/g) - 1, // −1: la propia declaración
+    2,
+    'enumerationStdout se llama desde algún sitio que no es listenerPids'
+  );
+
+  // 3 · y la primitiva sigue teniendo un único spawnSync dentro.
+  assert.equal(
+    (bodyOf('export function enumerationStdout(').match(/spawnSync\(/g) || []).length,
+    1
+  );
+});
+
+test('U234-B1 CA-10: «no pude mirar» no sale por la puerta de «no hay listeners»', () => {
+  // Antes, un `lsof` ausente (Alpine, Debian slim, casi cualquier contenedor)
+  // daba ENOENT, `r.stdout` null y listenerPids devolvía [] sin señal alguna:
+  // el oráculo degradaba en silencio al experimento B de la matriz de
+  // falsación, el que este WP demostró insuficiente.
+  assert.throws(
+    () =>
+      enumerationStdout('zeus-binario-que-no-existe', ['-ano'], {
+        windowsHide: true,
+        encoding: 'utf8'
+      }),
+    (err) => {
+      assert.equal(err.code, 'ENUM_NO_DISPONIBLE');
+      assert.match(err.message, /no se pudo ejecutar/);
+      assert.equal(err.tool, 'zeus-binario-que-no-existe');
+      return true;
+    }
+  );
+
+  // Y NO confunde «salida vacía» con «fallo»: un binario que existe y no
+  // encuentra nada devuelve string, no excepción. (`lsof` sale con 1 cuando no
+  // hay socket: ese es el caso legítimo de lista vacía.)
+  const out = enumerationStdout('netstat', ['-ano'], { windowsHide: true, encoding: 'utf8' });
+  assert.equal(typeof out, 'string');
+  assert.ok(out.length > 0);
 });
 

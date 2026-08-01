@@ -15,8 +15,9 @@ direcciones complementarias: la enumeración (`netstat -ano -p tcp`) sólo veía
 IPv4, y la sonda de re-bind (`portFree(_, 'localhost')`) sólo veía la familia a
 la que resuelve el host declarado — que en el catálogo real es siempre `::1`.
 Ambos quedan cubiertos por un único punto de enumeración y un oráculo de
-ocupación de doble lector. **Suite: 21→26 tests, 0 fallos**, con cinco vectores
-que hoy fallaban sobre la base sin tocar.
+ocupación de doble lector. **Suite: 21→28 tests, 0 fallos**, con cinco vectores
+que hoy fallaban sobre la base sin tocar, más dos guardias añadidas en la ronda
+de cierre (§9).
 
 ---
 
@@ -27,16 +28,21 @@ dice si este WP lo cambió.
 
 | # | punto | fichero:línea | qué mira | familia antes | tocado |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `listenerPids` | `packages/mesh/mcp-launcher/src/orchestrator.mjs:228` (base) → `:259` (tip) | `spawnSync('netstat', ['-ano','-p','tcp'])` | **IPv4 sólo** | **SÍ** |
-| 2 | `listenerPids` rama POSIX | mismo fichero, `:274` (tip) | `lsof -ti tcp:<port> -sTCP:LISTEN` | ambas ya | no — ver §7 |
-| 3 | `portFree` | `:298` (base) → `:345` (tip) | `net.listen({port, host, exclusive:true})` | **la del host, una sola** | no (semántica intacta) |
-| 4 | `waitPortFree` → `waitPortReleased` | `:308` (base) → `:369` (tip) | envolvía (3) con deadline | heredaba el agujero de (3) | **SÍ** |
-| 5 | `runStart`, guardia `puerto_ocupado_sin_health` | `:401` (base) → `:462` (tip) | consume (1) | heredaba (1) | hereda el arreglo |
-| 6 | `rollbackStarted` | `:465` → `:526` | consume (1) | heredaba (1) | hereda el arreglo |
-| 7 | `runStop`, a quién matar | `:493` → `:554` | consume (1) | heredaba (1) | hereda el arreglo |
-| 8 | `runStop`, `residualPids` | `:514` → `:575` | consume (1) | heredaba (1) | hereda el arreglo |
-| 9 | `runStop`, veredicto `free` | `:509` → `:570` | consume (4) | heredaba (3) | hereda el arreglo |
-| 10 | `runStatus`, `listening`/`pids` | `:548` → `:609` | consume (1) | heredaba (1) | hereda el arreglo |
+| 0 | `enumerationStdout` (NUEVO, §9.3) | — → `:269` (tip) | `spawnSync` + guard de «no pude mirar» | — | **SÍ (cierre)** |
+| 1 | `listenerPids`, rama win32 | `packages/mesh/mcp-launcher/src/orchestrator.mjs:228` (base) → `:315` (tip) | `netstat -ano` vía (0) | **IPv4 sólo** | **SÍ** |
+| 2 | `listenerPids`, rama POSIX | `:243` (base) → `:330` (tip) | `lsof -ti tcp:<port> -sTCP:LISTEN` vía (0) | ambas ya | **SÍ (cierre)** — §9.3 |
+| 3 | `portFree` | `:298` (base) → `:400` (tip) | `net.listen({port, host, exclusive:true})` | **la del host, una sola** | no (semántica intacta) |
+| 4 | `waitPortFree` → `waitPortReleased` | `:308` (base) → `:440` (tip) | envolvía (3) con deadline | heredaba el agujero de (3) | **SÍ** |
+| 5 | `runStart`, guardia `puerto_ocupado_sin_health` | `:401` (base) → `:533` (tip) | consume (1) | heredaba (1) | hereda el arreglo |
+| 6 | `rollbackStarted` | `:465` → `:597` | consume (1) | heredaba (1) | hereda el arreglo |
+| 7 | `runStop`, a quién matar | `:493` → `:625` | consume (1) | heredaba (1) | hereda el arreglo |
+| 8 | `runStop`, `residualPids` | `:514` → `:646` | consume (1) | heredaba (1) | hereda el arreglo |
+| 9 | `runStop`, veredicto `free` | `:509` → `:641` | consume (4) | heredaba (3) | hereda el arreglo |
+| 10 | `runStatus`, `listening`/`pids` | `:548` → `:680` | consume (1) | heredaba (1) | hereda el arreglo |
+
+> Las columnas «(tip)» son del commit de cierre. Los `:NNN` de la primera
+> entrega (`1c6879b`) quedaron obsoletos al insertar `enumerationStdout`; esta
+> tabla está reverificada contra el tip, no arrastrada.
 
 **Puntos que NO son de este WP, verificados uno a uno:**
 
@@ -89,7 +95,7 @@ netstat -ano -p tcpv6  | ...  → ["TCP [::1]:19881  [::]:0  LISTENING  31812"]
 netstat -ano           | ...  → ["TCP [::1]:19881  [::]:0  LISTENING  31812"]
 ```
 
-Aplicando **el parseo literal de `:233-239`** (sin cambiarlo) a cada salida:
+Aplicando **el parseo literal de `:233-239` de la base** (sin cambiarlo) a cada salida:
 
 ```
 parse(netstat -ano -p tcp) → []        ← el defecto
@@ -140,7 +146,7 @@ doble lector.** Las otras dos vías del brief se descartan así:
 
 | vía | por qué no |
 | --- | --- |
-| dos pasadas `-p tcp` + `-p tcpv6` | 140 ms frente a 40 ms, dos procesos en vez de uno, y **dos puntos de invocación** — justo el patrón que CA-6 vigila. Cero ganancia de fiabilidad. |
+| dos pasadas `-p tcp` + `-p tcpv6` | 140 ms frente a 40 ms, dos procesos en vez de uno, y **dos puntos de invocación** — justo el patrón que vigila **CA-9** (§9.2). Cero ganancia de fiabilidad. |
 | `Get-NetTCPConnection` | Es la única vía inmune a la localización de la salida de `netstat` (ver §7), pero cuesta ~1.2 s por llamada según la medida del contrarrevisor; `status all` (15 entradas) lo pagaría por entrada. Prohibitivo. Además ata el runtime a PowerShell/Windows, cuando la función ya tiene rama POSIX. |
 | resolver desde Node | No existe API en Node para enumerar los listeners de otros procesos. No es una vía. |
 
@@ -187,7 +193,12 @@ No se deja como prosa: es **CA-5**, con aserto.
 
 ## 4 · El vector rojo antes, verde después
 
-### 4.1 Línea base registrada ANTES de tocar nada (CA-6 de no-regresión)
+### 4.1 Línea base registrada ANTES de tocar nada (CA-6 · no-regresión, y sólo eso)
+
+> **CA-6 nombra una única cosa: la línea base de no-regresión.** En la primera
+> entrega esta sigla se usaba también, en §3, para el invariante de «un solo
+> punto de invocación» — dos criterios con un mismo número. El invariante es
+> ahora **CA-9**, con guardia propia en la suite (§9.2).
 
 `npm test -w @zeus/mcp-launcher` (`package.json:15` → `node --test test/*.mjs`)
 sobre `87bd93f`, árbol limpio:
@@ -261,10 +272,12 @@ tenía que evitar), CA-4 seguiría roja y el agujero de la sonda seguiría vivo.
 `npm test -w @zeus/mcp-launcher` sobre el tip:
 
 ```
-# tests 26 · # pass 25 · # fail 0 · # skipped 1 · # duration_ms 6259
+# tests 28 · # pass 27 · # fail 0 · # skipped 1 · # duration_ms 6237
 ```
 
-21→26 (+5 CA nuevas), 0 fallos, mismo `skip` preexistente.
+21→28 (+5 CA de defecto, +2 guardias de la ronda de cierre), 0 fallos, mismo
+`skip` preexistente. Tres pasadas completas consecutivas con el mismo
+resultado.
 
 **El e2e IPv4 (`test/orchestrator.test.mjs:96-144` en la base, `:105-153` en el
 tip) sigue verde sin editar ni uno de sus asertos.** No es una afirmación de
@@ -286,7 +299,7 @@ el tip; `:134`, `:138-139`, `:140-141` en la base) están intactos byte a byte.
 ## 5 · Promesa ↔ aserto (CA-7: promesa sin aserto = promesa borrada)
 
 Las **dos** cabeceras repetían la promesa de «prueba real de re-bind». Ambas
-reescritas: `src/orchestrator.mjs:20-29`, `:37-42` y `:47-48`, y
+reescritas: `src/orchestrator.mjs:20-29`, `:37-42` y `:56-57`, y
 `test/orchestrator.test.mjs:1-10`. Cada promesa que queda, con su aserto:
 
 | promesa (tip) | dónde | aserto que la sostiene |
@@ -295,9 +308,16 @@ reescritas: `src/orchestrator.mjs:20-29`, `:37-42` y `:47-48`, y
 | «barrido de listeners residuales por puerto de catálogo — IPv4 e **IPv6**» | src `:22-23` | **CA-1**: `listenerPids(19861)` = `[pid]` con ocupante `::1` |
 | «incluido el grupo adoptado que no dejó pid en el estado» | src `:23-24` | **CA-3**: se asevera `existsSync(state-*.json)===false` antes de `stop`; luego `killed` contiene el pid y `connect [::1]` → `ECONNREFUSED` |
 | «veredicto de puerto liberado por doble lector: re-bind del host declarado **Y** enumeración sin listeners» | src `:24-26` | **CA-4**: `portReleased` = `false` donde `portFree` = `true`, para ocupante `::` y `127.0.0.1`; y `true` en un puerto realmente libre |
-| «`listening`/`pids` cubren IPv4 e IPv6» | src `:27-29` | **CA-2**: `row.listening===true` y `row.pids===[pid]` con ocupante `::1` |
+| «Una fila por entrada, **nueve claves**: {id, group, port, url, healthy, listening, pids, managedPid, status}» | src `:27-28` | **CA-2**: `Object.keys(row).sort()` contra las nueve exactas — guardia añadida en el cierre (§9.4) |
+| «`listening`/`pids` cubren IPv4 e IPv6» | src `:29` | **CA-2**: `row.listening===true` y `row.pids===[pid]` con ocupante `::1` |
 | «`start` puede abortar con `puerto_ocupado_sin_health` donde antes spawneaba a ciegas» | src `:37-42` | **CA-5**: `started.error==='puerto_ocupado_sin_health'` y `occupied[0].pids===[pid]` |
-| «Fuente única: catalog.mjs — aquí no hay puertos escritos a mano» | src `:44-48` | preexistente (CA-3 de U234); este WP no añade ninguna cifra al `src` |
+| «Fuente única: catalog.mjs — aquí no hay puertos escritos a mano» | src `:53-57` | preexistente (CA-3 de U234); este WP no añade ninguna cifra al `src` |
+| «el radio de la escoba creció: `stop` alcanza procesos IPv6 que no arrancó él» | src `:44-51` | **CA-3**: el fixture lo levanta el TEST, no `runStart`, y `stop` lo mata igual |
+| «lanza `ENUM_NO_DISPONIBLE` cuando el proceso no pudo ejecutarse» | src `:245-268` | **CA-10**: ENOENT real → `err.code`, `err.tool`, mensaje |
+| «un exit distinto de cero NO es un error aquí» | src `:257-259` | **CA-10**: binario presente con salida → devuelve string, no lanza |
+| «un solo punto de enumeración; start/stop/status/rollback heredan el arreglo» | src `:286-287` | **CA-9**: cuenta las invocaciones en el propio fuente y exige que vivan dentro de `listenerPids` |
+| «⚠ known hole: sobre un puerto del sistema puede contestar `true` y estar equivocado» | src `:421-433` | **no es promesa, es límite declarado** — medido en 445 (acierta) y 139 (falla), §9.1 |
+| «las dos ramas no tienen el mismo contrato de visibilidad» | src `:307-311` | **NO MEDIDO y así rotulado** en el propio comentario y en §9.3 |
 | «IPv4 re-bind proof» (era «port re-bind proof») | test `:4` | acotada a IPv4 a propósito: es lo que el e2e de `dual-peer` prueba y sólo eso |
 
 Ninguna promesa quedó sin aserto. La única que se **estrechó** en vez de
@@ -318,15 +338,19 @@ cubre la otra familia.
 | --- | --- |
 | `:20-29` | cabecera de `stop` y `status` reescritas (§5) |
 | `:37-42` | nota de contrato para V34/O22: la forma del JSON no cambia, su veracidad sí |
-| `:47-48` | «primitivas del SO … (taskkill/netstat **sin filtro de familia, ver listenerPids**)» |
-| `:236-256` | doc de `listenerPids`: por qué **no** volver a poner `-p tcp`, con la medida; por qué el parseo es family-agnostic y por qué las filas UDP no contaminan; por qué POSIX no cambia |
+| `:56-57` | «primitivas del SO … (taskkill/netstat **sin filtro de familia, ver listenerPids**)» |
+| `:284-312` | doc de `listenerPids`: por qué **no** volver a poner `-p tcp`, con la medida; por qué el parseo es family-agnostic y por qué las filas UDP no contaminan; por qué POSIX no cambia |
 | **`:259`** | **`['-ano','-p','tcp']` → `['-ano']`.** El arreglo del defecto 1, una sola línea |
-| `:328-344` | doc de `portFree`: tabla medida de su ceguera y aviso de que **no** es oráculo de ocupación |
-| `:355-367` | **`portReleased(port, host)` nuevo y exportado** — el oráculo de doble lector |
-| `:369-376` | `waitPortFree` → `waitPortReleased`, sobre `portReleased` |
-| `:570` | `runStop` consume `waitPortReleased` |
+| `:383-399` | doc de `portFree`: tabla medida de su ceguera y aviso de que **no** es oráculo de ocupación |
+| `:410-438` | **`portReleased(port, host)` nuevo y exportado** — el oráculo de doble lector |
+| `:440-447` | `waitPortFree` → `waitPortReleased`, sobre `portReleased` |
+| `:641` | `runStop` consume `waitPortReleased` |
+| `:245-281` | **`enumerationStdout` nuevo y exportado** (ronda de cierre, §9.3) |
 
-El parseo de `:263-272` **no se tocó** (ni una coma), tal como exigía el brief.
+El parseo de `:319-328` **no se tocó** (ni una coma) más que para leer de una
+variable en vez de `String(r.stdout || '')`, tal como exigía el brief: el
+cuerpo del bucle, el guard `/LISTENING/i`, el test de columnas y el filtro
+`pid > 4` están intactos.
 `portFree` conserva firma y semántica: sigue exportada y el e2e IPv4 sigue
 aseverando el re-bind crudo con ella.
 
@@ -418,3 +442,180 @@ barrido. **No se inventaron corchetes en `catalog.mjs`** — territorio ajeno.
   `npx --no-install eslint`, y `eslint` está declarado en `package.json:147`.
 - Nada escrito fuera de `C:\S_LAB\wt\z-u234b1`; los scripts de sonda viven en
   el scratchpad de sesión.
+
+---
+
+## 9 · Ronda de cierre — qué frase cambié y por qué
+
+Tres de los cuatro puntos de esta ronda no eran defectos de código: eran
+**defectos de lo que el texto promete**. En dos de los tres la frase mentirosa
+la había escrito yo en la primera entrega, al documentar el arreglo.
+
+### 9.1 · `portReleased`: la frase afirmaba una cobertura que el código no da
+
+**Antes** (`orchestrator.mjs:355-363`, primera entrega — frase **mía**):
+
+> «the port is released **iff** BOTH lookers agree. (a) `host` really re-binds —
+> **catches holders the enumeration cannot name (system pids ≤ 4, which
+> listenerPids filters out)**»
+
+Dos cosas falsas. El «iff» presenta la condición como necesaria **y
+suficiente**, y no es suficiente. Y el paréntesis afirma que la mitad (a) caza
+a los tenedores de pid ≤ 4, cuando sólo los caza si su bind cubre la dirección
+a la que resuelve `host`.
+
+**Vector reproducido en esta máquina** (no heredado — lo medí contra mi propio
+tip antes de tocar la frase):
+
+```
+puerto 445 → pid 4 en 0.0.0.0 Y [::]              → portReleased false  ✔ acierta
+puerto 139 → pid 4 en 172.18.224.1 y 192.168.1.38,
+             ninguna fila IPv6                     → portReleased TRUE   ✘ MIENTE
+```
+
+En 139 el tenedor no tiene fila IPv6, así que `::1:139` re-ata sin problema
+—(a) ciego— y el filtro `pid > 4` lo tira —(b) ciego—. Dos listeners reales
+vivos y el oráculo firma «liberado».
+
+**Después** (`:410-434`): la frase dice que es la **conjunción de dos vistas
+parciales, no una completa**, describe qué ve cada mitad sin atribuirle a (a)
+una cobertura que no tiene, y añade un bloque `⚠ Known hole` con **los dos
+casos medidos, el que acierta y el que falla**, y la conclusión explícita: «no
+es un chequeo de ocupación de propósito general: sobre un puerto del sistema
+puede contestar `true` y estar equivocado».
+
+**El código no se tocó.** El filtro `pid > 4` es preexistente a este WP, no
+alcanza a ningún puerto del catálogo y ensancharlo significaría permitir que el
+orquestador intente matar procesos del kernel. Queda como límite declarado.
+
+### 9.2 · CA-6 nombraba dos criterios, y el invariante no tenía guardia
+
+Dos defectos en uno. **Nombre**: §3 usaba «CA-6» para el invariante de punto
+único y §4.1 para la línea base de no-regresión. Corregido: **CA-6 es la línea
+base y nada más**; el invariante es **CA-9**.
+
+**Guardia**: el invariante era cierto pero se afirmaba en prosa y **nada se
+ponía rojo** si alguien añadía un segundo punto de enumeración — alcance
+declarado más ancho que la evidencia, que es justo el patrón que este swarm
+persigue. Ahora hay guardia real, `CA-9` en la suite, que verifica cuatro
+cosas sobre el propio fuente:
+
+1. exactamente **una** invocación de `netstat` y **una** de `lsof`;
+2. **cero** `spawnSync('netstat'|'lsof'|'ss')` directos, es decir nadie se salta
+   la primitiva (y con ella el guard de §9.3);
+3. las **dos** ramas de enumeración viven dentro de `listenerPids`, y
+   `enumerationStdout` no se llama desde ningún otro sitio;
+4. `enumerationStdout` contiene un único `spawnSync`.
+
+La guardia se ganó el sueldo en el acto: la escribí contra la forma vieja del
+código y **salió roja** contra la nueva, porque §9.3 había movido las
+invocaciones de `spawnSync(...)` a `enumerationStdout(...)`. Detectó un cambio
+real de estructura en su primera ejecución.
+
+### 9.3 · POSIX: el oráculo fallaba ABIERTO en silencio
+
+**El único punto de los cuatro que cambia comportamiento.**
+
+`listenerPids` nunca miraba `r.error`. Sin `lsof` instalado —Alpine, Debian
+slim, casi cualquier contenedor— `spawnSync` da `ENOENT`, `r.stdout` es `null`,
+`String(null || '')` es `''` y la función devolvía `[]` **sin ninguna señal**.
+Es decir: «no pude mirar» salía por la misma puerta que «no hay nadie», y el
+oráculo degradaba exactamente al **experimento B** de mi propia matriz de
+falsación (§4.3) — el que yo mismo demostré insuficiente. Un `stop` habría
+firmado exit 0 sobre servicios vivos.
+
+**Arreglo**: `enumerationStdout(command, args, opts)` nuevo y exportado
+(`:245-281`). Lanza `ENUM_NO_DISPONIBLE` cuando el proceso **no pudo
+ejecutarse** (`r.error`) o murió por señal (`r.signal`). `main()` ya convierte
+cualquier excepción en exit 1 con el mensaje por stderr: fail-closed y ruidoso.
+
+**La distinción fina, que es donde esto se rompe si se hace a lo bruto**: un
+**exit code distinto de cero NO es un error aquí**, y el guard no lo trata como
+tal. `lsof` sale con **1 cuando no encuentra ningún socket**, que es
+precisamente el caso legítimo de lista vacía. Sólo `.error`/`.signal` significan
+«no pude mirar». Si el guard hubiese mirado `r.status`, habría convertido el
+caso normal de POSIX en un fallo duro.
+
+Formas medidas en esta máquina para calibrar el guard:
+
+```
+binario ausente → { error: {code:'ENOENT'}, status: null, signal: null }
+netstat -ano    → { error: null,            status: 0,    stdout: 7330 bytes }
+```
+
+**CA-10** en la suite cubre las dos caras: que un binario ausente lanza
+`ENUM_NO_DISPONIBLE` (con `err.tool` y mensaje), y que un binario presente que
+devuelve salida **no** lanza. El ENOENT del test es **real**, no simulado.
+
+> **Declaración honesta: la rama POSIX no está medida.** No hay máquina POSIX
+> disponible. Lo verificado es la **lógica de decisión** del guard, contra un
+> `ENOENT` real producido en Windows. Que `lsof` se comporte como supongo —exit
+> 1 sin resultados, `.error` sólo cuando falta— es semántica documentada, no
+> medida mía. Un arreglo correcto sin verificar, y dicho.
+
+**Además, el contrato de visibilidad de las dos ramas NO es el mismo, y la
+diferencia no es sólo de familia** (esto lo vio la contrarrevisión, no yo):
+`netstat -ano` lista **todos** los sockets de la máquina, mientras que `lsof`
+**sin root sólo lista los sockets del usuario que invoca**. En POSIX, un
+listener de otro usuario es invisible aquí aunque la enumeración se ejecute
+perfectamente — un fallo silencioso que este arreglo **no** cubre, porque no es
+«no pude mirar» sino «miré y no me dejaron verlo todo». Anotado en la cabecera
+de `listenerPids` (`:307-311`) y sin medir.
+
+### 9.4 · La cabecera de `status` enumeraba siete claves de nueve
+
+**Antes** (frase reescrita por mí en la primera entrega, con la lista heredada
+sin revisar): `{id, group, port, healthy, listening, pids, managedPid}`.
+
+**Ahora** (`:27-29`): «Una fila por entrada, **nueve claves**: `{id, group,
+port, url, healthy, listening, pids, managedPid, status}`». Faltaban `url` y
+`status`. Verificado contra `runStatus` (`:681-691`), no contra la memoria.
+
+### 9.5 · Nota para quien opera: el radio de la escoba creció
+
+Añadida a la cabecera del contrato (`:44-51`), porque es consecuencia directa
+del arreglo y quien opere debe saberlo **antes**, no después:
+
+`stop` alcanza ahora procesos IPv6 que antes le eran invisibles, y eso incluye
+lo que el orquestador **no** arrancó. Un relay de WSL o un port-forward de
+Docker atado a `[::]` sobre un puerto del catálogo antes sólo moría si tenía
+además fila IPv4; ahora muere siempre. Es la semántica buscada —el barrido
+residual mata lo que ocupe el puerto de catálogo, lo haya arrancado él o no—,
+pero conviene saberlo antes de correr `stop all` con un túnel abierto.
+
+### 9.6 · Fortaleza que no había declarado
+
+La contrarrevisión señaló algo que no estaba escrito: el veredicto de `stop`
+sale del **oráculo de puerto**, no de `killed[].ok`. Eso lo hace inmune a que
+`isAlive` mienta por `EPERM` — si `taskkill` dice que mató y el proceso sigue
+escuchando, el veredicto lo desmiente igual. No fue un accidente, pero tampoco
+lo había declarado; queda dicho.
+
+### 9.7 · Fuera de los cuatro puntos — anotado y NO tocado
+
+Una única observación, que **no toco** por la regla de cierre:
+
+`test/tool-call-launch.test.mjs` («eje I: tool call launch_mcp_server starts
+tronco + satelite») **falló una vez** en una de las cinco pasadas completas de
+esta ronda, y volvió a verde en las tres pasadas siguientes y en ejecución
+aislada. **No pasa por ningún fichero de este WP**: no importa `orchestrator.mjs`
+ni ninguno de sus símbolos (comprobado por grep en §1). Arranca procesos reales
+en puertos fijos, y esta máquina tiene varios worktrees del swarm corriendo
+suites a la vez, así que la hipótesis natural es colisión de puertos entre
+worktrees. **No investigado a fondo, no tocado, queda enrutado al orquestador.**
+
+En la misma pasada anómala, el e2e IPv4 preexistente tardó 30 s frente a los
+~1 s habituales, lo que refuerza la hipótesis de carga/colisión ambiental. Dos
+pasadas inmediatamente posteriores: 3.3 s.
+
+### 9.8 · Números de la ronda de cierre
+
+| | tests | pass | fail | skip |
+| --- | --- | --- | --- | --- |
+| línea base (`87bd93f`) | 21 | 20 | 0 | 1 |
+| primera entrega (`1c6879b`) | 26 | 25 | 0 | 1 |
+| **cierre** | **28** | **27** | **0** | 1 |
+
+`eslint` sobre los tres ficheros tocados: **0 problemas**. `status minimo` por
+CLI sigue devolviendo su JSON de nueve claves con exit 0 (el fail-closed no
+toca el camino normal en Windows, donde `netstat` siempre está).

@@ -24,9 +24,9 @@
  *                    (U234-B1) —, y veredicto de puerto liberado por doble
  *                    lector: re-bind del host declarado Y enumeración sin
  *                    listeners. Limpia el estado.
- *   status <perfil>  Una fila por entrada: {id, group, port, healthy,
- *                    listening, pids, managedPid}. `listening`/`pids` cubren
- *                    IPv4 e IPv6 (U234-B1).
+ *   status <perfil>  Una fila por entrada, nueve claves: {id, group, port, url,
+ *                    healthy, listening, pids, managedPid, status}.
+ *                    `listening`/`pids` cubren IPv4 e IPv6 (U234-B1).
  *   health <perfil>  probeHealth por entrada (reusa health.mjs).
  *
  * Salida: progreso humano por stderr; UN documento JSON por stdout (los
@@ -40,6 +40,15 @@
  * `free:false` con `residualPids:[]`), y firma exit 1 si sobrevive un residuo
  * que antes no miraba. `start` puede abortar con `puerto_ocupado_sin_health`
  * donde antes spawneaba a ciegas sobre un puerto ya ocupado en ::1.
+ *
+ * ⚠ Nota para quien opera (U234-B1): el radio de la escoba CRECIÓ. `stop`
+ * alcanza ahora procesos IPv6 que antes le eran invisibles, y en una máquina de
+ * desarrollo eso incluye lo que no arrancó el orquestador — un relay de WSL o
+ * un port-forward de Docker atado a `[::]` sobre un puerto del catálogo se
+ * mataba antes sólo si tenía además fila IPv4, y ahora se mata siempre. Es la
+ * semántica buscada (el barrido residual mata lo que ocupe el puerto de
+ * catálogo, lo haya arrancado él o no), pero conviene saberlo antes de correr
+ * `stop all` con un túnel abierto.
  *
  * Perfiles: PROFILES (abajo). "all" = toda entrada lanzable del catálogo.
  * Fuente única: catalog.mjs — aquí no hay comandos de servicio ni puertos
@@ -234,9 +243,50 @@ function clearState(stateDir, perfil) {
 }
 
 /**
+ * Run an enumeration primitive and return its stdout, distinguishing «nobody
+ * is listening» from «I could not look». The second must never leave through
+ * the same door as the first: an empty pid list has to mean the port is clear,
+ * not that the tool was missing.
+ *
+ * Throws `ENUM_NO_DISPONIBLE` when the process could not run at all
+ * (`spawnSync` sets `.error` — ENOENT for a tool that is not installed, EACCES,
+ * EPERM…) or was killed by a signal. `main()` turns that into exit 1 with the
+ * message on stderr, which is the fail-closed answer: the orchestrator cannot
+ * tell whether a port is busy, so it says so instead of guessing "free".
+ *
+ * A NON-ZERO EXIT IS NOT AN ERROR HERE, on purpose: `lsof` exits 1 when it
+ * finds no matching socket, which is precisely the empty-and-true case. Only
+ * `.error`/`.signal` mean "could not look".
+ *
+ * Measured (win32, node v22): missing binary → `{error:{code:'ENOENT'},
+ * status:null, signal:null}`; `netstat -ano` present → `{error:null, status:0}`.
+ *
+ * @param {string} command
+ * @param {string[]} args
+ * @param {object} opts
+ * @returns {string} stdout
+ */
+export function enumerationStdout(command, args, opts) {
+  const r = spawnSync(command, args, opts);
+  if (r.error || r.signal) {
+    throw Object.assign(
+      new Error(
+        `No pude enumerar los listeners del puerto: \`${command}\` no se pudo ejecutar ` +
+          `(${r.error?.code || `señal ${r.signal}`}). «Sin listeners» y «no pude mirar» no ` +
+          `son lo mismo, así que esto se propaga en vez de devolver una lista vacía.`
+      ),
+      { code: 'ENUM_NO_DISPONIBLE', tool: command, cause: r.error }
+    );
+  }
+  return String(r.stdout || '');
+}
+
+/**
  * Pids listening on a TCP port, BOTH families (OS primitive — same class as
  * PM taskkill). Single point of enumeration: start, stop, status and rollback
  * all read occupancy through here, so a fix here reaches every one of them.
+ * Throws `ENUM_NO_DISPONIBLE` if the primitive could not run — see
+ * enumerationStdout.
  *
  * ⚠ win32: do NOT add `-p tcp`. On Windows `-p tcp` selects the IPv4 family
  * only, so a service bound to `::1` — which is what host `localhost` binds
@@ -252,16 +302,22 @@ function clearState(stateDir, perfil) {
  * `/LISTENING/i` guard.
  *
  * POSIX: `lsof -i tcp:<port>` already matches both families (restricting would
- * need `-i 4tcp:`/`-i 6tcp:`), so that branch needs no change.
+ * need `-i 4tcp:`/`-i 6tcp:`), so that branch needs no family change.
+ *
+ * ⚠ The two branches do NOT have the same visibility contract, and the
+ * difference is not only family: `netstat -ano` lists every socket on the box,
+ * while `lsof` without root lists only sockets owned by the invoking user. On
+ * POSIX, a listener owned by another user is invisible here even though the
+ * enumeration ran fine. NOT MEASURED — no POSIX box available (see the report).
  */
 export function listenerPids(port) {
   if (IS_WIN) {
-    const r = spawnSync('netstat', ['-ano'], {
+    const stdout = enumerationStdout('netstat', ['-ano'], {
       windowsHide: true,
       encoding: 'utf8'
     });
     const pids = new Set();
-    for (const line of String(r.stdout || '').split(/\r?\n/)) {
+    for (const line of stdout.split(/\r?\n/)) {
       if (!/LISTENING/i.test(line)) continue;
       const cols = line.trim().split(/\s+/);
       if (cols.length >= 5 && cols[1].endsWith(`:${port}`)) {
@@ -271,10 +327,9 @@ export function listenerPids(port) {
     }
     return [...pids];
   }
-  const r = spawnSync('lsof', ['-ti', `tcp:${port}`, '-sTCP:LISTEN'], {
+  return enumerationStdout('lsof', ['-ti', `tcp:${port}`, '-sTCP:LISTEN'], {
     encoding: 'utf8'
-  });
-  return String(r.stdout || '')
+  })
     .split(/\s+/)
     .filter(Boolean)
     .map(Number)
@@ -353,13 +408,29 @@ export function portFree(port, host = '127.0.0.1') {
 }
 
 /**
- * Occupancy oracle: the port is released iff BOTH lookers agree.
- *   (a) `host` really re-binds — catches holders the enumeration cannot name
- *       (system pids ≤ 4, which listenerPids filters out);
- *   (b) the family-complete enumeration finds nobody — catches the families
+ * Occupancy oracle: `false` as soon as EITHER looker sees a holder. It is the
+ * conjunction of two PARTIAL views, not a complete one — read the known hole
+ * below before trusting a `true`.
+ *   (a) `host` really re-binds — sees any holder whose bind covers the address
+ *       `host` resolves to, whatever its pid;
+ *   (b) the family-complete enumeration finds no pid > 4 — sees the families
  *       `host` does not resolve to, which is (a)'s blind spot.
  * Neither half subsumes the other; that is why both run. (a) goes first
  * because it is the cheap one and short-circuits the occupied case.
+ *
+ * ⚠ Known hole — kernel-owned ports. (b) drops pid ≤ 4 via the `pid > 4`
+ * filter (older than U234-B1, untouched by it), so a holder owned by the
+ * Windows kernel is left to (a) alone, and (a) only sees it if its bind covers
+ * `host`. Both outcomes measured on a live box:
+ *   port 445 — pid 4 on `0.0.0.0` AND `[::]`     → (a) EADDRINUSE, oracle says
+ *              occupied. Correct.
+ *   port 139 — pid 4 on 172.18.224.1 and
+ *              192.168.1.38 only, no IPv6 row     → (b) yields [] (filtered),
+ *              (a) re-binds `::1:139` fine, and the oracle says RELEASED with
+ *              two real listeners up. WRONG.
+ * No catalog port lives in that range and nothing here widens the hole, but
+ * this is not a general-purpose occupancy check: over a system-owned port it
+ * can answer `true` and be wrong.
  */
 export async function portReleased(port, host = '127.0.0.1') {
   if (!(await portFree(port, host))) return false;
