@@ -534,7 +534,8 @@ test('procedencia: donde hay historial, la fixture se confronta con el objeto re
   // contestaba a sí misma —ese OID forjado tampoco está en la base de objetos,
   // así que el test lo tomaba por «clon superficial» y salía verde. La sonda
   // tiene que ser independiente de lo que se está verificando.
-  // Se pregunta por el TIPO en vez de por `-e … ^{commit}`, que sería lo
+  //
+  // Y se pregunta por el TIPO en vez de por `-e … ^{commit}`, que sería lo
   // natural: el guardián estático de este mismo fichero lee `^{commit}` dentro
   // de los argumentos de un `git` y ve la palabra `commit`, o sea un subcomando
   // que escribe, y se pone rojo. Es un falso positivo suyo —`^{…}` es un pelado
