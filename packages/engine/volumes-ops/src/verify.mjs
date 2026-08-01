@@ -29,13 +29,16 @@
  *  3. `sello_vs_estado` — el sello vivo == `manifest.sha256` del estado.
  *                         Informativo: se re-anota al medir (ver arriba).
  *  4. `volumen`         — el directorio del volumen existe.
- *  5. `snapshot`        — recomputa el árbol de cada unidad sellada en
+ *  5. `ficheros`        — (U258) recomputa el sha256 de cada fichero sellado en
+ *                         `source.imported.hashes` con la MISMA primitiva que
+ *                         lo selló (`sha256File`, importada de import.mjs).
+ *  6. `snapshot`        — recomputa el árbol de cada unidad sellada en
  *                         `source.imported.snapshot` con el MISMO algoritmo
  *                         del driver que lo selló (hashUnitTree).
- *  6. `familia`         — corre el `validate()` REAL del driver de familia
+ *  7. `familia`         — corre el `validate()` REAL del driver de familia
  *                         contra el árbol VIVO (no contra el staging).
- *  7. `corpora`         — remide y compara con los `files`/`bytes` que el
- *                         import selló en el manifiesto (import.mjs:490-507).
+ *  8. `corpora`         — remide y compara con los `files`/`bytes` que el
+ *                         import selló en el manifiesto (import.mjs:539-552).
  *
  * Fronteras declaradas (lo que este verificador NO garantiza):
  * - `source.imported.snapshot` sólo tiene forma «árbol por unidad» en la
@@ -43,11 +46,16 @@
  *   LINEAS no sella nada. Con familia sin verificador de snapshot el leg se
  *   reporta `omitido` con motivo — **nunca se adivina el algoritmo**. Con
  *   `strictSnapshot:true` ese omitido pasa a ser hallazgo.
- * - Los ficheros del volumen que no caen bajo ninguna unidad del snapshot ni
- *   bajo ningún corpus declarado (en FORCES: `registry.json`) quedan
- *   cubiertos SÓLO por el leg de familia, o sea contra schema. Una edición
- *   de `registry.json` que siga siendo válida contra `force-registry` y no
- *   cambie el juego de unidades no se detecta.
+ * - (U258 estrecha esta frontera, no la cierra.) Los ficheros que no caen bajo
+ *   ninguna unidad del snapshot ni bajo ningún corpus declarado —en FORCES,
+ *   `registry.json`— ya no dependen SÓLO del leg de familia: si el import los
+ *   trajo, están en `source.imported.hashes` y el leg `ficheros` los ata byte
+ *   a byte. Lo que sigue sin cubrirse es el fichero que NUNCA pasó por un
+ *   import: material lateral que apareció en el árbol vivo por otra vía. El
+ *   leg `ficheros` comprueba PERTENENCIA de lo sellado, no IGUALDAD DE
+ *   CONJUNTO, y es deliberado (import.mjs · bloque «SELLO POR FICHERO»): las
+ *   altas las cubren el snapshot de unidad y el leg de corpora, cada uno en
+ *   su alcance.
  * - El ledger es append-only por convención, no a prueba de manipulación:
  *   protege contra deriva y corrupción accidental, no contra un adversario
  *   con escritura en el root.
@@ -64,6 +72,7 @@ import {
 } from '@zeus/presets-sdk/volumes';
 import { FAMILY_DRIVERS } from './drivers.mjs';
 import { hashUnitTree } from './driver-forces.mjs';
+import { sha256File } from './import.mjs';
 import { hashManifest } from './manifest.mjs';
 import { loadVolumesState } from './state.mjs';
 import { readOpsLedger } from './ledger.mjs';
@@ -293,7 +302,48 @@ export function verifyRootIntegrity(opts = {}) {
     }
     push({ check: 'volumen', ok: true, volume: id, absPath });
 
-    // 5 · snapshot
+    // 5 · ficheros sellados (U258) — sha256 por fichero, recomputado con la
+    // MISMA primitiva que lo selló. Es el leg que ata el material que ninguna
+    // familia mira por hash: los índices (`registry.json`, `registry.yaml`) y
+    // todo volumen cuya familia no sella snapshot (LINEAS).
+    const sealedHashes = imported.hashes ?? null;
+    const relsSellados = sealedHashes && typeof sealedHashes === 'object'
+      ? Object.keys(sealedHashes)
+      : [];
+    if (relsSellados.length === 0) {
+      // Omitido HONESTO, con el mismo estatuto que los demás: sin sello no hay
+      // contra qué comparar. Es el hueco que WP-U258 cerró para el root de
+      // referencia sellándolo, no ensanchando la puerta.
+      skipped.push({
+        check: 'ficheros',
+        volume: id,
+        reason: 'sin_hashes_sellados',
+        note:
+          'el manifiesto no lleva `source.imported.hashes` para este volumen: ' +
+          'root anterior al contrato de sello por fichero (U258), o volumen no importado'
+      });
+    } else {
+      /** @type {object[]} */
+      const rotos = [];
+      for (const rel of relsSellados) {
+        const abs = join(absPath, rel.split('/').join(sep));
+        if (!existsSync(abs)) {
+          rotos.push({ error: 'fichero_ausente', file: rel, sealed: sealedHashes[rel] });
+          continue;
+        }
+        const actual = sha256File(abs);
+        if (actual !== sealedHashes[rel]) {
+          rotos.push({ error: 'fichero_corrupto', file: rel, sealed: sealedHashes[rel], actual });
+        }
+      }
+      if (rotos.length === 0) {
+        push({ check: 'ficheros', ok: true, volume: id, files: relsSellados.length });
+      } else {
+        for (const r of rotos) push({ check: 'ficheros', ok: false, volume: id, ...r });
+      }
+    }
+
+    // 6 · snapshot
     const snapshot = imported.snapshot ?? null;
     const family = entry.family ?? null;
     if (!snapshot) {
@@ -340,7 +390,7 @@ export function verifyRootIntegrity(opts = {}) {
       }
     }
 
-    // 6 · familia (validador REAL del driver contra el árbol vivo)
+    // 7 · familia (validador REAL del driver contra el árbol vivo)
     if (!family) {
       skipped.push({ check: 'familia', volume: id, reason: 'volumen_sin_familia' });
     } else if (!FAMILY_DRIVERS[family]) {
@@ -370,7 +420,7 @@ export function verifyRootIntegrity(opts = {}) {
       }
     }
 
-    // 7 · corpora sellados (files/bytes medidos por el import)
+    // 8 · corpora sellados (files/bytes medidos por el import)
     const corpora = Array.isArray(entry.corpora) ? entry.corpora : [];
     const sealedCorpora = corpora.filter(
       (c) => Number.isFinite(c.files) && Number.isFinite(c.bytes)

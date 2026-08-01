@@ -165,6 +165,43 @@ jobs:
           # resuelve el root en tiempo de import (WP-U261 §1).
           ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
 
+  # WP-U258 — el root de referencia (VOLUMES/) esta SELLADO, y su evidencia
+  # viaja RASTREADA. Job aparte de la matriz `test` a proposito: la vigilancia
+  # de comportamiento (verde + los tres vectores rojos) ya corre dentro de
+  # `test @zeus/volumes-ops` via
+  # packages/engine/volumes-ops/test/sello-root-referencia.test.mjs, pero eso
+  # depende de que esa fila siga en la matriz. Lo que SOLO se puede comprobar
+  # en un checkout limpio —y ningun test local puede— es que los dos ficheros
+  # que sostienen el sello esten TRACKEADOS: en el disco del operador existen
+  # aunque `.gitignore` los excluya, asi que un candado mal puesto se ve verde
+  # en local y rompe el arranque en el clon.
+  sello-root:
+    name: sello del root de referencia (U258)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      # Esta guarda NO se ancla en nada que ella misma produzca: pregunta al
+      # INDICE de git. `git ls-files --error-unmatch` sale != 0 si el fichero
+      # no esta rastreado, aunque exista en el arbol de trabajo.
+      - name: La evidencia del sello viaja RASTREADA (no solo presente)
+        run: |
+          git ls-files --error-unmatch VOLUMES/volumes.json > /dev/null \
+            || { echo "::error::VOLUMES/volumes.json no esta rastreado"; exit 1; }
+          git ls-files --error-unmatch VOLUMES/.ops-ledger.jsonl > /dev/null \
+            || { echo "::error::VOLUMES/.ops-ledger.jsonl no esta rastreado: sin el ledger, un manifiesto que declara volumenes importados es ledger_ausente y los CUATRO servicios no arrancan (verify.mjs, leg sello_vs_ledger)"; exit 1; }
+          grep -q '"imported"' VOLUMES/volumes.json \
+            || { echo "::error::VOLUMES/volumes.json dejo de estar sellado: sin source.imported la guarda de arranque omite todos los legs de volumen y pasa de largo (WP-U258)"; exit 1; }
+      - name: Install
+        run: npm ci
+      # Se re-ejecuta aqui la vigilancia de comportamiento: si alguien saca
+      # `@zeus/volumes-ops` de la matriz `test`, este job sigue corriendola.
+      - name: Vigilancia del sello (verde + vectores rojos)
+        run: node --test packages/engine/volumes-ops/test/sello-root-referencia.test.mjs
+
   # WP-U158 — consumidor TS tipado desde registry real (no tarball).
   # Skip limpio (exit 0 · ⏳) si el registry no responde — patrón U122.
   smoke-ts-registry:

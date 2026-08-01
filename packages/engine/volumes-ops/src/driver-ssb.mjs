@@ -175,7 +175,7 @@
  * Garantía estructural antes de devolver el plan (D3 de U204): ningún `move`
  * apunta a una ruta existente (`sobrescritura_imposible`) ni tiene un ancestro
  * que exista como FICHERO (`ruta_bloqueada_por_fichero`) — `importPack` ejecuta
- * con `renameSync` desnudo (import.mjs:459-461), que SÍ pisaría.
+ * con `renameSync` desnudo (import.mjs:481-483), que SÍ pisaría.
  *
  * **ALCANCE HONESTO de esos dos guardianes tras D-G** (se dice porque presentar
  * como garantía activa lo que no se alcanza es la clase de defecto que este
