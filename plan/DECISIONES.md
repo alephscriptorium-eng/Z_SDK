@@ -730,6 +730,27 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   ejercitar **el camino del producto**, no una demostración paralela desde el
   arnés. Vale para todo gate futuro.
 
+- **⑩-bis · Excepción declarada a la congelación de manifiestos, para poder
+  cumplir ⑩** (orquestador, 2026-08-01). La contrarrevisión de U206 halló el
+  obstáculo real del cableado: **ningún paquete de `packages/mesh/**` declara
+  `@zeus/volumes-ops` como dependencia** (sólo `feed-kit` y el propio
+  paquete). O sea que el encargo choca con el congelado de manifiestos
+  —owner U237— **antes de escribir una línea de código**.
+  **Resolución**: U206 queda **autorizado a añadir esa dependencia** a los
+  paquetes que cablee, y a regenerar el lock **en el mismo commit**. Es
+  seguro: en esta ola **ningún otro worker toca dependencias**, así que el
+  fichero de máxima colisión queda en exclusiva.
+  Se descarta replicar el predicado con nota de sitio —el recurso que usaron
+  U204 y U205 cuando no podían añadir dep— por una razón que conviene fijar:
+  **replicar un verificador de integridad es duplicar lógica de seguridad**,
+  y dos copias divergen. Vale para un predicado de forma; no para un gate.
+  Condición: **cero movimientos de versión**; si regenerar el lock mueve algo,
+  se para y se declara.
+  ✎ Hallazgo asociado que **no** se resuelve aquí: `linea-system` resuelve su
+  base **en tiempo de import de módulo** (`src/loader.mjs:28`), así que una
+  guarda en el arranque **llega tarde** para esa familia. Se declara, no se
+  fuerza: cablear donde no protege sería teatro.
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
