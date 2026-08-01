@@ -31,6 +31,9 @@ export {
 } from './pack-adapter.mjs';
 export { verifyRootIntegrity, assertRootIntegrity } from './verify.mjs';
 export { scanRootCerco, assertRootCerco } from './cerco.mjs';
+// El guardián de arranque: ÚNICO punto por el que los servicios entran a los
+// dos verificadores (decisión ⑩). Se llama, no se replica.
+export { assertVolumesRootBootable, cercoIsStrict } from './boot.mjs';
 export {
   FIREHOSE_DRIVER,
   FIREHOSE_FAMILY,

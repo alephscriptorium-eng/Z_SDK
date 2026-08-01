@@ -9,15 +9,35 @@
  * el predicado como «cero sockets» haría el paso IMPOSIBLE en vez de
  * FALSABLE. Bindear (`server.listen`) no es salir; conectar sí.
  *
- * Se instrumentan las tres puertas por las que se sale:
+ * Se instrumentan las puertas por las que se sale:
  *   · `net.Socket.prototype.connect` — la puerta de abajo. `http`, `https`,
- *     `tls` y el conector de `undici` acaban todos aquí (`net.createConnection`
- *     construye un `Socket` y llama a este mismo método; `TLSSocket` hereda de
- *     `net.Socket` y no lo sobreescribe).
- *   · `dns.lookup` y `dns.promises.lookup` — resolver un nombre no-loopback
- *     ES intención de red, y se caza aunque la conexión no llegue a abrirse.
+ *     `tls` y el conector de `undici` acaban todos aquí.
+ *   · `dns.lookup` / `dns.promises.lookup` **y toda la familia `resolve*` +
+ *     `reverse`**, también sobre `dns.Resolver` y `dns.promises.Resolver`:
+ *     resolver un nombre no-loopback ES intención de red, y se caza aunque la
+ *     conexión no llegue a abrirse.
  *   · `globalThis.fetch` — se instrumenta aparte para poder nombrar la URL
  *     entera en el hallazgo, no sólo el host.
+ *
+ * ⚠ LA FORMA DE LOS ARGUMENTOS ES PARTE DEL PREDICADO (corrección U206·D1).
+ * La primera versión de esta trampa daba por buena la premisa «todo acaba en
+ * `Socket.prototype.connect`» —que es CIERTA— y sacaba de ella una conclusión
+ * FALSA: que bastaba leer `args[0].host`. `net.connect()/createConnection()`
+ * normaliza sus argumentos y llama a `connect(normalized)` con un **Array**
+ * `[options, cb]`. Como `typeof [] === 'object'`, el parche leía `host` de un
+ * Array, obtenía `undefined`, lo trataba como «host omitido → localhost» y
+ * anotaba la salida como PERMITIDA. Medido contra una IP externa:
+ *
+ *     new net.Socket().connect({host,port})  → 1 violación   cazado
+ *     net.createConnection({host,port})      → 0             EVADÍA
+ *     http.request({host: IP})               → 0             EVADÍA
+ *     https.request({host: IP})              → 1             cazado
+ *     dns.resolve4 / new dns.Resolver()      → 0             EVADÍA
+ *
+ * O sea que la vía más común de salida —`http` sobre IP literal— pasaba
+ * limpia. Ahora se normaliza el Array y se instrumenta la familia `resolve*`.
+ * El vector rojo de la puerta `connect` existe y se ejercita en el runner: sin
+ * él, un verde de «0 violaciones» no distingue «no salió» de «salió y no lo vi».
  *
  * DESTINO LOOPBACK = `localhost`, `127.0.0.0/8`, `::1`, `0.0.0.0`, `::`, o
  * host omitido (Node resuelve a `localhost`). Un socket IPC (named pipe de
@@ -100,10 +120,15 @@ export function armNetTrap(opts = {}) {
     let host = null;
     let port = null;
     let ipc = false;
-    const first = args[0];
+    // `net.connect()`/`createConnection()` llaman con el Array normalizado
+    // [options, cb]; el resto llama con la forma cruda. Se desenvuelve PRIMERO,
+    // antes de mirar `typeof`, porque `typeof [] === 'object'` y leer `.host`
+    // de un Array da `undefined` — que es exactamente cómo se evadía.
+    let first = args[0];
+    if (Array.isArray(first)) first = first[0];
     if (first && typeof first === 'object') {
       if (first.path) ipc = true;
-      host = first.host ?? null;
+      host = first.host ?? first.hostname ?? null;
       port = first.port ?? null;
     } else if (typeof first === 'number' || /^\d+$/.test(String(first ?? ''))) {
       port = first;
@@ -121,27 +146,50 @@ export function armNetTrap(opts = {}) {
     return originalConnect.apply(this, /** @type {any} */ (args));
   };
 
-  // ── dns.lookup / dns.promises.lookup ───────────────────────────────────
-  const originalLookup = dns.lookup;
-  // @ts-ignore — firma variádica
-  dns.lookup = function patchedLookup(hostname, ...rest) {
-    if (!isLoopbackHost(hostname)) {
-      record('dns.lookup', String(hostname), { host: hostname });
-    } else {
-      allowed.push({ gate: 'dns.lookup', target: String(hostname) });
+  // ── dns: lookup + TODA la familia resolve*/reverse, en los cuatro sitios
+  // donde vive (módulo, promises, y las dos clases Resolver). `dns.resolve4`
+  // y `new dns.Resolver().resolve4` no pasan por `lookup`: evadían enteras.
+  const DNS_METHODS = [
+    'lookup',
+    'resolve',
+    'resolve4',
+    'resolve6',
+    'resolveAny',
+    'resolveCname',
+    'resolveCaa',
+    'resolveMx',
+    'resolveNaptr',
+    'resolveNs',
+    'resolvePtr',
+    'resolveSoa',
+    'resolveSrv',
+    'resolveTxt',
+    'reverse'
+  ];
+  /** @type {{ target: object, key: string, original: Function }[]} */
+  const dnsPatches = [];
+  /** @param {object} target @param {string} label */
+  function patchDnsSurface(target, label) {
+    if (!target) return;
+    for (const key of DNS_METHODS) {
+      const original = target[key];
+      if (typeof original !== 'function') continue;
+      dnsPatches.push({ target, key, original });
+      target[key] = function patchedDns(hostname, ...rest) {
+        const gate = `${label}.${key}`;
+        if (!isLoopbackHost(hostname)) {
+          record(gate, String(hostname), { host: hostname });
+        } else {
+          allowed.push({ gate, target: String(hostname) });
+        }
+        return original.call(this === undefined ? target : this, hostname, ...rest);
+      };
     }
-    return originalLookup.call(dns, hostname, ...rest);
-  };
-  const originalPromisesLookup = dns.promises.lookup;
-  // @ts-ignore — firma variádica
-  dns.promises.lookup = function patchedPromisesLookup(hostname, ...rest) {
-    if (!isLoopbackHost(hostname)) {
-      record('dns.promises.lookup', String(hostname), { host: hostname });
-    } else {
-      allowed.push({ gate: 'dns.promises.lookup', target: String(hostname) });
-    }
-    return originalPromisesLookup.call(dns.promises, hostname, ...rest);
-  };
+  }
+  patchDnsSurface(dns, 'dns');
+  patchDnsSurface(dns.promises, 'dns.promises');
+  patchDnsSurface(dns.Resolver?.prototype, 'dns.Resolver');
+  patchDnsSurface(dns.promises?.Resolver?.prototype, 'dns.promises.Resolver');
 
   // ── globalThis.fetch ───────────────────────────────────────────────────
   const originalFetch = globalThis.fetch;
@@ -169,8 +217,7 @@ export function armNetTrap(opts = {}) {
     allowed,
     disarm() {
       net.Socket.prototype.connect = originalConnect;
-      dns.lookup = originalLookup;
-      dns.promises.lookup = originalPromisesLookup;
+      for (const { target, key, original } of dnsPatches) target[key] = original;
       if (typeof originalFetch === 'function') globalThis.fetch = originalFetch;
     }
   };

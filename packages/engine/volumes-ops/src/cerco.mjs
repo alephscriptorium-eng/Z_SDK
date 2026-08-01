@@ -67,10 +67,14 @@ import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
 import { IDENTITY_DENYLIST } from './import.mjs';
 import { MANIFEST_FILE_NAME } from './manifest.mjs';
 
-/** Literal de URL con esquema http(s). */
-const URL_LITERAL_RE = /https?:\/\/[^\s"'`<>)\]}\\]*/g;
+/**
+ * Literal de URL con esquema http(s). INSENSIBLE A MAYÚSCULAS (U206·m3): sin
+ * la bandera `i`, `HTTPS://EJEMPLO.TEST` no se detectaba — y la denylist de
+ * identidad sí era insensible, o sea que el módulo aplicaba dos varas.
+ */
+const URL_LITERAL_RE = /https?:\/\/[^\s"'`<>)\]}\\]*/gi;
 
-/** Bytes iniciales que se miran para decidir si un fichero es binario. */
+/** Bytes iniciales que se miran para CLASIFICAR un fichero como binario. */
 const BINARY_SNIFF_BYTES = 8192;
 
 /**
@@ -107,7 +111,7 @@ function walkRoot(rootDir) {
  * @param {string} match
  */
 function isEnvPlaceholderUrl(match) {
-  return /^https?:\/\/\$\{/.test(match);
+  return /^https?:\/\/\$\{/i.test(match);
 }
 
 /**
@@ -215,7 +219,16 @@ function scanTextUrls(text, rel) {
  */
 function scanUrls(abs, rel, isManifest) {
   const buf = readFileSync(abs);
-  if (buf.subarray(0, BINARY_SNIFF_BYTES).includes(0)) return { urls: [], binary: true };
+  const binary = buf.subarray(0, BINARY_SNIFF_BYTES).includes(0);
+  if (binary) {
+    // U206·m4 — antes los binarios se SALTABAN: se declaraban en `binaries[]`
+    // «para que no pareciera limpieza», pero el gate CONCEDÍA igual, así que
+    // un solo byte NUL al principio de un fichero escondía una URL viva. Ya no
+    // hay exención: se leen como latin1 (byte a byte) para que cualquier URL
+    // ASCII incrustada aparezca. `binaries[]` queda como clasificación
+    // informativa, no como salvoconducto.
+    return { urls: scanTextUrls(buf.toString('latin1'), rel), binary: true };
+  }
   const text = buf.toString('utf8');
   return { urls: isManifest ? scanManifestUrls(text, rel) : scanTextUrls(text, rel), binary: false };
 }
@@ -239,20 +252,28 @@ export function scanRootCerco(opts = {}) {
   // `ok:true` con 0 hallazgos y el gate concede sobre la nada — el modo de
   // fallo más caro de un gate (se cazó ejecutando el runner sin la variable
   // del mundo hermano: barría una ruta inexistente y daba verde).
-  if (!existsSync(root)) {
-    const finding = { kind: 'root_no_encontrado', path: root };
-    return {
-      ok: false,
-      root,
-      files: 0,
-      symlinks: [],
-      nodeModules: [],
-      identity: [],
-      liveUrls: [],
-      binaries: [],
-      findings: [finding]
-    };
-  }
+  const vacio = (kind) => ({
+    ok: false,
+    root,
+    files: 0,
+    symlinks: [],
+    nodeModules: [],
+    identity: [],
+    liveUrls: [],
+    binaries: [],
+    findings: [{ kind, path: root }]
+  });
+
+  if (!existsSync(root)) return vacio('root_no_encontrado');
+
+  // U206·D2 — LA VACUIDAD, que es la otra mitad de la inexistencia. Nada
+  // comprobaba que lo barrido FUERA un volumes root: un directorio vacío, o
+  // uno cualquiera sin manifiesto, devolvía `ok:true · files:0 · findings:0` y
+  // `assertRootCerco` no lanzaba. Un gate que concede sobre terreno que no es
+  // el suyo es el modo de fallo más caro que hay: no protege y parece que sí.
+  // El manifiesto es la firma de un root (U199: sin él, el root no es
+  // operable), así que es el predicado correcto de identidad.
+  if (!existsSync(join(root, MANIFEST_FILE_NAME))) return vacio('root_sin_manifiesto');
 
   const { files, symlinks } = walkRoot(root);
 
@@ -279,8 +300,9 @@ export function scanRootCerco(opts = {}) {
     for (const rel of files) {
       const abs = join(root, rel.split('/').join(sep));
       const res = scanUrls(abs, rel, rel === MANIFEST_FILE_NAME);
+      // `binaries` es CLASIFICACIÓN, no exención: sus URLs cuentan igual (m4).
       if (res.binary) binaries.push(rel);
-      else liveUrls.push(...res.urls);
+      liveUrls.push(...res.urls);
     }
   }
 

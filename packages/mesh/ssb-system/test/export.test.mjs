@@ -440,7 +440,15 @@ test('CA-5c · repo entero: cada fichero marcado está en la ALLOWLIST, razonado
     // escrituras van a <corpus>/<key>.json y al sidecar del volumen. Descargado
     // por el probe dinámico de CA-5a, que mide la ruta resuelta.
     'packages/mesh/ssb-system/src/export.mjs':
-      'solo lo nombra para abortar; probe dinámico CA-5a demuestra 0 escrituras contra él'
+      'solo lo nombra para abortar; probe dinámico CA-5a demuestra 0 escrituras contra él',
+    // U206: arnés del CA local-first. SÍ escribe manifiestos, y a propósito:
+    // siembra roots TEMPORALES (`mkdtempSync`) y, en sus vectores rojos, edita
+    // a mano el `volumes.json` de un root temporal para demostrar que el
+    // verificador de integridad lo caza (paso 4 `pathOverride`, paso 6 caso c).
+    // Nunca toca un root vivo ni `VOLUMES/` del repo. Misma clase que
+    // `smoke-env.mjs`: sembrador de arnés, no escritor de producción.
+    'e2e/local-first-ca.mjs':
+      'arnés U206: siembra y corrompe roots TEMPORALES para probar el gate; jamás un root vivo'
   };
   const SALTAR = new Set(['node_modules', 'test', 'tests', '__tests__', 'fixtures', 'dist', '.git']);
   /** @type {string[]} */

@@ -192,7 +192,7 @@ export function buildPackFromStartpack(opts) {
   }
 
   // ── Selección: sólo los DIRECTORIOS de primer nivel (los discos). Lo que
-  // sea fichero suelto ahí (p. ej. el `volumes.json` del startpack) es
+  // sea fichero suelto ahí (p. ej. el `volumes/volumes.json` del startpack) es
   // manifiesto de root y se descarta CON REPORTE.
   /** @type {string[]} */
   const disks = [];

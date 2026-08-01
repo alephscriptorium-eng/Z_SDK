@@ -224,6 +224,58 @@ test('ROJO · fichero intruso dentro de un corpus → corpus_desviado', () => {
   }
 });
 
+test('ROJO (m6) · borrar el ledger NO apaga la comprobación: ledger_ausente', () => {
+  // El leg tenía su propio interruptor de apagado: sin fichero de asientos
+  // pasaba a `omitido`, así que BORRAR el ledger degradaba el caso «volumes.json
+  // editado a mano» de ROJO a verde. Lo declarado era que el ledger no protege
+  // contra MANIPULACIÓN de asientos; su AUSENCIA, en un root que el manifiesto
+  // dice haber importado, es en sí misma evidencia que falta.
+  const ctx = importedRoot();
+  try {
+    assert.equal(verifyRootIntegrity().ok, true);
+
+    // Se corrompe el manifiesto Y se borra el ledger: la tapadera perfecta.
+    const abs = path.join(ctx.root, 'volumes.json');
+    const cfg = JSON.parse(fs.readFileSync(abs, 'utf8'));
+    cfg.volumes.forces.label = 'editado a mano';
+    fs.writeFileSync(abs, `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
+    fs.rmSync(path.join(ctx.root, '.ops-ledger.jsonl'), { force: true });
+    resetVolumesCache();
+
+    const rep = verifyRootIntegrity();
+    assert.equal(rep.ok, false, 'borrar el ledger tapó la corrupción del manifiesto');
+    assert.ok(
+      rep.findings.some((f) => f.check === 'sello_vs_ledger' && f.error === 'ledger_ausente'),
+      JSON.stringify(rep.findings)
+    );
+  } finally {
+    ctx.restore();
+  }
+});
+
+test('un root NUNCA importado sí puede omitir el leg de ledger (sin falso positivo)', () => {
+  const root = mkTemp('nunca-importado');
+  fs.writeFileSync(
+    path.join(root, 'volumes.json'),
+    `${JSON.stringify({ root: '.', volumes: {} }, null, 2)}\n`,
+    'utf8'
+  );
+  const prev = process.env.ZEUS_VOLUMES_ROOT;
+  process.env.ZEUS_VOLUMES_ROOT = root;
+  resetZeusEnvLoader();
+  resetVolumesCache();
+  try {
+    const rep = verifyRootIntegrity();
+    assert.equal(rep.ok, true, JSON.stringify(rep.findings));
+    assert.ok(rep.skipped.some((s) => s.check === 'sello_vs_ledger'));
+  } finally {
+    if (prev == null) delete process.env.ZEUS_VOLUMES_ROOT;
+    else process.env.ZEUS_VOLUMES_ROOT = prev;
+    resetZeusEnvLoader();
+    resetVolumesCache();
+  }
+});
+
 test('root sin manifiesto = manifiesto_ausente (no se inventa nada)', () => {
   const root = mkTemp('vacio');
   const prev = process.env.ZEUS_VOLUMES_ROOT;

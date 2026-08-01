@@ -187,12 +187,30 @@ export function verifyRootIntegrity(opts = {}) {
   // ── 2 · sello vs ledger (sobrevive a remedir) ──────────────────────────
   const seats = readOpsLedger({ volumesRoot }).filter((e) => e.kind === 'import_pack');
   const lastSeat = seats.length > 0 ? seats[seats.length - 1] : null;
+  // U206·m6 — «no hay asiento» NO significa lo mismo en los dos casos, y
+  // tratarlo igual convertía el leg en su propio interruptor de apagado:
+  // BORRAR el ledger degradaba el caso «volumes.json editado a mano» de ROJO a
+  // verde. Lo declarado es que el ledger no protege contra MANIPULACIÓN de
+  // asientos; su AUSENCIA, en un root que el manifiesto dice haber importado,
+  // es en sí misma la prueba de que falta evidencia obligatoria.
+  const algunImportado = Object.values(config.volumes || {}).some((v) => v?.source?.imported);
   if (!lastSeat) {
-    skipped.push({
-      check: 'sello_vs_ledger',
-      reason: 'sin_asiento_de_import',
-      note: 'root nunca importado (o ledger ausente): no hay sello anterior con el que contrastar'
-    });
+    if (algunImportado) {
+      push({
+        check: 'sello_vs_ledger',
+        ok: false,
+        error: 'ledger_ausente',
+        note:
+          'el manifiesto declara volúmenes importados pero no hay asiento `import_pack`: ' +
+          'el ledger falta o fue truncado, y sin él el sello vivo no tiene contra qué contrastarse'
+      });
+    } else {
+      skipped.push({
+        check: 'sello_vs_ledger',
+        reason: 'sin_asiento_de_import',
+        note: 'root nunca importado: no hay sello anterior con el que contrastar'
+      });
+    }
   } else {
     const sealed = lastSeat.manifestSha256?.after ?? null;
     push({

@@ -132,17 +132,28 @@ test('URL VIVA · el predicado, con sus dos exenciones y el límite de cada una'
   assert.ok(rep.liveUrls.some((u) => u.path === 'volumes.json'));
 });
 
-test('binarios: NO se escanean en busca de URLs, y se DECLARAN', () => {
+test('ROJO · una URL viva detrás de un byte NUL NO obtiene salvoconducto', () => {
+  // Antes: el fichero se clasificaba binario, se declaraba en `binaries[]` y
+  // NO se escaneaba — así que un solo NUL inicial escondía una URL viva y el
+  // gate concedía igual. Declarar no es proteger.
   const root = mkRoot();
   const bin = Buffer.concat([
-    Buffer.from('http://oculto-en-binario.test/x'),
-    Buffer.from([0x00, 0x01, 0x02])
+    Buffer.from([0x00, 0x01, 0x02]),
+    Buffer.from('http://oculto-en-binario.test/x')
   ]);
   fs.writeFileSync(path.join(root, 'blob.bin'), bin);
   const rep = scanRootCerco({ root });
-  assert.deepEqual(rep.binaries, ['blob.bin']);
-  assert.equal(rep.liveUrls.length, 0);
-  assert.equal(rep.ok, true);
+  assert.deepEqual(rep.binaries, ['blob.bin'], 'sigue clasificándose como binario (informativo)');
+  assert.equal(rep.ok, false, 'el gate concedió sobre una URL escondida tras un NUL');
+  assert.ok(rep.liveUrls.some((u) => u.url === 'http://oculto-en-binario.test/x'));
+});
+
+test('ROJO · URL en MAYÚSCULAS también se detecta (m3)', () => {
+  const root = mkRoot();
+  fs.writeFileSync(path.join(root, 'nota.txt'), 'ANCLA: HTTPS://EJEMPLO.TEST/X\n', 'utf8');
+  const rep = scanRootCerco({ root });
+  assert.equal(rep.ok, false, 'el patrón de URL sigue siendo sensible a mayúsculas');
+  assert.ok(rep.liveUrls.some((u) => /EJEMPLO\.TEST/i.test(u.url)));
 });
 
 test('ROJO · un root que NO EXISTE no está «limpio»: root_no_encontrado', () => {
@@ -152,4 +163,23 @@ test('ROJO · un root que NO EXISTE no está «limpio»: root_no_encontrado', ()
   assert.equal(rep.ok, false);
   assert.equal(rep.findings[0].kind, 'root_no_encontrado');
   assert.equal(rep.files, 0);
+});
+
+test('ROJO · un directorio que EXISTE pero no es un volumes root: root_sin_manifiesto', () => {
+  // La otra mitad de la inexistencia: la VACUIDAD. Un directorio vacío, o uno
+  // cualquiera sin manifiesto, devolvía ok:true · files:0 · findings:0 y
+  // assertRootCerco NO lanzaba. El paso 7 usa el root explícito, o sea la vía
+  // que esquiva el resolvedor canónico: era la puerta abierta.
+  const vacio = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u206c-vacio-'));
+  TEMPS.push(vacio);
+  const rep = scanRootCerco({ root: vacio });
+  assert.equal(rep.ok, false);
+  assert.equal(rep.findings[0].kind, 'root_sin_manifiesto');
+  assert.throws(() => assertRootCerco({ root: vacio }), /Cerco del root roto/);
+
+  // Y un directorio con contenido pero sin manifiesto tampoco pasa.
+  const conCosas = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u206c-nolo-'));
+  TEMPS.push(conCosas);
+  fs.writeFileSync(path.join(conCosas, 'a.txt'), 'x', 'utf8');
+  assert.equal(scanRootCerco({ root: conCosas }).findings[0].kind, 'root_sin_manifiesto');
 });

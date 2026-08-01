@@ -1,11 +1,19 @@
 # WP-U206 · CA local-first + réplica A→B
 
 **Rama** `wp/u206-ca-local-first` · **base** `28397b8` · 8.º y último eslabón del carril D.
+**Ronda 2** (devolución + ampliación de alcance por decisión ⑩ del custodio): los dos
+gates quedan **cableados al camino del producto**, y se corrigen los dos bloqueantes y
+los cuatro menores. Detalle en §8.
 
 **Entregable:** `node e2e/local-first-ca.mjs` → **7/7 pasos verdes, exit 0, 13 vectores
 rojos comprobados**. Raíces temporales (`mkdtempSync`), sin estado previo,
 re-ejecutable por un tercero (ejecutado dos veces seguidas: exit 0 las dos, cero
 temporales huérfanos).
+
+> **REGLA DE MÉTODO (sale de este WP, va al método del swarm):**
+> **Un verificador que nadie llama no es una protección: es una biblioteca.**
+> Cuando un criterio diga «X falla», tiene que ejercitar **el camino del producto**,
+> no una demostración paralela desde el arnés.
 
 ```
 ZEUS_GAMES_LIBRARY=C:/S_LAB/g-sdk node e2e/local-first-ca.mjs   → exit 0
@@ -261,6 +269,8 @@ juntura por la que se cuela lo que se añada en la otra.
 | `src/cerco.mjs` | **construido** — cerco del root (paso 7) |
 | `e2e/net-trap.mjs` | **construido** — trampa de red (paso 2) |
 | `e2e/local-first-ca.mjs` | **construido** — el arnés de los 7 pasos |
+| `src/boot.mjs` (ronda 2) | **construido** — guardián de arranque: punto ÚNICO por el que los servicios llaman a los dos verificadores |
+| 4 puntos de `mesh/**` (ronda 2) | **cableados** al guardián · 1 enrutado con motivo (§8.1) |
 | `import.mjs` · `driver-forces.mjs` | **sólo export añadido**, cero cambio de cuerpo |
 | pasos 1, 3, 4, 5 | **verificados** sobre maquinaria existente |
 
@@ -320,10 +330,20 @@ contrato declara `urls.revision` procedencia inerte —como ya hace con
 
 ## 5 · Lo que NO cubrí, y por qué
 
-- **`packages/mesh/force-system` no llama a `assertRootIntegrity()`.** El gate existe
-  y está probado, pero **no está cableado en el arranque del producto**: `mesh/` no
-  está en mi ALCANCE_DIFF. Lo demuestro desde el runner. **Es el primer encargo del
-  siguiente.**
+### 5.0 · Los dos pasos que están medidos sobre TERRENO ELEGIDO
+
+Con todas las letras, porque es la frontera real de este WP:
+
+- **El criterio «cerco limpio» sólo está demostrado para UNA familia.** El runner
+  itera **sólo los dos roots FORCES** (A y B); el root LINEAS se barre **sin
+  aserción**, como nota informativa. Está declarado tres veces y con fichero y clave,
+  así que es honesto — pero no debe leerse como «el cerco está probado». No lo está
+  para LINEAS ni para FIREHOSE.
+- **El paso 6 sólo demuestra DETECCIÓN en FORCES.** LINEAS no sella snapshot y
+  FIREHOSE sella otra forma, así que una corrupción equivalente en esas familias pasa
+  los tres legs sin una queja. Está declarado en el código (`SNAPSHOT_VERIFIERS`,
+  leg `omitido` con motivo), pero sube aquí porque **es la mitad del parque**: de las
+  cuatro familias registradas, el verificador de corrupción cubre una.
 - **Snapshot verificable sólo en FORCES.** FIREHOSE sella otra forma
   (`{unit:'at-uri', units, unitsSha256}`, `driver-firehose.mjs:660-663`) y LINEAS no
   sella nada. Familia sin verificador → leg `omitido` **con motivo**; nunca adivino el
@@ -379,9 +399,11 @@ por `npm ci`, **no una edición**. No van al commit.
 
 ## 7 · Lo que le dejo al siguiente
 
-1. **Cablear `assertRootIntegrity()` en el arranque real** (`force-system`, y el resto
-   de servicios que montan sobre un volumes root). Hoy el gate existe y nadie lo
-   llama: el CA lo demuestra, el producto aún no lo usa. **Es lo más importante.**
+1. ~~**Cablear `assertRootIntegrity()` en el arranque real.**~~ **HECHO en la ronda 2**
+   (decisión ⑩), y con él `assertRootCerco`, que estaba igual de suelto y la ronda 1
+   **no declaró** — ver §8.1. Cuatro puntos cableados, uno enrutado con motivo.
+   Lo que queda vivo aquí es el **estatuto del cerco**: reporta, no manda, hasta que
+   se decida H5.
 2. **Cerrar H1 en `import.mjs`** (pérdida silenciosa de ficheros fuera de volumen).
    Guarda de conjuntos tras `:275`; mi adaptador sólo tapa la vía que yo abro.
 3. **Decidir sobre H5**: declarar `urls.revision` procedencia inerte en el contrato, o
@@ -406,3 +428,164 @@ por `npm ci`, **no una edición**. No van al commit.
    lo que lo tiene rojo hoy en esta plataforma. **No lo toqué**: es un fichero
    **existente** y mi ALCANCE_DIFF sólo me da ficheros **nuevos** en `e2e/`. Queda con
    el mismo dueño, con el diagnóstico corregido.
+
+---
+
+## 8 · RONDA 2 · cableado, dos bloqueantes y cuatro menores
+
+### 8.1 · CABLEADO (decisión ⑩) — los gates entran al camino del producto
+
+Antes de esta ronda, **`verifyRootIntegrity` y `scanRootCerco` tenían CERO llamadas de
+producción**. Mi reporte de la ronda 1 declaraba sólo la primera mitad («nadie llama a
+`assertRootIntegrity()`»); **`assertRootCerco` estaba igual de suelto y no lo dije**
+(m5). Era alcance declarado más estrecho que el problema — el mismo pecado que este WP
+persigue, por el otro lado. Queda dicho.
+
+**Un punto único, no cinco copias:** `packages/engine/volumes-ops/src/boot.mjs` ·
+`assertVolumesRootBootable()`. Los servicios **llaman**; no se replica el verificador.
+
+| punto | qué se hizo |
+|---|---|
+| `mesh/force-system/src/start.mjs:17` | **CABLEADO**, antes de `loadForcesData` |
+| `mesh/ssb-system/src/start.mjs:16` | **CABLEADO**, antes de resolver y leer |
+| `mesh/linea-system/src/start.mjs:28` | **CABLEADO**, con limitación declarada (abajo) |
+| `mesh/firehose-browser/src/server.mjs:64` | **CABLEADO** dentro de `createFirehoseServer`, **antes del `listen`** de `:180` — la comprobación que había (`resolveVolume` tras el listen) miraba el volumen con el servidor **ya sirviendo** |
+| `mesh/cache-browser/src/server.mjs:66` | **ENRUTADO, no cableado** |
+
+**Por qué cache-browser se enruta y no se cabla** (verificado, no supuesto): **no
+consume un volumes root**. `grep -rn "resolveVolume|ZEUS_VOLUMES_ROOT|volumes"
+packages/mesh/cache-browser/src/*.mjs` → **cero coincidencias**. Su `resolveBasePath`
+sale de `@zeus/app-shell` vía `createAppConfig` (`cache-browser/src/config.mjs:10,14`),
+que es configuración de app, no el resolvedor canónico. Meter ahí un guardián de
+volumes root sería teatro. **Para su dueño: si cache-browser debe consumir un volumes
+root, el punto es `server.mjs:66` y le falta antes la dependencia.**
+
+**Limitación declarada, no forzada — linea-system.** `linea-system/src/loader.mjs:28`
+(`export const DEFAULT_BASE_PATH = resolveLineasBasePath()`) resuelve **en tiempo de
+import de módulo**, o sea antes que cualquier guarda de arranque. Consecuencia exacta:
+para un root **ausente o no resoluble**, la guarda **llega tarde** — el import ya habrá
+lanzado. Lo que sí protege, que es lo que persigue este WP, es el root **presente pero
+corrupto**, porque la lectura de datos ocurre en `startAll` (`:28`), después.
+
+**Estatuto de cada mitad, con la medición que lo justifica.** No son iguales, y
+fingir que sí lo son habría sido el teatro contrario:
+
+- **Integridad = FATAL.** Medida contra el root de referencia del monorepo
+  (`VOLUMES/`): **`ok:true`** (todos los legs de volumen en `omitido` honesto porque
+  nada fue importado). Cablearla como fatal no rompe nada y ataja lo que importa.
+- **Cerco = SE EJECUTA Y SE REPORTA SIEMPRE; aborta sólo con
+  `ZEUS_VOLUMES_CERCO=strict`.** Medido contra el MISMO root de referencia:
+  **`ok:false`, 3 hallazgos** — `DISK_02/LINEAS/demo/wp/historia/manifest.json:27` y
+  `:40` (`urls.revision`) y **`VOLUMES/README.md:5`** (URL de repositorio en la
+  documentación del root). **Ninguno es un ancla de arranque.** Hacerlo fatal hoy
+  **negaría el arranque a todos los servicios del monorepo**: sería un gate que no
+  protege, sino que impide. El interruptor queda puesto y documentado para el día que
+  el contrato decida sobre `urls.revision` (H5).
+
+**El paso 6 ya no se conforma con que lance una función.** Ahora invoca
+`startAll()` de `@zeus/force-system` —el mismo camino que `npm run start:forces`— y
+exige que **el servicio real se niegue a arrancar** en los tres casos de corrupción, y
+que **arranque** con el root sano (servidor MCP levantado en puerto efímero y cerrado).
+
+### 8.2 · BLOQUEANTE 1 — la trampa de red no veía la vía más común
+
+Reproducido con las mediciones del coordinador antes de tocar nada. La premisa del
+comentario («`http`, `https`, `tls` y undici acaban en `Socket.prototype.connect`») era
+**cierta**; la conclusión, **falsa**: `net.connect()/createConnection()` normalizan y
+llaman `connect([options, cb])` con un **Array**. Como `typeof [] === 'object'`, el
+parche leía `.host` de un Array → `undefined` → «host omitido → localhost» →
+**anotado como PERMITIDO**.
+
+| vía (destino 203.0.113.7) | antes | ahora |
+|---|---|---|
+| `new net.Socket().connect({host,port})` | cazado | cazado |
+| `net.createConnection({host,port})` | **EVADÍA** | cazado |
+| `http.request({host: IP})` | **EVADÍA** | cazado |
+| `https.request({host: IP})` | cazado | cazado |
+| `dns.resolve4` | **EVADÍA** | cazado |
+| `new dns.Resolver().resolve4` | **EVADÍA** | cazado |
+| `dns.lookup` | cazado | cazado |
+
+**El eslabón que lo explica, y la lección:** el ROJO 1 sólo ejercitaba `dns.lookup`.
+**La puerta `connect` no se probaba en rojo jamás**, así que el verde «0 violaciones»
+no podía distinguir «no salió» de «salió por http y no lo vi». Ahora el ROJO 1
+**ejercita las seis vías, una a una**, y cada una debe registrarse por su puerta.
+
+Arreglos: normalización del Array antes de leer `typeof`; instrumentación de toda la
+familia `resolve*`/`reverse` en `dns`, `dns.promises`, `dns.Resolver.prototype` y
+`dns.promises.Resolver.prototype`.
+
+**Re-medido el arranque real con el instrumento arreglado** (el 0 anterior no estaba
+probado): `startAll()` de force-system, servidor MCP levantado y cerrado →
+**0 violaciones**. Ese 0 ya significa algo.
+
+### 8.3 · BLOQUEANTE 2 — el cerco concedía sobre lo que no era un root
+
+Mi H3 cerró la **inexistencia**; la **vacuidad** seguía abierta: un directorio vacío —o
+uno cualquiera sin manifiesto— daba `ok:true · files:0 · findings:0` y `assertRootCerco`
+no lanzaba. Y el paso 7 usa el **root explícito**, que es justo la vía que esquiva el
+resolvedor canónico. Es exactamente la clase que yo mismo nombro como «el modo de fallo
+más caro de un gate».
+
+Arreglado: `root_sin_manifiesto`. El manifiesto es la **firma de identidad** de un root
+(U199: sin él, el root no es operable), así que es el predicado correcto — no un
+chequeo inventado para el caso.
+
+### 8.4 · Menores
+
+- **m3** · `URL_LITERAL_RE` ahora es **insensible a mayúsculas**: `HTTPS://EJEMPLO.TEST`
+  se detecta. El módulo aplicaba dos varas (la denylist de identidad sí era insensible).
+- **m4** · **los binarios ya no tienen salvoconducto**: se escanean como `latin1`, así
+  que una URL viva tras un byte NUL **produce hallazgo**. `binaries[]` queda como
+  clasificación informativa, no como exención. Declarar no es proteger.
+- **m5** · dicho arriba (§8.1) y corregido en §5/§7.
+- **m6** · **borrar el ledger ya no apaga la comprobación**. Antes, sin fichero de
+  asientos el leg pasaba a `omitido` — o sea que **borrar el ledger degradaba el caso
+  (c) del paso 6 de rojo a verde**. Ahora, si el manifiesto declara volúmenes
+  importados y no hay asiento, es hallazgo `ledger_ausente`. Un root nunca importado
+  sigue omitiendo, sin falso positivo (las dos caras, con test).
+
+### 8.5 · Hallazgo nuevo de esta ronda
+
+Correr las suites de `mesh/` destapó que **dos ficheros míos de la ronda 1 rompían un
+gate de otro paquete** que yo no había ejecutado: `ssb-system/test/export.test.mjs:422`
+mantiene una ALLOWLIST de escritores de manifiesto, razonada uno a uno. El reparto
+honesto, tras abrir los dos ficheros:
+
+- `volumes-ops/src/pack-adapter.mjs` — **falso positivo por prosa**: el único disparo
+  era el nombre del manifiesto entrecomillado en un comentario; sus escrituras van a
+  `<packRoot>/manifest.json` y a copias de datos, **nunca a un manifiesto de root**.
+  Arreglado **en el origen** (reescrito el comentario), sin tocar la allowlist ajena.
+- `e2e/local-first-ca.mjs` — **escritor real y legítimo**: siembra roots temporales y
+  edita manifiestos a mano en sus vectores rojos. Añadido a la ALLOWLIST **con su
+  razón**, que es el flujo que el propio test define. Relajar el probe habría sido el
+  arreglo equivocado, y el test lo dice por escrito.
+
+### 8.6 · Suites de la ronda 2
+
+| suite | resultado |
+|---|---|
+| `@zeus/volumes-ops` | **133 · 131 pass · 0 fail · 2 skip** (ronda 1: 125/123; **+8 nuevos**) |
+| `@zeus/ssb-system` | 27 · 27 pass · 0 fail (con la entrada de allowlist) |
+| `@zeus/force-system` | 2 · 2 pass |
+| `@zeus/linea-system` | 2 · 0 pass · **2 skip preexistentes y autodeclarados** (`VOLUMES/DISK_02/LINEAS` id:espana no está en el repo) |
+| `@zeus/firehose-browser` | 5 · 5 pass (también **sin** `ZEUS_VOLUMES_ROOT`: no empeoré su arranque) |
+| `@zeus/cache-browser` | 4 · 4 pass |
+| `@zeus/linea-kit` · `@zeus/presets-sdk` | 43/43 · 55/55 |
+| `npm run lint` | 0 errores, 18 warnings preexistentes |
+| `node scripts/gates/run.mjs` | **OK (0 offenders)** |
+| runner | **7/7 verdes, exit 0** · `--legado` exit 1 |
+
+**Lock:** `npm install --package-lock-only` tras declarar `@zeus/volumes-ops` en los
+cuatro paquetes cableados → **diff de exactamente 4 inserciones, las cuatro
+declaraciones. CERO movimientos de versión.**
+
+### 8.7 · Lo que sigue abierto tras esta ronda
+
+1. **Decidir sobre H5** (`urls.revision` = procedencia inerte, ¿sí o no?). De eso
+   depende poder poner `ZEUS_VOLUMES_CERCO=strict` por defecto. Mientras no se decida,
+   el cerco reporta pero no manda.
+2. **Verificador de snapshot para LINEAS y FIREHOSE** — hoy el paso 6 cubre una de
+   cuatro familias.
+3. **`cache-browser`**: decidir si debe consumir un volumes root (`server.mjs:66`).
+4. Siguen vivos H1 (pérdida silenciosa en `importPack`) y los puntos 5-7 de §7.

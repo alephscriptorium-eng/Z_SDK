@@ -19,6 +19,7 @@
     }
   },
   "dependencies": {
+    "@zeus/volumes-ops": "*",
     "@zeus/app-shell": "*",
     "@zeus/firehose-core": "*",
     "@zeus/http-contract": "*",

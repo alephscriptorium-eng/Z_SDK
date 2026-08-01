@@ -3,6 +3,7 @@
  */
 
 import { resolveZeusMcpPorts, isMainModule, runMcpMain } from '@zeus/presets-sdk';
+import { assertVolumesRootBootable } from '@zeus/volumes-ops';
 import { createServer } from './force-server.mjs';
 import { loadForcesData } from './loader.mjs';
 import { SERVER_NAME } from './config.mjs';
@@ -13,6 +14,9 @@ import { SERVER_NAME } from './config.mjs';
  */
 export async function startAll(basePath) {
   const port = resolveZeusMcpPorts().forces.disk;
+  // WP-U206 · decisión ⑩: el root se comprueba ANTES de leer un solo byte.
+  // Un root corrupto no arranca a medias (integridad = fatal; cerco = reporta).
+  assertVolumesRootBootable({ service: SERVER_NAME, volumeIds: ['forces'] });
   const forcesData = await loadForcesData(basePath);
   const handle = await createServer(port, forcesData).start();
   return [handle];

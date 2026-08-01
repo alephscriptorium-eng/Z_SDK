@@ -553,53 +553,166 @@ async function paso2() {
   await step(2, 'ARRANQUE SIN RED · cero salidas a destino no-loopback', async () => {
     useRoot(CTX.rootA);
 
-    // ── ROJO 1 · auto-prueba de la trampa: se planta una salida.
-    // Sólo demuestra que la trampa dispara. NO demuestra que el arranque esté
-    // limpio: para eso está la probe simétrica de abajo.
-    const trapRed = armNetTrap({ block: false });
-    try {
-      const dns = await import('node:dns');
-      await new Promise((resolve) => {
-        dns.default.lookup('ejemplo-no-loopback.invalid', () => resolve(null));
-      });
-    } finally {
-      trapRed.disarm();
+    // ── ROJO 1 · auto-prueba de la trampa, PUERTA POR PUERTA.
+    //
+    // La versión anterior sólo plantaba un `dns.lookup`. La puerta `connect`
+    // no se ejercitaba en rojo JAMÁS — y resultó estar rota: `net.connect()`
+    // llama a `Socket.prototype.connect` con el Array normalizado
+    // [options, cb], el parche leía `.host` de un Array (undefined), lo
+    // trataba como «host omitido → localhost» y anotaba la salida como
+    // PERMITIDA. `net.createConnection`, `http.request` sobre IP literal y
+    // toda la familia `dns.resolve*` evadían la trampa. Un verde de «0
+    // violaciones» no distinguía «no salió» de «salió y no lo vi».
+    //
+    // Se usa una IP de TEST-NET-3 (RFC 5737, no enruta) y `block:true`, así
+    // que la trampa lanza ANTES de abrir nada: no sale un solo paquete.
+    const IP_EXTERNA = '203.0.113.7';
+    const NOMBRE_EXTERNO = 'ejemplo-no-loopback.invalid';
+
+    /** Ejercita una vía bajo la trampa y devuelve las violaciones que registró. */
+    const puerta = async (fn) => {
+      const t = armNetTrap({ block: true });
+      try {
+        await fn();
+      } catch {
+        /* la trampa lanza: es lo esperado */
+      } finally {
+        t.disarm();
+      }
+      return t.violations;
+    };
+
+    const net = await import('node:net');
+    const http = await import('node:http');
+    const dnsMod = await import('node:dns');
+
+    const casos = [
+      {
+        label: 'net.Socket.connect({host,port})',
+        gate: 'net.Socket.connect',
+        run: () =>
+          new Promise((res) => {
+            const s = new net.default.Socket();
+            s.on('error', () => res(null));
+            try { s.connect({ host: IP_EXTERNA, port: 80 }); } catch { /* trampa */ }
+            setTimeout(() => { s.destroy(); res(null); }, 30);
+          })
+      },
+      {
+        label: 'net.createConnection({host,port})  ← EVADÍA',
+        gate: 'net.Socket.connect',
+        run: () =>
+          new Promise((res) => {
+            try {
+              const s = net.default.createConnection({ host: IP_EXTERNA, port: 80 });
+              s.on('error', () => res(null));
+              setTimeout(() => { s.destroy(); res(null); }, 30);
+            } catch { res(null); }
+          })
+      },
+      {
+        label: 'http.request({host: IP})  ← EVADÍA (la vía más común)',
+        gate: 'net.Socket.connect',
+        run: () =>
+          new Promise((res) => {
+            try {
+              const q = http.default.request({ host: IP_EXTERNA, port: 80, path: '/' });
+              q.on('error', () => res(null));
+              q.end();
+              setTimeout(() => { q.destroy(); res(null); }, 30);
+            } catch { res(null); }
+          })
+      },
+      {
+        label: 'dns.resolve4  ← EVADÍA (no instrumentado)',
+        gate: 'dns.resolve4',
+        run: () => new Promise((res) => {
+          try { dnsMod.default.resolve4(NOMBRE_EXTERNO, () => res(null)); } catch { res(null); }
+          setTimeout(() => res(null), 30);
+        })
+      },
+      {
+        label: 'new dns.Resolver().resolve4  ← EVADÍA',
+        gate: 'dns.Resolver.resolve4',
+        run: () => new Promise((res) => {
+          try { new dnsMod.default.Resolver().resolve4(NOMBRE_EXTERNO, () => res(null)); } catch { res(null); }
+          setTimeout(() => res(null), 30);
+        })
+      },
+      {
+        label: 'dns.lookup',
+        gate: 'dns.lookup',
+        run: () => new Promise((res) => {
+          try { dnsMod.default.lookup(NOMBRE_EXTERNO, () => res(null)); } catch { res(null); }
+          setTimeout(() => res(null), 30);
+        })
+      }
+    ];
+
+    for (const caso of casos) {
+      const violaciones = await puerta(caso.run);
+      assert.ok(
+        violaciones.length >= 1,
+        `la trampa NO vio la salida por «${caso.label}»: el instrumento no sirve para esa vía`
+      );
+      assert.ok(
+        violaciones.some((v) => v.gate === caso.gate),
+        `«${caso.label}» se registró por otra puerta (${violaciones.map((v) => v.gate).join(',')}), ` +
+          `se esperaba ${caso.gate}`
+      );
     }
-    assert.ok(
-      trapRed.violations.length >= 1,
-      'la trampa NO registró la salida plantada: el instrumento no sirve'
-    );
-    assert.equal(trapRed.violations[0].gate, 'dns.lookup');
-    assert.match(trapRed.violations[0].target, /ejemplo-no-loopback\.invalid/);
-    red(
-      `1 · salida plantada → registrada por ${trapRed.violations[0].gate} ` +
-        `nombrando «${trapRed.violations[0].target}»`
-    );
-    evid('rojo1', trapRed.violations[0]);
+    red(`1 · las SEIS vías de salida, cada una plantada y cazada: ${casos.map((c) => c.gate).join(' · ')}`);
+    evid('rojo1Vias', casos.map((c) => c.label));
 
     // ── ROJO 2 (el que faltaba) · trampa armada, NADA plantado, arranque REAL.
     // Si el arranque toca la red, esto sale ≠0 nombrando el módulo.
     // La trampa se arma ANTES del import dinámico a propósito.
+    // Se ejercita EL CAMINO DEL PRODUCTO: `startAll()` de @zeus/force-system —
+    // el mismo que corre `npm run start:forces` (start.mjs:24) — que ahora
+    // pasa por el guardián de arranque y levanta el servidor MCP. Puerto 0
+    // para no chocar con nada. Medido de nuevo tras arreglar la trampa: el 0
+    // anterior se tomó con un instrumento que no veía tres de las vías.
+    const prevPort = process.env.ZEUS_MCP_FORCES;
+    process.env.ZEUS_MCP_FORCES = '0';
+    resetZeusEnvLoader();
     const trap = armNetTrap({ block: true });
     /** @type {any} */
     let view = null;
+    /** @type {any[]} */
+    let handles = [];
     try {
-      const { loadForcesData, buildForcesRegistryView } = await import('@zeus/force-system');
+      const { startAll, loadForcesData, buildForcesRegistryView } = await import(
+        '@zeus/force-system'
+      );
+      handles = await startAll();
       const forcesData = await loadForcesData();
       view = buildForcesRegistryView(forcesData);
     } finally {
+      for (const h of handles) {
+        try {
+          await h.close();
+        } catch {
+          /* ya cerrado */
+        }
+      }
       trap.disarm();
+      if (prevPort == null) delete process.env.ZEUS_MCP_FORCES;
+      else process.env.ZEUS_MCP_FORCES = prevPort;
+      resetZeusEnvLoader();
     }
     assert.equal(
       trap.violations.length,
       0,
       `el arranque real tocó la red: ${JSON.stringify(trap.violations)}`
     );
+    assert.ok(handles.length >= 1, 'el arranque no devolvió handle de servidor');
     assert.ok(view.force_count >= 1, 'el arranque no vio ninguna force');
     assert.ok(view.cota_count >= 1, 'el arranque no vio ninguna cota');
     green(
-      `arranque real de @zeus/force-system sobre el root A con la trampa armada: ` +
-        `0 violaciones · force_count=${view.force_count} · cota_count=${view.cota_count}`
+      `arranque REAL (startAll de @zeus/force-system, servidor MCP levantado en ` +
+        `:${handles[0].port} y cerrado) con la trampa arreglada: 0 violaciones · ` +
+        `${trap.allowed.length} salidas loopback permitidas · force_count=${view.force_count} · ` +
+        `cota_count=${view.cota_count}`
     );
     evid('arranque', {
       force_count: view.force_count,
@@ -918,7 +1031,7 @@ async function paso5() {
 // PASO 6 · LA CORRUPCIÓN FALLA AL ARRANCAR
 // ═════════════════════════════════════════════════════════════════════════
 async function paso6() {
-  await step(6, 'CORRUPCIÓN · un root corrupto NO arranca a medias', () => {
+  await step(6, 'CORRUPCIÓN · un root corrupto NO arranca a medias', async () => {
     // Cada caso sobre su propia réplica del root A: se corrompe y se exige que
     // el verificador FALLE y que el arranque ABORTE.
     const casos = [
@@ -970,6 +1083,41 @@ async function paso6() {
     );
     evid('checksVerdes', sano.checks.map((c) => `${c.check}${c.volume ? `[${c.volume}]` : ''}`));
 
+    // ── EL CAMINO DEL PRODUCTO. Un verificador que nadie llama no es una
+    // protección: es una biblioteca. Así que el paso 6 no se conforma con que
+    // `assertRootIntegrity()` lance — exige que **el servicio real se niegue a
+    // arrancar**. `arrancaElProducto()` invoca `startAll()` de
+    // @zeus/force-system, que desde U206 pasa por `assertVolumesRootBootable`
+    // (start.mjs:17).
+    const arrancaElProducto = async () => {
+      const prevPort = process.env.ZEUS_MCP_FORCES;
+      process.env.ZEUS_MCP_FORCES = '0';
+      resetZeusEnvLoader();
+      /** @type {any[]} */
+      let handles = [];
+      try {
+        const { startAll } = await import('@zeus/force-system');
+        handles = await startAll();
+        return { arranco: true, error: null };
+      } catch (err) {
+        return { arranco: false, error: err instanceof Error ? err.message : String(err) };
+      } finally {
+        for (const h of handles) {
+          try {
+            await h.close();
+          } catch {
+            /* ya cerrado */
+          }
+        }
+        if (prevPort == null) delete process.env.ZEUS_MCP_FORCES;
+        else process.env.ZEUS_MCP_FORCES = prevPort;
+        resetZeusEnvLoader();
+      }
+    };
+    const sanoArranca = await arrancaElProducto();
+    assert.equal(sanoArranca.arranco, true, `el root sano NO arrancó: ${sanoArranca.error}`);
+    green('camino del producto: con el root íntegro, startAll() de force-system ARRANCA');
+
     for (const caso of casos) {
       const root = mkTemp(`corrupto-${caso.id}`);
       fs.rmSync(root, { recursive: true, force: true });
@@ -984,7 +1132,8 @@ async function paso6() {
         `(${caso.id}) se detectó, pero no por donde debía: ${JSON.stringify(rep.findings)}`
       );
 
-      // El arranque ABORTA: no hay «root parcial que arranca».
+      // El arranque ABORTA — comprobado por las DOS vías: la biblioteca y,
+      // sobre todo, EL PRODUCTO.
       let aborto = null;
       try {
         assertRootIntegrity();
@@ -992,8 +1141,21 @@ async function paso6() {
         aborto = err;
       }
       assert.ok(aborto, `(${caso.id}) assertRootIntegrity no abortó`);
+
+      const intento = await arrancaElProducto();
+      assert.equal(
+        intento.arranco,
+        false,
+        `(${caso.id}) EL PRODUCTO ARRANCÓ sobre un root corrupto — la guarda no está cableada`
+      );
+      assert.match(
+        intento.error,
+        /arranque ABORTADO/,
+        `(${caso.id}) el producto falló, pero no por la guarda: ${intento.error}`
+      );
       red(
-        `${caso.id} · ${caso.titulo} → ${rep.findings.map((f) => f.error).join(',')} · arranque abortado`
+        `${caso.id} · ${caso.titulo} → ${rep.findings.map((f) => f.error).join(',')} · ` +
+          `startAll() de force-system SE NIEGA A ARRANCAR`
       );
 
       // Contraste con la maquinaria ANTERIOR, sólo para el caso (a): así queda
@@ -1036,7 +1198,7 @@ async function paso7() {
       green(
         `root ${label}: ${rep.files} ficheros barridos · symlinks=${rep.symlinks.length} · ` +
           `node_modules=${rep.nodeModules.length} · identidad=${rep.identity.length} · ` +
-          `urlsVivas=${rep.liveUrls.length} · binarios no escaneados=${rep.binaries.length}`
+          `urlsVivas=${rep.liveUrls.length} · binarios (escaneados como latin1)=${rep.binaries.length}`
       );
       evid(`cerco${label}`, {
         files: rep.files,
