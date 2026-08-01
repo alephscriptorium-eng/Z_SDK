@@ -18,7 +18,9 @@ import {
   onRoomEvent,
   config as roomsConfig
 } from '@zeus/rooms';
-import { isSsbId } from '@zeus/protocol';
+// WP-U262: `isSsbId` ya no se importa aquí — la única comprobación que
+// quedaba (`isSsbId(peerCard.ssbId)` en `joinRoom`) era una RELECTURA de
+// lo que el torno acababa de validar; ahora se usa su veredicto.
 import { SIGNALING_WIRE_EVENTS, WIRE_TO_ABSTRACT, createWireMessage } from './messages.mjs';
 import { SignalingService, abstractMessageToWire } from './signaling-service.mjs';
 import {
@@ -188,8 +190,12 @@ export class SocketRoomSignalingService extends SignalingService {
     if (!admitted.anonymous) this.setPeerCard(peerCard);
     this.roomId = roomId;
     this._client.io.emit('CLIENT_SUSCRIBE', { room: roomId });
-    const ssbId =
-      !admitted.anonymous && isSsbId(peerCard?.ssbId) ? peerCard.ssbId : undefined;
+    // WP-U262: el ssbId que se anuncia es el que el torno ACABA DE JUZGAR
+    // (`admitted.ssbId`, de su foto de la card), no una relectura de
+    // `peerCard.ssbId`. `admitted.ssbId` existe exactamente cuando
+    // `isSsbId(peerCard.ssbId)`: mismo anuncio, una lectura menos por la
+    // que colar otro feed entre la comprobación y el cable.
+    const ssbId = admitted.anonymous ? undefined : admitted.ssbId;
     const card = admitted.anonymous ? undefined : peerCard;
     const payload = createWireMessage({
       type: 'join-room',
@@ -273,8 +279,13 @@ export class SocketRoomSignalingService extends SignalingService {
     if (to && to !== this.userId) return;
 
     const abstractType = WIRE_TO_ABSTRACT[wireType] || wireType;
+    // WP-U262: la card se extrae UNA vez y se le pasa a `ssbIdFromMessage`.
+    // Antes cada extractor releía `payload.peerCard` por su cuenta (4
+    // lecturas en total) y el mensaje podía quedarse con la card de una
+    // lectura y el `ssbId` de otra. `payload.data` se leía hasta 3 veces.
     const peerCard = peerCardFromMessage(payload);
-    const ssbId = ssbIdFromMessage(payload);
+    const ssbId = ssbIdFromMessage(payload, peerCard);
+    const data = payload.data;
 
     /** @type {import('./signaling-service.mjs').SignalingMessage} */
     const message = {
@@ -284,15 +295,15 @@ export class SocketRoomSignalingService extends SignalingService {
       roomId: payload.room || payload.roomId || this.roomId,
       timestamp: payload.timestamp ?? Date.now(),
       messageId: payload.messageId || createWireMessage({ type: wireType, from: from || 'unknown' }).messageId,
-      data: payload.data,
+      data,
       ...(peerCard != null ? { peerCard } : {}),
       ...(ssbId ? { ssbId } : {})
     };
 
-    if (abstractType === 'offer') message.offer = payload.data ?? payload.offer;
-    if (abstractType === 'answer') message.answer = payload.data ?? payload.answer;
+    if (abstractType === 'offer') message.offer = data ?? payload.offer;
+    if (abstractType === 'answer') message.answer = data ?? payload.answer;
     if (abstractType === 'ice-candidate') {
-      message.candidate = payload.data ?? payload.candidate;
+      message.candidate = data ?? payload.candidate;
     }
 
     this.handleMessage(message);

@@ -13,7 +13,15 @@ export function assertSignalingPeerCard(
   }
 ): { ok: true; role: string; ssbId?: string } | { ok: false; error: string };
 export function peerCardFromMessage(messageOrPayload?: object): unknown;
-export function ssbIdFromMessage(messageOrPayload?: object): string | null;
+/**
+ * WP-U262 · `card` es la card YA extraída del mismo mensaje: pasarla evita
+ * el segundo recorrido del payload (`peerCard` se leía 4 veces entre los
+ * dos extractores). `undefined` = extráela; `null` = no había.
+ */
+export function ssbIdFromMessage(
+  messageOrPayload?: object,
+  card?: unknown
+): string | null;
 
 /** Modos de admisión de la antesala WebRTC (WP-U197). */
 export const SIGNALING_ADMISSION: {

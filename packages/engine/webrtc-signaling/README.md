@@ -43,6 +43,37 @@ await alice.joinRoom('ROOM', card); // sin card ⇒ rechazo
 Identidad ad-hoc del handshake (`peerId` / `displayName` sueltos) queda
 sustituida por el card (`sessionId` / `displayName` / `scopes` en el ticket).
 
+### Una decisión, una lectura (WP-U262)
+
+El torno **fotografía** lo que va a juzgar antes de juzgarlo: cada clave de
+`opts` y cada campo de la card se leen **una sola vez** al entrar, y la
+decisión entera se toma sobre esa foto.
+
+No es estilo. Antes `opts.role` se leía 2 veces, `opts.expectedSsbId` 3 y
+—vía `@zeus/protocol`— `card.scopes` hasta 11 **dentro de la misma
+decisión**. Con un valor fijo da igual; con un objeto de getters
+alternantes, la lectura que EXIGE y la lectura que COMPRUEBA devuelven
+cosas distintas y el torno **concede de más**: medido, una card que sólo
+acredita `player` pasaba una exigencia de `operator`, y una card de un feed
+pasaba un amarre exigido a otro.
+
+Consecuencias visibles para quien consume el torno:
+
+- **Nada cambia con valores de datos.** 656 veredictos comparados contra la
+  implementación previa (16 formas de card × 19 juegos de `opts`): cero
+  diferencias.
+- **La foto es `Object.keys(card)`** — exactamente la vista que cubre la
+  firma de asiento (`travelingPeerCardPayload`). Una card cuyos campos no
+  sean **propios y enumerables** (heredados del prototipo, o no
+  enumerables) pasa a **denegar**: son formas que nunca pudieron llevar
+  asiento verificable. El movimiento es sólo en dirección denegar.
+- **`ssbIdFromMessage(msg, card)`** acepta la card ya extraída del mismo
+  mensaje, para que quien recibe no recorra el payload dos veces.
+
+El sensor de la clase —no de los dos vectores— es
+`test/u262-lectura-multiple.test.mjs`: proxies contadores sobre `opts` y
+sobre la card en cada rama del torno, rojo si alguna clave se lee dos veces.
+
 ## Antesala anónima (WP-U197) — `admisión ≠ permiso`
 
 U186 fijó **transporte ≠ permiso**. U197 añade el corolario: la
@@ -273,3 +304,12 @@ Env: `ZEUS_WEBRTC_STUN`, `ZEUS_WEBRTC_TURN_URL` / `ZEUS_WEBRTC_TURN_USER` /
 ## Tests
 
 `npm test -w @zeus/webrtc-signaling`
+
+| suite | qué fija |
+| ----- | -------- |
+| `peer-card-gate.test.mjs` | el torno U93: forma, frescura, rol, `ssbId`, asiento |
+| `transporte-permiso.test.mjs` | U186 — transporte ≠ permiso |
+| `signaling-anonimo.test.mjs` | U197 — admisión ≠ permiso |
+| `u251-menores.test.mjs` | los seis menores de U197 + el vector de **frontera** |
+| `u251-devolucion.test.mjs` | la devolución de U251 + la evidencia U262 **invertida** |
+| `u262-lectura-multiple.test.mjs` | U262 — **sensor de clase**: una decisión, una lectura |

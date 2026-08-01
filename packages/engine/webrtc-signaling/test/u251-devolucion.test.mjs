@@ -22,6 +22,10 @@
  *        token dentro).
  *   B3 — EVIDENCIA de un defecto que NO es de este WP y que se enterró por
  *        una medición perezosa: ver §«evidencia U262» al final.
+ *
+ * ✔ WP-U262 (2026-08-02): la ficha cerró. Las dos pruebas de §«evidencia
+ *   U262» están **INVERTIDAS** —afirmaban el fail-open, ahora afirman lo
+ *   contrario— y siguen aquí a propósito: son la memoria del defecto.
  */
 
 import test from 'node:test';
@@ -236,22 +240,32 @@ test('M5b: un connect() que LANZA no deja instalado el transporte por el que sal
 });
 
 // ═══════════════════════════════════════════════════════════════════════
-// EVIDENCIA U262 · el portero SÍ falla ABIERTO ante un getter alternante
+// EVIDENCIA U262 · INVERTIDA (WP-U262, ficha cerrada)
 //
-// Esto NO es un arreglo de U251: `peer-card-gate.mjs` es el portero de otro
-// carril (blobs por LAN) y queda con 0 líneas tocadas. Es la evidencia que
-// sostiene la ficha **U262**, abierta por esta devolución.
+// Estas dos pruebas se escribieron AFIRMANDO el defecto: eran verdes
+// mientras el portero fallaba ABIERTO ante un getter alternante, y llevaban
+// la orden escrita de invertirse el día que la ficha cerrara. Ese día
+// llegó. Se INVIERTEN, no se borran: la forma del vector es la evidencia
+// de que el defecto existió, y quien vuelva a abrir este hueco tumbará
+// exactamente estas dos pruebas.
 //
-// El reporte de U251 llegó a registrar esta rama como «fail-closed» tras
-// medir UNA sola alternancia (`'operator' → undefined`). Era falso: con
-// otra alternancia el portero ACREDITA un rol que no se le pidió.
+// Lo que afirmaban (medido contra la base, antes del arreglo):
+//   · `role` alternante `operator`→`player`: `{ok:true, role:'player'}`
+//     HABIENDO EXIGIDO `operator` — 2 lecturas de `opts.role`.
+//   · `expectedSsbId` alternante `FEED_B`→`FEED_B`→`FEED`: `{ok:true,
+//     ssbId: FEED}` con un amarre exigido a FEED_B — 3 lecturas.
 //
-// ⚠ Cuando U262 cierre, estas dos pruebas deben INVERTIRSE (pasar a
-// `assert.equal(check.ok, false)`). Están escritas para ponerse rojas ese
-// día, no para bendecir el defecto.
+// Lo que afirman ahora: **una decisión, una lectura**, y por tanto el
+// veredicto de la alternancia es el mismo que el del PRIMER valor leído —
+// que es el valor que se exigió.
+//
+// Y la lección que abrió la ficha, ahora en positivo: U251 midió UNA
+// alternancia (`'operator' → undefined`), vio que cerraba y escribió
+// «fail-closed». La rama tercera de cada prueba conserva ese vector: con
+// una sola lectura, las DOS alternancias cierran, y por el mismo motivo.
 // ═══════════════════════════════════════════════════════════════════════
 
-test('evidencia U262: `role` alternante ⇒ el portero acredita un rol que NO se exigió (fail-OPEN)', () => {
+test('U262 cerrado: `role` alternante ⇒ el portero exige y comprueba EL MISMO valor (una lectura)', () => {
   const card = freshCard({ ssbId: FEED }); // acredita `player`, no `operator`
   let n = 0;
   const check = assertSignalingPeerCard(card, {
@@ -260,42 +274,47 @@ test('evidencia U262: `role` alternante ⇒ el portero acredita un rol que NO se
     }
   });
 
-  // Dos lecturas en la rama que ACREDITA (la tercera, la del texto de
-  // error, sólo se evalúa al denegar). Basta con dos para abrir el hueco.
-  assert.equal(n, 2, 'el portero lee `opts.role` dos veces por esta rama');
-  assert.equal(check.ok, true, 'DEFECTO ABIERTO (U262): no deniega');
-  assert.equal(check.role, 'player', 'y devuelve `player` habiendo exigido `operator`');
+  // Antes: 2 lecturas por la rama que acredita (3 por la que deniega).
+  assert.equal(n, 1, 'el portero lee `opts.role` UNA vez');
+  assert.equal(check.ok, false, 'la alternancia ya no acredita nada');
+  assert.match(
+    check.error,
+    /does not grant role:operator/,
+    'y deniega por el rol que se exigió en la PRIMERA lectura, no por el que coló en la segunda'
+  );
 
-  // Contraste: con el valor FIJO que se pidió, el portero sí deniega.
+  // El contraste que ya existía: con el valor FIJO el veredicto es idéntico
+  // — el arreglo no movió la política, sólo el número de lecturas.
   const fijo = assertSignalingPeerCard(card, { role: 'operator' });
-  assert.equal(fijo.ok, false);
-  assert.match(fijo.error, /does not grant role:operator/);
+  assert.deepEqual(fijo, check, 'alternante y fijo dan exactamente el mismo veredicto');
 
-  // Y la alternancia que U251 midió (`'operator' → undefined`) sí cierra:
+  // La alternancia que U251 midió (`'operator' → undefined`) sigue cerrando,
+  // pero ya no por accidente: cierra por el mismo motivo que la otra.
   let m = 0;
   const cerrado = assertSignalingPeerCard(card, {
     get role() {
       return m++ === 0 ? 'operator' : undefined;
     }
   });
-  assert.equal(cerrado.ok, false, 'medir UNA alternancia no describe la rama');
+  assert.equal(m, 1, 'una lectura también aquí');
+  assert.deepEqual(cerrado, check, 'las dos alternancias cierran igual, y por la misma razón');
 });
 
-test('evidencia U262: `expectedSsbId` alternante ⇒ una card ajena pasa un amarre exigido a otro feed (fail-OPEN)', () => {
+test('U262 cerrado: `expectedSsbId` alternante ⇒ el amarre se cumple contra el feed exigido (una lectura)', () => {
   const card = freshCard({ ssbId: FEED }); // amarrada a FEED
   let n = 0;
-  const secuencia = [FEED_B, FEED_B, FEED]; // se exige FEED_B; cuela FEED
+  const secuencia = [FEED_B, FEED_B, FEED]; // se exige FEED_B; antes colaba FEED
   const check = assertSignalingPeerCard(card, {
     get expectedSsbId() {
       return secuencia[Math.min(n++, secuencia.length - 1)];
     }
   });
 
-  assert.equal(n, 3, 'el portero lee `opts.expectedSsbId` tres veces');
-  assert.equal(check.ok, true, 'DEFECTO ABIERTO (U262): el amarre no se cumple');
-  assert.equal(check.ssbId, FEED, 'pasa la card de OTRO feed');
+  assert.equal(n, 1, 'el portero lee `opts.expectedSsbId` UNA vez (antes: 3)');
+  assert.equal(check.ok, false, 'la card de otro feed ya no pasa el amarre');
+  assert.match(check.error, /does not match handshake/);
+  assert.equal(check.ssbId, undefined, 'y no acredita ningún feed');
 
   const fijo = assertSignalingPeerCard(card, { expectedSsbId: FEED_B });
-  assert.equal(fijo.ok, false);
-  assert.match(fijo.error, /does not match handshake/);
+  assert.deepEqual(fijo, check, 'alternante y fijo dan exactamente el mismo veredicto');
 });

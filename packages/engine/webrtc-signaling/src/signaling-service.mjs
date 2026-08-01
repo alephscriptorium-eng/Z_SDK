@@ -369,15 +369,18 @@ export class SignalingService extends EventEmitter {
    */
   handleMessage(message) {
     if (isPeerCardGatedType(message?.type)) {
-      let card = peerCardFromMessage(message) ?? message?.peerCard;
-      const handshakeSsbId = ssbIdFromMessage(message);
+      // WP-U262 · una decisión, una lectura. Antes: `peerCardFromMessage`
+      // leía `message.peerCard` ×2, el `?? message?.peerCard` una 3.ª y
+      // `ssbIdFromMessage` otras 2 — cinco lecturas para decidir UNA cosa.
+      // El `??` además era dead code para cualquier mensaje de datos (si
+      // `message.peerCard != null`, el extractor ya lo devuelve); con un
+      // getter alternante era una card que el extractor nunca vio.
+      let card = peerCardFromMessage(message);
+      const handshakeSsbId = ssbIdFromMessage(message, card);
+      const messageFrom = message?.from;
       // Amarrar ssbId del handshake a la card si aún no lo trae (wire previo)
-      if (
-        card &&
-        typeof card === 'object' &&
-        !isSsbId(card.ssbId) &&
-        isSsbId(handshakeSsbId)
-      ) {
+      const cardSsbId = card && typeof card === 'object' ? card.ssbId : undefined;
+      if (card && typeof card === 'object' && !isSsbId(cardSsbId) && isSsbId(handshakeSsbId)) {
         card = { ...card, ssbId: handshakeSsbId };
       }
       const check = assertSignalingAdmission(card, {
@@ -387,7 +390,7 @@ export class SignalingService extends EventEmitter {
         requireSeatSignature: this._requireSeatSignature,
         expectedSsbId: handshakeSsbId ?? undefined,
         claimedSsbId: handshakeSsbId ?? undefined,
-        claimedFrom: message?.from
+        claimedFrom: messageFrom
       });
       if (!check.ok) {
         this.handleError(new Error(`signaling peer-card rejected: ${check.error}`));
@@ -410,14 +413,22 @@ export class SignalingService extends EventEmitter {
         message.anonymous = true;
       } else {
         // SSB: from del wire debe amarrar al ssbId de la card cuando ambos existen
-        if (isSsbId(card?.ssbId) && isSsbId(message.from) && card.ssbId !== message.from) {
+        //
+        // WP-U262: se amarra y se estampa el ssbId que **el torno acaba de
+        // juzgar** (`check.ssbId`, sacado de su foto de la card), no una
+        // relectura de `card.ssbId`. Antes eran 3 lecturas del mismo campo:
+        // una para el amarre, otra para la comparación y otra para lo que
+        // salía en el mensaje. `check.ssbId` existe exactamente cuando
+        // `isSsbId(card.ssbId)` — mismo veredicto, una sola lectura.
+        const judgedSsbId = check.ssbId;
+        if (isSsbId(judgedSsbId) && isSsbId(messageFrom) && judgedSsbId !== messageFrom) {
           this.handleError(
             new Error('signaling peer-card rejected: ssbId does not match message.from')
           );
           return;
         }
         message.peerCard = card;
-        if (isSsbId(card?.ssbId)) message.ssbId = card.ssbId;
+        if (isSsbId(judgedSsbId)) message.ssbId = judgedSsbId;
         else if (handshakeSsbId) message.ssbId = handshakeSsbId;
       }
     }
@@ -473,7 +484,9 @@ export class SignalingService extends EventEmitter {
     }
     /** @type {SignalingMessage} */
     const out = { ...message, peerCard: card };
-    if (isSsbId(card?.ssbId)) out.ssbId = card.ssbId;
+    // WP-U262: sale el ssbId JUZGADO, no una relectura de la card. Lo que
+    // viaja es lo que el torno acreditó.
+    if (isSsbId(check.ssbId)) out.ssbId = check.ssbId;
     return out;
   }
 }
@@ -483,9 +496,13 @@ export class SignalingService extends EventEmitter {
  * @returns {{ wireType: string, payload: object }}
  */
 export function abstractMessageToWire(message) {
-  const wireType = ABSTRACT_TO_WIRE[message.type];
+  // WP-U262 · lo que se comprueba es lo que sale: `message.peerCard` se
+  // leía 3 veces y `message.ssbId` 2 al construir el payload wire, así que
+  // podía comprobarse un feed id y sacarse otro por el cable.
+  const type = message.type;
+  const wireType = ABSTRACT_TO_WIRE[type];
   if (!wireType) {
-    throw new Error(`Unknown signaling message type: ${message.type}`);
+    throw new Error(`Unknown signaling message type: ${type}`);
   }
   const data =
     message.offer ??
@@ -495,9 +512,12 @@ export function abstractMessageToWire(message) {
     null;
   /** @type {Record<string, unknown>} */
   const extra = {};
-  if (message.peerCard != null) extra.peerCard = message.peerCard;
-  if (isSsbId(message.ssbId)) extra.ssbId = message.ssbId;
-  else if (isSsbId(message.peerCard?.ssbId)) extra.ssbId = message.peerCard.ssbId;
+  const outCard = message.peerCard;
+  const outSsbId = message.ssbId;
+  const cardSsbId = outCard?.ssbId;
+  if (outCard != null) extra.peerCard = outCard;
+  if (isSsbId(outSsbId)) extra.ssbId = outSsbId;
+  else if (isSsbId(cardSsbId)) extra.ssbId = cardSsbId;
   return {
     wireType,
     payload: createWireMessage({
