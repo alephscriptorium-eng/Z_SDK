@@ -389,8 +389,19 @@ test('U234-B1 CA-5: la guardia puerto_ocupado_sin_health despierta ante un ocupa
 test('U234-B1 CA-9 (invariante con guardia): un solo punto de enumeración', () => {
   // El invariante «un solo netstat» era cierto pero NO tenía guardia: se
   // afirmaba en prosa y nada se ponía rojo al añadir un segundo punto. Esto
-  // es la guardia. Si mañana alguien enumera puertos desde otro sitio, el
+  // es la guardia: si mañana alguien enumera puertos desde otro sitio, el
   // arreglo de familia de U234-B1 deja de alcanzarlo y este test cae.
+  //
+  // ✎ ALCANCE HONESTO (medido por el orquestador al aceptar, 2026-08-01, no
+  // deducido): esta guardia caza el enumerador que nombra el binario con un
+  // LITERAL —que es la forma en que llega una regresión real— y NO caza el
+  // que lo construye: un `spawnSync(['net','stat'].join(''), …)` la deja
+  // verde. Comprobado plantando ambos y aplicando las seis aserciones.
+  // Es la misma ceguera que ya nos costó un probe en este repo (una ruta que
+  // viajaba en una variable), así que queda escrita en vez de suponerse
+  // cerrada. Modelo de amenaza declarado: defiende contra la REGRESIÓN en
+  // `src/`, no contra un contribuyente hostil —quien edita `src/` edita este
+  // test—. Cerrarlo del todo exige analizar por AST, no por texto.
   const src = fs.readFileSync(path.join(__dirname, '../src/orchestrator.mjs'), 'utf8');
 
   const count = (re) => (src.match(re) || []).length;
