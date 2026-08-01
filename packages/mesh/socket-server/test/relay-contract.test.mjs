@@ -59,13 +59,20 @@ const CUENTA_BAJADA = 8;
  * que sea y en el fichero que sea — mueve el sello.
  *
  * **Alcance declarado, y ahora implementado igual**: el árbol `src/**`
- * completo — recursivo, y `.mjs`/`.js`/`.cjs` sin distinguir mayúsculas
- * (`fuentesDelPaquete`). Dos correcciones sucesivas de esta misma frase:
+ * completo — recursivo, y las **seis** extensiones que este runtime ejecuta
+ * (`.mjs`/`.js`/`.cjs`/`.mts`/`.ts`/`.cts`, Node 22.18+ strippea tipos sin
+ * flag), sin distinguir mayúsculas (`fuentesDelPaquete`).
+ *
+ * **Tres** correcciones sucesivas de esta misma frase, todas por lo mismo:
  * anclar solo `relay.mjs` era falso (`create-server.mjs` es donde nacen
- * `localNs` y `bridgeClient`), y barrer solo el primer nivel también
- * (`src/sub/puerta.mjs`, `src/puerta.js` y `src/puerta.cjs` cargaban, emitían
- * y no se veían). Si vuelves a tocar el alcance, comprueba que la frase y el
- * `readdirSync` dicen lo mismo: es donde ha fallado dos veces.
+ * `localNs` y `bridgeClient`); barrer solo el primer nivel también
+ * (`src/sub/puerta.mjs`, `src/puerta.js`, `src/puerta.cjs`); y cubrir tres
+ * extensiones de seis igual (`src/puerta.mts`). La tercera cayó **tres
+ * líneas por debajo de este aviso**.
+ *
+ * Si tocas el alcance: la frase, el `readdirSync` y las extensiones que el
+ * runtime ejecuta tienen que decir lo mismo. Comprobarlo NO es leer esta
+ * frase — es poner el fichero en `src/` y ver la suite en rojo.
  *
  * `EMISIONES_ANCLADAS` es señal legible, **no** garantía: el conteo se deja
  * clavado quitando una vía y añadiendo otra. Quien caza es el sello.
@@ -165,12 +172,20 @@ function formaNormalizada(texto) {
 /**
  * Inventario de fuentes de `packages/mesh/socket-server/src/`.
  *
- * **Recursivo y con las tres extensiones ejecutables** (U194-DEF-1). La
- * versión anterior hacía `readdirSync(...).filter(f => f.endsWith('.mjs'))`:
- * primer nivel y una sola extensión. `src/sub/puerta.mjs`, `src/puerta.js` y
- * `src/puerta.cjs` cargan, emiten y eran **invisibles** — la suite se quedaba
- * en verde con la puerta puesta. Lo declarado (`src/**`) y lo implementado
- * (primer nivel) no coincidían, y la grieta era justo esa.
+ * **Recursivo y con las SEIS extensiones que este runtime ejecuta**
+ * (U194-DEF-1 y DEF-A): `.mjs`, `.js`, `.cjs`, `.mts`, `.ts`, `.cts`, sin
+ * distinguir mayúsculas. Node 22.18+ strippea tipos de serie —sin flag ni
+ * loader— y este repo corre `v22.21.1` con `engines: ">=22.0.0"` y CI en
+ * `node-version: '22'`, así que un `.mts` es tan ejecutable como un `.mjs`.
+ *
+ * Dos versiones anteriores fallaron por lo mismo, alcance declarado más
+ * ancho que el implementado:
+ *  - `filter(f => f.endsWith('.mjs'))` → primer nivel, una extensión:
+ *    `src/sub/puerta.mjs`, `src/puerta.js` y `src/puerta.cjs` cargaban,
+ *    emitían y eran invisibles;
+ *  - `/\.(mjs|js|cjs)$/i` → tres extensiones de seis: `src/puerta.mts`
+ *    cargaba, emitía y era invisible (verificado: la suite en verde con la
+ *    puerta puesta, y eslint tampoco la veía).
  *
  * Lo usan el censo de despacho **y** «sin segunda lista»: un único
  * enumerador para que no vuelvan a divergir — una tabla paralela en
@@ -182,7 +197,7 @@ function formaNormalizada(texto) {
 function fuentesDelPaquete() {
   return readdirSync(new URL('../src/', import.meta.url), { recursive: true })
     .map((f) => String(f).replaceAll('\\', '/'))
-    .filter((f) => /\.(mjs|js|cjs)$/i.test(f))
+    .filter((f) => /\.(mjs|js|cjs|mts|ts|cts)$/i.test(f))
     .sort();
 }
 
