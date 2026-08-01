@@ -72,7 +72,22 @@ jobs:
           - '@zeus/player-ui'
           - '@zeus/player-3d-ui'
           - '@zeus/3d-monitor'
-          - '@zeus/ping-pong-bots'
+          - '@zeus/ping-pong-bots'
+          # WP-U256 — carril de datos (el que toca el disco del usuario).
+          # Estaban fuera de la matriz: 176 tests que solo corrian en local.
+          - '@zeus/linea-kit'
+          - '@zeus/volumes-ops'
+        # Solo el carril de datos recibe root de VOLUMES. No va en el `env`
+        # comun del step porque para los 25 workspaces anteriores la variable
+        # pasaria de «no definida» a «definida», y eso no esta medido. Via
+        # `include` los 25 la reciben VACIA — medido equivalente a no
+        # definirla: mismo exit code y mismo recuento pass/fail/skip en
+        # 25 de 25 (WP-U256 §5).
+        include:
+          - workspace: '@zeus/linea-kit'
+            needs_volumes_root: true
+          - workspace: '@zeus/volumes-ops'
+            needs_volumes_root: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -81,8 +96,34 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
+      # WP-U256 · el `env` de abajo tiene que ser OBSERVABLE desde la salida
+      # de CI. Sin esta guarda, que la variable llegue o NO llegue produce
+      # exactamente el mismo verde: mismo exit code, mismo recuento y la misma
+      # linea `ok`; lo unico que cambia es un console.log enterrado. Es decir,
+      # el arreglo seria el mismo defecto que vino a cerrar, un escalon arriba.
+      #
+      # El `if` se ancla en `matrix.workspace`, que es un valor ORIGINAL de la
+      # matriz, y NO en `matrix.needs_volumes_root`, que es justo lo que se
+      # esta verificando: si el merge del `include` fallara, esta guarda tiene
+      # que correr igual y ponerse roja, no saltarse a si misma.
+      - name: El carril de datos exige su root de VOLUMES (WP-U256)
+        if: matrix.workspace == '@zeus/linea-kit' || matrix.workspace == '@zeus/volumes-ops'
+        run: |
+          test -n "$ZEUS_VOLUMES_ROOT" \
+            || { echo "::error::ZEUS_VOLUMES_ROOT no llego al job: el include no aplico"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/volumes.json" \
+            || { echo "::error::$ZEUS_VOLUMES_ROOT no es un root de VOLUMES"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/DISK_03/FORCES/registry.json" \
+            || { echo "::error::sin DISK_03/FORCES/registry.json, forces-loader.test.mjs:62 vuelve a omitir en silencio"; exit 1; }
+          echo "root declarado y completo: $ZEUS_VOLUMES_ROOT"
+        env:
+          ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
       - name: Test workspace
         run: npm test -w "${{ matrix.workspace }}"
+        env:
+          # Sin este root, linea-kit/test/forces-loader.test.mjs:57 se
+          # auto-omite en silencio y se cuenta como `pass` (WP-U256 §4).
+          ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
 
   # WP-U158 — consumidor TS tipado desde registry real (no tarball).
   # Skip limpio (exit 0 · ⏳) si el registry no responde — patrón U122.
