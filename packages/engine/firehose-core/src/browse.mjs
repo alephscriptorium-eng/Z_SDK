@@ -3,10 +3,38 @@
  */
 
 import fs from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { resolveVolume, browseVolume, readVolumeFile } from '@zeus/presets-sdk/volumes';
+import {
+  resolveVolume,
+  resolveVolumesRoot,
+  browseVolume,
+  readVolumeFile
+} from '@zeus/presets-sdk/volumes';
 import { corpusRelPath } from '@zeus/presets-sdk/paths';
 import { normalizeFirehosePost, isJetstreamPost } from './schema.mjs';
+
+/**
+ * Last live sync mark of a volume — WP-U204: `syncedAt` is LIVE STATE
+ * (volumes.state.json), never manifest. Until U199 it was written into
+ * volumes.json by feed-kit's `ensureFirehoseVolumeLayout`, which broke the
+ * manifest seal on every sync; that writer is demolished. Read directly (no
+ * @zeus/volumes-ops dependency: the 48 workspace manifests are frozen in this
+ * wave — GOBIERNO-EJECUCION-F2 §2, owner U237); the canonical writer is
+ * `recordVolumeSync` in volumes-ops/src/state.mjs.
+ * @param {string} volumeId
+ * @returns {string|null}
+ */
+function readSyncedAtFromState(volumeId) {
+  try {
+    const statePath = path.join(resolveVolumesRoot(), 'volumes.state.json');
+    if (!existsSync(statePath)) return null;
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    return state?.volumes?.[volumeId]?.syncedAt ?? null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * @param {string} corpusId
@@ -200,6 +228,6 @@ export function getFirehoseStats() {
       labeled: byId.labeled ?? 0,
       all: Object.values(byId).reduce((a, b) => a + b, 0)
     },
-    syncedAt: volume.source?.syncedAt || null
+    syncedAt: readSyncedAtFromState(volume.id)
   };
 }

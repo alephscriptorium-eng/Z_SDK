@@ -6,6 +6,20 @@
  * - live: connect to Jetstream WebSocket and append posts under corpus/raw
  *
  * Degradación a sintético sigue viviendo en resolveRuntimeFeeds (no aquí).
+ *
+ * ── WP-U204 · DEMOLICIÓN del escritor legado ───────────────────────────────
+ * `ensureFirehoseVolumeLayout` vivía aquí y ESCRIBÍA `volumes.json` con un
+ * `fs.writeFileSync` propio (antiguo :120), inventando la entrada del volumen
+ * si faltaba e inyectando `source.syncedAt` (antiguo :113) — un campo temporal
+ * dentro del manifiesto que cambiaba el sello sha256 en CADA sync (U199).
+ * Está eliminado. En su lugar:
+ * - `resolveFirehoseVolumeRoot` **no escribe manifiesto**: exige que el
+ *   manifiesto YA declare el volumen (lo siembra el import, U201/U204) y
+ *   aborta honestamente si no. Un sync vivo no crea topología.
+ * - `syncedAt` es **estado**: se registra en `volumes.state.json` vía
+ *   `recordVolumeSync` (@zeus/volumes-ops), que nunca entra en el sello.
+ * Invariante resultante: el ÚNICO escritor de `volumes.json` es
+ * `sealManifest` (volumes-ops/src/manifest.mjs), usado solo por `importPack`.
  */
 
 import fs from 'node:fs';
@@ -16,7 +30,7 @@ import {
   resolveVolumesRoot,
   resetVolumesCache
 } from '@zeus/presets-sdk/volumes';
-import { syncVolumeCounters } from '@zeus/volumes-ops';
+import { syncVolumeCounters, recordVolumeSync } from '@zeus/volumes-ops';
 
 /**
  * Run `fn` with ZEUS_VOLUMES_ROOT pointing at `volumesRoot`, restoring env + cache.
@@ -72,54 +86,47 @@ const SAMPLE_POSTS = Object.freeze([
   }
 ]);
 
+export const FIREHOSE_VOLUME_ID = 'firehose';
+
 /**
- * Ensure a minimal volumes.json + FIREHOSE tree under volumesRoot.
+ * Resolve the FIREHOSE volume root of an ALREADY SEEDED volumes root.
+ *
+ * Fail-closed (U199/U200/U201 + WP-U204): the manifest must exist and must
+ * declare the volume. A live sync NEVER creates manifest topology — that is
+ * the import's exclusive job (`importPack`, CONTRATO-IMPORT-PACK-v1). Only
+ * the DATA-PLANE directories of the corpora the manifest already declares are
+ * materialized here.
+ *
  * @param {string} volumesRoot
- * @param {{ label?: string }} [opts]
+ * @param {{ volumeId?: string }} [opts]
+ * @returns {{ firehoseRoot: string, volumeId: string, corpora: object[] }}
  */
-export function ensureFirehoseVolumeLayout(volumesRoot, { label = 'Firehose ONFALO' } = {}) {
-  const firehoseRoot = path.join(volumesRoot, 'DISK_01', 'FIREHOSE');
-  for (const corpus of ['raw', 'candidate', 'discarded', 'labeled']) {
-    fs.mkdirSync(path.join(firehoseRoot, corpus), { recursive: true });
-  }
-
+export function resolveFirehoseVolumeRoot(volumesRoot, { volumeId = FIREHOSE_VOLUME_ID } = {}) {
   return withVolumesRoot(volumesRoot, () => {
-    let doc;
+    let config;
     try {
-      doc = structuredClone(loadVolumesConfig());
-      doc.volumes = doc.volumes ?? {};
-    } catch {
-      doc = { root: '.', volumes: {} };
+      config = loadVolumesConfig();
+    } catch (err) {
+      throw new Error(
+        `[feed-kit] root de volúmenes no operable (${err instanceof Error ? err.message : err}) — ` +
+          'siembra con el contrato de import v1 (importPack); el sync vivo no crea manifiestos (U199/U204).'
+      );
     }
-
-    const existing = doc.volumes.firehose;
-    const corpora = (existing?.corpora ?? []).length
-      ? existing.corpora
-      : [
-          { id: 'candidate', path: 'candidate', label: 'Candidatos', files: 0 },
-          { id: 'raw', path: 'raw', label: 'Raw', files: 0 },
-          { id: 'discarded', path: 'discarded', label: 'Descartados', files: 0 },
-          { id: 'labeled', path: 'labeled', label: 'Etiquetados', files: 0 }
-        ];
-
-    doc.volumes.firehose = {
-      disk: 'DISK_01',
-      path: 'DISK_01/FIREHOSE',
-      readonly: true,
-      label: existing?.label ?? label,
-      source: {
-        ...(existing?.source ?? {}),
-        kind: 'atproto-jetstream',
-        syncedAt: new Date().toISOString()
-      },
-      corpora
-    };
-
+    const entry = config.volumes?.[volumeId];
+    if (!entry?.path) {
+      throw new Error(
+        `[feed-kit] el manifiesto no declara el volumen '${volumeId}' con path — ` +
+          'un sync vivo NO inventa entradas de manifiesto: importa primero el pack ' +
+          '(importPack, CONTRATO-IMPORT-PACK-v1 · WP-U204).'
+      );
+    }
     const root = resolveVolumesRoot();
-    const configPath = path.join(root, 'volumes.json');
-    fs.writeFileSync(configPath, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
-    resetVolumesCache();
-    return { firehoseRoot, volumesPath: configPath };
+    const firehoseRoot = path.join(root, entry.path.split('/').join(path.sep));
+    const corpora = entry.corpora ?? [];
+    for (const corpus of corpora) {
+      fs.mkdirSync(path.join(firehoseRoot, String(corpus.path || corpus.id)), { recursive: true });
+    }
+    return { firehoseRoot, volumeId, corpora };
   });
 }
 
@@ -166,10 +173,24 @@ export function refreshFirehoseCorpusCounts(volumesRoot) {
     } catch {
       return null;
     }
-    if (!config.volumes?.firehose?.corpora) return null;
-    const { corpora } = syncVolumeCounters('firehose');
+    if (!config.volumes?.[FIREHOSE_VOLUME_ID]?.corpora) return null;
+    const { corpora } = syncVolumeCounters(FIREHOSE_VOLUME_ID);
     return corpora;
   });
+}
+
+/**
+ * Record the live sync mark in volumes.state.json (WP-U204 — «sync vivo =
+ * estado»). The manifest is NOT touched: `syncedAt` inside volumes.json used
+ * to break the U199 seal on every run.
+ * @param {string} volumesRoot
+ * @param {{ volumeId?: string, syncedAt?: string, source?: object }} [opts]
+ */
+export function recordFirehoseSync(volumesRoot, opts = {}) {
+  const { volumeId = FIREHOSE_VOLUME_ID, ...mark } = opts;
+  return withVolumesRoot(volumesRoot, () =>
+    recordVolumeSync(volumeId, { source: { kind: 'atproto-jetstream' }, ...mark })
+  );
 }
 
 /**
@@ -183,18 +204,20 @@ export function refreshFirehoseCorpusCounts(volumesRoot) {
  */
 export function syncJetstreamFixture(opts) {
   const { volumesRoot, posts = SAMPLE_POSTS, corpus = 'raw', batch = 'jetstream' } = opts;
-  const { firehoseRoot } = ensureFirehoseVolumeLayout(volumesRoot);
+  const { firehoseRoot } = resolveFirehoseVolumeRoot(volumesRoot);
   const written = [];
   for (const post of posts) {
     const result = writeJetstreamPost(firehoseRoot, post, { corpus, batch });
     if (result.ok) written.push(result);
   }
+  const { syncedAt } = recordFirehoseSync(volumesRoot);
   const corpora = refreshFirehoseCorpusCounts(volumesRoot);
   return {
     ok: true,
     mode: 'fixture',
     written: written.length,
     files: written.map((w) => w.filePath),
+    syncedAt,
     corpora
   };
 }
@@ -228,7 +251,7 @@ export async function syncJetstreamLive(opts) {
     throw new Error('WebSocket no disponible; usa mode=fixture o Node ≥22');
   }
 
-  const { firehoseRoot } = ensureFirehoseVolumeLayout(volumesRoot);
+  const { firehoseRoot } = resolveFirehoseVolumeRoot(volumesRoot);
   const wantedUrl = new URL(url);
   if (!wantedUrl.searchParams.has('wantedCollections')) {
     wantedUrl.searchParams.set('wantedCollections', 'app.bsky.feed.post');
@@ -297,6 +320,7 @@ export async function syncJetstreamLive(opts) {
     }
   });
 
+  const { syncedAt } = recordFirehoseSync(volumesRoot);
   const corpora = refreshFirehoseCorpusCounts(volumesRoot);
   return {
     ok: true,
@@ -304,6 +328,7 @@ export async function syncJetstreamLive(opts) {
     url: wantedUrl.toString(),
     written: written.length,
     files: written.map((w) => w.filePath),
+    syncedAt,
     corpora
   };
 }

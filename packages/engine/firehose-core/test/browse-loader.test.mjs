@@ -161,6 +161,29 @@ test('getFirehoseStats aggregates corpora file counts', async () => {
   });
 });
 
+test('WP-U204: getFirehoseStats lee `syncedAt` del ESTADO, no del manifiesto sellado', async () => {
+  await withFirehoseFixture(async ({ volumesRoot }) => {
+    // Sin estado: null honesto (el manifiesto ya no lleva campos temporales).
+    assert.equal(getFirehoseStats().syncedAt, null);
+    const manifestBefore = fs.readFileSync(path.join(volumesRoot, 'volumes.json'), 'utf8');
+
+    fs.writeFileSync(
+      path.join(volumesRoot, 'volumes.state.json'),
+      JSON.stringify({
+        version: 1,
+        volumes: { firehose: { syncedAt: '2026-07-31T10:00:00.000Z' } }
+      }),
+      'utf8'
+    );
+    assert.equal(getFirehoseStats().syncedAt, '2026-07-31T10:00:00.000Z');
+    // El estado nunca entra en el sello: el manifiesto queda byte a byte.
+    assert.equal(
+      fs.readFileSync(path.join(volumesRoot, 'volumes.json'), 'utf8'),
+      manifestBefore
+    );
+  });
+});
+
 test('loadTriageManifest reads triage-manifest.json from the volume', async () => {
   await withFirehoseFixture(async () => {
     const manifest = await loadTriageManifest();

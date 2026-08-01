@@ -19,7 +19,11 @@ export { createRealStaticFeed } from './static-real.mjs';
 export { resolveRuntimeFeeds } from './resolve.mjs';
 export {
   DEFAULT_JETSTREAM_URL,
-  ensureFirehoseVolumeLayout,
+  FIREHOSE_VOLUME_ID,
+  // WP-U204: `ensureFirehoseVolumeLayout` (escritor legado de volumes.json
+  // con `syncedAt`) está DEMOLIDO — su sucesor no escribe manifiesto.
+  resolveFirehoseVolumeRoot,
+  recordFirehoseSync,
   writeJetstreamPost,
   refreshFirehoseCorpusCounts,
   syncJetstreamFixture,

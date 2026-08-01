@@ -33,7 +33,8 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
+import { loadVolumesConfig, resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
+import { hashManifest } from './manifest.mjs';
 
 export const STATE_FILE_NAME = 'volumes.state.json';
 export const STATE_VERSION = 1;
@@ -71,6 +72,50 @@ export function writeVolumesState(state) {
 }
 
 /**
+ * Record a LIVE SYNC mark for a volume (WP-U204).
+ *
+ * `syncedAt` is the timestamp of the last live producer run (jetstream sync,
+ * SSB export…). It is LIVE STATE, never manifest: a temporal field inside
+ * volumes.json would break the seal's stability on every sync (the exact
+ * defect demolished here — feed-kit `ensureFirehoseVolumeLayout` wrote
+ * `source.syncedAt` straight into the manifest with `writeFileSync`).
+ * The manifest only changes by import.
+ *
+ * Fail-closed FOR REAL (contrarrevisión U204 · D4 — la versión anterior de
+ * este docstring prometía abortar y el código NUNCA llamaba a `hashManifest()`
+ * ni a `loadVolumesConfig()`: un root sin manifiesto inventaba estado y un
+ * volumen no declarado inventaba entrada). Ahora, como `syncVolumeCounters`:
+ * 1. `hashManifest()` primero — un root sin manifiesto no es operable y aborta;
+ * 2. el volumen debe estar declarado por el manifiesto, o aborta sin escribir.
+ * Nada se inventa. El sello se anota junto a la marca (informativo: identifica
+ * contra qué manifiesto se tomó, nunca es clave de reconciliación — U225).
+ *
+ * @param {string} volumeId
+ * @param {{ syncedAt?: string, source?: object }} [mark]
+ * @returns {{ statePath: string, state: object, syncedAt: string, manifestSha256: string }}
+ * @throws si el root no tiene manifiesto o el manifiesto no declara el volumen
+ */
+export function recordVolumeSync(volumeId, mark = {}) {
+  const manifest = hashManifest(); // aborta si el root no tiene manifiesto
+  const config = loadVolumesConfig();
+  if (!config.volumes?.[volumeId]) {
+    throw new Error(`Unknown volume id: ${volumeId}`);
+  }
+  const state = loadVolumesState();
+  state.version = STATE_VERSION;
+  state.manifest = { sha256: manifest.sha256 };
+  state.volumes = state.volumes || {};
+  const syncedAt = mark.syncedAt ?? new Date().toISOString();
+  state.volumes[volumeId] = {
+    ...(state.volumes[volumeId] || {}),
+    syncedAt,
+    ...(mark.source ? { source: mark.source } : {})
+  };
+  const statePath = writeVolumesState(state);
+  return { statePath, state, syncedAt, manifestSha256: manifest.sha256 };
+}
+
+/**
  * Record one volume's live measurement into the state.
  * @param {string} volumeId
  * @param {{ files: number, bytes: number, missing?: boolean, corpora?: object[] }} measured
@@ -85,6 +130,9 @@ export function recordVolumeState(volumeId, measured, opts = {}) {
   }
   state.volumes = state.volumes || {};
   state.volumes[volumeId] = {
+    // Marks recorded by other live paths (e.g. `syncedAt`, U204) survive a
+    // remeasure: measuring never erases state it did not produce.
+    ...(state.volumes[volumeId] || {}),
     files: measured.files,
     bytes: measured.bytes,
     missing: measured.missing ?? false,

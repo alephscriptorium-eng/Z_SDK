@@ -12,11 +12,47 @@ import {
   resolveRuntimeFeeds,
   probeFeedMcpHealth,
   syncJetstreamFixture,
-  ensureFirehoseVolumeLayout,
+  resolveFirehoseVolumeRoot,
+  recordFirehoseSync,
   refreshFirehoseCorpusCounts
 } from '../src/index.mjs';
 import { isJetstreamPost } from '@zeus/firehose-core';
 import { loadVolumesConfig, resetVolumesCache } from '@zeus/presets-sdk/volumes';
+
+/**
+ * Root SEMBRADO: el manifiesto declara el volumen (lo que hace el import,
+ * U201/U204). WP-U204 demolió el escritor legado que lo inventaba desde el
+ * sync — un sync vivo ya no crea topología de manifiesto.
+ * @param {string} root
+ */
+function seedFirehoseManifest(root) {
+  fs.writeFileSync(
+    path.join(root, 'volumes.json'),
+    `${JSON.stringify(
+      {
+        root: '.',
+        volumes: {
+          firehose: {
+            disk: 'DISK_01',
+            path: 'DISK_01/FIREHOSE',
+            readonly: true,
+            label: 'Firehose (fixture de test)',
+            corpora: [
+              { id: 'candidate', path: 'candidate', label: 'Candidatos', files: 0 },
+              { id: 'raw', path: 'raw', label: 'Raw', files: 0 },
+              { id: 'discarded', path: 'discarded', label: 'Descartados', files: 0 },
+              { id: 'labeled', path: 'labeled', label: 'Etiquetados', files: 0 }
+            ]
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    'utf8'
+  );
+  return root;
+}
 
 test('FEED_FAMILIES has static/stream/gossip', () => {
   assert.deepEqual([...FEED_FAMILIES], ['static', 'stream', 'gossip']);
@@ -91,8 +127,9 @@ test('resolveRuntimeFeeds auto degrades without MCP', async () => {
 });
 
 test('syncJetstreamFixture writes DISK_01 posts', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-feed-jet-'));
+  const tmp = seedFirehoseManifest(fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-feed-jet-')));
   try {
+    const sealBefore = fs.readFileSync(path.join(tmp, 'volumes.json'), 'utf8');
     const result = syncJetstreamFixture({ volumesRoot: tmp });
     assert.equal(result.ok, true);
     assert.equal(result.mode, 'fixture');
@@ -103,16 +140,57 @@ test('syncJetstreamFixture writes DISK_01 posts', () => {
     assert.ok(files.length >= 2);
     const raw = JSON.parse(fs.readFileSync(path.join(postPath, files[0]), 'utf8'));
     assert.equal(isJetstreamPost(raw), true);
+
+    // WP-U204: el sync vivo NO toca el manifiesto (byte a byte idéntico) y
+    // deja `syncedAt` en el estado, no en volumes.json.
+    assert.equal(fs.readFileSync(path.join(tmp, 'volumes.json'), 'utf8'), sealBefore);
+    assert.ok(!sealBefore.includes('syncedAt'));
+    const state = JSON.parse(fs.readFileSync(path.join(tmp, 'volumes.state.json'), 'utf8'));
+    assert.equal(state.volumes.firehose.syncedAt, result.syncedAt);
+    assert.match(result.syncedAt, /^\d{4}-\d{2}-\d{2}T/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('WP-U204: sync sobre root sin volumen declarado ABORTA — no inventa manifiesto', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-feed-u204-'));
+  try {
+    // (a) root sin volumes.json: no operable.
+    assert.throws(() => syncJetstreamFixture({ volumesRoot: tmp }), /no operable|volumes\.json/i);
+    assert.ok(!fs.existsSync(path.join(tmp, 'volumes.json')));
+
+    // (b) manifiesto sin la entrada `firehose`: aborta y no la añade.
+    fs.writeFileSync(
+      path.join(tmp, 'volumes.json'),
+      `${JSON.stringify({ root: '.', volumes: {} }, null, 2)}\n`,
+      'utf8'
+    );
+    const before = fs.readFileSync(path.join(tmp, 'volumes.json'), 'utf8');
+    assert.throws(
+      () => syncJetstreamFixture({ volumesRoot: tmp }),
+      /no declara el volumen 'firehose'/
+    );
+    assert.equal(fs.readFileSync(path.join(tmp, 'volumes.json'), 'utf8'), before);
+    assert.ok(!fs.existsSync(path.join(tmp, 'DISK_01', 'FIREHOSE', 'raw', 'jetstream')));
+
+    // (c) D4 de la contrarrevisión: el export público `recordFirehoseSync`
+    // llamado DIRECTO también es fallo cerrado — no inventa estado ni entrada.
+    assert.throws(() => recordFirehoseSync(tmp), /Unknown volume id: firehose/);
+    assert.ok(!fs.existsSync(path.join(tmp, 'volumes.state.json')));
+    fs.rmSync(path.join(tmp, 'volumes.json'));
+    assert.throws(() => recordFirehoseSync(tmp), /not operable|not found/i);
+    assert.ok(!fs.existsSync(path.join(tmp, 'volumes.state.json')));
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
 
 test('refreshFirehoseCorpusCounts counts any file type; manifest sealed, state recorded (U199)', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-feed-u97-'));
+  const tmp = seedFirehoseManifest(fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-feed-u97-')));
   const prev = process.env.ZEUS_VOLUMES_ROOT;
   try {
-    ensureFirehoseVolumeLayout(tmp);
+    resolveFirehoseVolumeRoot(tmp);
     const rawDir = path.join(tmp, 'DISK_01', 'FIREHOSE', 'raw', 'mixed');
     fs.mkdirSync(rawDir, { recursive: true });
     fs.writeFileSync(path.join(rawDir, 'a.json'), '{}\n', 'utf8');
