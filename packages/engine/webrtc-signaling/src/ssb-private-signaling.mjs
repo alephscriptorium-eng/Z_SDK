@@ -112,6 +112,33 @@ export class SsbPrivateSignalingService extends SignalingService {
   }
 
   /**
+   * Extiende el retrato del padre con la política PROPIA de este carril
+   * (WP-U251 · devolución, M5). Los dos campos muerden, medido:
+   *  - `_allowTrickle`: el carril cierra el trickle ICE **a propósito** (la
+   *    latencia de gossip no lo aguanta). Un `connect()` fallido lo dejaba
+   *    ENCENDIDO — 0 → 1 publicaciones por `sendIceCandidate`.
+   *  - `_transport`: se instalaba antes de lo que lanza y, como
+   *    `_connected` sigue en pie de un connect anterior, el `sendOffer`
+   *    siguiente publicaba la peer-card local —**con su token dentro**—
+   *    por el transporte que instaló la llamada que falló.
+   * @protected
+   */
+  _policySnapshot() {
+    return {
+      ...super._policySnapshot(),
+      transport: this._transport,
+      allowTrickle: this._allowTrickle
+    };
+  }
+
+  /** @param {ReturnType<SsbPrivateSignalingService['_policySnapshot']>} snapshot @protected */
+  _policyRestore(snapshot) {
+    super._policyRestore(snapshot);
+    this._transport = snapshot.transport;
+    this._allowTrickle = snapshot.allowTrickle;
+  }
+
+  /**
    * WP-U251 (defecto 4): política en bloque, con rollback. El vector que lo
    * hacía fail-open es propio de este carril: `connect(feed, {
    * requireSsbId: false, admission: 'anonymous' })` rebajaba la exigencia

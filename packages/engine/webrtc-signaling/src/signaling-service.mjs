@@ -114,17 +114,34 @@ export class SignalingService extends EventEmitter {
   }
 
   /**
-   * Retrato de la política de exigencias (WP-U251 · defecto 4).
+   * Retrato de la política (WP-U251 · defecto 4).
    * Un `connect()` que LANZA no puede dejar el estado a medias: si ya
    * aplicó `admission` / `requireSsbId` / … y después falla, la sesión
    * queda MÁS permisiva que antes de llamar, sin cable que lo justifique.
    * Eso es fail-open. Se saca el retrato al entrar y se restaura al salir
    * por excepción.
-   * @returns {{ admission: string, requiredRole: string|null, requireSsbId: boolean, requireSeatSignature: boolean, peerCard: object|null }}
+   *
+   * ⚠ **El inventario ES el arreglo** (devolución de U251, B1). La primera
+   * entrega retrataba 5 campos y razonaba que `userId` «no es una
+   * exigencia». Es falso, y en los dos carriles:
+   *  - **SSB**: `joinRoom` estampa `this.userId` como `ssbId` en una card
+   *    que no lo trae — o sea que `userId` **acuña la identidad** que
+   *    satisface `requireSsbId`, la exigencia estructural del carril. Un
+   *    `connect()` fallido dejaba acuñada esa identidad.
+   *  - **socket**: `joinRoom` juzga `claimedFrom: this.userId` (el arreglo
+   *    del defecto 1). Un `connect()` fallido que cambiara `userId` a algo
+   *    sin forma de feed **deshacía ese arreglo**.
+   * Un rollback vale lo que valga su inventario: si un campo decide lo que
+   * se exige después, es política — aunque no se llame `require*`.
+   *
+   * Las subclases que guarden política propia EXTIENDEN este par (lo hace
+   * `SsbPrivateSignalingService` con `transport` y `allowTrickle`).
+   * @returns {{ userId: string, admission: string, requiredRole: string|null, requireSsbId: boolean, requireSeatSignature: boolean, peerCard: object|null }}
    * @protected
    */
   _policySnapshot() {
     return {
+      userId: this.userId,
       admission: this.#admission,
       requiredRole: this._requiredRole,
       requireSsbId: this._requireSsbId,
@@ -134,14 +151,24 @@ export class SignalingService extends EventEmitter {
   }
 
   /**
-   * Deshace `_policySnapshot()`. Escribe `#admission` DIRECTO a propósito:
-   * restaura un valor que ya pasó por `setAdmission()` en su día, y hacerlo
-   * por el método público volvería a chocar con overrides como el del
-   * carril SSB (que lanza ante `anonymous`) durante un rollback.
+   * Deshace `_policySnapshot()`.
+   *
+   * Escribe `#admission` DIRECTO a propósito: restaura un valor que ya pasó
+   * por `setAdmission()` en su día, y hacerlo por el método público
+   * volvería a chocar con overrides como el del carril SSB (que lanza ante
+   * `anonymous`) durante un rollback.
+   *
+   * ✎ Precisión (devolución de U251, M2): esto **es** una segunda vía de
+   * escritura del modo, así que la frase «la única escritura es
+   * `setAdmission()`» sería falsa. Lo exacto: `setAdmission()` es la única
+   * escritura **que valida**, y ésta es `@protected` y sólo devuelve un
+   * valor previamente validado por ella — dirección fail-closed, nunca
+   * introduce un modo que no estuviera ya vigente en este objeto.
    * @param {ReturnType<SignalingService['_policySnapshot']>} snapshot
    * @protected
    */
   _policyRestore(snapshot) {
+    this.userId = snapshot.userId;
     this.#admission = snapshot.admission;
     this._requiredRole = snapshot.requiredRole;
     this._requireSsbId = snapshot.requireSsbId;
@@ -185,19 +212,30 @@ export class SignalingService extends EventEmitter {
     const declaredSsbId = opts.requireSsbId;
     const declaredSeat = opts.requireSeatSignature;
     const declaredRole = opts.role;
-    if (declaredSsbId != null) this._requireSsbId = Boolean(declaredSsbId);
-    if (declaredSeat != null) {
-      this._requireSeatSignature = Boolean(declaredSeat);
-    }
+
+    // WP-U251 · devolución (B2): se VALIDA con la política efectiva y sólo
+    // se ESCRIBE si la card pasa. Antes se escribía primero, así que una
+    // llamada que LANZABA dejaba `requireSsbId` / `requireSeatSignature`
+    // rebajados — el mismo fail-open del defecto (4), por la vía DIRECTA,
+    // que el retrato de `connect()` no cubre. Aquí no hace falta retrato:
+    // no escribir hasta saber es más barato que deshacer.
+    const nextRequireSsbId =
+      declaredSsbId != null ? Boolean(declaredSsbId) : this._requireSsbId;
+    const nextRequireSeat =
+      declaredSeat != null ? Boolean(declaredSeat) : this._requireSeatSignature;
+
     const check = assertSignalingPeerCard(peerCard, {
       role: declaredRole ?? this._requiredRole ?? undefined,
       now: opts.now,
-      requireSsbId: this._requireSsbId,
-      requireSeatSignature: this._requireSeatSignature
+      requireSsbId: nextRequireSsbId,
+      requireSeatSignature: nextRequireSeat
     });
     if (!check.ok) {
       throw new Error(`SignalingService.setPeerCard: ${check.error}`);
     }
+
+    this._requireSsbId = nextRequireSsbId;
+    this._requireSeatSignature = nextRequireSeat;
     this._peerCard = peerCard;
     if (declaredRole) this._requiredRole = declaredRole;
   }

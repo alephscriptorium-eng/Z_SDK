@@ -118,24 +118,49 @@ Invariantes que el modo anónimo **no** relaja:
      **sobrescribe a la constante `peer-card`**. Pinchar el campo o llamar
      `SignalingService.prototype.setAdmission.call(svc, 'anonymous')` ya no
      mueve el veredicto del torno: no lo mira.*
-   - *Lo que sigue sin garantizarse: una **subclase** propia puede volver a
-     sobrescribir `getAdmission()`. Eso ya es escribir otro servicio, no
-     pinchar éste.*
+   - *Lo que sigue sin garantizarse, dicho con precisión (devolución de
+     U251, M1): el candado pasó de **campo público** a **método público**,
+     no a estructural. Quien ejecuta código en el proceso lo pincha con una
+     línea, y hay **tres** vías medidas: una **subclase** que vuelva a
+     sobrescribir `getAdmission()`; una **sombra de instancia**
+     (`svc.getAdmission = () => 'anonymous'`, que gana al prototipo); y
+     **borrar el método del prototipo** (`delete
+     SsbPrivateSignalingService.prototype.getAdmission`) para caer al del
+     padre y escribirlo con `SignalingService.prototype.setAdmission.call`.
+     Lo garantizado sigue siendo: **no hay configuración que lo abra**, y
+     ahora tampoco lo abre una escritura de campo.*
 7. **Un modo de admisión desconocido LANZA, no se degrada.** Vale para
    cualquier valor que no sea uno de los dos declarados, **incluidos los
    falsy** (`''`, `0`, `NaN`, `false`). Sólo `undefined` / `null` significan
    «no declarado» ⇒ statu quo `peer-card`. Un typo de despliegue no se
    depura a ciegas.
 
-Estos invariantes valen **en los dos gemelos**. El de navegador
-(`@zeus/webrtc-viewer` · `BrowserSocketSignalingService`) acepta las
-mismas tres exigencias y expone `setAdmission` / `getSessionRole` /
-`describeAdmission` / `getSsbId`. ✎ *Divergencia de U251 (defecto 5)
-**cerrada y medida**: con `admission` falsy (`''`, `0`, `NaN`, `false`) el
-lado Node aceptaba en silencio cayendo a `peer-card` y el de navegador
-lanzaba. Ambas direcciones eran seguras pero **no idénticas**. Node sigue
-ahora al navegador —gana la ruidosa— y los dos coinciden en los 9 valores
-medidos (los 2 modos, 4 falsy, un typo no vacío, `undefined` y `null`).*
+> ⚠ **Estos invariantes describen ESTE paquete, no los dos gemelos.**
+> Hasta U251 esta sección cerraba con *«valen en los dos gemelos»*. **Es
+> falso, y lo era ya**; la devolución de U251 lo midió. El gemelo de
+> navegador (`@zeus/webrtc-viewer` · `BrowserSocketSignalingService`)
+> comparte la doctrina y la superficie —`setAdmission` / `getSessionRole` /
+> `describeAdmission` / `getSsbId`, y las tres exigencias en su
+> configuración— pero **hoy no cumple dos de los invariantes de arriba**:
+>
+> | invariante | navegador | qué pasa allí |
+> | ---------- | --------- | ------------- |
+> | **2** (claim sin sello deniega, incluido el `join-room`) | ❌ | su `joinRoom` anónimo (`browser-signaling.mjs:270`) no pasa `claimedFrom`: con `userId` de forma feed **saca el feed al cable**. No es «una doble lectura»: es **fail-open vivo**, el mismo defecto (1) que aquí se cerró. |
+> | **4** (toda exigencia configurada vuelve a exigir card) | ⚠ parcial | su `setPeerCard(peerCard)` **no acepta `opts`**: `setPeerCard(card, { requireSsbId: true })` aplica la exigencia en Node y **la ignora en silencio** en el navegador (medido). |
+> | 5, 6, 7 y la doctrina `admisión ≠ permiso` | ✅ | sin divergencia medida |
+>
+> Cerrarlos es de otro reparto (`packages/mesh/**`). Los dos arreglos son
+> portables tal cual: una línea `claimedFrom: this.userId` en el
+> `_gateOpts()` del `joinRoom`, y un `opts` en `setPeerCard`.
+
+✎ *Divergencia de U251 (defecto 5) **cerrada y medida**, y sólo ésa: con
+`admission` falsy (`''`, `0`, `NaN`, `false`) el lado Node aceptaba en
+silencio cayendo a `peer-card` y el de navegador lanzaba. Ambas
+direcciones eran seguras pero **no idénticas**. Node sigue ahora al
+navegador —gana la ruidosa— y los dos coinciden en los **9 valores de
+`admission`** medidos (2 modos, 4 falsy, un typo no vacío, `undefined` y
+`null`). **La paridad medida es sobre `admission` y nada más**: en
+`requireSsbId` los gemelos siguen divergiendo (fila 4 de la tabla).*
 
 ### Hook SSB (extensión Z_SDK #4)
 
