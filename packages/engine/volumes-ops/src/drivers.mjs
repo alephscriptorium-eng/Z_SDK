@@ -14,12 +14,14 @@
 import { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
 import { FORCES_DRIVER, FORCES_FAMILY } from './driver-forces.mjs';
 import { FIREHOSE_DRIVER, FIREHOSE_FAMILY } from './driver-firehose.mjs';
+import { SSB_DRIVER, SSB_FAMILY } from './driver-ssb.mjs';
 
 /** @type {Record<string, { family: string, detect: Function, validate: Function, merge: Function }>} */
 export const FAMILY_DRIVERS = Object.freeze({
   [LINEAS_FAMILY]: LINEAS_DRIVER,
   [FORCES_FAMILY]: FORCES_DRIVER,
-  [FIREHOSE_FAMILY]: FIREHOSE_DRIVER
+  [FIREHOSE_FAMILY]: FIREHOSE_DRIVER,
+  [SSB_FAMILY]: SSB_DRIVER
 });
 
 /**
