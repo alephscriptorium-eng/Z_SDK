@@ -1,20 +1,21 @@
 import { DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk/env';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
+import { RELAY_CONTRACT } from './relay-contract.mjs';
 
 export const NAMESPACE = 'runtime';
 
-export const RELAY_UPSTREAM = ['CLIENT_REGISTER', 'CLIENT_SUSCRIBE', 'ROOM_MESSAGE'];
+/**
+ * Política de propagación del relay — WP-U194.
+ *
+ * Aquí NO hay lista: los nombres viven en una sola tabla, la de
+ * `src/relay-contract.mjs` (versionada y sellada). Esto son alias por
+ * identidad (`===` con `RELAY_CONTRACT.upstream` / `.downstream`) para no
+ * romper a los consumidores que ya importaban de este módulo.
+ * Añadir o quitar un evento AQUÍ es un error: se hace en el contrato.
+ */
+export const RELAY_UPSTREAM = RELAY_CONTRACT.upstream;
 
-export const RELAY_DOWNSTREAM_TOP = new Set([
-  'SET_STATE',
-  'deck:resolved',
-  'deck:error',
-  'catalog:servers',
-  'state',
-  'intent',
-  'ledger',
-  'track'
-]);
+export const RELAY_DOWNSTREAM_TOP = RELAY_CONTRACT.downstream;
 
 /**
  * @param {object} [options]
