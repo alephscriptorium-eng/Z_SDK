@@ -62,7 +62,9 @@ export class SsbPrivateSignalingService extends SignalingService {
     this._requireSeatSignature = Boolean(options.requireSeatSignature);
     // Una opción `admission` no se ignora en silencio: se aplica (y en
     // este carril, `anonymous` lanza — ver `setAdmission` abajo).
-    if (options.admission) this.setAdmission(options.admission);
+    // WP-U251 (defecto 5): `!= null`, paridad con el gemelo de navegador —
+    // `admission: ''` es un typo de despliegue, no un «no declarado».
+    if (options.admission != null) this.setAdmission(options.admission);
   }
 
   /**
@@ -72,6 +74,9 @@ export class SsbPrivateSignalingService extends SignalingService {
    * es legal y `setAdmission()` es público y heredado. Aquí se hace
    * estructural: en un carril cuyo transporte ES la identidad del feed,
    * «anónimo» no es un modo, es una contradicción.
+   *
+   * Esto es la mitad RUIDOSA del candado: la vía de configuración se
+   * entera. La mitad ESTRUCTURAL es `getAdmission()` (WP-U251 · defecto 2).
    * @param {string} mode
    */
   setAdmission(mode) {
@@ -83,41 +88,100 @@ export class SsbPrivateSignalingService extends SignalingService {
     return super.setAdmission(mode);
   }
 
+  /**
+   * WP-U251 (defecto 2) — el candado, de verdad.
+   *
+   * U197 dejó anotado el alcance exacto: `setAdmission()` era un `override`
+   * de método sobre un campo público, así que garantizaba «no hay
+   * configuración que lo abra», NO «es imposible por construcción» —
+   * `svc._admission = …`, `SignalingService.prototype.setAdmission.call(…)`,
+   * una subclase o `setPrototypeOf` lo pinchaban desde dentro del proceso.
+   *
+   * Ahora el modo del torno es una CONSTANTE en este carril: `#admission`
+   * es privado (nadie lo escribe sin pasar por `setAdmission`) y el torno
+   * —`_gatedOutbound` / `handleMessage` en `signaling-service.mjs`— lee
+   * AQUÍ. Aunque alguien consiga escribir el campo, el torno no lo mira.
+   * @returns {string} siempre `peer-card`
+   */
+  getAdmission() {
+    return SIGNALING_ADMISSION.peerCard;
+  }
+
   getTransport() {
     return this._transport;
   }
 
   /**
+   * Extiende el retrato del padre con la política PROPIA de este carril
+   * (WP-U251 · devolución, M5). Los dos campos muerden, medido:
+   *  - `_allowTrickle`: el carril cierra el trickle ICE **a propósito** (la
+   *    latencia de gossip no lo aguanta). Un `connect()` fallido lo dejaba
+   *    ENCENDIDO — 0 → 1 publicaciones por `sendIceCandidate`.
+   *  - `_transport`: se instalaba antes de lo que lanza y, como
+   *    `_connected` sigue en pie de un connect anterior, el `sendOffer`
+   *    siguiente publicaba la peer-card local —**con su token dentro**—
+   *    por el transporte que instaló la llamada que falló.
+   * @protected
+   */
+  _policySnapshot() {
+    return {
+      ...super._policySnapshot(),
+      transport: this._transport,
+      allowTrickle: this._allowTrickle
+    };
+  }
+
+  /** @param {ReturnType<SsbPrivateSignalingService['_policySnapshot']>} snapshot @protected */
+  _policyRestore(snapshot) {
+    super._policyRestore(snapshot);
+    this._transport = snapshot.transport;
+    this._allowTrickle = snapshot.allowTrickle;
+  }
+
+  /**
+   * WP-U251 (defecto 4): política en bloque, con rollback. El vector que lo
+   * hacía fail-open es propio de este carril: `connect(feed, {
+   * requireSsbId: false, admission: 'anonymous' })` rebajaba la exigencia
+   * federada en la línea de arriba y LANZABA en la de abajo — dejando el
+   * carril SSB aceptando cards sin feed id por culpa de una llamada que
+   * falló. `requireSsbId` es aquí la exigencia estructural del carril.
    * @param {string} userId — local feedId (must match transport.whoami when set)
    * @param {SsbPrivateSignalingOptions} [config]
    */
   async connect(userId, config = {}) {
-    const opts = { ...this._options, ...config };
-    this._transport = opts.transport ?? this._transport;
-    if (!this._transport) {
-      throw new Error(
-        'SsbPrivateSignalingService.connect requires a SsbPrivateTransport (inject createSbotPrivateTransport or createInMemorySsbPrivateBus)'
-      );
-    }
+    const snapshot = this._policySnapshot();
+    try {
+      const opts = { ...this._options, ...config };
+      this._transport = opts.transport ?? this._transport;
+      if (!this._transport) {
+        throw new Error(
+          'SsbPrivateSignalingService.connect requires a SsbPrivateTransport (inject createSbotPrivateTransport or createInMemorySsbPrivateBus)'
+        );
+      }
 
-    const who = this._transport.whoami();
-    if (who && userId && who !== userId) {
-      throw new Error(
-        `SsbPrivateSignalingService: userId ${userId} does not match transport whoami ${who}`
-      );
-    }
-    this.userId = userId || who;
-    this._allowTrickle = opts.allowTrickle === true;
-    // D1: normalizar al guardar.
-    if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
-    if (opts.requireSeatSignature != null) {
-      this._requireSeatSignature = Boolean(opts.requireSeatSignature);
-    }
-    if (opts.admission) this.setAdmission(opts.admission);
+      const who = this._transport.whoami();
+      if (who && userId && who !== userId) {
+        throw new Error(
+          `SsbPrivateSignalingService: userId ${userId} does not match transport whoami ${who}`
+        );
+      }
+      this.userId = userId || who;
+      this._allowTrickle = opts.allowTrickle === true;
+      // D1: normalizar al guardar.
+      if (opts.requireSsbId != null) this._requireSsbId = Boolean(opts.requireSsbId);
+      if (opts.requireSeatSignature != null) {
+        this._requireSeatSignature = Boolean(opts.requireSeatSignature);
+      }
+      // U251 defecto 5: `!= null` — paridad con el gemelo de navegador.
+      if (opts.admission != null) this.setAdmission(opts.admission);
 
-    this._unbind();
-    this._unsub = this._transport.subscribePrivate((msg) => this._onPrivateMsg(msg));
-    this.handleConnectionChange(true);
+      this._unbind();
+      this._unsub = this._transport.subscribePrivate((msg) => this._onPrivateMsg(msg));
+      this.handleConnectionChange(true);
+    } catch (err) {
+      this._policyRestore(snapshot);
+      throw err;
+    }
   }
 
   async disconnect() {
