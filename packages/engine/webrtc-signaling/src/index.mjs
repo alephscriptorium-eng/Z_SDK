@@ -45,8 +45,11 @@ export {
 
 export {
   PEER_CARD_GATED_TYPES,
+  SIGNALING_ADMISSION,
   isPeerCardGatedType,
+  isPeerCardPresented,
   assertSignalingPeerCard,
+  assertSignalingAdmission,
   peerCardFromMessage,
   ssbIdFromMessage
 } from './peer-card-gate.mjs';

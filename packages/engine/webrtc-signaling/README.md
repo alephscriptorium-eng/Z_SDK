@@ -11,7 +11,9 @@ Señalización WebRTC (WP-U88 / WP-U90 / WP-U93 / D-17 / D-20).
 | `SsbPrivateSignalingService` | Impl. vía DMs SSB `type: webrtc-signal` / ssb-box (U90) |
 | `createInMemorySsbPrivateBus` | Pub mediador in-process (tests / e2e) |
 | `createSbotPrivateTransport` | Adaptador duck-typed a `sbot.private.*` |
-| `assertSignalingPeerCard` | Torno: forma + frescura + rol (U93) |
+| `assertSignalingPeerCard` | Torno: forma + frescura + rol (U93) — **sin cambios** |
+| `assertSignalingAdmission` | Admisión de antesala: `peer-card` (defecto) o `anonymous` (U197) |
+| `SIGNALING_ADMISSION` | Los dos únicos modos declarados (U197) |
 | `resolveIceServers` | Reexport de `@zeus/presets-sdk/env` |
 | `negotiateDataChannel` | Helper DataChannel (`trickle` default true) |
 | `negotiateDataChannelComplete` | Offer+answer completos, sin trickle (SSB) |
@@ -40,6 +42,65 @@ await alice.joinRoom('ROOM', card); // sin card ⇒ rechazo
 
 Identidad ad-hoc del handshake (`peerId` / `displayName` sueltos) queda
 sustituida por el card (`sessionId` / `displayName` / `scopes` en el ticket).
+
+## Antesala anónima (WP-U197) — `admisión ≠ permiso`
+
+U186 fijó **transporte ≠ permiso**. U197 añade el corolario: la
+**admisión** a la antesala WebRTC tampoco es permiso. El servicio declara
+localmente su modo; el par remoto no lo negocia ni lo declara por el cable.
+
+| modo | quién entra a la antesala | rol de la sesión |
+| ---- | ------------------------ | ---------------- |
+| `peer-card` (**defecto**, statu quo U93/U186) | sólo con card válida | el que acredite la card, consultado **en la acción** |
+| `anonymous` (U197) | cualquiera, sin card | **`null` siempre** |
+
+```js
+import {
+  SocketRoomSignalingService,
+  SIGNALING_ADMISSION
+} from '@zeus/webrtc-signaling';
+
+const anon = new SocketRoomSignalingService({
+  url,
+  room: 'ROOM',
+  admission: SIGNALING_ADMISSION.anonymous
+});
+await anon.connect('alice');   // sin card
+await anon.joinRoom('ROOM');   // sin card
+await anon.sendOffer('bob', offer); // offer/answer/ICE sin card
+anon.getSessionRole(); // → null  (la antesala NO concede)
+```
+
+Invariantes que el modo anónimo **no** relaja:
+
+1. **Card presentada e inválida RECHAZA**, jamás degrada a anónimo
+   (invariante U186; vale también en modo anónimo).
+2. **Claim sin sello deniega**: un mensaje anónimo que traiga `ssbId` —o
+   un `from` con forma de feed SSB— se rechaza. Lo que no se acredita, no
+   viaja: el cable anónimo sale sin `peerCard` y sin `ssbId`.
+3. **El modo no se negocia por el cable**: `admission` es config local;
+   un payload que se declare anónimo no abre una antesala estricta.
+4. **Cualquier exigencia configurada vuelve a exigir card** aunque el modo
+   sea anónimo (`requiredRole`, `requireSsbId`, `requireSeatSignature`):
+   la ausencia deniega. Las exigencias se leen **por truthiness**, igual
+   que el torno U186 — `requireSsbId: 1` exige, no se descarta.
+5. **`assertSignalingPeerCard` no cambia de semántica.** Es el portero que
+   **importan** terceros (`@zeus/blob-sync-harness`,
+   `@zeus/blobstore-client`); ante card ausente sigue denegando, con modo
+   anónimo o sin él. Ojo con lo que esto *no* dice: hoy esos consumidores
+   sólo lo invocan desde spikes y fixtures, no desde una ruta de datos
+   viva — el motivo para no tocarlo es que **alguien lo importa**, no que
+   proteja un carril en producción.
+6. **El carril SSB no admite modo anónimo**, y no por configuración sino
+   por construcción: `SsbPrivateSignalingService.setAdmission('anonymous')`
+   **lanza**. En un carril cuyo transporte *es* la identidad del feed,
+   anónimo no es un modo.
+
+Estos invariantes valen **en los dos gemelos**. El de navegador
+(`@zeus/webrtc-viewer` · `BrowserSocketSignalingService`) acepta las
+mismas tres exigencias y expone `setAdmission` / `getSessionRole` /
+`describeAdmission` / `getSsbId`; un modo de admisión desconocido **lanza**
+en ambos.
 
 ### Hook SSB (extensión Z_SDK #4)
 
