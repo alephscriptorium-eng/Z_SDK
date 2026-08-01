@@ -151,7 +151,7 @@
  * colisiones DENTRO de un volumen. NO cubre el caso de dos volúmenes ANIDADOS
  * en el mismo pack (`DISK_01/FIREHOSE` y `DISK_01/FIREHOSE/raw`), donde el
  * mismo fichero entra en dos planes y `importPack` lo renombra dos veces: eso
- * ocurre en el bucle por volumen de `import.mjs:357-462`, fuera del alcance de
+ * ocurre en el bucle por volumen de `import.mjs:379-477`, fuera del alcance de
  * cualquier driver, y sigue siendo deuda de U201 — citada, no arreglada aquí.
  *
  * ── Cursor sellado

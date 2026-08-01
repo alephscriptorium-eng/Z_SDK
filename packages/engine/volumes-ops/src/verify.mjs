@@ -38,7 +38,7 @@
  *  7. `familia`         — corre el `validate()` REAL del driver de familia
  *                         contra el árbol VIVO (no contra el staging).
  *  8. `corpora`         — remide y compara con los `files`/`bytes` que el
- *                         import selló en el manifiesto (import.mjs:490-507).
+ *                         import selló en el manifiesto (import.mjs:539-552).
  *
  * Fronteras declaradas (lo que este verificador NO garantiza):
  * - `source.imported.snapshot` sólo tiene forma «árbol por unidad» en la

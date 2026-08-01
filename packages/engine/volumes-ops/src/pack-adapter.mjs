@@ -6,7 +6,7 @@
  * descriptor**. Su `manifest.json` declara `zeus.startpack/v0` (`game`, `id`,
  * `round`, `seeds`, `volumes:{root,slots}`) y carece de `name` y de `hashes`,
  * así que `importPack` lo rechaza en VERIFICAR con `pack_manifest_incompleto`
- * (src/import.mjs:162-172). Los ficheros, en cambio, pueden ser exactamente
+ * (src/import.mjs:177-186). Los ficheros, en cambio, pueden ser exactamente
  * los que el destino espera. Lo que falta no son los datos: es el manifiesto.
  *
  * Este módulo es AGNÓSTICO DE JUEGO a propósito —vive bajo `packages/engine`,
@@ -20,13 +20,13 @@
  *   de tocar disco. La frontera es dura por decisión del custodio: el árbol
  *   del mundo hermano no se muta jamás.
  * - **El árbol de datos de un pack son los DISCOS.** `<packRoot>/volumes/` es
- *   el dataRoot (CONTRATO-IMPORT-PACK-v1 §0.7 · import.mjs:174), y lo que
+ *   el dataRoot (CONTRATO-IMPORT-PACK-v1 §0.7 · import.mjs:189), y lo que
  *   cuelga de él son directorios `DISK_xx`. El `volumes/volumes.json` de un
  *   startpack es un manifiesto de ROOT —la otra mitad del par manifiesto/
  *   estado de U199— y no tiene sitio dentro de un pack: se **descarta con
  *   reporte** en `skipped`, nunca en silencio. Si viajara, `walkTree` lo
  *   enumeraría e `importPack` abortaría con `fichero_sin_enumerar`
- *   (import.mjs:187-190) o lo aterrizaría encima del manifiesto del destino.
+ *   (import.mjs:202-204) o lo aterrizaría encima del manifiesto del destino.
  * - **Nada se adivina.** Los volúmenes los DECLARA quien llama (id, disk,
  *   path, corpora). El adaptador comprueba que la declaración y el árbol
  *   coinciden; no deriva topología de nombres de directorio.
@@ -37,7 +37,7 @@
  *   cubre — e `importPack` devuelve `ok:true` (ver README · «juntura»).
  * - **Enlaces: se rechaza, no se sigue.** Un symlink/junction en la fuente es
  *   un ancla viva; se aborta con `symlink_en_origen` en vez de materializar su
- *   destino (mismo criterio que import.mjs:176-179, aplicado un paso antes).
+ *   destino (mismo criterio que import.mjs:191-193, aplicado un paso antes).
  *
  * Reencuadre declarado: el descriptor lo iba a producir el mundo hermano. Se
  * construye aquí para no depender de otro mundo; el día que llegue el suyo

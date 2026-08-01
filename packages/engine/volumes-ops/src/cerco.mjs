@@ -2,9 +2,9 @@
  * Cerco del ROOT (WP-U206 · paso 7 del CA local-first).
  *
  * El cerco del lado del PACK ya existía y es duro: `importPack` rechaza
- * symlinks en el pack (import.mjs:176-179), rechaza material de identidad por
- * denylist de basename (import.mjs:54, :180-185) y vuelve a barrer el árbol
- * aterrizado en el paso NO-LINK (import.mjs:546-555). Del lado del ROOT no
+ * symlinks en el pack (import.mjs:191-193), rechaza material de identidad por
+ * denylist de basename (import.mjs:59, :195-199) y vuelve a barrer el árbol
+ * aterrizado en el paso NO-LINK (import.mjs:602-611). Del lado del ROOT no
  * había nada: un root puede haber recibido material por vías que no son el
  * import, y la réplica A→B copia lo que encuentre.
  *
@@ -15,7 +15,7 @@
  * ── LOS CUATRO PREDICADOS, ESCRITOS ──────────────────────────────────────
  *
  * 1 · ENLACE VIVO. Toda entrada cuyo `lstatSync().isSymbolicLink()` sea
- *     cierto. Mismo criterio que import.mjs:66-90 (lstat, jamás se sigue).
+ *     cierto. Mismo criterio que import.mjs:81-104 (lstat, jamás se sigue).
  *     En Windows las junctions de directorio entran por aquí: Node las
  *     reporta como symlink en `lstat`.
  *
@@ -37,7 +37,7 @@
  *         `volumes.<id>.source.imported.origin` DENTRO de `volumes.json`.
  *         El contrato dice literalmente que la URL de origen viaja «solo
  *         como metadato inerte» (CONTRATO-IMPORT-PACK-v1 §3, y el comentario
- *         de import.mjs:522), así que exentarla es aplicar el contrato, no
+ *         de import.mjs:567), así que exentarla es aplicar el contrato, no
  *         abrir un boquete: la exención es **por ruta de clave exacta**, y
  *         sólo en el manifiesto. La misma URL en cualquier otro sitio del
  *         root —incluido cualquier otro campo del propio `volumes.json`— es
