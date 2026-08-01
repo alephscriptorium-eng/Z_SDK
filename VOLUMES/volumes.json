@@ -22,8 +22,22 @@
       "label": "Lineas (synthetic fixture)",
       "source": {
         "kind": "fixture",
-        "provenance": "packages/engine/linea-kit/test/fixtures/lineas (WP-U62)"
-      }
+        "provenance": "packages/engine/linea-kit/test/fixtures/lineas (WP-U62)",
+        "imported": {
+          "name": "volumes-root-referencia",
+          "version": "1.0.0",
+          "packHash": "26f215e8d111b44babcc7b033fd48ee76d06c6e5dd863e7f1fc0bd5b2245ea89",
+          "importedAt": "2026-08-01T18:31:50.466Z",
+          "hashes": {
+            "demo/manifest.json": "76a1693d54a604a548132d19e5deb09db35a3af7e0ddaab0b7a421c8e302897c",
+            "demo/nodos/N01/meta.json": "db17c6dbafd7386577a4cf606cc0cc5b2fa3fcffa088492da6c66e6913a697b3",
+            "demo/wp/historia/manifest.json": "21fa761aa338ccdcb92a86ed51bf8a0f0924f6f3f05f6262a58a251bef1ea5b5",
+            "demo/wp/historia/nodo-sections.json": "c97ffa73b7202bf41da0aeed343761db2b40fd9f74d0ae97edc6207d9e747d33",
+            "registry.yaml": "1e2fb932ae5bb57946a7aebe6883463087d6f865f6bd7e98cd44a9b516926e91"
+          }
+        }
+      },
+      "family": "lineas"
     },
     "forces": {
       "disk": "DISK_03",
@@ -32,7 +46,27 @@
       "label": "Forces (synthetic fixture)",
       "source": {
         "kind": "fixture",
-        "provenance": "packages/engine/linea-kit/test/fixtures/forces (WP-U62)"
+        "provenance": "packages/engine/linea-kit/test/fixtures/forces (WP-U62)",
+        "imported": {
+          "name": "volumes-root-referencia",
+          "version": "1.0.0",
+          "packHash": "26f215e8d111b44babcc7b033fd48ee76d06c6e5dd863e7f1fc0bd5b2245ea89",
+          "importedAt": "2026-08-01T18:31:50.468Z",
+          "hashes": {
+            "cotas/sima/cota.json": "e81c78f3bfb41c826b1b973d20232b2a477f6f8fa2fd2885da22fb4ad98a13a1",
+            "cotas/sima/manifest.json": "16c4710b8972d6976a21fe4f00434c5c17144b3b8ae9f98bb9e5220cc748f268",
+            "forces/force-sample/escenas/sesion-01/01-sample/output.md": "38cac0194f78f9f27c7a3c5e8929b8d296af6c8735f63ef6511a1e05741997cc",
+            "forces/force-sample/escenas/sesion-01/01-sample/prompt.md": "925aaf76cf12a2fa19b06efc9454d5cd9df20f23181e152dd098d4d2cd332ea7",
+            "forces/force-sample/escenas/sesion-01/01-sample/think.md": "0e2f62e5fa5088161118444f57fc45eecdf646f83b2a220ac4e22fb33127d816",
+            "forces/force-sample/force.json": "6179e53a3f7ff765337feb81dba272087697b9fb513d66825c189ce9192bd2c7",
+            "forces/force-sample/manifest.json": "5e2bf61d154d87f57254066f488a5d7b390f11d39bb26f7ee3470a7f7b8f1294",
+            "registry.json": "3512695882b5cb446d2a3092dcfe506c5f642339b14918cab4e314496152f3fa"
+          },
+          "snapshot": {
+            "forces/force-sample": "dce4cb0ba2cf68d39c419742d8824d766fa0fc72f63fae8f492757608596fc48",
+            "cotas/sima": "a3bb1b72b5e3aa90ef0e6f15ce679bcdfcb9bb8105362bb3834e3efabace554e"
+          }
+        }
       },
       "corpora": [
         {
@@ -45,7 +79,8 @@
           "path": "cotas",
           "label": "Cotas fixture"
         }
-      ]
+      ],
+      "family": "forces"
     },
     "ssb": {
       "disk": "DISK_04",

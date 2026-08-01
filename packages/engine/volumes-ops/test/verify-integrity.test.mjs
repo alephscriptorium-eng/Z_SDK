@@ -10,6 +10,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -111,10 +112,117 @@ test('VERDE · root recién importado = íntegro, con los legs esperados', () =>
     const rep = verifyRootIntegrity();
     assert.equal(rep.ok, true, JSON.stringify(rep.findings));
     const legs = rep.checks.filter((c) => c.ok).map((c) => c.check);
-    for (const leg of ['manifiesto', 'sello_vs_ledger', 'volumen', 'snapshot', 'familia', 'corpora']) {
+    for (const leg of [
+      'manifiesto',
+      'sello_vs_ledger',
+      'volumen',
+      'ficheros',
+      'snapshot',
+      'familia',
+      'corpora'
+    ]) {
       assert.ok(legs.includes(leg), `falta el leg ${leg}: ${JSON.stringify(legs)}`);
     }
     assert.doesNotThrow(() => assertRootIntegrity());
+  } finally {
+    ctx.restore();
+  }
+});
+
+test('U258 · el leg `ficheros` sella TODO el árbol del volumen que trajo el import', () => {
+  const ctx = importedRoot();
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(ctx.root, 'volumes.json'), 'utf8'));
+    const sellados = Object.keys(cfg.volumes.forces.source.imported.hashes);
+    const enDisco = collectFiles(ctx.volDir);
+    assert.deepEqual(
+      sellados.sort(),
+      enDisco,
+      'el sello no cubre exactamente los ficheros del volumen'
+    );
+    const leg = verifyRootIntegrity().checks.find((c) => c.check === 'ficheros');
+    assert.equal(leg.ok, true);
+    assert.equal(leg.files, enDisco.length);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test('ROJO (U258) · registry.json alterado y AÚN VÁLIDO → fichero_corrupto; los demás legs lo dejan pasar', () => {
+  // El fichero que ninguna unidad del snapshot cubre y ningún corpus mide.
+  // Antes de U258 su única cobertura era el schema, así que una edición que
+  // siguiera siendo válida contra `force-registry` pasaba sin una queja. La
+  // asimetría se asevera: `familia` y `snapshot` VERDES, `ficheros` ROJO.
+  const ctx = importedRoot();
+  try {
+    const abs = path.join(ctx.volDir, 'registry.json');
+    const reg = JSON.parse(fs.readFileSync(abs, 'utf8'));
+    reg.description = 'editado a mano, sigue válido contra el schema';
+    fs.writeFileSync(abs, `${JSON.stringify(reg, null, 2)}\n`, 'utf8');
+
+    const rep = verifyRootIntegrity();
+    assert.ok(
+      rep.checks.some((c) => c.check === 'familia' && c.ok === true),
+      'premisa rota: el leg de familia ya lo veía'
+    );
+    assert.ok(
+      rep.checks.some((c) => c.check === 'snapshot' && c.ok === true),
+      'premisa rota: el snapshot de unidad ya lo veía'
+    );
+    assert.equal(rep.ok, false);
+    const f = rep.findings.find((x) => x.check === 'ficheros');
+    assert.ok(f, JSON.stringify(rep.findings));
+    assert.equal(f.error, 'fichero_corrupto');
+    assert.equal(f.file, 'registry.json');
+    assert.throws(() => assertRootIntegrity(), /no está íntegro/);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test('ROJO (U258) · un fichero sellado BORRADO → fichero_ausente', () => {
+  const ctx = importedRoot();
+  try {
+    fs.rmSync(path.join(ctx.volDir, 'registry.json'));
+    const rep = verifyRootIntegrity();
+    assert.equal(rep.ok, false);
+    assert.ok(
+      rep.findings.some((f) => f.check === 'ficheros' && f.error === 'fichero_ausente'),
+      JSON.stringify(rep.findings)
+    );
+  } finally {
+    ctx.restore();
+  }
+});
+
+test('U258 · un volumen sellado ANTES del contrato omite el leg con motivo (no lo inventa)', () => {
+  // Un root importado por una versión anterior no lleva `hashes`. El leg tiene
+  // que declararse OMITIDO con motivo, no adivinar hashes ni dar falso verde
+  // silencioso: es el mismo estatuto que el resto de omisiones honestas.
+  const ctx = importedRoot();
+  try {
+    const abs = path.join(ctx.root, 'volumes.json');
+    const cfg = JSON.parse(fs.readFileSync(abs, 'utf8'));
+    delete cfg.volumes.forces.source.imported.hashes;
+    fs.writeFileSync(abs, `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
+    // El sello del manifiesto cambia: se re-ancla el ledger para aislar el leg.
+    const ledgerPath = path.join(ctx.root, '.ops-ledger.jsonl');
+    const seats = fs
+      .readFileSync(ledgerPath, 'utf8')
+      .split('\n')
+      .filter((l) => l.trim())
+      .map((l) => JSON.parse(l));
+    seats[seats.length - 1].manifestSha256.after = createHash('sha256')
+      .update(fs.readFileSync(abs))
+      .digest('hex');
+    fs.writeFileSync(ledgerPath, `${seats.map((s) => JSON.stringify(s)).join('\n')}\n`, 'utf8');
+    resetVolumesCache();
+
+    const rep = verifyRootIntegrity();
+    const om = rep.skipped.find((s) => s.check === 'ficheros');
+    assert.ok(om, JSON.stringify(rep.skipped));
+    assert.equal(om.reason, 'sin_hashes_sellados');
+    assert.ok(!rep.findings.some((f) => f.check === 'ficheros'));
   } finally {
     ctx.restore();
   }

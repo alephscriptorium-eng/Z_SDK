@@ -14,6 +14,11 @@
  *   as a consistency ASSERTION against the canonical resolution.
  * - Cerco §10.8: no living anchors — symlinks/junctions in the pack are
  *   REJECTED (never materialized), origin URL is inert metadata only.
+ * - U258: step SELLAR also anchors CONTENT, not just provenance —
+ *   `source.imported.hashes` = `<relPosix>` → sha256 of every file of the
+ *   volume AS IT LANDED (recomputed from the destination after FUSIONAR,
+ *   never copied from `pack.hashes`). Rationale and declared scope at the
+ *   seal site below.
  *
  * Every failure leaves the root intact (manifest seal unchanged) and the
  * staging directory removed. Nothing lands halfway: staging lives INSIDE
@@ -53,8 +58,18 @@ import { appendOpsLedger } from './ledger.mjs';
  */
 export const IDENTITY_DENYLIST = [/^\.env/i, /\.pem$/i, /\.key$/i, /^id_rsa/i, /^secret/i];
 
-/** @param {string} absFile */
-function sha256File(absFile) {
+/**
+ * sha256 (hex) de los BYTES de un fichero.
+ *
+ * Exportado desde WP-U258 **sin cambiar un carácter de su cuerpo**, por el
+ * mismo motivo que `IDENTITY_DENYLIST` y que `hashUnitTree`: es la primitiva
+ * con la que el paso SELLAR anota `source.imported.hashes`, y el verificador
+ * de integridad (src/verify.mjs, leg `ficheros`) tiene que recomputarla con la
+ * MISMA primitiva. Una segunda copia de esta línea es una juntura por la que
+ * se cuela cualquier divergencia futura (encoding, normalización, algoritmo).
+ * @param {string} absFile
+ */
+export function sha256File(absFile) {
   return createHash('sha256').update(readFileSync(absFile)).digest('hex');
 }
 
@@ -491,6 +506,36 @@ export function importPack(opts) {
     const importedReport = [];
     for (const [volId, vol] of Object.entries(pack.volumes)) {
       const prev = sealed.volumes[volId] || {};
+      // ── SELLO POR FICHERO (WP-U258) ────────────────────────────────────
+      // `pack.hashes` describe el PACK, no el destino: la familia LINEAS deja
+      // el fichero del destino intacto cuando diverge (driver-lineas.mjs:184)
+      // y NUNCA pisa un `.md` curado (:169). Sellar el hash del pack sería
+      // sellar una mentira en cuanto un import diverge, y el root dejaría de
+      // arrancar por su propia anotación. Así que se recomputa del DESTINO,
+      // después de FUSIONAR: se sella lo que ATERRIZÓ.
+      //
+      // Alcance declarado: el conjunto de rutas es el que el pack trajo para
+      // este volumen. Un fichero que ya viviera en el destino y que el pack no
+      // enumere NO entra en el sello — y es deliberado: el árbol vivo puede
+      // recibir material lateral que el repo no controla, y una igualdad de
+      // CONJUNTO convertiría eso en un arranque denegado. Lo que este sello
+      // garantiza es exacto: **cada fichero sellado sigue byte a byte igual, o
+      // el arranque se niega**. Las ALTAS no las cubre este leg (las cubren el
+      // snapshot de unidad, donde la familia lo sella, y el leg de corpora
+      // cuando el import sembró files/bytes).
+      //
+      // Coste declarado: el manifiesto crece una línea por fichero sellado. Es
+      // la misma escala que el `hashes` del manifiesto de pack (§0.2), que ya
+      // enumera fichero a fichero; no se introduce un orden de magnitud nuevo.
+      /** @type {Record<string, string>} */
+      const landedHashes = {};
+      /** @type {string[]} */
+      const noAterrizados = [];
+      for (const rel of volumeFilesById[volId] || []) {
+        const abs = join(volumesRoot, `${vol.path}/${rel}`.split('/').join(sep));
+        if (existsSync(abs)) landedHashes[rel] = sha256File(abs);
+        else noAterrizados.push(rel);
+      }
       const corpora = (vol.corpora || []).map((c) => {
         const corpusAbs = join(
           volumesRoot,
@@ -520,6 +565,8 @@ export function importPack(opts) {
             packHash,
             importedAt: new Date().toISOString(),
             ...(origin ? { origin } : {}), // inert metadata (cerco §10.8)
+            // Sello por fichero (U258): `<relPosix>` → sha256 de lo aterrizado.
+            ...(Object.keys(landedHashes).length > 0 ? { hashes: landedHashes } : {}),
             // Snapshot por hash (U203): unidades de familia amarradas por
             // sha256 de su árbol — lo aporta el plan del driver.
             ...(familyReports.find((f) => f.id === volId)?.snapshot
@@ -529,7 +576,15 @@ export function importPack(opts) {
         },
         ...(corpora.length > 0 ? { corpora } : {})
       };
-      importedReport.push({ id: volId, corpora });
+      importedReport.push({
+        id: volId,
+        corpora,
+        hashes: Object.keys(landedHashes).length,
+        // Cero en todo camino de los drivers actuales; se REPORTA en vez de
+        // callarse para que un plan de fusión que deje un fichero sin
+        // aterrizar sea observable en la salida del import, no invisible.
+        unsealed: noAterrizados
+      });
     }
     const sealAfter = sealManifest(sealed);
     // Live state tied to the new seal (U199 machinery).
@@ -540,7 +595,8 @@ export function importPack(opts) {
       step: 'sellar',
       ok: true,
       manifestSha256: sealAfter.sha256,
-      volumes: importedReport.map((v) => v.id)
+      volumes: importedReport.map((v) => v.id),
+      hashes: importedReport.map((v) => ({ id: v.id, files: v.hashes, unsealed: v.unsealed.length }))
     });
 
     // ── 7 · NO-LINK (result tree) ────────────────────────────────────────

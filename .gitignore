@@ -14,6 +14,15 @@ data/*
 VOLUMES/*
 !VOLUMES/README.md
 !VOLUMES/volumes.json
+# WP-U258: el ledger de ops viaja CON el manifiesto, y es obligatorio.
+# `verify.mjs` (leg `sello_vs_ledger`) contrasta el sello vivo contra el
+# asiento `import_pack`; en un root cuyo manifiesto declara volúmenes
+# importados, la AUSENCIA del ledger es en sí misma hallazgo (`ledger_ausente`,
+# U206·m6). Medido: con `VOLUMES/volumes.json` sellado y este fichero ignorado,
+# un clon limpio deja a los CUATRO servicios sin arrancar. Es el único fichero
+# que escribe el import además del manifiesto, y `volumes.state.json` sigue
+# fuera: eso es estado regenerable al medir (D-45), esto es evidencia.
+!VOLUMES/.ops-ledger.jsonl
 # --- DISK_02: solo LINEAS/demo + registry.yaml ---
 !VOLUMES/DISK_02/
 VOLUMES/DISK_02/**

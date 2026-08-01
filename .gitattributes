@@ -1,0 +1,21 @@
+# WP-U258 — el volumes root de referencia está SELLADO por contenido, y un
+# sello por sha256 no sobrevive a la traducción de finales de línea.
+#
+# Medido, no supuesto. Este repo no tenía `.gitattributes` y el clon de
+# Windows corre con `core.autocrlf=true`, así que el árbol de trabajo llegaba
+# en CRLF mientras el blob de git guardaba LF. Sobre
+# `VOLUMES/DISK_03/FORCES/registry.json`:
+#   blob (lo que recibe un checkout de Linux/CI) 824 bytes · 3512695882b5…
+#   árbol de trabajo en Windows                  864 bytes · 9e3d8a5a358b…
+# Un sello tomado en Windows dejaba a los CUATRO servicios sin arrancar en CI
+# —`fichero_corrupto` en TODOS los ficheros sellados— y al revés. El sello no
+# es la parte frágil: la traducción silenciosa de bytes lo es.
+#
+# `-text` = jamás convertir: el checkout entrega los bytes del blob tal cual,
+# en cualquier plataforma. Es la única forma de que «el mismo commit» signifique
+# «los mismos bytes», que es lo que un sello por contenido presupone.
+#
+# Alcance deliberadamente estrecho: SOLO el árbol sellado. Cambiar la política
+# de finales de línea del monorepo entero es otra decisión, con otro dueño y
+# otro precio; aquí se pone el candado donde el sello lo exige.
+VOLUMES/** -text

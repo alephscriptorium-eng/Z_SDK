@@ -15,7 +15,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resetVolumesCache } from '@zeus/presets-sdk/volumes';
 import { resetZeusEnvLoader } from '@zeus/presets-sdk/env';
-import { importPack, readOpsLedger } from '../src/index.mjs';
+import { importPack, readOpsLedger, verifyRootIntegrity } from '../src/index.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LINEAS_FIXTURE = path.resolve(__dirname, '../../linea-kit/test/fixtures/lineas');
@@ -252,6 +252,95 @@ test('CA-2: divergencia se REPORTA con ruta y naturaleza; el fichero del root qu
     assert.ok(noStagingLeft(root));
 
     fs.rmSync(packC.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('U258: el sello por fichero es de lo que ATERRIZÓ, no del pack — un import divergente deja el root íntegro', () => {
+  // La trampa que este test cierra: si el paso SELLAR copiara `pack.hashes`,
+  // un import con divergencia sellaría el hash del PACK mientras el destino
+  // conserva el suyo (regla de familia LINEAS, driver-lineas.mjs:184) — y el
+  // root quedaría anotando una mentira sobre sí mismo: `fichero_corrupto` en
+  // el siguiente arranque, por haber importado correctamente. Por eso el
+  // sello se recomputa del DESTINO, después de FUSIONAR.
+  const { root, restore } = setupRoot();
+  const packA = buildLineasPack();
+  try {
+    assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
+    const targetRel = 'demo/nodos/N01/meta.json';
+    const hashDestino = sha256(fs.readFileSync(rootFile(root, targetRel)));
+
+    const packC = buildLineasPack({
+      name: 'pack-lineas-div',
+      version: '2.0.0',
+      mutate(dataDir) {
+        const meta = path.join(dataDir, 'demo', 'nodos', 'N01', 'meta.json');
+        const parsed = JSON.parse(fs.readFileSync(meta, 'utf8'));
+        parsed.etiqueta = 'ETIQUETA DIVERGENTE (pack)';
+        fs.writeFileSync(meta, JSON.stringify(parsed, null, 2), 'utf8');
+      }
+    });
+    const res = importPack({ packRoot: packC.packRoot, role: 'operator' });
+    assert.equal(res.ok, true);
+    assert.equal(res.families.find((f) => f.id === 'lineas').divergences.length, 1);
+
+    const cfg = JSON.parse(manifestBytes(root));
+    const sellado = cfg.volumes.lineas.source.imported.hashes;
+    assert.ok(sellado, 'el import no selló hashes');
+    assert.equal(
+      sellado[targetRel],
+      hashDestino,
+      'se selló el hash del PACK: el manifiesto miente sobre su propio árbol'
+    );
+    // Y la consecuencia que importa: el root sigue siendo arrancable.
+    const rep = verifyRootIntegrity();
+    assert.equal(rep.ok, true, JSON.stringify(rep.findings));
+    assert.ok(rep.checks.some((c) => c.check === 'ficheros' && c.ok === true));
+
+    fs.rmSync(packC.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
+  }
+});
+
+test('U258: `.md` curado NO pisado — el sello anota el del destino, no el del pack', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildLineasPack();
+  try {
+    assert.equal(importPack({ packRoot: packA.packRoot, role: 'operator' }).ok, true);
+    const destinoSha = sha256(fs.readFileSync(rootFile(root, SIDECAR_REGISTRO)));
+
+    const packB = buildLineasPack({ name: 'pack-lineas-cur', version: '3.0.0' });
+    // El pack trae OTRO contenido para el sidecar curado: el destino lo conserva.
+    fs.writeFileSync(
+      path.join(packB.dataDir, ...SIDECAR_REGISTRO.split('/')),
+      '# registro DISTINTO en el pack\n',
+      'utf8'
+    );
+    // El manifiesto del pack tiene que volver a enumerar el hash real.
+    const pm = path.join(packB.packRoot, 'manifest.json');
+    const parsed = JSON.parse(fs.readFileSync(pm, 'utf8'));
+    parsed.hashes[`${VOL_REL}/${SIDECAR_REGISTRO}`] = sha256(
+      fs.readFileSync(path.join(packB.dataDir, ...SIDECAR_REGISTRO.split('/')))
+    );
+    fs.writeFileSync(pm, JSON.stringify(parsed, null, 2), 'utf8');
+
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, true, JSON.stringify(res));
+    const protegidos = res.families.find((f) => f.id === 'lineas').protectedSidecars;
+    assert.ok(
+      protegidos.some((p) => p.path === SIDECAR_REGISTRO),
+      JSON.stringify(protegidos)
+    );
+
+    const cfg = JSON.parse(manifestBytes(root));
+    assert.equal(cfg.volumes.lineas.source.imported.hashes[SIDECAR_REGISTRO], destinoSha);
+    assert.equal(verifyRootIntegrity().ok, true);
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
   } finally {
     restore();
     fs.rmSync(packA.packRoot, { recursive: true, force: true });
