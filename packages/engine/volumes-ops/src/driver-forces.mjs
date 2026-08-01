@@ -31,7 +31,7 @@
  * Node-only.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateFile } from '@zeus/linea-kit/validate';
@@ -40,6 +40,7 @@ import {
   isUnitTreeSnapshot,
   verifyUnitTreeSnapshot
 } from './unit-tree.mjs';
+import { blockingAncestor } from './fusion-guard.mjs';
 
 export const FORCES_FAMILY = 'forces';
 
@@ -166,6 +167,22 @@ function validate({ stagedDir }) {
 /**
  * merge — RO-immutable PLAN. Returns `{ error }` on collision (importPack
  * aborts in the dry pass) or `{ moves, skips, snapshot, replacedIndex }`.
+ *
+ * ── U255 · EL MISMO HUECO QUE LINEAS, MEDIDO AQUÍ TAMBIÉN ─────────────────
+ * El enunciado del WP señalaba a LINEAS y decía «comprueba tú si alguno más lo
+ * tiene». FORCES lo tenía, y con el mismo peaje: destino con un FICHERO en
+ * `forces/hondo` y un pack que declara la unidad `forces/hondo/force-ccc/` →
+ * `existsSync(destUnit)` responde NO, la unidad entra entera en `moves`, y el
+ * `mkdirSync` de la aplicación lanza **ENOTDIR con DOS ficheros de otra unidad
+ * ya aterrizados**. Se cierra con `ruta_bloqueada_por_fichero`, la misma guarda
+ * y el mismo código que las otras tres familias.
+ *
+ * Y el hermano del pase dry: un FICHERO exactamente en la ruta de una unidad
+ * declarada hacía `readdirSync` sobre un fichero → **ENOTDIR (scandir)** dentro
+ * de `walkRel`, así que `importPack` LANZABA en vez de devolver
+ * `{ok:false, step, error}`. Ahora es `unidad_bloqueada_por_fichero`. La regla
+ * RO-inmutable no se toca: una unidad presente que DIFIERE sigue abortando con
+ * `colision_force`, y una idéntica sigue siendo no-op.
  * @param {{ stagedDir: string, destDir: string, volumeFiles: string[] }} ctx
  */
 function merge({ stagedDir, destDir, volumeFiles }) {
@@ -200,6 +217,21 @@ function merge({ stagedDir, destDir, volumeFiles }) {
     const destUnit = toAbs(destDir, unit.dir);
     const stagedHash = hashTree(stagedUnit);
     snapshot[unit.dir] = stagedHash;
+    // U255 · la ruta de la unidad tiene que ser un DIRECTORIO para poder
+    // recorrerla: con un fichero ahí, `walkRel` lanzaba ENOTDIR en el pase dry.
+    if (existsSync(destUnit) && !lstatSync(destUnit).isDirectory()) {
+      return {
+        error: {
+          code: 'unidad_bloqueada_por_fichero',
+          detail: {
+            unit: unit.dir,
+            id: unit.id,
+            kind: unit.kind,
+            ocupadoPor: lstatSync(destUnit).isSymbolicLink() ? 'enlace' : 'fichero'
+          }
+        }
+      };
+    }
     if (existsSync(destUnit) && walkRel(destUnit).length > 0) {
       if (hashTree(destUnit) === stagedHash) {
         skips.push(unit.dir); // idéntico: no-op de unidad
@@ -228,6 +260,20 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       moves.push(rel); // lo que falta
       continue;
     }
+    // U255 · el pack trae un FICHERO: si el destino tiene otra cosa, `sha256File`
+    // lanzaba EISDIR aquí mismo. Mismo tratamiento que en LINEAS.
+    const st = lstatSync(destAbs);
+    if (st.isSymbolicLink()) {
+      return { error: { code: 'enlace_en_destino', detail: { file: rel } } };
+    }
+    if (!st.isFile()) {
+      return {
+        error: {
+          code: 'destino_no_es_fichero',
+          detail: { file: rel, ocupadoPor: st.isDirectory() ? 'directorio' : 'otro' }
+        }
+      };
+    }
     if (sha256File(destAbs) === sha256File(toAbs(stagedDir, rel))) {
       skips.push(rel);
       continue;
@@ -240,7 +286,36 @@ function merge({ stagedDir, destDir, volumeFiles }) {
     return { error: { code: 'colision_indice', detail: { file: rel } } };
   }
 
-  return { moves, skips, snapshot, replacedIndex };
+  // Garantía estructural (U255): idéntica a la de FIREHOSE·D3, SSB y LINEAS,
+  // con UNA excepción que esta familia sí tiene y que hay que decir en voz alta.
+  //
+  // **`registry.json` es la única sobrescritura DELIBERADA de todo el carril.**
+  // Cuando el índice del destino difiere, esta familia lo REEMPLAZA (las dos
+  // guardas de arriba —superconjunto y cero colisiones de unidad— son lo que lo
+  // hace seguro), y lo hacía apoyándose en que `renameSync` pisa en silencio.
+  // Eso era invisible en el plan: para quien mira `moves` era un movimiento como
+  // los demás. Desde U255 el plan lo DECLARA en `overwrites`, y la guarda del
+  // plan entero (`fusion-guard.mjs`) sólo tolera un destino ocupado si viene
+  // declarado ahí. Un import legítimo de FORCES sigue aterrizando —hay rojo y
+  // verde que lo fijan—, y la sobrescritura deja de ser un efecto del sistema de
+  // ficheros para ser una línea del plan.
+  //
+  // `sobrescritura_imposible` queda por tanto **inalcanzable por orden** (todo
+  // lo demás que entra en `moves` no existe en el destino); se conserva como
+  // última línea. `ruta_bloqueada_por_fichero` **sí se alcanza** y tiene rojo
+  // propio: es el vector del WP, medido también en esta familia.
+  const overwrites = replacedIndex ? ['registry.json'] : [];
+  for (const rel of moves) {
+    if (!overwrites.includes(rel) && existsSync(toAbs(destDir, rel))) {
+      return { error: { code: 'sobrescritura_imposible', detail: { file: rel } } };
+    }
+    const blocked = blockingAncestor(destDir, rel);
+    if (blocked) {
+      return { error: { code: 'ruta_bloqueada_por_fichero', detail: { file: rel, blockedBy: blocked } } };
+    }
+  }
+
+  return { moves, skips, snapshot, replacedIndex, overwrites };
 }
 
 /**

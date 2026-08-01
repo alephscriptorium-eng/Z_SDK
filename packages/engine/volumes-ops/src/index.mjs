@@ -17,6 +17,18 @@ export {
 } from './empty.mjs';
 export { syncVolumeCounters } from './counters.mjs';
 export { importPack, IDENTITY_DENYLIST } from './import.mjs';
+// WP-U255 · el guardián de la fase de aplicación. Se exporta por el mismo
+// motivo que `hashUnitTree` en U259: es el cuerpo que los CUATRO drivers usan
+// para no planificar un renombrado imposible, y una segunda copia sería la
+// juntura por la que vuelve el hueco. `applyFusion`/`deshacerFusion` salen
+// además porque el deshacer sólo vale lo que valga su prueba, y su prueba
+// necesita inyectar el fallo que ningún vector portable reproduce.
+export {
+  blockingAncestor,
+  inspectFusionPlan,
+  applyFusion,
+  deshacerFusion
+} from './fusion-guard.mjs';
 export { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
 export { LINEAS_DRIVER, LINEAS_FAMILY } from './driver-lineas.mjs';
 export { FORCES_DRIVER, FORCES_FAMILY, hashUnitTree } from './driver-forces.mjs';

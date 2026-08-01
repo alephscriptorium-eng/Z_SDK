@@ -175,7 +175,16 @@
  * Garantía estructural antes de devolver el plan (D3 de U204): ningún `move`
  * apunta a una ruta existente (`sobrescritura_imposible`) ni tiene un ancestro
  * que exista como FICHERO (`ruta_bloqueada_por_fichero`) — `importPack` ejecuta
- * con `renameSync` desnudo (import.mjs:481-483), que SÍ pisaría.
+ * con `renameSync` desnudo, que SÍ pisaría.
+ *
+ * ── U255 · el cuerpo de `blockingAncestor` se muda, el comportamiento no ───
+ * Vive ahora en `src/fusion-guard.mjs` y este driver lo IMPORTA, VERBATIM: pasó
+ * de dos consumidores a cuatro (LINEAS y FORCES tenían el hueco abierto) y una
+ * tercera copia era la juntura por la que se cuela la divergencia. Hay un probe
+ * que asevera que los cuatro drivers responden IGUAL sobre el mismo árbol. Y la
+ * guarda del plan ENTERO (`inspectFusionPlan`, en `import.mjs`) es ahora la red
+ * de lo que ningún driver ve: el volumen sin familia, el corpus, y dos
+ * volúmenes anidados en el mismo pack.
  *
  * **ALCANCE HONESTO de esos dos guardianes tras D-G** (se dice porque presentar
  * como garantía activa lo que no se alcanza es la clase de defecto que este
@@ -232,10 +241,11 @@
  * Node-only.
  */
 
-import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateFile } from '@zeus/linea-kit/validate';
+import { blockingAncestor } from './fusion-guard.mjs';
 
 export const SSB_FAMILY = 'ssb';
 
@@ -404,22 +414,6 @@ function walkRel(rootDir) {
   }
   if (existsSync(rootDir)) walk(rootDir, '');
   return { files: files.sort(), others: others.sort() };
-}
-
-/**
- * ¿Algún ancestro del destino de `rel` existe como FICHERO? (D3 de U204)
- * @param {string} destDir @param {string} rel
- * @returns {string|null}
- */
-function blockingAncestor(destDir, rel) {
-  const parts = rel.split('/');
-  let acc = '';
-  for (let i = 0; i < parts.length - 1; i += 1) {
-    acc = acc ? `${acc}/${parts[i]}` : parts[i];
-    const abs = toAbs(destDir, acc);
-    if (existsSync(abs) && lstatSync(abs).isFile()) return acc;
-  }
-  return null;
 }
 
 /**

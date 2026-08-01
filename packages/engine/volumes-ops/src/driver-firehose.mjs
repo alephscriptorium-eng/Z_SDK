@@ -151,8 +151,21 @@
  * colisiones DENTRO de un volumen. NO cubre el caso de dos volúmenes ANIDADOS
  * en el mismo pack (`DISK_01/FIREHOSE` y `DISK_01/FIREHOSE/raw`), donde el
  * mismo fichero entra en dos planes y `importPack` lo renombra dos veces: eso
- * ocurre en el bucle por volumen de `import.mjs:379-477`, fuera del alcance de
- * cualquier driver, y sigue siendo deuda de U201 — citada, no arreglada aquí.
+ * ocurre en el bucle por volumen de `import.mjs`, fuera del alcance de
+ * cualquier driver.
+ *
+ * ── U255 · DOS COSAS CAMBIAN AQUÍ, Y NINGUNA ES EL COMPORTAMIENTO ─────────
+ * 1. El cuerpo de `blockingAncestor` se muda VERBATIM a `src/fusion-guard.mjs`
+ *    y este driver lo IMPORTA. Pasó de dos consumidores a cuatro (LINEAS y
+ *    FORCES tenían el mismo hueco que D3 cerró aquí) y una tercera copia era la
+ *    juntura por la que se cuela la divergencia — misma decisión, y por el
+ *    mismo motivo, que `hashUnitTree` en U259. Hay un probe que asevera que los
+ *    cuatro drivers responden IGUAL sobre el mismo árbol.
+ * 2. **La deuda de volúmenes anidados que este párrafo declaraba «no arreglada
+ *    aquí» ya está cerrada** — donde ocurre, que es `import.mjs`:
+ *    `inspectFusionPlan` mira el plan ENTERO y aborta con
+ *    `plan_con_destinos_anidados` antes del primer renombrado. Medido: el
+ *    vector dejaba 2 ficheros aterrizados y lanzaba `ENOENT`.
  *
  * ── Cursor sellado
  * `snapshot = { unit:'at-uri', units:<n>, unitsSha256:<sha256 del conjunto de
@@ -185,10 +198,11 @@
  * Node-only.
  */
 
-import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateFile } from '@zeus/linea-kit/validate';
+import { blockingAncestor } from './fusion-guard.mjs';
 
 export const FIREHOSE_FAMILY = 'firehose';
 
@@ -369,23 +383,6 @@ function keyOfFile(abs) {
   } catch {
     return null;
   }
-}
-
-/**
- * ¿Algún ancestro del destino de `rel` existe como FICHERO? (D3) Si lo hay,
- * `mkdirSync`/`renameSync` lanzarían EEXIST/ENOTDIR a mitad de la fusión.
- * @param {string} destDir @param {string} rel
- * @returns {string|null} el ancestro bloqueante, o null
- */
-function blockingAncestor(destDir, rel) {
-  const parts = rel.split('/');
-  let acc = '';
-  for (let i = 0; i < parts.length - 1; i += 1) {
-    acc = acc ? `${acc}/${parts[i]}` : parts[i];
-    const abs = toAbs(destDir, acc);
-    if (existsSync(abs) && lstatSync(abs).isFile()) return acc;
-  }
-  return null;
 }
 
 /**
