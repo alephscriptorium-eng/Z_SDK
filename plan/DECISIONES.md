@@ -751,6 +751,30 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   guarda en el arranque **llega tarde** para esa familia. Se declara, no se
   fuerza: cablear donde no protege sería teatro.
 
+- **⑪ (orquestador, por delegación expresa del custodio, 2026-08-01) · `GD`
+  ABIERTO con su alcance escrito dentro.**
+  **Por qué se abre**: `GD` está definido como *«CA local-first de U206 verde,
+  7 pasos»*, y eso **es cierto**, verificado por el orquestador y no por el
+  worker. La orden ⑩ —cablear el verificador— **está cumplida y verificada**:
+  4 puntos de producción reales, punto único, sin réplica del verificador, y
+  un quinto candidato **enrutado en vez de cableado** tras comprobar que no
+  consume root.
+  **Por qué no espera a los dos huecos**: lo que `GD` guarda es que *el
+  territorio del carril deje de moverse*, y ha dejado. La campaña que destapa
+  declara **cero cambios en runtime**, así que no depende de la detección de
+  corrupción. Retenerlo bloquearía trabajo ajeno a los huecos — y `U209`, el
+  otro desbloqueo, sigue **DEFERRED** por decisión ⑨.
+  **Por qué se escribe el alcance dentro**: el defecto de firma de este
+  programa es *la frase más ancha que la evidencia*. Un gate que se abre sin
+  declarar lo que no midió es esa misma frase, con sello. La declaración va en
+  `GOBIERNO-EJECUCION-F2.md`, junto a la definición, no en un reporte.
+  **Se abren con dueño**: `U258` (sellar el root de referencia — hoy la guarda
+  pasa de largo sobre el único root que el producto usa) y `U259` (extender
+  snapshot verificable a LINEAS y FIREHOSE: hoy la detección cubre **1 de 4**
+  familias).
+  ✎ Regla que deja fijada, a `L-H10`: **un gate se abre por lo que midió, y su
+  declaración dice lo que no midió** — o acaba dando fe de lo que no vio.
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un

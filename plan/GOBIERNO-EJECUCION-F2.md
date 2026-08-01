@@ -621,6 +621,37 @@ U211/U210), `packages/engine/presets-sdk/src/volumes/**`,
 mientras el carril viva. Arranca con la ola 1; su gate propio **GD** =
 CA local-first de U206 verde (7 pasos, BACKLOG :263).
 
+> **✅ `GD` ABIERTO — 2026-08-01** (decisión ⑪, delegada por el custodio).
+> Carril D **8/8**. Verificado por el orquestador sobre la rama aceptada:
+> `ZEUS_GAMES_LIBRARY=… node e2e/local-first-ca.mjs` → **exit 0, 7/7 pasos,
+> 13 vectores rojos**, dos ejecuciones seguidas y cero temporales huérfanos;
+> `--legado` → **exit 1** por el motivo declarado, que es la medida de que los
+> pasos 2 y 6 fueron **construcción** y no verificación.
+>
+> **QUÉ CERTIFICA `GD`, EXACTAMENTE.** El carril de datos está cerrado y su
+> territorio **deja de moverse**: ésa es la precondición que `GD` guarda, y la
+> que la campaña de tipos (`U245–U249`, *cero cambios en runtime*) necesitaba.
+>
+> **QUÉ NO CERTIFICA — declarado a propósito, para que nadie lo lea de más:**
+> 1. **No certifica que el root vivo del monorepo esté protegido.**
+>    `VOLUMES/` **no tiene sello de import** (sin `source.imported`, sin
+>    `snapshot`: medido por el orquestador al aceptar), así que la guarda de
+>    arranque deja sus tramos en **«omitido honesto»**. La protección ataja el
+>    caso *root importado y corrupto*; el root que el producto usa hoy es
+>    **anterior al contrato** y ahí pasa de largo. → **U258**.
+> 2. **No certifica «cerco limpio» para todo el parque**: el paso 7 sólo se
+>    asevera sobre volúmenes **FORCES**; el root LINEAS se barre **sin
+>    aserción** porque el predicado «0 URLs vivas» aún no distingue
+>    procedencia registrada de ancla de arranque.
+> 3. **No certifica detección de corrupción fuera de FORCES**: LINEAS y
+>    FIREHOSE **no sellan snapshot verificable**, así que una corrupción
+>    equivalente pasa los tres tramos. Es **1 de 4 familias registradas**.
+>
+> Las tres las declaró el worker **sin que se le pidieran**, y las dos últimas
+> están además escritas en el código. Se abren `U258` y `U259` con dueño.
+> **Regla que este gate deja fijada**: un gate se abre por lo que **midió**, y
+> su declaración dice **lo que no midió** — o acaba dando fe de lo que no vio.
+
 | ola | WPs (∥ dentro de la ola) | precondición (deps §1) | gate |
 | --- | --- | --- | --- |
 | **0** | U232 (este) | — | aceptación U232 = DoD escrita antes del primer despacho |
