@@ -83,7 +83,18 @@ test('release.yml: release job needs quality+test; publish gated on _password ba
     path.join(root, '.github/workflows/release.yml'),
     'utf8'
   );
-  assert.match(yml, /needs:\s*\[quality,\s*test\]/);
+  // WP-U263 · la aserción era `\[quality,\s*test\]`, que fijaba el corchete de
+  // cierre justo detrás de `test` y por tanto prohibía AÑADIR gates. U263 pasa
+  // el `needs` a `[quality, test, sello-root, smoke-ts-registry]` porque un job
+  // de verificación que no está en el `needs` del que publica corre en PARALELO
+  // con la publicación y no la bloquea. Se conserva la intención —quality y test
+  // tienen que seguir estando— y se deja de pinchar el número de gates: la
+  // exigencia se vuelve de INCLUSIÓN, igual que la regla de paridad.
+  const needs = yml.match(/needs:\s*\[([^\]]*)\]/);
+  assert.ok(needs, 'el job release debe declarar un `needs`');
+  const gates = needs[1].split(',').map((s) => s.trim());
+  assert.ok(gates.includes('quality'), `quality debe bloquear la publicación: ${needs[0]}`);
+  assert.ok(gates.includes('test'), `test debe bloquear la publicación: ${needs[0]}`);
   assert.match(yml, /has_npm/);
   assert.match(yml, /secrets\.NPM_USERNAME/);
   assert.match(yml, /secrets\.NPM_PASSWORD/);

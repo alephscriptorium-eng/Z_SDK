@@ -1,9 +1,17 @@
 # Release — changesets → bump → publish (WP-U53 / D-12 / ARQUITECTURA §5 paso 3).
-# Condición dura: quality + test verdes. Publish solo con basic-auth durable
-# (WP-U122 / D-24 (a): user + `_password` base64 — no JWT de 7d).
+# Condición dura: quality + test + sello-root + smoke verdes. Publish solo con
+# basic-auth durable (WP-U122 / D-24 (a): user + `_password` base64 — no JWT de 7d).
 # Ops (post-merge): secrets `NPM_USERNAME` + `NPM_PASSWORD`.
 #   `NPM_PASSWORD` = valor de `_password` del `.npmrc.example` del registry /
 #   `npm login` (password ya en base64; sin comillas). Sin secret → skip ⏳.
+#
+# WP-U263 · ESTE FICHERO NO SE MANTIENE EN SYNC A MANO CON `ci.yml`.
+# Lo comprueba `scripts/verificacion-paridad.mjs`, que corre en los DOS flujos y
+# exige que todo paso de `ci.yml` esté también aquí y en un job que BLOQUEE la
+# publicación (`needs` del job `release`). La regla es de inclusión y orden, no
+# de igualdad: los pasos propios de la publicación —credenciales, `.npmrc`,
+# changesets— no tienen que existir en `ci.yml`. Si añades un paso a `ci.yml` y
+# no lo traes aquí, los dos flujos se ponen rojos y te dicen cuál falta.
 name: Release
 
 on:
@@ -30,6 +38,10 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      # WP-U263 · antes que nada, y sin necesidad de `npm ci`: si este fichero ha
+      # dejado de cubrir lo que `ci.yml` verifica, la publicación para aquí.
+      - name: Paridad de verificación CI ↔ publicación (WP-U263)
+        run: node scripts/verificacion-paridad.mjs
       - name: Install
         run: npm ci
       - name: Lint
@@ -70,7 +82,22 @@ jobs:
           - '@zeus/player-ui'
           - '@zeus/player-3d-ui'
           - '@zeus/3d-monitor'
-          - '@zeus/ping-pong-bots'
+          - '@zeus/ping-pong-bots'
+          # WP-U256 — carril de datos (el que toca el disco del usuario).
+          - '@zeus/linea-kit'
+          - '@zeus/volumes-ops'
+        # WP-U263 — este `include` faltaba, y su ausencia es la causa literal de
+        # que `Release` llevara 8 runs seguidos en rojo sobre `main`:
+        # `test @zeus/linea-system` moría con «ZEUS_VOLUMES_ROOT is not set»
+        # (run 30722124096). Espejo exacto de `ci.yml`; la razón de por qué la
+        # variable se da por `include` y no en el `env` común está escrita allí.
+        include:
+          - workspace: '@zeus/linea-kit'
+            needs_volumes_root: true
+          - workspace: '@zeus/volumes-ops'
+            needs_volumes_root: true
+          - workspace: '@zeus/linea-system'
+            needs_volumes_root: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -79,12 +106,94 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
+      # WP-U256 · la guarda que hace OBSERVABLE que el `env` de abajo llegó. Sin
+      # ella, que la variable llegue o no produce el mismo verde. Motivo largo y
+      # razón del anclaje en `matrix.workspace` (y no en `matrix.needs_volumes_root`):
+      # `ci.yml`, de donde este paso es copia exigida por la paridad.
+      - name: El carril de datos exige su root de VOLUMES (WP-U256)
+        if: matrix.workspace == '@zeus/linea-kit' || matrix.workspace == '@zeus/volumes-ops'
+        run: |
+          test -n "$ZEUS_VOLUMES_ROOT" \
+            || { echo "::error::ZEUS_VOLUMES_ROOT no llego al job: el include no aplico"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/volumes.json" \
+            || { echo "::error::$ZEUS_VOLUMES_ROOT no es un root de VOLUMES"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/DISK_03/FORCES/registry.json" \
+            || { echo "::error::sin DISK_03/FORCES/registry.json, forces-loader.test.mjs:62 vuelve a omitir en silencio"; exit 1; }
+          echo "root declarado y completo: $ZEUS_VOLUMES_ROOT"
+        env:
+          ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
+      # WP-U261 · paso aparte porque la precondición es OTRA: linea-system lee
+      # DISK_02/LINEAS/registry.yaml, no DISK_03/FORCES.
+      - name: linea-system exige su root de VOLUMES (WP-U261)
+        if: matrix.workspace == '@zeus/linea-system'
+        run: |
+          test -n "$ZEUS_VOLUMES_ROOT" \
+            || { echo "::error::ZEUS_VOLUMES_ROOT no llego al job: el include no aplico"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/volumes.json" \
+            || { echo "::error::$ZEUS_VOLUMES_ROOT no es un root de VOLUMES"; exit 1; }
+          test -f "$ZEUS_VOLUMES_ROOT/DISK_02/LINEAS/registry.yaml" \
+            || { echo "::error::sin DISK_02/LINEAS/registry.yaml no hay carril de lineas: smoke.mjs no puede aseverar el fail-closed"; exit 1; }
+          echo "root declarado y con carril de lineas: $ZEUS_VOLUMES_ROOT"
+        env:
+          ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
       - name: Test workspace
         run: npm test -w "${{ matrix.workspace }}"
+        env:
+          # Sin este root, linea-kit/test/forces-loader.test.mjs:57 se auto-omite
+          # en silencio y se cuenta como `pass` (WP-U256 §4). Y linea-system ni
+          # carga sus ficheros de test: `src/loader.mjs:28` resuelve el root en
+          # tiempo de import (WP-U261 §1).
+          ZEUS_VOLUMES_ROOT: ${{ matrix.needs_volumes_root && format('{0}/VOLUMES', github.workspace) || '' }}
+
+  # WP-U258 / traído por WP-U263 — lo que sólo se puede comprobar en un checkout
+  # limpio: que los dos ficheros que sostienen el sello viajen RASTREADOS. En el
+  # disco del operador existen aunque `.gitignore` los excluya, así que un
+  # candado mal puesto se ve verde en local y rompe el arranque en el clon.
+  # Publicar sin esto es publicar un árbol que no arranca al clonarse.
+  sello-root:
+    name: sello del root de referencia (U258)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: La evidencia del sello viaja RASTREADA (no solo presente)
+        run: |
+          git ls-files --error-unmatch VOLUMES/volumes.json > /dev/null \
+            || { echo "::error::VOLUMES/volumes.json no esta rastreado"; exit 1; }
+          git ls-files --error-unmatch VOLUMES/.ops-ledger.jsonl > /dev/null \
+            || { echo "::error::VOLUMES/.ops-ledger.jsonl no esta rastreado: sin el ledger, un manifiesto que declara volumenes importados es ledger_ausente y los CUATRO servicios no arrancan (verify.mjs, leg sello_vs_ledger)"; exit 1; }
+          grep -q '"imported"' VOLUMES/volumes.json \
+            || { echo "::error::VOLUMES/volumes.json dejo de estar sellado: sin source.imported la guarda de arranque omite todos los legs de volumen y pasa de largo (WP-U258)"; exit 1; }
+      - name: Install
+        run: npm ci
+      - name: Vigilancia del sello (verde + vectores rojos)
+        run: node --test packages/engine/volumes-ops/test/sello-root-referencia.test.mjs
+
+  # WP-U158 / traído por WP-U263 — consumidor TS tipado desde el registry real.
+  # Skip limpio (exit 0 · ⏳) si el registry no responde — patrón U122.
+  smoke-ts-registry:
+    name: smoke TS registry (U158)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Smoke TypeScript consumer from @zeus registry
+        run: npm run smoke:ts-registry
+        env:
+          ZEUS_SMOKE_CLEANUP: '1'
 
   release:
     name: changesets release
-    needs: [quality, test]
+    # WP-U263 · los cuatro jobs de verificación, no dos. Un job que no está aquí
+    # corre EN PARALELO con la publicación y por tanto no la bloquea: sería un
+    # gate que no es un gate. `verificacion-paridad.mjs` lo comprueba sobre este
+    # grafo de `needs`, no sobre el orden de las líneas del fichero.
+    needs: [quality, test, sello-root, smoke-ts-registry]
     runs-on: ubuntu-latest
     permissions:
       contents: write
