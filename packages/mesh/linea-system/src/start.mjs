@@ -4,6 +4,7 @@
  */
 
 import { resolveZeusMcpPorts, isMainModule, runMcpMain } from '@zeus/presets-sdk';
+import { assertVolumesRootBootable } from '@zeus/volumes-ops';
 import { createServer } from './linea-server.mjs';
 import { loadLineaData } from './loader.mjs';
 import { lineaServers } from './lineas.mjs';
@@ -24,6 +25,14 @@ function lineaServersWithEnvPorts() {
  */
 export async function startAll(basePath) {
   const servers = lineaServersWithEnvPorts();
+  // WP-U206 · decisión ⑩. LIMITACIÓN DECLARADA, no la fuerzo: `loader.mjs:28`
+  // (`export const DEFAULT_BASE_PATH = resolveLineasBasePath()`) resuelve en
+  // TIEMPO DE IMPORT DE MÓDULO, o sea antes que cualquier guarda de arranque.
+  // Consecuencia exacta: para un root AUSENTE o no resoluble, esta guarda
+  // llega tarde — el import ya habrá lanzado con el error del resolvedor.
+  // Lo que sí protege, y es lo que este WP persigue: un root PRESENTE pero
+  // CORRUPTO, porque la lectura de datos ocurre aquí abajo, no en el import.
+  assertVolumesRootBootable({ service: 'linea-system', volumeIds: ['lineas'] });
   const { lineas } = await loadLineaData(basePath);
   const espanaData = lineas[servers.espana.lineaId];
   if (!espanaData) {

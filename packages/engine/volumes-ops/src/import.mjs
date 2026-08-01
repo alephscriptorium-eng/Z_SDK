@@ -43,8 +43,15 @@ import { syncVolumeCounters } from './counters.mjs';
 import { measurePath } from './measure.mjs';
 import { appendOpsLedger } from './ledger.mjs';
 
-/** Identity-material denylist (contract §0.5) — basenames, case-insensitive. */
-const IDENTITY_DENYLIST = [/^\.env/i, /\.pem$/i, /\.key$/i, /^id_rsa/i, /^secret/i];
+/**
+ * Identity-material denylist (contract §0.5) — basenames, case-insensitive.
+ *
+ * Exported since WP-U206 **sin cambiar un carácter de la lista**: el cerco
+ * del ROOT (src/cerco.mjs) aplica exactamente este criterio al árbol vivo, y
+ * una segunda copia de la lista sería una juntura por la que se cuela lo que
+ * se añada aquí y allí no.
+ */
+export const IDENTITY_DENYLIST = [/^\.env/i, /\.pem$/i, /\.key$/i, /^id_rsa/i, /^secret/i];
 
 /** @param {string} absFile */
 function sha256File(absFile) {

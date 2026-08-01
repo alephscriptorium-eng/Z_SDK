@@ -3,6 +3,7 @@
  */
 
 import { resolveZeusMcpPorts, isMainModule, runMcpMain, resolveSsbBasePath } from '@zeus/presets-sdk';
+import { assertVolumesRootBootable } from '@zeus/volumes-ops';
 import { createServer } from './ssb-server.mjs';
 import { SERVER_NAME } from './config.mjs';
 
@@ -12,6 +13,8 @@ import { SERVER_NAME } from './config.mjs';
  */
 export async function startAll(basePath) {
   const port = resolveZeusMcpPorts().ssb.disk;
+  // WP-U206 · decisión ⑩: comprobación ANTES de resolver y leer el volumen.
+  assertVolumesRootBootable({ service: SERVER_NAME, volumeIds: ['ssb'] });
   const root = basePath ?? resolveSsbBasePath();
   const handle = await createServer(port, root).start();
   return [handle];

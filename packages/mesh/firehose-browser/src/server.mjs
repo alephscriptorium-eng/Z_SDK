@@ -10,6 +10,7 @@ import express from 'express';
 import cors from 'cors';
 import { assetsDir as uiKitAssetsDir, createThemeRoutes } from '@zeus/ui-kit';
 import { resolveVolume } from '@zeus/presets-sdk';
+import { assertVolumesRootBootable } from '@zeus/volumes-ops';
 import { mountSpecRoutes, mountSwaggerUi } from '@zeus/presets-sdk/docs';
 
 import {
@@ -60,6 +61,11 @@ export async function createFirehoseServer(options = {}) {
   const config = getConfig();
   const port = options.port ?? config.server?.port ?? 3016;
   const host = options.host ?? config.server?.host ?? 'localhost';
+  // WP-U206 · decisión ⑩: aquí, no en el banner del CLI. La comprobación que
+  // había abajo (`resolveVolume('firehose')` tras el `listen`) miraba el
+  // volumen CUANDO EL SERVIDOR YA ESTABA SIRVIENDO. Esta corre antes del
+  // `listen` de :180, o sea antes de aceptar la primera petición.
+  assertVolumesRootBootable({ service: 'firehose-browser', volumeIds: ['firehose'] });
   const themeHandler = new ThemeHandler();
 
   const app = express();
