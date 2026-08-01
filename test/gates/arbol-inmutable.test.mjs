@@ -41,8 +41,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { CAZADOS, LIMPIOS, FUGAS } from './fixtures/vectores-mutacion-u252.mjs';
+import { FUENTE_HISTORICA, ORIGEN } from './fixtures/matriz-51-28397b8.mjs';
 import { conjuntoDeLectura } from './conjunto-lectura.mjs';
 
 const AQUI = fileURLToPath(import.meta.url);
@@ -439,15 +440,52 @@ test('guardián estático: ningún test de gates escribe sobre el árbol de trab
 // --- puesto rojo es decoración: aquí están los vectores, y los que ESCAPAN
 // --- están escritos como que escapan.
 
-test('el guardián estático se pone rojo con el defecto histórico real (HEAD~)', () => {
+/**
+ * SHA-1 del blob que git guardaría para este contenido. Es `sha1("blob <n>\0" +
+ * bytes)`, una función del CONTENIDO: no consulta la base de objetos, así que
+ * responde igual en un clon superficial que en uno completo. Se lo pedimos a
+ * git —que ya es dependencia dura de este fichero, ver `segmentosRaizRastreados`—
+ * para no tener que fiarse de una reimplementación de la fórmula.
+ * @param {string} texto @returns {string}
+ */
+function oidDeBlob(texto) {
+  return execFileSync('git', ['hash-object', '-t', 'blob', '--stdin'], {
+    cwd: REPO,
+    input: Buffer.from(texto, 'utf8'),
+    encoding: 'utf8'
+  }).trim();
+}
+
+/**
+ * Las mutaciones del árbol que aquel fichero hacía, `línea·operación`:
+ * la pieza fantasma bajo `packages/mesh/` (99-100), su borrado (130) y el
+ * renombrado del manifiesto rastreado con su reversión (139, 153).
+ */
+const FIRMA_HISTORICA = ['99·mkdirSync', '100·writeFileSync', '130·rmSync', '139·renameSync', '153·renameSync'];
+
+test('el guardián estático se pone rojo con el defecto histórico real (28397b8)', () => {
   // Vector no sintético: el propio fichero que causó el bloqueante, tal y como
-  // estaba commiteado antes de este WP. Si el guardián no lo caza, no sirve.
-  const historico = execFileSync(
-    'git',
-    ['show', '28397b8:test/gates/matriz-51.test.mjs'],
-    { cwd: REPO, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }
+  // estaba commiteado antes de U252. Si el guardián no lo caza, no sirve.
+  //
+  // WP-U260 — esto era `execFileSync('git', ['show', '28397b8:…'])`, y por eso
+  // el guardián estaba VERDE en local y ROJO en CI. `actions/checkout@v4` clona
+  // con `fetch-depth: 1` en los tres checkouts de `.github/workflows/ci.yml`:
+  // el objeto `28397b8` —14 commits por detrás— no está en el runner, y git
+  // contestaba `fatal: invalid object name '28397b8'`. Un guardián que sólo
+  // puede probarse donde no falla no está probado. El vector viaja ahora con
+  // el repo, así que no depende de la profundidad del clon ni del historial.
+  const historico = FUENTE_HISTORICA;
+
+  // La fixture no se cree de palabra. Si alguien la retoca para apagar un rojo
+  // —o vendoriza una revisión que ya no reproduce el defecto— el hash lo dice.
+  // Esta comprobación corre en TODA condición, también en el clon superficial.
+  assert.equal(
+    oidDeBlob(historico),
+    ORIGEN.oid,
+    `la fixture ya no es el blob de ${ORIGEN.rev}:${ORIGEN.ruta}: fue editada`
   );
-  const ofensas = ofensasDeFuente(historico, 'matriz-51.test.mjs@28397b8', segmentosRaizRastreados());
+
+  const ofensas = ofensasDeFuente(historico, `${ORIGEN.ruta}@${ORIGEN.rev}`, segmentosRaizRastreados());
   const ops = ofensas.map((o) => o.op);
   assert.ok(ofensas.length >= 3, `esperaba cazar el defecto histórico: ${JSON.stringify(ofensas, null, 2)}`);
   assert.ok(ops.includes('renameSync'), `el renombrado del manifiesto rastreado debe salir: ${ops.join(', ')}`);
@@ -455,6 +493,84 @@ test('el guardián estático se pone rojo con el defecto histórico real (HEAD~)
   // y la indirección por variable —`const manifest = path.join(REPO_ROOT,…)`—
   // es justo lo que un scan de texto ingenuo se traga.
   assert.ok(ofensas.some((o) => /identificador anclado/.test(o.motivo)));
+
+  // Y las CINCO mutaciones, con su línea. Medido: con `>= 3` + `includes` una
+  // fixture retocada para neutralizar UNA de las dos `renameSync` seguía dando
+  // verde, porque la otra sostenía el `includes` sola. El fuente está congelado
+  // —es un blob de 2026-08-01— así que estas líneas no pueden moverse por
+  // ninguna razón legítima, y en cambio cualquier retoque las rompe. Va como
+  // subconjunto, no como lista cerrada, para que afilar el guardián —que
+  // encontraría MÁS ofensas en el mismo fichero— no obligue a tocar este test.
+  const firma = new Set(ofensas.map((o) => `${o.linea}·${o.op}`));
+  for (const esperada of FIRMA_HISTORICA) {
+    assert.ok(
+      firma.has(esperada),
+      `la fixture ya no reproduce el defecto en ${esperada}: es otro fichero, no el de ${ORIGEN.rev}\n` +
+        `  observado: ${[...firma].join(', ')}`
+    );
+  }
+});
+
+/**
+ * Procedencia de la fixture, cuando el historial está delante.
+ *
+ * Qué añade y qué NO. El test de arriba ya ata contenido↔OID y corre en todas
+ * partes; el guardián NO se apaga en ningún sitio. Lo único que aquí se puede
+ * preguntar de más es si ese OID es el que vivía en `rev:ruta` — un hecho del
+ * HISTORIAL, y un clon superficial no tiene historial que consultar. No es la
+ * guarda desactivada en CI: es una pregunta distinta que CI no está en
+ * condiciones de formular, y se declara cuál de las dos ramas corrió en vez de
+ * salir verde en silencio. Cierra el hueco que el hash no puede cerrar solo:
+ * una fixture manipulada CON su OID recalculado, que a `oidDeBlob` le cuadra.
+ *
+ * LÍMITE, escrito porque es real: en un clon superficial esa manipulación
+ * coordinada NO se caza aquí —no hay historial contra el que confrontar— y sólo
+ * la para `FIRMA_HISTORICA`, que exige que las cinco mutaciones sigan estando.
+ * En cualquier clon completo —toda máquina de desarrollo— sí se caza.
+ */
+test('procedencia: donde hay historial, la fixture se confronta con el objeto real', (t) => {
+  // La sonda pregunta por el COMMIT, no por `ORIGEN.oid`. Medido: preguntando
+  // por el OID declarado, una fixture manipulada con su hash recalculado se
+  // contestaba a sí misma —ese OID forjado tampoco está en la base de objetos,
+  // así que el test lo tomaba por «clon superficial» y salía verde. La sonda
+  // tiene que ser independiente de lo que se está verificando.
+  //
+  // Y se pregunta por el TIPO en vez de por `-e … ^{commit}`, que sería lo
+  // natural: el guardián estático de este mismo fichero lee `^{commit}` dentro
+  // de los argumentos de un `git` y ve la palabra `commit`, o sea un subcomando
+  // que escribe, y se pone rojo. Es un falso positivo suyo —`^{…}` es un pelado
+  // de revisión, no un subcomando— pero desafilar la regla para colocar aquí un
+  // idioma más bonito sale mucho más caro que rodearla. Queda escrito.
+  const hayHistorial = spawnSync('git', ['cat-file', '-t', ORIGEN.rev], { cwd: REPO, encoding: 'utf8' });
+  assert.equal(hayHistorial.error, undefined, `git no respondió: ${hayHistorial.error}`);
+
+  if (hayHistorial.status !== 0) {
+    // Clon superficial. Que git sí resuelva HEAD separa «esa revisión no está»
+    // —lo esperado— de «git no está» o «esto no es un repo», que dejarían este
+    // test mudo por un motivo completamente distinto y sin que nadie se entere.
+    const vivo = spawnSync('git', ['cat-file', '-t', 'HEAD'], { cwd: REPO, encoding: 'utf8' });
+    assert.equal(vivo.status, 0, `git no resuelve ni HEAD (${vivo.status}): la sonda no dice nada del historial`);
+    t.diagnostic(`historial ausente (clon superficial): ${ORIGEN.rev} no alcanzable, procedencia no confrontable`);
+    return;
+  }
+  assert.equal(hayHistorial.stdout.trim(), 'commit', `${ORIGEN.rev} no es una revisión: ${hayHistorial.stdout}`);
+
+  const oidEnRevision = execFileSync('git', ['rev-parse', `${ORIGEN.rev}:${ORIGEN.ruta}`], {
+    cwd: REPO,
+    encoding: 'utf8'
+  }).trim();
+  assert.equal(
+    oidEnRevision,
+    ORIGEN.oid,
+    `${ORIGEN.rev}:${ORIGEN.ruta} es ${oidEnRevision}: la fixture declara otro OID, vendoriza otra revisión`
+  );
+  const real = execFileSync('git', ['cat-file', 'blob', oidEnRevision], {
+    cwd: REPO,
+    encoding: 'buffer',
+    maxBuffer: 16 * 1024 * 1024
+  });
+  assert.equal(Buffer.from(FUENTE_HISTORICA, 'utf8').compare(real), 0, 'la fixture no coincide byte a byte con el blob');
+  t.diagnostic(`historial presente: ${ORIGEN.rev}:${ORIGEN.ruta} confrontado byte a byte`);
 });
 
 test('el guardián estático caza los rodeos que sé rodear', () => {
