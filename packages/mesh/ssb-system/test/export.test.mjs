@@ -31,6 +31,7 @@ import {
 import {
   corpusForContent,
   classifyContent,
+  foldRel,
   messageFileName,
   SKIP_REASONS,
   SSB_CORPORA,
@@ -631,6 +632,54 @@ test('NIVEL 1: la POSICIÓN de feed también es única en el export (bifurcació
       bytes
     );
     assert.ok(!fs.existsSync(path.join(first.ssbRoot, 'tribes', messageFileName('%p2=.sha256'))));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('NIVEL 1: la ruta canónica es única EN EL FS, no solo como cadena (colisión por CAJA)', () => {
+  // `messageFileName` es inyectiva como CADENA y NO como RUTA: base64url
+  // distingue la caja y NTFS/APFS no. Sin esta guarda el export escribía dos
+  // veces sobre EL MISMO fichero y `added` decía dos: pérdida silenciosa con un
+  // conteo que miente. Mismo defecto y misma regla que en el driver.
+  const CAJA_A = '%vg9Wb079DoMD5hNnObxZyKEgRVCU4O7y+OoW4InJljw==.sha256';
+  const CAJA_B = '%vM9Wb079DoMD5hNnObxZyKEgRVCU4O7y+OoW4InJljw==.sha256';
+  assert.notEqual(messageFileName(CAJA_A), messageFileName(CAJA_B));
+  assert.equal(foldRel(messageFileName(CAJA_A)), foldRel(messageFileName(CAJA_B)));
+
+  const root = tempRoot('zeus-ssb-caja-');
+  try {
+    seedManifest(root);
+    const mk = (key, author) => ({
+      key,
+      value: { author, sequence: 1, previous: null, content: { type: 'tribe' } }
+    });
+    // (a) las dos en el MISMO volcado.
+    assert.throws(
+      () => exportSsbLogToVolumes({ log: [mk(CAJA_A, '@a.ed25519'), mk(CAJA_B, '@b.ed25519')], volumesRoot: root }),
+      /colision_de_caja/
+    );
+    const ssbRoot = path.join(root, 'DISK_04', 'SSB');
+    assert.equal(
+      fs.existsSync(path.join(ssbRoot, 'tribes')) ? fs.readdirSync(path.join(ssbRoot, 'tribes')).length : 0,
+      0,
+      'aborta en pase dry: ni la primera se escribe'
+    );
+
+    // (b) la segunda contra el volumen ya aterrizado.
+    const first = exportSsbLogToVolumes({ log: [mk(CAJA_A, '@a.ed25519')], volumesRoot: root });
+    assert.equal(first.added, 1);
+    const bytes = fs.readFileSync(path.join(ssbRoot, 'tribes', messageFileName(CAJA_A)));
+    assert.throws(
+      () => exportSsbLogToVolumes({ log: [mk(CAJA_B, '@b.ed25519')], volumesRoot: root }),
+      /colision_de_caja/
+    );
+    assert.deepEqual(
+      fs.readFileSync(path.join(ssbRoot, 'tribes', messageFileName(CAJA_A))),
+      bytes,
+      'el mensaje que ya vivía, intacto'
+    );
+    assert.equal(fs.readdirSync(path.join(ssbRoot, 'tribes')).length, 1);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

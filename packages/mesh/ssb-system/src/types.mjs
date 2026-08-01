@@ -126,7 +126,26 @@ export function corpusForContent(content) {
 }
 
 /**
+ * Ruta PLEGADA para comparar como el sistema de ficheros, no como cadena.
+ *
+ * Réplica declarada de `foldRel` (`@zeus/volumes-ops/src/driver-ssb.mjs`), el
+ * otro escritor de este volumen — mismo motivo de replicación que `feedCoords`.
+ * NTFS y APFS son INSENSIBLES A LA CAJA y el alfabeto base64url no lo es: dos
+ * rutas que solo difieran en la caja son dos cadenas y UN fichero.
+ * @param {string} rel
+ */
+export function foldRel(rel) {
+  return String(rel).toLowerCase();
+}
+
+/**
  * Safe filename for an SSB message key (`%hash=.sha256`).
+ *
+ * INYECTIVA COMO CADENA (base64url sobre bytes utf8), y su alfabeto no contiene
+ * `/` ni `.`, así que no hay travesía de rutas. **NO es inyectiva como RUTA en
+ * un sistema de ficheros insensible a la caja**: `%vg9W…` y `%vM9W…` rinden
+ * nombres que solo difieren en una letra mayúscula y son EL MISMO fichero en
+ * NTFS/APFS. Quien decida «esta ruta está libre» debe comparar con `foldRel`.
  * @param {string} key
  */
 export function messageFileName(key) {

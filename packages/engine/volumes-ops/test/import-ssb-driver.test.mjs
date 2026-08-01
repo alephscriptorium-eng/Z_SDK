@@ -36,6 +36,7 @@ import {
   SSB_FAMILY,
   SSB_CORPUS_DIRS,
   SSB_ROOT_FILES,
+  foldRel,
   messageFileName,
   ssbMessageKey,
   ssbFeedCoords,
@@ -698,6 +699,265 @@ test('CA-8: nombre de fichero que NO deriva de la clave = material inalcanzable,
   } finally {
     restore();
     fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+// ── D-H · la clave es inyectiva como CADENA, no como RUTA (3.ª vuelta) ─────
+// La 2.ª vuelta eliminó `colision_ruta` afirmando que «dos claves distintas no
+// pueden reclamar la misma ruta porque messageFileName es inyectiva». Cierto
+// sobre cadenas; FALSO sobre ficheros: base64url distingue la caja y NTFS/APFS
+// no. Con esa frase se fue una protección real contra pérdida silenciosa.
+
+/** Las dos claves del vector: rinden nombres que solo difieren en una letra. */
+const CAJA_A = '%vg9Wb079DoMD5hNnObxZyKEgRVCU4O7y+OoW4InJljw==.sha256';
+const CAJA_B = '%vM9Wb079DoMD5hNnObxZyKEgRVCU4O7y+OoW4InJljw==.sha256';
+
+test('D-H: el vector existe — dos claves distintas, rutas distintas como CADENA, el mismo FICHERO', () => {
+  const a = messageFileName(CAJA_A);
+  const b = messageFileName(CAJA_B);
+  assert.notEqual(CAJA_A, CAJA_B);
+  assert.notEqual(a, b, 'inyectiva como cadena: eso sigue siendo cierto');
+  assert.equal(a.toLowerCase(), b.toLowerCase(), 'y aun así, la MISMA ruta al plegar la caja');
+  assert.equal(foldRel(`tribes/${a}`), foldRel(`tribes/${b}`));
+  // Y el sistema de ficheros de este entorno confirma la consecuencia.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-caja-'));
+  try {
+    fs.writeFileSync(path.join(dir, a), 'uno', 'utf8');
+    fs.writeFileSync(path.join(dir, b), 'dos', 'utf8');
+    const enDisco = fs.readdirSync(dir);
+    // En un FS insensible a la caja queda UNO; en uno sensible, dos. El driver
+    // debe rechazarlo en AMBOS: un volumen solo válido en Linux no es replicable.
+    assert.ok(enDisco.length <= 2);
+    if (enDisco.length === 1) {
+      assert.equal(fs.readFileSync(path.join(dir, a), 'utf8'), 'dos', 'el segundo pisó al primero');
+    }
+    console.log(`[U205·D-H] ficheros en disco tras escribir las dos claves: ${enDisco.length}`);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+/**
+ * ¿Puede este sistema de ficheros tener DOS ficheros cuyas rutas solo difieran
+ * en la caja? En Linux sí; en NTFS/APFS no. Dos de las guardas de D-H solo son
+ * ALCANZABLES donde sí — y donde no, el test se abstiene con `skip`, no con un
+ * verde silencioso (lección M3 de U204: abstenerse es `skip`; fingir es `ok`).
+ */
+function fsDistingueCaja() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-caso-'));
+  try {
+    fs.writeFileSync(path.join(dir, 'Aa.json'), 'uno', 'utf8');
+    fs.writeFileSync(path.join(dir, 'aa.json'), 'dos', 'utf8');
+    return fs.readdirSync(dir).length === 2;
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test('D-H: VALIDAR rechaza un pack con dos ficheros que colisionan por caja (solo FS sensible)', (t) => {
+  if (!fsDistingueCaja()) {
+    t.skip('este FS no distingue la caja: las dos rutas son un fichero y el vector no se puede plantar');
+    return;
+  }
+  const staged = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-caja-pack-'));
+  try {
+    fs.mkdirSync(path.join(staged, 'tribes'), { recursive: true });
+    for (const [key, author] of [
+      [CAJA_A, ALICE],
+      [CAJA_B, BOB]
+    ]) {
+      fs.writeFileSync(
+        path.join(staged, 'tribes', messageFileName(key)),
+        JSON.stringify(landed(msg({ key, author, sequence: 1 }), 'tribes'), null, 2),
+        'utf8'
+      );
+    }
+    assert.equal(fs.readdirSync(path.join(staged, 'tribes')).length, 2);
+    const out = SSB_DRIVER.validate({ stagedDir: staged });
+    assert.equal(out.ok, false, 'un volumen así no se puede replicar a Windows sin perder un mensaje');
+    assert.match(JSON.stringify(out.results), /colision_de_caja_en_pack/);
+  } finally {
+    fs.rmSync(staged, { recursive: true, force: true });
+  }
+});
+
+test('D-H: un DESTINO con dos ficheros que colisionan por caja no se puede planificar (solo FS sensible)', (t) => {
+  if (!fsDistingueCaja()) {
+    t.skip('este FS no distingue la caja: el destino no puede llegar a ese estado');
+    return;
+  }
+  const staged = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-caja-dest-'));
+  const dest = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-caja-dest2-'));
+  try {
+    fs.mkdirSync(path.join(dest, 'tribes'), { recursive: true });
+    for (const [key, author] of [
+      [CAJA_A, ALICE],
+      [CAJA_B, BOB]
+    ]) {
+      fs.writeFileSync(
+        path.join(dest, 'tribes', messageFileName(key)),
+        JSON.stringify(landed(msg({ key, author, sequence: 1 }), 'tribes'), null, 2),
+        'utf8'
+      );
+    }
+    const rel = unitRel('votes', '%nuevo=.sha256');
+    fs.mkdirSync(path.join(staged, 'votes'), { recursive: true });
+    fs.writeFileSync(
+      path.join(staged, ...rel.split('/')),
+      JSON.stringify(landed(msg({ key: '%nuevo=.sha256', sequence: 9, previous: '%x' }), 'votes'), null, 2),
+      'utf8'
+    );
+    const plan = SSB_DRIVER.merge({ stagedDir: staged, destDir: dest, volumeFiles: [rel] });
+    assert.ok(plan.error, JSON.stringify(plan.moves));
+    assert.equal(plan.error.code, 'destino_con_colision_de_caja');
+  } finally {
+    fs.rmSync(staged, { recursive: true, force: true });
+    fs.rmSync(dest, { recursive: true, force: true });
+  }
+});
+
+test('D-H: pack con dos claves que colisionan por CAJA = colision_de_caja_en_pack (antes: ok, moves 2)', () => {
+  const { root, restore } = setupRoot();
+  // Pack legítimo construido en Linux: los dos ficheros existen de verdad allí.
+  // Se construye plantándolos a mano para no depender de la caja del FS local.
+  const { packRoot } = buildSsbPack({
+    units: [{ msg: msg({ key: CAJA_A, sequence: 1 }) }],
+    mutate(dataDir) {
+      const otro = msg({ key: CAJA_B, author: BOB, sequence: 1 });
+      const abs = path.join(dataDir, 'tribes', messageFileName(CAJA_B));
+      // Si el FS es insensible a la caja, este write PISA al anterior: en ese
+      // caso el pack trae un solo fichero y el vector se prueba igual desde
+      // `validate` con los dos rels declarados (abajo).
+      fs.writeFileSync(abs, JSON.stringify(landed(otro, 'tribes'), null, 2), 'utf8');
+    }
+  });
+  try {
+    const before = manifestBytes(root);
+    const res = importPack({ packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    // Root intacto pase lo que pase: nada aterriza a medias.
+    assert.equal(manifestBytes(root), before);
+    assert.ok(!fs.existsSync(path.join(root, 'DISK_04')));
+    assert.ok(noStagingLeft(root));
+  } finally {
+    restore();
+    fs.rmSync(packRoot, { recursive: true, force: true });
+  }
+});
+
+test('D-H: VALIDAR rechaza las dos rutas colisionantes, sin depender de la caja del FS local', () => {
+  // Se llama al driver DIRECTAMENTE con un árbol staged que declara las dos
+  // rutas — es el vector de la contrarrevisión, y así se mide en cualquier
+  // plataforma (en Linux los dos ficheros existen; en Windows el segundo pisa
+  // al primero y `validate` lo ve igual por la ruta declarada).
+  const staged = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-staged-'));
+  try {
+    fs.mkdirSync(path.join(staged, 'tribes'), { recursive: true });
+    fs.writeFileSync(
+      path.join(staged, 'tribes', messageFileName(CAJA_A)),
+      JSON.stringify(landed(msg({ key: CAJA_A, sequence: 1 }), 'tribes'), null, 2),
+      'utf8'
+    );
+    fs.writeFileSync(
+      path.join(staged, 'tribes', messageFileName(CAJA_B)),
+      JSON.stringify(landed(msg({ key: CAJA_B, author: BOB, sequence: 1 }), 'tribes'), null, 2),
+      'utf8'
+    );
+    const enDisco = fs.readdirSync(path.join(staged, 'tribes'));
+    const out = SSB_DRIVER.validate({ stagedDir: staged });
+    // FALLO CERRADO EN LAS DOS PLATAFORMAS, por caminos distintos — y se dice
+    // cuál, en vez de escribir un `assert` que pase por casualidad:
+    assert.equal(out.ok, false, `VALIDAR debe rechazarlo (ficheros en disco: ${enDisco.length})`);
+    const dump = JSON.stringify(out.results);
+    if (enDisco.length === 2) {
+      // FS SENSIBLE (Linux): los dos ficheros existen. Se rechaza porque ese
+      // volumen no se podría replicar a Windows sin perder un mensaje.
+      assert.match(dump, /colision_de_caja_en_pack/);
+    } else {
+      // FS INSENSIBLE (NTFS/APFS, este entorno): en disco queda UN fichero, que
+      // conserva el nombre del primero y el contenido del segundo. Lo caza
+      // `nombre_no_deriva_de_clave`, que es la otra mitad de la misma regla.
+      assert.equal(enDisco.length, 1);
+      assert.match(dump, /nombre_no_deriva_de_clave/);
+    }
+    console.log(`[U205·D-H] VALIDAR falla cerrado con ${enDisco.length} fichero(s) en disco`);
+  } finally {
+    fs.rmSync(staged, { recursive: true, force: true });
+  }
+});
+
+test('D-H: el PLAN nunca mueve dos rutas que son un fichero = colision_ruta (repuesta, por ruta plegada)', () => {
+  // El vector exacto de la contrarrevisión: `merge` recibía los dos rels y
+  // devolvía `moves: 2`. Se le llama directamente, que es como se midió.
+  const staged = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-plan-'));
+  const dest = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u205-plan-dest-'));
+  try {
+    fs.mkdirSync(path.join(staged, 'tribes'), { recursive: true });
+    const relA = `tribes/${messageFileName(CAJA_A)}`;
+    const relB = `tribes/${messageFileName(CAJA_B)}`;
+    fs.writeFileSync(
+      path.join(staged, ...relA.split('/')),
+      JSON.stringify(landed(msg({ key: CAJA_A, sequence: 1 }), 'tribes'), null, 2),
+      'utf8'
+    );
+    fs.writeFileSync(
+      path.join(staged, ...relB.split('/')),
+      JSON.stringify(landed(msg({ key: CAJA_B, author: BOB, sequence: 1 }), 'tribes'), null, 2),
+      'utf8'
+    );
+    const plan = SSB_DRIVER.merge({ stagedDir: staged, destDir: dest, volumeFiles: [relA, relB] });
+    // ANTES de este cierre: `{ moves: [relA, relB] }` — dos rutas que en este FS
+    // son UN fichero, con lo que un mensaje se perdía y el conteo decía dos.
+    assert.ok(plan.error, `el plan devolvió moves=${JSON.stringify(plan.moves)}`);
+    assert.equal(plan.error.code, 'colision_ruta');
+    assert.equal(plan.error.detail.file, relB);
+    assert.equal(plan.error.detail.at, relA);
+    // Las CLAVES citadas dependen de la plataforma y se dice por qué: en un FS
+    // insensible los dos rels resuelven al MISMO fichero, así que las dos
+    // lecturas rinden la clave del que sobrevivió. Lo que no depende de la
+    // plataforma —y es lo que la CA promete— es que el plan NO mueva dos rutas
+    // que son un fichero.
+    assert.ok([CAJA_A, CAJA_B].includes(plan.error.detail.key));
+    assert.ok([CAJA_A, CAJA_B].includes(plan.error.detail.destKey));
+  } finally {
+    fs.rmSync(staged, { recursive: true, force: true });
+    fs.rmSync(dest, { recursive: true, force: true });
+  }
+});
+
+test('D-H: una clave que colisiona por CAJA con el DESTINO también aborta (pack Linux → volumen Windows)', () => {
+  const { root, restore } = setupRoot();
+  const packA = buildSsbPack({ units: [{ msg: msg({ key: CAJA_A, sequence: 1 }) }] });
+  try {
+    const first = importPack({ packRoot: packA.packRoot, role: 'operator' });
+    assert.equal(first.ok, true);
+    const bytesA = fs.readFileSync(rootFile(root, unitRel('tribes', CAJA_A)));
+    const manifestBefore = manifestBytes(root);
+
+    // Corrida posterior con la OTRA clave: mensaje legítimo y distinto, que en
+    // este FS reclama el mismo fichero. Sin la guarda, `renameSync` lo pisaría.
+    const packB = buildSsbPack({
+      name: 'pack-ssb-caja-destino',
+      version: '2.0.0',
+      units: [{ msg: msg({ key: CAJA_B, author: BOB, sequence: 1 }) }]
+    });
+    const res = importPack({ packRoot: packB.packRoot, role: 'operator' });
+    assert.equal(res.ok, false, JSON.stringify(res.families ?? res.steps));
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'colision_ruta');
+    assert.equal(res.key, CAJA_B);
+    assert.equal(res.destKey, CAJA_A);
+    assert.ok(!res.steps.some((s) => s.step === 'sellar'), 'no se llegó a SELLAR');
+    // El mensaje que ya vivía, intacto byte a byte; el sello, quieto.
+    assert.deepEqual(fs.readFileSync(rootFile(root, unitRel('tribes', CAJA_A))), bytesA);
+    assert.equal(manifestBytes(root), manifestBefore);
+    assert.equal(hashManifest().sha256, first.manifestSha256);
+    assert.ok(noStagingLeft(root));
+
+    fs.rmSync(packB.packRoot, { recursive: true, force: true });
+  } finally {
+    restore();
+    fs.rmSync(packA.packRoot, { recursive: true, force: true });
   }
 });
 

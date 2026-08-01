@@ -124,6 +124,7 @@ import {
   SKIP_REASONS,
   classifyContent,
   feedCoords,
+  foldRel,
   messageFileName
 } from './types.mjs';
 
@@ -384,6 +385,8 @@ function indexLanded(ssbRoot) {
   const byKey = new Map();
   /** @type {Map<string, { rel: string, key: string }>} `author#seq` → ocupante */
   const byPosition = new Map();
+  /** @type {Map<string, { rel: string, key: string }>} ruta PLEGADA → ocupante */
+  const byFolded = new Map();
   /** @type {{ file: string, motivo: string, esperado?: string }[]} */
   const anomalias = [];
 
@@ -441,6 +444,13 @@ function indexLanded(ssbRoot) {
         anomalias.push({ file: childRel, motivo: 'clave_duplicada_en_volumen' });
         continue;
       }
+      // Dos ficheros que en un FS insensible a la caja serían UNO (volumen
+      // construido en Linux): no es replicable y no se puede sincronizar encima.
+      if (byFolded.has(foldRel(childRel))) {
+        anomalias.push({ file: childRel, motivo: 'colision_de_caja_en_volumen' });
+        continue;
+      }
+      byFolded.set(foldRel(childRel), { rel: childRel, key });
       byKey.set(key, { rel: childRel, valueSha256: valueSha256(row.value) });
       const posId = `${coords.author}#${coords.sequence}`;
       const ocupante = byPosition.get(posId);
@@ -452,7 +462,7 @@ function indexLanded(ssbRoot) {
     }
   }
   if (fs.existsSync(ssbRoot)) walk(ssbRoot, '');
-  return { byKey, byPosition, anomalias };
+  return { byKey, byPosition, byFolded, anomalias };
 }
 
 /**
@@ -521,6 +531,8 @@ export function exportSsbLogToVolumes(opts) {
   const conflicts = [];
   /** @type {{ author: string, sequence: number, key: string, at: string, destKey: string }[]} */
   const posConflicts = [];
+  /** @type {{ key: string, at: string, destKey: string, rel: string }[]} */
+  const caseConflicts = [];
   /** @type {{ key: string, at: string }[]} */
   const unchanged = [];
   for (const corpus of SSB_CORPORA) {
@@ -546,6 +558,16 @@ export function exportSsbLogToVolumes(opts) {
         });
         continue;
       }
+      // NIVEL 1 · la ruta canónica es única EN EL SISTEMA DE FICHEROS, no solo
+      // como cadena: base64url distingue la caja y NTFS/APFS no. Dos claves que
+      // solo difieran en la caja de su codificación escribirían UN fichero y el
+      // conteo diría dos — pérdida silenciosa. Misma comprobación que el driver
+      // hace con `foldRel` (`colision_ruta` / `colision_de_caja_en_pack`).
+      const ocupanteRuta = landed.byFolded.get(foldRel(rel));
+      if (ocupanteRuta && ocupanteRuta.key !== row.key) {
+        caseConflicts.push({ key: row.key, at: ocupanteRuta.rel, destKey: ocupanteRuta.key, rel });
+        continue;
+      }
       writes.push({
         abs: path.join(dir, messageFileName(row.key)),
         payload: `${JSON.stringify(
@@ -556,12 +578,21 @@ export function exportSsbLogToVolumes(opts) {
       });
       landed.byKey.set(row.key, { rel, valueSha256: row.valueSha256 });
       landed.byPosition.set(posId, { rel, key: row.key });
+      landed.byFolded.set(foldRel(rel), { rel, key: row.key });
     }
   }
   if (conflicts.length > 0) {
     throw new Error(
       `clave_divergente: ${conflicts.length} clave(s) del volcado ya viven en el volumen con contenido DISTINTO ` +
         `(${conflicts.map((c) => `${c.key} @ ${c.at}`).join('; ')}) — sobrescribirlas sería pérdida de dato; abortando sin escribir.`
+    );
+  }
+  if (caseConflicts.length > 0) {
+    throw new Error(
+      `colision_de_caja: ${caseConflicts.length} clave(s) del volcado rinden una ruta que ya está ocupada por OTRA clave ` +
+        'en un sistema de ficheros insensible a la caja ' +
+        `(${caseConflicts.map((c) => `${c.rel} vs ${c.at}: ${c.key} vs ${c.destKey}`).join('; ')}) — ` +
+        'base64url distingue la caja y NTFS/APFS no: escribirlas dejaría UN fichero y el conteo diría dos; abortando sin escribir.'
     );
   }
   if (posConflicts.length > 0) {

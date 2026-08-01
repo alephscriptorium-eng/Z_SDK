@@ -11,6 +11,12 @@ dice «no medido».
 > mitades no se ponían de acuerdo sobre qué es una unidad válida. La respuesta
 > está en **§A · Dónde vive la regla**, escrita antes de tocar código. Todo lo
 > nuevo lleva marca «(2.ª vuelta)».
+>
+> **3.ª vuelta (un solo punto).** Al eliminar `colision_ruta` en la 2.ª vuelta me
+> llevé por delante una protección real, justificándolo con una frase de la clase
+> exacta que este carril persigue: **«`messageFileName` es inyectiva» es cierto
+> sobre CADENAS y falso sobre FICHEROS**. Ver **§B · La inyectividad era
+> notación**. Marca «(3.ª vuelta)».
 
 ---
 
@@ -53,12 +59,103 @@ deliberada, y está escrita en la cabecera de los dos ficheros.
 
 ---
 
+## B · LA INYECTIVIDAD ERA NOTACIÓN (3.ª vuelta)
+
+### El defecto, reproducido antes de tocar nada
+
+Escribí en `driver-ssb.mjs` que «no hay `colision_ruta` y no es un olvido: la
+ruta la DERIVA la clave y `messageFileName` es inyectiva, luego dos claves
+distintas no pueden reclamar la misma ruta», y con esa frase **eliminé una guarda
+que la contrarrevisión anterior había certificado funcionando**. La frase es
+cierta en un dominio y falsa en el que importa:
+
+```
+$ node -e "…"
+clave 1 -> JXZnOVdiMDc5RG9NRDVoTm5PYnhaeUtFZ1JWQ1U0Tzd5K09vVzRJbkpsanc9PS5zaGEyNTY.json
+clave 2 -> JXZNOVdiMDc5RG9NRDVoTm5PYnhaeUtFZ1JWQ1U0Tzd5K09vVzRJbkpsanc9PS5zaGEyNTY.json
+iguales como CADENA?       false      ← la inyectividad que yo invocaba
+iguales en MINUSCULAS?     true       ← la que decide qué fichero se crea
+
+$ node -e "…dos writeFileSync…"
+ficheros en disco tras dos escrituras: [ 'AaBb.json' ]     ← UNO
+```
+
+**base64url distingue `A` de `a`; NTFS y APFS no.** Con la guarda eliminada,
+`validate` y `merge` decían `ok` y el plan movía **dos rutas que en este FS son
+un fichero**: un mensaje perdido en silencio con un recuento que dice dos. Es la
+clase D1 exacta por la que U204 fue devuelto, y la que yo mismo había cerrado
+bien en `indexVolume`. **Alcanzable por el camino normal del producto**, sin
+malicia ni material legado: un pack construido en Linux trae los dos ficheros
+legítimamente y se importa en Windows.
+
+Lección, escrita donde vive el código: **ancla la operación, no su notación.** La
+operación es «qué fichero se crea»; la inyectividad hacía de notación.
+
+### La forma del cierre
+
+`foldRel(rel)` — comparación por ruta plegada — y **nada compara rutas crudas**.
+Se aplica en los tres sitios donde alguien decide «esta ruta está libre», y en
+**los dos escritores** (§A: la regla es del volumen):
+
+| dónde | código | qué impide |
+|---|---|---|
+| VALIDAR (pack) | `colision_de_caja_en_pack` | un pack con dos unidades que serían un fichero |
+| plan (merge) | **`colision_ruta`** (repuesta, plegada) | mover dos rutas que son un fichero, o pisar una existente |
+| índice del destino | `destino_con_colision_de_caja` | planificar sobre un volumen ya ambiguo |
+| export (volcado y volumen) | `colision_de_caja` | escribir dos veces el mismo fichero contando dos |
+
+**Alcance medido del plegado**: cubre la CAJA; **no** cubre la normalización
+Unicode (macOS NFD), y no hace falta — el nombre canónico es
+`base64url(key)+'.json'`, alfabeto `[A-Za-z0-9_-]` más el punto, **ASCII puro**,
+donde NFC y NFD coinciden. Es propiedad del alfabeto, no suposición.
+
+**Por qué se rechaza también en Linux**, donde los dos ficheros conviven sin
+problema: un volumen válido solo en un FS sensible a la caja **no es replicable**,
+y la réplica A→B entre plataformas es literalmente el 8.º eslabón. Precio
+declarado, igual que el de D-B/D-F.
+
+### `ruta_bloqueada_por_fichero` — **medido, no razonado**
+
+Se pedía comprobar si vuelve a ser alcanzable con la guarda repuesta. Montado el
+vector y llamado `merge` directamente:
+
+```
+`votes` es un FICHERO que ES un mensaje válido -> destino_fuera_de_layout
+`votes` es un FICHERO que NO rinde clave       -> destino_sin_clave
+```
+
+**Sigue siendo inalcanzable por orden**, y por la misma razón que en la 2.ª
+vuelta: el único ancestro posible de `<corpus>/<fichero>` es la entrada de raíz
+`<corpus>`, que aborta antes por una de esas dos. No lo he tocado.
+
+### Mutación (5 más, total 30)
+
+| # | mutación | test que la caza |
+|---|---|---|
+| K1 | `foldRel` identidad (comparación cruda) | `D-H: el vector existe` + `D-H: el PLAN…` + `D-H: …con el DESTINO` |
+| K2 | sin `colision_ruta` en el plan | `D-H: el PLAN…` + `D-H: …con el DESTINO` |
+| K3 | sin `colision_de_caja_en_pack` | **no medible aquí** — ver abajo |
+| K4 | sin `destino_con_colision_de_caja` | **no medible aquí** — ver abajo |
+| K5 | export sin la guarda de caja | `NIVEL 1: la ruta canónica es única EN EL FS` |
+
+**K3 y K4 sobreviven en esta plataforma, y lo digo en vez de disimularlo.** Sus
+vectores necesitan **dos ficheros cuyas rutas solo difieran en la caja**, que en
+NTFS no se pueden plantar. Sus tests detectan el FS en tiempo de ejecución
+(`fsDistingueCaja()`) y hacen **`t.skip` con el motivo** — nunca un verde
+silencioso (lección M3 de U204: *abstenerse es `skip`; fingir es `ok`*). En un
+runner Linux se ejecutan y cazan K3/K4. Salida actual: `# skipped 2`.
+
+Lo que **sí** queda medido en esta plataforma es el camino por el que el defecto
+llegaba de verdad —el plan y el destino— y ahí K1, K2 y K5 caen.
+
+---
+
 ## 0 · Resumen ejecutable
 
 | suite | antes (87bd93f) | 1.ª vuelta | 2.ª vuelta |
 |---|---|---|---|
-| `@zeus/volumes-ops` | 56/56 | 89/89 | **97/97** (+41) |
-| `@zeus/ssb-system` | 4/4 | 20/20 | **26/26** (+22) |
+| `@zeus/volumes-ops` | 56/56 | 89/89 | **104/104** (+48, 2 con `skip` declarado) |
+| `@zeus/ssb-system` | 4/4 | 20/20 | **27/27** (+23) |
 | `@zeus/feed-kit` | 10/10 | 10/10 | 10/10 |
 | `@zeus/linea-kit` | — | 36/36 | 36/36 |
 | `@zeus/firehose-core` | — | 12/12 | 12/12 |
@@ -92,12 +189,13 @@ Reglas: clave nueva → aterriza · clave presente con el mismo `value` → dedu
 aborta · `(author, sequence)` ya ocupada por otra clave → `reescritura_de_feed`
 aborta · sidecar `manifest.json` de raíz: falta→aterriza, igual→no-op,
 distinto→**divergencia reportada, jamás pisada** · claves y secuencias duplicadas
-dentro del pack → abortan en VALIDAR. **No hay `colision_ruta`** y no es olvido:
-la ruta la deriva la clave y `messageFileName` es inyectiva (2.ª vuelta, §4bis·B2).
+dentro del pack → abortan en VALIDAR · **misma ruta reclamada por clave distinta
+→ `colision_ruta`, comparando por ruta PLEGADA** (3.ª vuelta, §B: derivar la ruta
+de la clave no la hace única *en el sistema de ficheros*).
 Índice del destino sin agujeros (doctrina D-B/D-F de U204 heredada entera, y en
 2.ª vuelta aplicada de verdad): `enlace_en_destino`, `destino_sin_clave`,
 `destino_sin_coordenada_de_feed`, **`destino_fuera_de_layout`**,
-**`destino_con_feed_bifurcado`**.
+**`destino_con_feed_bifurcado`**, **`destino_con_colision_de_caja`** (3.ª vuelta).
 
 ### 1.1bis Réplica declarada de la coordenada — `types.mjs` (2.ª vuelta)
 
@@ -409,15 +507,21 @@ Con esto **§9.7 pasa a ser cierta**: sí queda no importable, sí se cita la ru
 El test que aseveraba el comportamiento anterior (`…deduplica, cuenta y se
 DECLARA`) está **reescrito**, no borrado.
 
-**Consecuencia colateral que declaro** (no es regresión, es la protección
-adelantada): con el índice arreglado, `colision_ruta` pasa a ser **imposible por
-construcción** —la ruta la deriva la clave y `messageFileName` es inyectiva— y lo
-**he eliminado**, con el porqué en cabecera. Y `ruta_bloqueada_por_fichero` pasa a
-ser **inalcanzable por orden**: el único ancestro posible de `<corpus>/<fichero>`
-es la entrada de raíz `<corpus>`, y un fichero de raíz ya aborta antes por
-`destino_sin_clave` o `destino_fuera_de_layout`. **Aviso al revisor: su mutación
-ya no cae, y no es un descuido** — está declarado en cabecera como última línea
-por si el orden cambiara, igual que `unidad_sin_clave` dentro de `merge`.
+**Consecuencia colateral que declaré aquí, y que estaba MAL** ⚠: escribí que con
+el índice arreglado `colision_ruta` pasaba a ser «imposible por construcción —la
+ruta la deriva la clave y `messageFileName` es inyectiva—» y **lo eliminé**. La
+frase era cierta sobre cadenas y falsa sobre ficheros, y con ella se fue una
+protección real. **Corregido en la 3.ª vuelta: §B.** Se conserva este párrafo
+tachado en vez de reescribirlo en silencio, porque el error de razonamiento es
+más útil que su resultado.
+
+Lo que sí sigue en pie de aquel párrafo: `ruta_bloqueada_por_fichero` es
+**inalcanzable por orden** —el único ancestro posible de `<corpus>/<fichero>` es
+la entrada de raíz `<corpus>`, que aborta antes por `destino_sin_clave` o
+`destino_fuera_de_layout`—, y en la 3.ª vuelta se ha **vuelto a medir con la
+guarda repuesta** (§B), no a deducir. Su mutación no cae, está declarado en
+cabecera como última línea por si el orden cambiara, igual que
+`unidad_sin_clave` dentro de `merge`.
 
 ### B3 · Mi exportador producía volúmenes que mi driver declara no importables
 
@@ -522,7 +626,7 @@ Heredadas, **sin ofensor actual**, y **fuera de mi ALCANCE_DIFF** (`manifest.mjs
 
 ---
 
-## 5 · Prueba de que los tests discriminan (14 + 11 mutaciones)
+## 5 · Prueba de que los tests discriminan (14 + 11 + 5 mutaciones)
 
 Los 33 + 20 tests salieron verdes **a la primera**, lo cual no prueba nada por sí
 solo. Mutación por mutación, con la mutación aplicada y revertida (fichero
@@ -633,8 +737,8 @@ $ npm test -w @zeus/volumes-ops     → # tests 56 # pass 56 # fail 0
 ### 7.2 · Después
 
 ```
-$ npm test -w @zeus/volumes-ops     → # tests 97 # pass 97 # fail 0 # skipped 0
-$ npm test -w @zeus/ssb-system      → # tests 26 # pass 26 # fail 0 # skipped 0
+$ npm test -w @zeus/volumes-ops     → # tests 104 # pass 102 # fail 0 # skipped 2
+$ npm test -w @zeus/ssb-system      → # tests 27 # pass 27 # fail 0 # skipped 0
 $ npm test -w @zeus/feed-kit        → # tests 10 # pass 10 # fail 0
 $ npm test -w @zeus/linea-kit       → # tests 36 # pass 36 # fail 0
 $ npm test -w @zeus/firehose-core   → # tests 12 # pass 12 # fail 0
@@ -825,3 +929,16 @@ una línea). El resto de citas del brief que reutilizo las abrí una a una.
 10. **(2.ª vuelta, enrutado) Dos evasiones que ningún probe de CA-5 ve** — §4quater:
     `resolveManifestPath()` público, y el ledger aceptando su ruta verbatim. Sin
     ofensor actual, fuera de mi alcance, con vector escrito.
+11. **(3.ª vuelta) Dos guardas solo son medibles en un FS SENSIBLE a la caja.**
+    `colision_de_caja_en_pack` y `destino_con_colision_de_caja` necesitan dos
+    ficheros cuyas rutas difieran solo en la caja, imposibles de plantar en NTFS.
+    Sus tests hacen `t.skip` con motivo (`# skipped 2` en este entorno) y se
+    ejecutan de verdad en un runner Linux. **Si el CI de este mundo corre solo en
+    Windows, esas dos guardas nunca se ejercitan** — quien monte el CI debería
+    saberlo. El camino por el que el defecto llegaba de verdad (plan y destino) sí
+    está medido aquí.
+12. **(3.ª vuelta) La portabilidad del volumen es ahora un requisito, no un
+    accidente.** Un volumen SSB construido en Linux con dos ficheros que colisionan
+    por caja queda **no importable y no sincronizable** en cualquier plataforma —
+    incluida Linux, a propósito, porque la réplica A→B cruza sistemas. Es el precio
+    declarado de que «esta ruta está libre» signifique lo mismo en las dos.

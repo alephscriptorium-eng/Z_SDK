@@ -18,10 +18,26 @@
  *   busca corpus a corpus, devolviendo el PRIMER acierto en orden
  *   `SSB_CORPORA`;
  * - `messageFileName` (ssb-system/src/types.mjs, `Buffer.from(raw,'utf8')
- *   .toString('base64url')`) es INYECTIVA sobre la cadena que reciba y su
- *   alfabeto no contiene `/` ni `.`: ni travesía de rutas ni dos claves
- *   distintas colapsando en el mismo nombre. La inyectividad aquí es GRATIS
- *   (identidad sobre una cadena); no hay que construirla como en el AT-URI.
+ *   .toString('base64url')`) es INYECTIVA **COMO CADENA** sobre la clave que
+ *   reciba, y su alfabeto no contiene `/` ni `.`: no hay travesía de rutas.
+ *
+ * **PERO NO ES INYECTIVA COMO RUTA** (defecto de la 3.ª contrarrevisión,
+ * cerrado). El alfabeto base64url distingue `A` de `a`; NTFS y APFS **no**. Dos
+ * claves distintas cuyas codificaciones solo difieran en la caja son DOS
+ * cadenas y **UN FICHERO**. Medido:
+ *   `%vg9Wb079…` → `JXZnOVdiMDc5…json`
+ *   `%vM9Wb079…` → `JXZNOVdiMDc5…json`   (misma ruta en minúsculas)
+ * Antes de este cierre, `validate` y `merge` decían `ok` y el plan movía DOS
+ * rutas que en este FS son UNA: un mensaje se perdía en silencio y el recuento
+ * decía dos — la clase D1 exacta por la que U204 fue devuelto. Y es alcanzable
+ * **por el camino normal del producto**, sin malicia y sin material legado: un
+ * pack construido en Linux trae los dos ficheros legítimamente y se importa en
+ * Windows.
+ * Lección de método, no solo de código: **ancla la operación, no su notación.**
+ * La inyectividad hacía de notación; la operación es «qué fichero se crea». Por
+ * eso TODO lo que decide «esta ruta está libre» compara por `foldRel()`, y nada
+ * compara rutas crudas — en VALIDAR (`colision_de_caja_en_pack`), en el plan
+ * (`colision_ruta`) y en el índice del destino (`destino_con_colision_de_caja`).
  *
  * **LO QUE NO SE AFIRMA** (y no puede aparecer como hecho en ningún reporte):
  * que `key` sea el sha256 del mensaje firmado. Ninguna línea de este repo lo
@@ -124,10 +140,12 @@
  *   → **dedup**: no se mueve nada, no se pisa nada, se reporta dónde vive ya.
  *   Es un no-op observable, no divergencia ni colisión;
  * - clave YA PRESENTE **con `value` DISTINTO** → `clave_divergente`: aborta;
- * - **no hay `colision_ruta`** (y no es un olvido): la ruta la DERIVA la clave y
- *   `messageFileName` es inyectiva, luego dos claves distintas no pueden
- *   reclamar la misma ruta. Es la diferencia estructural con FIREHOSE, donde la
- *   ruta era libre y la colisión sí existía;
+ * - **misma RUTA reclamada por clave DISTINTA → `colision_ruta`: aborta.** La
+ *   comparación es por ruta PLEGADA (`foldRel`), no cruda: la ruta la deriva la
+ *   clave, pero derivarla no la hace única EN EL SISTEMA DE FICHEROS (ver arriba).
+ *   En la 2.ª vuelta esta guarda se eliminó por creerla imposible por
+ *   construcción; la afirmación era cierta sobre cadenas y falsa sobre ficheros,
+ *   y con ella se fue una protección real. Repuesta y ampliada;
  * - `manifest.json` de la raíz del volumen: sidecar propio (schema REAL
  *   `ssb-manifest`, linea-kit/schemas/ssb-manifest.json). Falta → aterriza;
  *   idéntico → no-op; distinto → **divergencia reportada, jamás pisada**: la
@@ -306,6 +324,27 @@ export function ssbFeedCoords(raw) {
 }
 
 /**
+ * Ruta PLEGADA para comparar como el sistema de ficheros, no como cadena.
+ *
+ * NTFS y APFS son INSENSIBLES A LA CAJA; el alfabeto base64url NO lo es
+ * (distingue `A` de `a`). Dos rutas que solo difieran en la caja son DOS
+ * cadenas y UN fichero. Todo lo que decida «esta ruta está libre» compara por
+ * aquí; nada compara rutas crudas.
+ *
+ * ALCANCE MEDIDO del plegado: cubre la CAJA. NO cubre la normalización Unicode
+ * (macOS almacena NFD), y no hace falta: el nombre canónico de una unidad es
+ * `base64url(key) + '.json'`, cuyo alfabeto es `[A-Za-z0-9_-]` más el punto —
+ * ASCII puro, donde NFC y NFD coinciden. Es propiedad del alfabeto, no
+ * suposición. Los nombres de corpus (`tribes`/`parliament`/`votes`) son también
+ * ASCII. Cualquier otro nombre ya lo rechaza `nombre_no_deriva_de_clave` /
+ * `destino_fuera_de_layout` antes de llegar a compararse.
+ * @param {string} rel
+ */
+export function foldRel(rel) {
+  return rel.toLowerCase();
+}
+
+/**
  * Ranura de unidad: EXACTAMENTE `<corpus>/<fichero>` con corpus declarado.
  * @param {string} rel
  */
@@ -393,6 +432,10 @@ function indexVolume(dir) {
   const outOfLayout = [];
   /** @type {{author:string, sequence:number, keys:string[], files:string[]}[]} */
   const forks = [];
+  /** @type {Map<string,{rel:string, key:string}>} ruta PLEGADA → ocupante */
+  const byFolded = new Map();
+  /** @type {{files:string[], keys:string[]}[]} */
+  const caseCollisions = [];
   const { files, others } = walkRel(dir);
 
   for (const rel of files) {
@@ -426,6 +469,16 @@ function indexVolume(dir) {
       duplicated.push(rel);
       continue;
     }
+    // Un volumen construido en Linux puede traer DOS ficheros cuyas rutas solo
+    // difieren en la caja: en Windows/macOS serían UNO. Ese volumen no es
+    // replicable y no se puede planificar sobre él.
+    const folded = foldRel(rel);
+    const ocupanteRuta = byFolded.get(folded);
+    if (ocupanteRuta) {
+      caseCollisions.push({ files: [ocupanteRuta.rel, rel], keys: [ocupanteRuta.key, unit.key] });
+      continue;
+    }
+    byFolded.set(folded, { rel, key: unit.key });
     byKey.set(unit.key, {
       rel,
       valueSha: unit.valueSha,
@@ -451,7 +504,18 @@ function indexVolume(dir) {
     feed.set(unit.coords.sequence, unit.key);
     feeds.set(unit.coords.author, feed);
   }
-  return { byKey, feeds, unkeyable, withoutCoords, duplicated, outOfLayout, forks, links: others };
+  return {
+    byKey,
+    feeds,
+    byFolded,
+    caseCollisions,
+    unkeyable,
+    withoutCoords,
+    duplicated,
+    outOfLayout,
+    forks,
+    links: others
+  };
 }
 
 /**
@@ -492,6 +556,8 @@ function validate({ stagedDir }) {
   const seenKeys = new Map();
   /** @type {Map<string,string>} `author#seq` → rel */
   const seenSeq = new Map();
+  /** @type {Map<string,{rel:string, key:string}>} ruta PLEGADA → ocupante */
+  const seenFolded = new Map();
   /** @type {Map<string,{author:string, sequence:number, previous:string|null, rel:string}>} */
   const byKeyCoords = new Map();
   let units = 0;
@@ -587,6 +653,20 @@ function validate({ stagedDir }) {
       );
       continue;
     }
+    // La clave es inyectiva como CADENA, no como RUTA en un FS insensible a la
+    // caja. Dos claves distintas cuyas rutas solo difieran en la caja son UN
+    // fichero en Windows/macOS: aterrizarlas perdería un mensaje en silencio y
+    // el conteo diría dos. Un pack construido en Linux las trae legítimamente.
+    const foldedAt = seenFolded.get(foldRel(rel));
+    if (foldedAt !== undefined) {
+      bad(
+        'ssb-layout',
+        rel,
+        `colision_de_caja_en_pack: ${rel} y ${foldedAt.rel} son rutas distintas como cadena pero EL MISMO fichero en un sistema insensible a la caja (claves ${foldedAt.key} y ${unit.key}) — aterrizarlas perdería un mensaje en silencio`
+      );
+      continue;
+    }
+    seenFolded.set(foldRel(rel), { rel, key: unit.key });
     seenKeys.set(unit.key, rel);
     seenSeq.set(seqId, rel);
     byKeyCoords.set(unit.key, { ...unit.coords, rel });
@@ -680,6 +760,14 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   if (dest.forks.length > 0) {
     return { error: { code: 'destino_con_feed_bifurcado', detail: { forks: dest.forks } } };
   }
+  // El destino ya trae dos ficheros que en un FS insensible a la caja serían
+  // uno (volumen construido en Linux): no es replicable y no se puede
+  // planificar sobre él sin decidir en silencio cuál de los dos existe.
+  if (dest.caseCollisions.length > 0) {
+    return {
+      error: { code: 'destino_con_colision_de_caja', detail: { colisiones: dest.caseCollisions } }
+    };
+  }
 
   /** @type {string[]} */
   const moves = [];
@@ -692,6 +780,11 @@ function merge({ stagedDir, destDir, volumeFiles }) {
   /** @type {{author:string, sequence:number, previous:string|null, key:string, rel:string}[]} */
   const incoming = [];
   const finalKeys = new Set(dest.byKey.keys());
+  // Rutas PLEGADAS ya reclamadas: las del destino más las que va reclamando el
+  // propio plan. Es lo que hace que «esta ruta está libre» signifique lo mismo
+  // que significará en el sistema de ficheros.
+  /** @type {Map<string,{rel:string, key:string}>} */
+  const foldedTaken = new Map(dest.byFolded);
 
   for (const rel of volumeFiles) {
     const stagedAbs = toAbs(stagedDir, rel);
@@ -757,13 +850,23 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       continue;
     }
 
-    // NO existe aquí un `colision_ruta` como el de FIREHOSE, y no es un olvido:
-    // la ruta la DERIVA la clave y `messageFileName` es inyectiva, luego dos
-    // claves distintas no pueden reclamar la misma ruta; y un ocupante de esa
-    // ruta con la MISMA clave ya salió por `dedup`/`clave_divergente`, o —si su
-    // nombre no derivaba de su clave— por `destino_fuera_de_layout`. Lo que sí
-    // puede ocupar la ruta sin rendir clave (un DIRECTORIO vacío, resto de una
-    // operación manual) lo caza el guardián estructural de abajo.
+    // `colision_ruta`, por RUTA PLEGADA (3.ª vuelta). La clave es inyectiva
+    // como CADENA, no como RUTA: dos claves cuyas codificaciones base64url solo
+    // difieran en la caja reclaman EL MISMO fichero en NTFS/APFS. La comparación
+    // cruda decía «ruta libre» y el plan movía dos rutas que son un fichero —
+    // un mensaje perdido en silencio con un conteo que dice dos.
+    const folded = foldRel(rel);
+    const ocupante = foldedTaken.get(folded);
+    if (ocupante !== undefined) {
+      return {
+        error: {
+          code: 'colision_ruta',
+          detail: { file: rel, key: unit.key, at: ocupante.rel, destKey: ocupante.key }
+        }
+      };
+    }
+    foldedTaken.set(folded, { rel, key: unit.key });
+
     incoming.push({ ...unit.coords, key: unit.key, rel });
     moves.push(rel);
     finalKeys.add(unit.key);
