@@ -29,7 +29,7 @@ const SKIP_DIRS = new Set([
   'vendor'
 ]);
 
-/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'|'tracking-id'} GateRule */
+/** @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'|'tracking-id'|'licencia'} GateRule */
 
 /**
  * @typedef {object} Offender
@@ -488,6 +488,187 @@ export function scanTrackingIds(opts = {}) {
 }
 
 /**
+ * Puntero de licencia canónico del workspace (LICENSE.md §0, viñeta 2).
+ * AIPLv1 es el nombre histórico del composite `GPL-3.0-or-later AND
+ * LicenseRef-Animus-Iocandi`; npm rechaza `LicenseRef-`, así que el puntero es
+ * el único vehículo válido en el campo `license`.
+ */
+export const LICENSE_POINTER = 'SEE LICENSE IN LICENSE.md';
+
+/** Fichero al que apunta LICENSE_POINTER: si no existe, el puntero miente. */
+export const LICENSE_FILE = 'LICENSE.md';
+
+/**
+ * Manifiestos que LICENSE.md §0 obliga a declarar el puntero pero que NO son
+ * miembros de workspace y por tanto NO tienen entrada propia en el lock.
+ * Se verifican SOLO contra el manifiesto. Si uno se mueve o se borra, este gate
+ * se pone rojo a propósito (fail-closed): la lista se actualiza a mano.
+ */
+export const EXTRA_LICENSED_MANIFESTS = Object.freeze([
+  'packages/mesh/operator-ui/projects/threejs-ui-lib/package.json'
+]);
+
+/**
+ * Universo del gate por el lado del lock: la clave raíz `""` más toda clave de
+ * directorio de workspace. Una clave es de workspace cuando NINGÚN segmento de
+ * su ruta es `node_modules` — así queda fuera por construcción todo paquete de
+ * registry (incluido `node_modules/@alephscript/mcp-core-sdk`, que se publica
+ * fuera de este repo y cuya licencia no gobierna z-sdk).
+ * @param {Record<string, {license?: string}>} lockPackages
+ * @returns {string[]}
+ */
+export function workspaceLockKeys(lockPackages) {
+  return Object.keys(lockPackages).filter(
+    (key) => key === '' || !key.split('/').includes('node_modules')
+  );
+}
+
+/**
+ * @param {string[]} lines
+ * @param {RegExp} re
+ * @returns {number|undefined} 1-based line number
+ */
+function findLine(lines, re) {
+  const idx = lines.findIndex((l) => re.test(l));
+  return idx === -1 ? undefined : idx + 1;
+}
+
+/**
+ * (g) coherencia de licencia entre manifiestos y package-lock.json.
+ *
+ * El lock es lo que viaja a una instalación reproducible: si declara una
+ * licencia distinta de la del manifiesto, miente en casa del usuario. Este gate
+ * lee LAS DOS FUENTES y exige el puntero en ambas, por el campo `license`
+ * parseado (no por coincidencia de texto).
+ *
+ * Sin excepciones por paquete: LICENSE.md §0 fija que «all packages of this
+ * workspace receive the identical license treatment», así que una divergencia
+ * es un defecto legal, no un waiver de lint.
+ *
+ * @param {{ repoRoot?: string }} [opts]
+ * @returns {Offender[]}
+ */
+export function scanLicenseCoherence(opts = {}) {
+  const repoRoot = opts.repoRoot ?? REPO_ROOT;
+  /** @type {Offender[]} */
+  const offenders = [];
+
+  const licenseFileAbs = path.join(repoRoot, LICENSE_FILE);
+  if (!fs.existsSync(licenseFileAbs)) {
+    offenders.push({
+      rule: 'licencia',
+      path: LICENSE_FILE,
+      detail: `el puntero «${LICENSE_POINTER}» apunta a un fichero que no existe`
+    });
+  }
+
+  const lockRel = 'package-lock.json';
+  const lockAbs = path.join(repoRoot, lockRel);
+  if (!fs.existsSync(lockAbs)) {
+    offenders.push({
+      rule: 'licencia',
+      path: lockRel,
+      detail: 'no existe: la licencia declarada no viaja a una instalación reproducible'
+    });
+    return offenders;
+  }
+
+  const lockRaw = fs.readFileSync(lockAbs, 'utf8');
+  const lockLines = lockRaw.split(/\r?\n/);
+  /** @type {{packages?: Record<string, {license?: string}>}} */
+  let lock;
+  try {
+    lock = JSON.parse(lockRaw);
+  } catch (err) {
+    offenders.push({
+      rule: 'licencia',
+      path: lockRel,
+      detail: `JSON ilegible: ${/** @type {Error} */ (err).message}`
+    });
+    return offenders;
+  }
+
+  const lockPackages = lock.packages ?? {};
+  const keys = workspaceLockKeys(lockPackages);
+
+  for (const key of keys) {
+    const manifestRel = key === '' ? 'package.json' : `${key}/package.json`;
+
+    // --- lado lock ---
+    const declared = lockPackages[key].license;
+    if (declared !== LICENSE_POINTER) {
+      offenders.push({
+        rule: 'licencia',
+        path: lockRel,
+        line: findLine(lockLines, new RegExp(`^\\s*"${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}":\\s*\\{`)),
+        detail: `entrada «${key || '<raíz>'}» declara ${JSON.stringify(declared ?? null)}; se esperaba ${JSON.stringify(LICENSE_POINTER)} — regenera el lock`
+      });
+    }
+
+    // --- lado manifiesto ---
+    offenders.push(...checkManifestLicense(repoRoot, manifestRel, declared));
+  }
+
+  for (const manifestRel of EXTRA_LICENSED_MANIFESTS) {
+    offenders.push(...checkManifestLicense(repoRoot, manifestRel, undefined));
+  }
+
+  return offenders;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {string} manifestRel
+ * @param {string|undefined} lockDeclared licencia que el lock atribuye al mismo paquete
+ * @returns {Offender[]}
+ */
+function checkManifestLicense(repoRoot, manifestRel, lockDeclared) {
+  /** @type {Offender[]} */
+  const offenders = [];
+  const abs = path.join(repoRoot, manifestRel);
+  if (!fs.existsSync(abs)) {
+    offenders.push({
+      rule: 'licencia',
+      path: manifestRel,
+      detail: 'manifiesto ausente para una ruta que el gate vigila'
+    });
+    return offenders;
+  }
+  const raw = fs.readFileSync(abs, 'utf8');
+  /** @type {{license?: string}} */
+  let manifest;
+  try {
+    manifest = JSON.parse(raw);
+  } catch (err) {
+    offenders.push({
+      rule: 'licencia',
+      path: manifestRel,
+      detail: `JSON ilegible: ${/** @type {Error} */ (err).message}`
+    });
+    return offenders;
+  }
+  const line = findLine(raw.split(/\r?\n/), /^\s*"license"\s*:/);
+  if (manifest.license !== LICENSE_POINTER) {
+    offenders.push({
+      rule: 'licencia',
+      path: manifestRel,
+      line,
+      detail: `declara ${JSON.stringify(manifest.license ?? null)}; se esperaba ${JSON.stringify(LICENSE_POINTER)} (LICENSE.md §0)`
+    });
+    return offenders;
+  }
+  if (lockDeclared !== undefined && lockDeclared !== manifest.license) {
+    offenders.push({
+      rule: 'licencia',
+      path: manifestRel,
+      line,
+      detail: `manifiesto y lock discrepan: ${JSON.stringify(manifest.license)} vs ${JSON.stringify(lockDeclared)} — regenera el lock`
+    });
+  }
+  return offenders;
+}
+
+/**
  * @param {{ repoRoot?: string }} [opts]
  * @returns {{ ok: boolean, offenders: Offender[], byRule: Record<GateRule, Offender[]> }}
  */
@@ -498,7 +679,8 @@ export function runAllGates(opts = {}) {
     ...scanArgImportViolations(opts),
     ...scanTwoGamesRule(opts),
     ...scanGoogleStun(opts),
-    ...scanTrackingIds(opts)
+    ...scanTrackingIds(opts),
+    ...scanLicenseCoherence(opts)
   ];
   /** @type {Record<GateRule, Offender[]>} */
   const byRule = {
@@ -507,7 +689,8 @@ export function runAllGates(opts = {}) {
     'arg-import': [],
     'two-games': [],
     'google-stun': [],
-    'tracking-id': []
+    'tracking-id': [],
+    licencia: []
   };
   for (const o of offenders) byRule[o.rule].push(o);
   return { ok: offenders.length === 0, offenders, byRule };
