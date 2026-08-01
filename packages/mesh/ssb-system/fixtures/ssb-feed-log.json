@@ -1,0 +1,148 @@
+[
+  {
+    "key": "%aliceSeq1=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@alice.ed25519",
+      "sequence": 1,
+      "timestamp": 1730000000000,
+      "hash": "sha256",
+      "content": {
+        "type": "tribe",
+        "op": "create",
+        "title": "Fixture Tribe por-feed",
+        "description": "WP-U205 · secuencias POR FEED, cadena previous dentro del propio feed",
+        "members": ["@alice.ed25519", "@bob.ed25519"],
+        "inviteMode": "open",
+        "status": "open",
+        "createdAt": "2026-07-01T12:00:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%aliceSeq2=.sha256",
+    "value": {
+      "previous": "%aliceSeq1=.sha256",
+      "author": "@alice.ed25519",
+      "sequence": 2,
+      "timestamp": 1730000100000,
+      "hash": "sha256",
+      "content": {
+        "type": "post",
+        "text": "charla normal — el exportador la filtra y deja un HUECO legitimo en el feed de alice"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%aliceSeq3=.sha256",
+    "value": {
+      "previous": "%aliceSeq2=.sha256",
+      "author": "@alice.ed25519",
+      "sequence": 3,
+      "timestamp": 1730000200000,
+      "hash": "sha256",
+      "content": {
+        "type": "tribe-open-invite",
+        "v": 1,
+        "tribeRootId": "%aliceSeq1=.sha256",
+        "codeHash": "u205fixture"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%bobSeq1=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@bob.ed25519",
+      "sequence": 1,
+      "timestamp": 1730000300000,
+      "hash": "sha256",
+      "content": {
+        "type": "parliamentTerm",
+        "startAt": "2026-07-01T00:00:00.000Z",
+        "endAt": "2026-08-30T00:00:00.000Z",
+        "method": "MAJORITY",
+        "status": "OPEN"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%bobSeq2=.sha256",
+    "value": {
+      "previous": "%bobSeq1=.sha256",
+      "author": "@bob.ed25519",
+      "sequence": 2,
+      "timestamp": 1730000400000,
+      "hash": "sha256",
+      "content": {
+        "type": "parliamentProposal",
+        "title": "Adoptar union aditiva por clave en DISK_04/SSB",
+        "description": "WP-U205 · el export deja de borrar y el driver deduplica por clave",
+        "method": "MAJORITY",
+        "termId": "%bobSeq1=.sha256",
+        "voteId": "%carolSeq1=.sha256",
+        "proposer": "@bob.ed25519",
+        "status": "OPEN",
+        "createdAt": "2026-07-01T12:05:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%bobSeq3=.sha256",
+    "value": {
+      "previous": "%bobSeq2=.sha256",
+      "author": "@bob.ed25519",
+      "sequence": 3,
+      "timestamp": 1730000500000,
+      "hash": "sha256",
+      "content": "wF8jLq7yb0Zx3pQeR1sTuVwXyZaBcDeFgHiJkLmNoPqRsTuVwXyZ==.box",
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%carolSeq1=.sha256",
+    "value": {
+      "previous": null,
+      "author": "@carol.ed25519",
+      "sequence": 1,
+      "timestamp": 1730000600000,
+      "hash": "sha256",
+      "content": {
+        "type": "votes",
+        "question": "Adoptar union aditiva por clave?",
+        "options": ["YES", "NO", "ABSTENTION"],
+        "deadline": "2026-07-10T00:00:00.000Z",
+        "createdBy": "@carol.ed25519",
+        "status": "OPEN",
+        "votes": { "YES": 1, "NO": 0, "ABSTENTION": 0 },
+        "totalVotes": 1,
+        "voters": ["@bob.ed25519"],
+        "tags": ["gov:u205"],
+        "createdAt": "2026-07-01T12:06:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  },
+  {
+    "key": "%carolSeq2=.sha256",
+    "value": {
+      "previous": "%carolSeq1=.sha256",
+      "author": "@carol.ed25519",
+      "sequence": 2,
+      "timestamp": 1730000700000,
+      "hash": "sha256",
+      "content": {
+        "type": "votesVote",
+        "target": "%carolSeq1=.sha256",
+        "choice": "YES",
+        "createdAt": "2026-07-01T12:07:00.000Z"
+      },
+      "signature": "fixture"
+    }
+  }
+]
