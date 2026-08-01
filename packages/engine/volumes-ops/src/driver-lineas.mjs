@@ -50,7 +50,7 @@
  * Node-only.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import {
@@ -63,6 +63,7 @@ import {
   isUnitTreeSnapshot,
   verifyUnitTreeSnapshot
 } from './unit-tree.mjs';
+import { blockingAncestor } from './fusion-guard.mjs';
 
 export const LINEAS_FAMILY = 'lineas';
 
@@ -173,9 +174,39 @@ function walkRel(rootDir) {
 /**
  * merge — per-file PLAN with the family rules (header). Never moves
  * anything itself; importPack executes `moves` with rename-only.
+ *
+ * ── U255 · LO QUE ESTE `merge` SUPONÍA DEL DESTINO Y NO COMPROBABA ────────
+ * La regla de la familia («escribe lo que falta, la divergencia se reporta, la
+ * curación no se pisa») se decidía preguntando `existsSync(destAbs)`, que
+ * responde SÍ para un directorio, para un enlace y para un fichero por igual.
+ * De ahí salían los dos huecos que este WP cierra, ambos medidos sobre la base:
+ *
+ * 1. **`ruta_bloqueada_por_fichero`** — el destino tiene un FICHERO donde el
+ *    pack trae un DIRECTORIO (`…/registros/r0002-oldid-3`). El fichero del pack
+ *    (`…/r0002-oldid-3/registro.md`) no existe en el destino, así que entraba
+ *    en `moves` como «lo que falta», y el `mkdirSync` de la fase de aplicación
+ *    lanzaba **EEXIST a mitad de los renombrados** — con el volumen A MEDIAS y
+ *    sin sellar. Es el hueco que FIREHOSE (U204·D3) y SSB (U205) ya tapaban y
+ *    esta familia no.
+ * 2. **`destino_no_es_fichero` / `enlace_en_destino`** — el destino tiene un
+ *    DIRECTORIO (o un enlace) donde el pack trae un FICHERO. `sha256File` sobre
+ *    un directorio lanzaba **EISDIR en el propio pase dry**. Ahí el destino
+ *    quedaba intacto, pero `importPack` LANZABA en vez de devolver
+ *    `{ok:false, step, error}`, que es lo que el contrato promete en TODO fallo.
+ *
+ * **La conducta de la familia no se toca**: la divergencia se sigue reportando
+ * sin pisar el fichero del destino, y un `.md` curado presente se sigue
+ * descartando del merge. Lo único que cambia es que un destino cuya FORMA
+ * impide aplicar esa regla —no se puede hashear un directorio, no se puede
+ * «conservar» un enlace como si fuera el fichero curado— aborta con nombre en
+ * vez de reventar. Un `.md` que en el destino sea un directorio ya no se
+ * reporta como `curacion_protegida`: eso no es curación, es una obstrucción, y
+ * el lector real de la familia (`loader.mjs readRegistro`) sólo lee FICHEROS
+ * markdown.
  * @param {{ stagedDir: string, destDir: string, volumeFiles: string[] }} ctx
  *   volumeFiles: posix rels of the staged volume (from importPack's walk)
- * @returns {{ moves: string[], skips: string[], divergences: object[], protectedSidecars: object[] }}
+ * @returns {{ moves: string[], skips: string[], divergences: object[], protectedSidecars: object[] }
+ *   | { error: { code: string, detail?: object } }}
  */
 function merge({ stagedDir, destDir, volumeFiles }) {
   /** @type {string[]} */
@@ -191,6 +222,26 @@ function merge({ stagedDir, destDir, volumeFiles }) {
     const destAbs = toAbs(destDir, rel);
     const stagedAbs = toAbs(stagedDir, rel);
     const destExists = existsSync(destAbs);
+    if (destExists) {
+      // El pack trae un FICHERO: el destino tiene que ser un fichero para que
+      // las reglas de la familia (comparar, conservar, proteger) signifiquen
+      // algo. `lstat` y no `stat`: un enlace se declara como enlace, no como
+      // aquello a lo que apunta — misma doctrina que D-B de FIREHOSE/SSB, y
+      // el paso NO-LINK ya rechaza el árbol resultante, sólo que DESPUÉS de
+      // sellar. Aquí se adelanta a antes del primer renombrado.
+      const st = lstatSync(destAbs);
+      if (st.isSymbolicLink()) {
+        return { error: { code: 'enlace_en_destino', detail: { file: rel } } };
+      }
+      if (!st.isFile()) {
+        return {
+          error: {
+            code: 'destino_no_es_fichero',
+            detail: { file: rel, ocupadoPor: st.isDirectory() ? 'directorio' : 'otro' }
+          }
+        };
+      }
+    }
     if (isCuratedSidecarPath(rel)) {
       if (destExists) {
         // Curación intocable: discard from merge, report.
@@ -218,6 +269,34 @@ function merge({ stagedDir, destDir, volumeFiles }) {
       });
     }
   }
+
+  // Garantía estructural (U255, misma que FIREHOSE·D3 y SSB): cero moves sobre
+  // ruta existente y cero moves cuyo ancestro exista como FICHERO. `importPack`
+  // aplica con `renameSync` desnudo, que sobre un fichero existente PISA en
+  // silencio, y con `mkdirSync`, que sobre un ancestro-fichero LANZA a mitad de
+  // la fusión: la imposibilidad la garantiza este guardián, no el sistema de
+  // ficheros.
+  //
+  // **Alcance honesto**, dicho porque presentar como garantía activa lo que no
+  // se alcanza es la clase de defecto que este carril persigue:
+  // - `ruta_bloqueada_por_fichero` es **alcanzable**, y es el vector del WP:
+  //   tiene rojo propio con el destino medido antes y después;
+  // - `sobrescritura_imposible` es hoy **INALCANZABLE por orden** — el bucle de
+  //   arriba sólo mete en `moves` lo que NO existe en el destino, y entre ese
+  //   bucle y este guardián no hay nada que toque el disco. Se conserva como
+  //   última línea por si el orden cambiara, igual que SSB conserva la suya, y
+  //   la red de verdad para ese caso está en la guarda del plan entero
+  //   (`fusion-guard.mjs`), que sí lo alcanza por otras vías.
+  for (const rel of moves) {
+    if (existsSync(toAbs(destDir, rel))) {
+      return { error: { code: 'sobrescritura_imposible', detail: { file: rel } } };
+    }
+    const blocked = blockingAncestor(destDir, rel);
+    if (blocked) {
+      return { error: { code: 'ruta_bloqueada_por_fichero', detail: { file: rel, blockedBy: blocked } } };
+    }
+  }
+
   return { moves, skips, divergences, protectedSidecars };
 }
 

@@ -29,6 +29,32 @@
  * Every failure leaves the root intact (manifest seal unchanged) and the
  * staging directory removed. Nothing lands halfway: staging lives INSIDE
  * the destination root (same device) and fusion is rename-only.
+ *
+ * ── U255 · «NOTHING LANDS HALFWAY» ERA UNA FRASE, NO UNA GARANTÍA ─────────
+ * Las dos líneas de arriba y el paso 4 del contrato («pase 1 (dry): TODA
+ * colisión se detecta ANTES de mover nada … root intacto») eran falsas para
+ * SIETE vectores medidos sobre la base, en las cuatro familias y también en el
+ * volumen sin familia. En los siete `importPack` **LANZABA** —no devolvía
+ * `{ok:false, step, error}`, que es lo que el contrato promete en TODO fallo— y
+ * en cinco de ellos el volumen quedaba **A MEDIAS**: ficheros aterrizados, sin
+ * sellar, sin asiento en el ledger y sin nadie que lo dijera. El inventario, con
+ * su medida antes y después, en `plan/REPORTES/WP-U255-import-a-medias.md`.
+ *
+ * La causa no era un descuido de un driver: era que **nadie miraba el plan
+ * entero**. Cada driver comprueba lo suyo (y los cuatro lo hacen ya), pero el
+ * volumen sin familia no pasa por driver, el movimiento de corpus tampoco, y
+ * dos volúmenes ANIDADOS del mismo pack chocan en el bucle por volumen de esta
+ * misma función — caso que `driver-firehose.mjs` declaraba «fuera del alcance de
+ * cualquier driver». Desde U255 la fase de fusión tiene tres capas:
+ *   1. el pase dry, envuelto: una lectura del destino que lance ya no se
+ *      escapa como excepción, se devuelve como `plan_no_calculable`;
+ *   2. `inspectFusionPlan` sobre la lista ENTERA de renombrados, antes del
+ *      primero: destino ocupado, ancestro que es fichero, rutas del plan que se
+ *      contienen entre sí, origen ausente → aborta con nombre y CERO renames;
+ *   3. `applyFusion`, que para lo que no se puede prever (permiso, bloqueo de
+ *      otro proceso, EXDEV, carrera) DESHACE los renombrados hechos y declara
+ *      `fusion_interrumpida` con el inventario de lo que no pudo deshacer.
+ * Todo ello en `src/fusion-guard.mjs`, con su alcance honesto escrito.
  * Node-only.
  */
 
@@ -39,7 +65,6 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
-  renameSync,
   rmSync
 } from 'node:fs';
 import { basename, dirname, join, resolve, sep } from 'node:path';
@@ -49,6 +74,7 @@ import { validate as validateSchema } from '@zeus/linea-kit/validate';
 import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
 import { VOLUMES_OPS_CATALOG } from './catalog.mjs';
 import { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
+import { applyFusion, causaDe, inspectFusionPlan } from './fusion-guard.mjs';
 import { hashManifest, sealManifest } from './manifest.mjs';
 import { syncVolumeCounters } from './counters.mjs';
 import { measurePath } from './measure.mjs';
@@ -406,14 +432,84 @@ export function importPack(opts) {
     const noopCorpora = [];
     /** @type {object[]} */
     const familyReports = [];
-    for (const [volId, vol] of Object.entries(pack.volumes)) {
-      const dest = destConfig.volumes[volId];
-      const volDestAbs = join(volumesRoot, vol.path.split('/').join(sep));
-      if (families[volId]) {
-        // Family volume (U202): the driver returns the merge PLAN; the
-        // family rules (escribe-lo-que-falta, divergencia-reportada,
-        // curación intocable) replace the generic corpus collision.
+    // U255 · el pase dry LEE el destino (hash de un fichero, walk de una
+    // unidad, índice por clave) y esas lecturas LANZAN cuando el destino no
+    // tiene la forma que el driver supone — medido: `EISDIR` en LINEAS con un
+    // directorio donde el pack trae un fichero, `ENOTDIR` en FORCES con un
+    // fichero en la ruta de una unidad. Los dos casos concretos los cierran
+    // ahora los drivers con su propio código de error; esto es la red para lo
+    // que quede: el contrato promete `{ok:false, step, error}` en TODO fallo, y
+    // una excepción que se escapa de `importPack` deja al llamador (ruta REST,
+    // herramienta MCP) con un 500 sin paso ni diagnóstico. Aquí no se ha movido
+    // nada todavía, así que el destino está intacto por construcción.
+    try {
+      for (const [volId, vol] of Object.entries(pack.volumes)) {
+        const dest = destConfig.volumes[volId];
+        const volDestAbs = join(volumesRoot, vol.path.split('/').join(sep));
+        if (families[volId]) {
+          // Family volume (U202): the driver returns the merge PLAN; the
+          // family rules (escribe-lo-que-falta, divergencia-reportada,
+          // curación intocable) replace the generic corpus collision.
+          if (!dest) {
+            const clash = Object.entries(destConfig.volumes).find(
+              ([, v]) => v.path === vol.path && v.disk === vol.disk
+            );
+            if (clash) {
+              return fail('fusionar', 'slot_en_conflicto', {
+                volume: volId,
+                claimedBy: clash[0]
+              });
+            }
+            if (existsSync(volDestAbs) && walkTree(volDestAbs).files.length > 0) {
+              return fail('fusionar', 'slot_ocupado', { volume: volId, path: vol.path });
+            }
+          }
+          const driver = FAMILY_DRIVERS[families[volId]];
+          const plan = driver.merge({
+            stagedDir: join(stagingDir, vol.path.split('/').join(sep)),
+            destDir: volDestAbs,
+            volumeFiles: volumeFilesById[volId]
+          });
+          if (plan.error) {
+            // Driver collision (e.g. FORCES RO-immutable): abort in dry pass.
+            return fail('fusionar', plan.error.code, {
+              volume: volId,
+              ...(plan.error.detail || {})
+            });
+          }
+          // U255 · `overwrites` = las rutas que el driver reemplaza A PROPÓSITO
+          // sobre un fichero ya existente. Hoy sólo FORCES lo usa, y sólo para
+          // su `registry.json`. Viaja en el movimiento para que la guarda del
+          // plan sepa distinguir un reemplazo DECLARADO de una sobrescritura
+          // accidental —que es pérdida de dato en silencio, porque `renameSync`
+          // no avisa— y para que el deshacer pueda apartar el fichero pisado.
+          const overwrites = new Set(plan.overwrites ?? []);
+          for (const rel of plan.moves) {
+            const relFull = `${vol.path}/${rel}`;
+            moves.push({
+              kind: 'file',
+              volId,
+              ...(overwrites.has(rel) ? { sobrescribe: true } : {}),
+              from: join(stagingDir, relFull.split('/').join(sep)),
+              to: join(volumesRoot, relFull.split('/').join(sep))
+            });
+          }
+          familyReports.push({
+            id: volId,
+            family: families[volId],
+            moved: plan.moves.length,
+            skipped: plan.skips?.length ?? 0,
+            divergences: plan.divergences ?? [],
+            protectedSidecars: plan.protectedSidecars ?? [],
+            // U204: unión aditiva por clave — lo deduplicado se REPORTA con la
+            // ruta donde la clave ya vivía (no-op observable, nada pisado).
+            dedup: plan.dedup ?? [],
+            snapshot: plan.snapshot ?? null
+          });
+          continue;
+        }
         if (!dest) {
+          // New volume: its disk/path must not be claimed by another volume.
           const clash = Object.entries(destConfig.volumes).find(
             ([, v]) => v.path === vol.path && v.disk === vol.disk
           );
@@ -426,91 +522,61 @@ export function importPack(opts) {
           if (existsSync(volDestAbs) && walkTree(volDestAbs).files.length > 0) {
             return fail('fusionar', 'slot_ocupado', { volume: volId, path: vol.path });
           }
-        }
-        const driver = FAMILY_DRIVERS[families[volId]];
-        const plan = driver.merge({
-          stagedDir: join(stagingDir, vol.path.split('/').join(sep)),
-          destDir: volDestAbs,
-          volumeFiles: volumeFilesById[volId]
-        });
-        if (plan.error) {
-          // Driver collision (e.g. FORCES RO-immutable): abort in dry pass.
-          return fail('fusionar', plan.error.code, {
-            volume: volId,
-            ...(plan.error.detail || {})
-          });
-        }
-        for (const rel of plan.moves) {
-          const relFull = `${vol.path}/${rel}`;
           moves.push({
-            kind: 'file',
+            kind: 'volume',
             volId,
-            from: join(stagingDir, relFull.split('/').join(sep)),
-            to: join(volumesRoot, relFull.split('/').join(sep))
+            from: join(stagingDir, vol.path.split('/').join(sep)),
+            to: volDestAbs
           });
-        }
-        familyReports.push({
-          id: volId,
-          family: families[volId],
-          moved: plan.moves.length,
-          skipped: plan.skips?.length ?? 0,
-          divergences: plan.divergences ?? [],
-          protectedSidecars: plan.protectedSidecars ?? [],
-          // U204: unión aditiva por clave — lo deduplicado se REPORTA con la
-          // ruta donde la clave ya vivía (no-op observable, nada pisado).
-          dedup: plan.dedup ?? [],
-          snapshot: plan.snapshot ?? null
-        });
-        continue;
-      }
-      if (!dest) {
-        // New volume: its disk/path must not be claimed by another volume.
-        const clash = Object.entries(destConfig.volumes).find(
-          ([, v]) => v.path === vol.path && v.disk === vol.disk
-        );
-        if (clash) {
-          return fail('fusionar', 'slot_en_conflicto', {
-            volume: volId,
-            claimedBy: clash[0]
-          });
-        }
-        if (existsSync(volDestAbs) && walkTree(volDestAbs).files.length > 0) {
-          return fail('fusionar', 'slot_ocupado', { volume: volId, path: vol.path });
-        }
-        moves.push({
-          kind: 'volume',
-          volId,
-          from: join(stagingDir, vol.path.split('/').join(sep)),
-          to: volDestAbs
-        });
-        continue;
-      }
-      // Existing volume: per-corpus fusion. Corpus id collision with
-      // different content = ERROR, no merge (v0 paso 4, kept in v1).
-      const destCorpora = new Map((dest.corpora || []).map((c) => [c.id, c]));
-      for (const corpus of vol.corpora || []) {
-        const corpusRel = `${vol.path}/${corpus.path || corpus.id}`;
-        const from = join(stagingDir, corpusRel.split('/').join(sep));
-        const to = join(volumesRoot, corpusRel.split('/').join(sep));
-        const existsInDest = destCorpora.has(corpus.id) || existsSync(to);
-        if (existsInDest) {
-          const same = existsSync(to) && hashTree(to) === hashTree(from);
-          if (!same) {
-            return fail('fusionar', 'colision_corpus', {
-              volume: volId,
-              corpus: corpus.id
-            });
-          }
-          noopCorpora.push({ volId, corpusId: corpus.id });
           continue;
         }
-        moves.push({ kind: 'corpus', volId, corpus, from, to });
+        // Existing volume: per-corpus fusion. Corpus id collision with
+        // different content = ERROR, no merge (v0 paso 4, kept in v1).
+        const destCorpora = new Map((dest.corpora || []).map((c) => [c.id, c]));
+        for (const corpus of vol.corpora || []) {
+          const corpusRel = `${vol.path}/${corpus.path || corpus.id}`;
+          const from = join(stagingDir, corpusRel.split('/').join(sep));
+          const to = join(volumesRoot, corpusRel.split('/').join(sep));
+          const existsInDest = destCorpora.has(corpus.id) || existsSync(to);
+          if (existsInDest) {
+            const same = existsSync(to) && hashTree(to) === hashTree(from);
+            if (!same) {
+              return fail('fusionar', 'colision_corpus', {
+                volume: volId,
+                corpus: corpus.id
+              });
+            }
+            noopCorpora.push({ volId, corpusId: corpus.id });
+            continue;
+          }
+          moves.push({ kind: 'corpus', volId, corpus, from, to });
+        }
       }
+    } catch (err) {
+      return fail('fusionar', 'plan_no_calculable', { causa: causaDe(err) });
     }
+
+    // ── U255 · GUARDA ESTRUCTURAL DEL PLAN ENTERO ────────────────────────
+    // El contrato dice «pase 1 (dry): TODA colisión se detecta ANTES de mover
+    // nada». Cada driver comprueba lo SUYO —y los cuatro lo hacen ya—, pero
+    // ninguno ve el plan completo: el volumen sin familia y el movimiento de
+    // corpus no pasan por driver, y dos volúmenes ANIDADOS del mismo pack
+    // ocurren en el bucle de arriba, fuera del alcance de cualquiera de ellos
+    // (deuda de U201, citada por `driver-firehose.mjs`). La guarda se aplica
+    // aquí, sobre la lista entera, justo antes del primer `rename`.
+    const guarda = inspectFusionPlan(moves, volumesRoot);
+    if (guarda.error) {
+      return fail('fusionar', guarda.error.code, guarda.error.detail);
+    }
+
     // Apply pass: rename-only (same device — staging lives inside the root).
-    for (const move of moves) {
-      mkdirSync(dirname(move.to), { recursive: true });
-      renameSync(move.from, move.to);
+    // Con red (U255): lo que no se puede comprobar por adelantado —permiso
+    // denegado, fichero tomado por otro proceso, montaje que rinde EXDEV, una
+    // carrera contra el operador— ya no deja el volumen a medias: se deshacen
+    // los renombrados hechos y el fallo se declara con su inventario.
+    const aplicacion = applyFusion(moves, guarda.slotsVacios);
+    if (aplicacion.error) {
+      return fail('fusionar', aplicacion.error.code, aplicacion.error.detail);
     }
     steps.push({
       step: 'fusionar',
