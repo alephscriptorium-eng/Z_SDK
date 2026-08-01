@@ -296,8 +296,8 @@ export function enumerationStdout(command, args, opts) {
  * also cheaper here (median 40ms vs 73ms for `-p tcp`, and 140ms for the
  * `-p tcp` + `-p tcpv6` two-pass alternative).
  *
- * The parse below is family-agnostic on purpose: `[::1]:3017`, `0.0.0.0:3017`
- * and `127.0.0.1:3017` all satisfy `cols[1].endsWith(':3017')`. `-ano` without
+ * The parse below is family-agnostic on purpose: `[::1]:<port>`, `0.0.0.0:<port>`
+ * and `127.0.0.1:<port>` all satisfy `cols[1].endsWith(':<port>')`. `-ano` without
  * `-p` also emits UDP rows; they carry no state column and are dropped by the
  * `/LISTENING/i` guard.
  *
