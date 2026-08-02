@@ -345,7 +345,13 @@ export function readEnvPort(name, fallback) {
  * @throws {ZeusPortConfigError} si el nombre que gana esta mal formado
  */
 export function readEnvPortAlias(names, fallback, env) {
-  const delProceso = env === undefined;
+  // `env == null` cubre `null` Y `undefined` a proposito: el parametro por
+  // defecto de JS solo captura `undefined`, asi que un `null` que llegue desde
+  // una API publica —`resolveWebRtcViewerEndpoint(null)` lo permite— reventaba
+  // con un `TypeError: Cannot read properties of null` en vez de comportarse
+  // como "sin mapa propio" (WP-U266 · M-i). Un error opaco donde deberia haber
+  // fallback es un mal error.
+  const delProceso = env == null;
   if (delProceso) loadZeusEnv();
   const fuente = delProceso ? process.env : env;
   for (const name of names) {

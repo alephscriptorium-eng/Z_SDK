@@ -68,9 +68,17 @@ test('U266 · los siete valores abortan el arranque por la clave canonica (guard
   }
 });
 
-test('U266 · el alias legado WEBRTC_VIEWER_PORT — el hueco real de este fichero', () => {
-  // Este es el caso que NADIE mas cubre: `resolveZeusUiPorts` no conoce el
-  // alias legado. Es el unico que enrojece si se restaura el `Number(...)`.
+test('U266 · el alias legado WEBRTC_VIEWER_PORT (guardian: resolveZeusUiPorts, desde M-a)', () => {
+  // CORRECCION (WP-U266 · B4). Este comentario decia: «el caso que NADIE mas
+  // cubre: resolveZeusUiPorts no conoce el alias legado». **Dejo de ser cierto
+  // dentro de este mismo WP**: el arreglo M-a metio los alias en
+  // `UI_PORT_ENV_CHAIN`, asi que `resolveZeusUiPorts` SI los conoce — y con
+  // ello RETRO-ENMASCARO este test, que hasta entonces si mordia.
+  //
+  // O sea: un arreglo que ensancha un guardian ancho puede dejar ciego un test
+  // que ayer mordia. Por eso las ablaciones se corren DESPUES del ultimo
+  // cambio, no antes. Lo que hoy muerde el cableado de `serve.mjs` esta en
+  // `puerto-anunciado.test.mjs`, contra el puerto REALMENTE atado.
   for (const raw of SIETE) {
     const { rc, salida } = arrancar({ WEBRTC_VIEWER_PORT: raw });
     assert.equal(rc, 1, `${JSON.stringify(raw)}: codigo de salida`);

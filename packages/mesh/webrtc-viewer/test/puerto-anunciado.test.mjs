@@ -22,8 +22,58 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import path from 'node:path';
 import { resolveWebRtcViewerEndpoint, WEBRTC_VIEWER_PORT_ENV } from '../src/game-bridge.mjs';
-import { readEnvPortAlias, uiPortEnvChain, resetZeusEnvLoader } from '@zeus/presets-sdk/env';
+import { uiPortEnvChain, resetZeusEnvLoader } from '@zeus/presets-sdk/env';
+
+const AQUI = path.dirname(fileURLToPath(import.meta.url));
+const SERVE = pathToFileURL(path.join(AQUI, '..', 'serve.mjs')).href;
+const BRIDGE = pathToFileURL(path.join(AQUI, '..', 'src', 'game-bridge.mjs')).href;
+
+/**
+ * Arranca el servidor DE VERDAD y devuelve el puerto que ATA (leído de
+ * `server.address()`, no recalculado) junto con el que ANUNCIA game-bridge.
+ *
+ * En proceso hijo y por el entrypoint real a propósito. La versión anterior de
+ * este guardián calculaba el lado «ata» como
+ * `readEnvPortAlias(WEBRTC_VIEWER_PORT_ENV, …)`, o sea **lo re-derivaba de la
+ * constante en vez de preguntárselo a quien ata** — y por eso no cazaba que
+ * alguien reescribiera la lista a mano dentro de `serve.mjs`. Con esa ablación
+ * la suite quedaba 25/25 en VERDE **con B2 reintroducido** (WP-U266 · B4).
+ *
+ * @param {Record<string,string>} env
+ * @returns {{ rc: number, ata: number|null, anuncia: number|null, salida: string }}
+ */
+function ataYAnuncia(env) {
+  const guion = `
+    const serve = await import(${JSON.stringify(SERVE)});
+    const bridge = await import(${JSON.stringify(BRIDGE)});
+    const handle = await serve.createWebRtcViewerServer({});
+    const anuncia = bridge.resolveWebRtcViewerEndpoint().port;
+    console.log('RESULTADO ' + JSON.stringify({ ata: handle.port, anuncia }));
+    await handle.close();
+  `;
+  try {
+    const salida = execFileSync(process.execPath, ['--input-type=module', '-e', guion], {
+      env: { ...process.env, ...env },
+      encoding: 'utf8',
+      timeout: 40000,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    const m = /RESULTADO (\{.*\})/.exec(salida);
+    const j = m ? JSON.parse(m[1]) : {};
+    return { rc: 0, ata: j.ata ?? null, anuncia: j.anuncia ?? null, salida };
+  } catch (err) {
+    return {
+      rc: err.status ?? -1,
+      ata: null,
+      anuncia: null,
+      salida: String(err.stdout || '') + String(err.stderr || '')
+    };
+  }
+}
 
 /** Los siete de la ficha, más `abc` (que también anunciaba, como `:NaN`). */
 const MALOS = ['0', '-1', '65536', '3.5', '0x10', '  ', '03012', 'abc'];
@@ -83,15 +133,52 @@ test('U266/B2 · el `env` por parámetro también se valida (era la puerta de at
   assert.equal(resolveWebRtcViewerEndpoint({ WEBRTC_VIEWER_PORT: '4444' }).port, 4444);
 });
 
-test('U266/B2 · anunciar y atar leen la MISMA cadena, en el mismo orden', () => {
-  // La prueba que importa: no que cada uno sea correcto por su cuenta, sino
-  // que coincidan. Con las dos claves declaradas y ambas válidas.
-  conEntorno({ ZEUS_PORT_WEBRTC_VIEWER: '4001', WEBRTC_VIEWER_PORT: '4002' }, () => {
-    const anuncia = resolveWebRtcViewerEndpoint().port;
-    const ata = readEnvPortAlias(WEBRTC_VIEWER_PORT_ENV, 3023);
-    assert.equal(anuncia, ata, 'lo anunciado y lo atado se han separado');
-    assert.equal(anuncia, 4002, 'gana el alias legado, que es lo que hacía serve.mjs');
-  });
+test('U266/B4 · anunciar == ATAR, con el puerto REAL del bind', () => {
+  // Las dos claves declaradas y ambas válidas: el escenario de B2, que no
+  // necesita ningún valor mal formado. `ata` sale de `server.address()`.
+  const r = ataYAnuncia({ ZEUS_PORT_WEBRTC_VIEWER: '4001', WEBRTC_VIEWER_PORT: '4002' });
+  assert.equal(r.rc, 0, `el servidor debía arrancar · salida: ${r.salida.slice(0, 300)}`);
+  assert.equal(r.ata, r.anuncia, `lo atado (${r.ata}) y lo anunciado (${r.anuncia}) se han separado`);
+  assert.equal(r.ata, 4002, 'gana el alias legado, que es el orden de la fuente única');
+});
+
+test('U266/B4 · el octavo vector, contra el bind real: clave vacía = defecto, no efímero', () => {
+  // `WEBRTC_VIEWER_PORT=""` con el código viejo daba `Number("")` = 0 -> el SO
+  // asignaba un efímero y el servidor lo presentaba como suyo. Este aserto
+  // muerde a `serve.mjs` directamente: no lo tapa `resolveZeusUiPorts`, porque
+  // lo que se mira es el puerto realmente atado.
+  const r = ataYAnuncia({ WEBRTC_VIEWER_PORT: '' });
+  assert.equal(r.rc, 0, `salida: ${r.salida.slice(0, 300)}`);
+  assert.equal(r.ata, 3023, 'clave vacía debe caer al defecto, no a un efímero');
+  assert.equal(r.anuncia, 3023);
+});
+
+test('U266/B4 · sin configurar, ata y anuncia el defecto', () => {
+  const r = ataYAnuncia({});
+  assert.equal(r.rc, 0, `salida: ${r.salida.slice(0, 300)}`);
+  assert.equal(r.ata, 3023);
+  assert.equal(r.anuncia, 3023);
+});
+
+test('U266/B4 · un override legítimo se ata y se anuncia igual', () => {
+  const porCanonica = ataYAnuncia({ ZEUS_PORT_WEBRTC_VIEWER: '14023' });
+  assert.equal(porCanonica.rc, 0, porCanonica.salida.slice(0, 300));
+  assert.equal(porCanonica.ata, 14023);
+  assert.equal(porCanonica.anuncia, 14023);
+
+  const porAlias = ataYAnuncia({ WEBRTC_VIEWER_PORT: '14024' });
+  assert.equal(porAlias.rc, 0, porAlias.salida.slice(0, 300));
+  assert.equal(porAlias.ata, 14024);
+  assert.equal(porAlias.anuncia, 14024);
+});
+
+test('U266/B4 · un valor mal formado impide ATAR (no sólo anunciar)', () => {
+  for (const raw of ['0', '-1', '65536', '0x10', '03012', 'abc']) {
+    const r = ataYAnuncia({ WEBRTC_VIEWER_PORT: raw });
+    assert.equal(r.rc, 1, `${JSON.stringify(raw)}: el proceso debía abortar`);
+    assert.match(r.salida, /ZEUS_PUERTO_MAL_FORMADO/, JSON.stringify(raw));
+    assert.equal(r.ata, null, `${JSON.stringify(raw)}: no debió llegar a atar`);
+  }
 });
 
 test('U266/B2 · el orden vive en la fuente única, no copiado aquí', () => {
