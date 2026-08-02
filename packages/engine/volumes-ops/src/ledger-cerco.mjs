@@ -20,7 +20,7 @@
  */
 
 import { existsSync, realpathSync, statSync } from 'node:fs';
-import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { MANIFEST_FILE_NAME } from './manifest.mjs';
 import { STATE_FILE_NAME } from './state.mjs';
 
@@ -44,9 +44,34 @@ export class LedgerPathDenegada extends Error {
   }
 }
 
+const ES_WIN32 = process.platform === 'win32';
+
 /** win32 compara rutas sin distinguir mayúsculas; POSIX sí distingue. */
 function normaliza(p) {
-  return process.platform === 'win32' ? p.toLowerCase() : p;
+  return ES_WIN32 ? p.toLowerCase() : p;
+}
+
+/**
+ * NTFS · FLUJO DE DATOS ALTERNO. `fichero:flujo` no nombra un fichero llamado
+ * «fichero:flujo»: nombra un flujo DENTRO de `fichero`. Escribir en
+ * `volumes.json:oculto.jsonl` escribe dentro del manifiesto sellado.
+ *
+ * Sin despegarlo, las tres barreras fallan a la vez y en silencio: el nombre
+ * completo ya no es el del artefacto, la ruta sí termina en `.jsonl`, y el
+ * canal del inodo no ve nada porque el flujo AÚN NO EXISTE — sólo cazaba a
+ * partir de la segunda escritura, cuando el daño ya estaba hecho.
+ *
+ * Sólo aplica en win32: en POSIX `:` es un carácter legítimo de nombre y
+ * recortarlo denegaría ficheros válidos.
+ * @param {string} p
+ * @returns {{ ruta: string, flujo: string|null }}
+ */
+function despegaFlujoAlterno(p) {
+  if (!ES_WIN32) return { ruta: p, flujo: null };
+  const base = basename(p);
+  const i = base.indexOf(':');
+  if (i === -1) return { ruta: p, flujo: null };
+  return { ruta: join(dirname(p), base.slice(0, i)), flujo: base.slice(i + 1) };
 }
 
 /**
@@ -61,9 +86,18 @@ function realAproximado(p) {
   let actual = resolve(p);
   const cola = [];
   for (;;) {
+    // `realpathSync` puede reventar con errores crudos ajenos a «no existe»
+    // (p.ej. `EISDIR ... lstat 'C:'` ante un prefijo `\\?\`). Degradar a la
+    // resolución léxica mantiene la promesa de `index.mjs`: quien llama
+    // distingue «denegado por el cerco» de un fallo de E/S, y nunca recibe
+    // un error de sistema en bruto desde aquí.
     if (existsSync(actual)) {
-      const real = realpathSync(actual);
-      return cola.length > 0 ? join(real, ...cola.reverse()) : real;
+      try {
+        const real = realpathSync(actual);
+        return cola.length > 0 ? join(real, ...cola.reverse()) : real;
+      } catch {
+        return resolve(p);
+      }
     }
     const padre = dirname(actual);
     if (padre === actual) return resolve(p);
@@ -73,19 +107,32 @@ function realAproximado(p) {
 }
 
 /**
- * Identidad física del fichero (`dev:ino`), o null si no existe o el sistema
- * no la da. Es la ÚNICA evidencia que sobrevive a un enlace duro: medido en
- * este WP sobre win32/NTFS, `realpath` de un enlace duro devuelve la ruta del
- * propio enlace, no la del original.
+ * Un solo `stat` para las tres preguntas: si existe, si es directorio y cuál
+ * es su identidad física (`dev:ino`).
+ *
+ * La identidad es la ÚNICA evidencia que sobrevive a un enlace duro: medido
+ * en este WP sobre win32/NTFS, `realpath` de un enlace duro devuelve la ruta
+ * del propio enlace, no la del original.
+ *
+ * FALLO ABIERTO DECLARADO: si el sistema de ficheros no da inodo (`ino === 0`,
+ * plausible en SMB — un sitio verosímil para un catálogo de volúmenes) o el
+ * `stat` falla, `id` es `null` y el canal del inodo **desaparece sin aviso**.
+ * Las demás barreras (léxica, artefacto, extensión, flujo) siguen en pie; la
+ * que cae es sólo la del enlace duro. El código está vigilado por el censo de
+ * mutación; el entorno no puede estarlo desde aquí.
  * @param {string} p
- * @returns {string|null}
+ * @returns {{ existe: boolean, esDirectorio: boolean, id: string|null }}
  */
-function identidadFisica(p) {
+function inspecciona(p) {
   try {
     const s = statSync(p, { bigint: true });
-    return s.ino === 0n ? null : `${s.dev}:${s.ino}`;
+    return {
+      existe: true,
+      esDirectorio: s.isDirectory(),
+      id: s.ino === 0n ? null : `${s.dev}:${s.ino}`
+    };
   } catch {
-    return null;
+    return { existe: false, esDirectorio: false, id: null };
   }
 }
 
@@ -109,44 +156,67 @@ export function assertLedgerPathPermitida(candidata, volumesRoot) {
   }
   const rootReal = realAproximado(volumesRoot);
   const destino = realAproximado(resolve(rootReal, candidata));
+  // El flujo se despega ANTES de comparar nada: lo que hay que juzgar es el
+  // FICHERO sobre el que se acaba escribiendo, no la cadena que lo nombra.
+  const { ruta: fichero, flujo } = despegaFlujoAlterno(destino);
 
-  const rel = relative(normaliza(rootReal), normaliza(destino));
-  if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) {
+  const rel = relative(normaliza(rootReal), normaliza(fichero));
+  // `..` sólo escapa cuando es el segmento COMPLETO. `..raro.jsonl` es un
+  // nombre legítimo dentro del root y denegarlo por «fuera del cerco» era
+  // una respuesta engañosa: ni escapaba, ni el código lo describía.
+  if (rel === '' || rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
     throw new LedgerPathDenegada(
       'ledger_path_fuera_del_cerco',
-      `ledgerPath resuelve fuera del root de volúmenes: ${destino}`,
-      { destino, root: rootReal }
+      `ledgerPath resuelve fuera del root de volúmenes: ${fichero}`,
+      { destino: fichero, root: rootReal }
     );
   }
   for (const nombre of ARTEFACTOS_VEDADOS) {
-    if (normaliza(destino) === normaliza(join(rootReal, nombre))) {
+    if (normaliza(fichero) === normaliza(join(rootReal, nombre))) {
       throw new LedgerPathDenegada(
         'ledger_path_artefacto_sellado',
         `ledgerPath apunta a un artefacto de máquina del root (${nombre}); denegado`,
-        { destino, artefacto: nombre }
+        { destino: fichero, artefacto: nombre, flujo }
       );
     }
   }
   // Enlace duro con nombre inocente: pasa el chequeo léxico Y el de realpath,
   // pero comparte inodo con el artefacto y apendar sobre él lo corrompe.
-  const idDestino = identidadFisica(destino);
-  if (idDestino !== null) {
+  const datos = inspecciona(fichero);
+  if (datos.id !== null) {
     for (const nombre of ARTEFACTOS_VEDADOS) {
-      if (identidadFisica(join(rootReal, nombre)) === idDestino) {
+      if (inspecciona(join(rootReal, nombre)).id === datos.id) {
         throw new LedgerPathDenegada(
           'ledger_path_artefacto_sellado',
           `ledgerPath comparte identidad física (enlace duro) con ${nombre}; denegado`,
-          { destino, artefacto: nombre, identidad: idDestino }
+          { destino: fichero, artefacto: nombre, identidad: datos.id }
         );
       }
     }
   }
-  if (!normaliza(destino).endsWith(LEDGER_EXT)) {
+  if (!normaliza(fichero).endsWith(LEDGER_EXT)) {
     throw new LedgerPathDenegada(
       'ledger_path_extension_no_jsonl',
-      `ledgerPath debe terminar en ${LEDGER_EXT}; recibido: ${destino}`,
-      { destino }
+      `ledgerPath debe terminar en ${LEDGER_EXT}; recibido: ${fichero}`,
+      { destino: fichero }
     );
   }
-  return destino;
+  if (datos.esDirectorio) {
+    throw new LedgerPathDenegada(
+      'ledger_path_es_directorio',
+      `ledgerPath es un directorio, no un fichero JSONL: ${fichero}`,
+      { destino: fichero }
+    );
+  }
+  // Residual: el flujo cuyo fichero base SÍ era admisible. Un ledger dentro de
+  // un flujo alterno es invisible para quien lea la ruta normal — deja de ser
+  // un asiento de auditoría y pasa a ser un escondite.
+  if (flujo !== null) {
+    throw new LedgerPathDenegada(
+      'ledger_path_flujo_alterno',
+      `ledgerPath nombra un flujo de datos alterno (${flujo}) dentro de ${fichero}; denegado`,
+      { destino: fichero, flujo }
+    );
+  }
+  return fichero;
 }

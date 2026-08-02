@@ -22,9 +22,14 @@ export const DEFAULT_LEDGER_NAME = '.ops-ledger.jsonl';
  * @returns {string}
  * @throws {import('./ledger-cerco.mjs').LedgerPathDenegada} si la propuesta viola el cerco
  */
-export function resolveOpsLedgerPath(opts = {}) {
-  const root = opts.volumesRoot || resolveVolumesRoot();
-  if (opts.ledgerPath) return assertLedgerPathPermitida(opts.ledgerPath, root);
+export function resolveOpsLedgerPath(opts) {
+  const o = opts ?? {};
+  const root = o.volumesRoot || resolveVolumesRoot();
+  // Se lee UNA vez: leer `o.ledgerPath` dos veces deja que un getter devuelva
+  // un valor para el cerco y otro para el uso. Aquí no era explotable, pero es
+  // la misma clase de hueco que ya costó un WP entero; no se deja abierta.
+  const propuesta = o.ledgerPath;
+  if (propuesta) return assertLedgerPathPermitida(propuesta, root);
   return join(root, DEFAULT_LEDGER_NAME);
 }
 
@@ -33,8 +38,9 @@ export function resolveOpsLedgerPath(opts = {}) {
  * @param {{ volumesRoot?: string, ledgerPath?: string, ts?: number }} [opts]
  * @returns {object} written entry (with seq/ts)
  */
-export function appendOpsLedger(entry, opts = {}) {
-  const path = resolveOpsLedgerPath(opts);
+export function appendOpsLedger(entry, opts) {
+  const o = opts ?? {};
+  const path = resolveOpsLedgerPath(o);
   const dir = dirname(path);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
@@ -43,14 +49,14 @@ export function appendOpsLedger(entry, opts = {}) {
   // `volumesRoot` viaja también en la relectura: sin él, el cerco de la
   // relectura mediría contra el root del entorno y denegaría una ruta legítima
   // cuando el llamante trabaja sobre un root explícito distinto.
-  const prev = readOpsLedger({ volumesRoot: opts.volumesRoot, ledgerPath: path });
+  const prev = readOpsLedger({ volumesRoot: o.volumesRoot, ledgerPath: path });
   const seq = prev.length === 0 ? 1 : (prev[prev.length - 1].seq || prev.length) + 1;
   const record = {
     v: 1,
     seq,
-    ts: opts.ts ?? Date.now(),
-    kind: entry.kind || 'ops',
-    ...entry
+    ts: o.ts ?? Date.now(),
+    kind: (entry ?? {}).kind || 'ops',
+    ...(entry ?? {})
   };
   appendFileSync(path, `${JSON.stringify(record)}\n`, 'utf8');
   return record;
@@ -60,8 +66,8 @@ export function appendOpsLedger(entry, opts = {}) {
  * @param {{ volumesRoot?: string, ledgerPath?: string }} [opts]
  * @returns {object[]}
  */
-export function readOpsLedger(opts = {}) {
-  const path = resolveOpsLedgerPath(opts);
+export function readOpsLedger(opts) {
+  const path = resolveOpsLedgerPath(opts ?? {});
   if (!existsSync(path)) return [];
   const text = readFileSync(path, 'utf8');
   if (!text.trim()) return [];

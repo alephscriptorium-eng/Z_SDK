@@ -17,10 +17,21 @@
  *   del repo, que cubre ficheros sin ejecutarlos. Son complementarias.
  * - Detecta por bytes (existencia + sha256 + tamaño). Una reescritura de
  *   bytes IDÉNTICOS es invisible para ella. Medido en este WP: `mtime` no
- *   sirve para cerrar ese hueco (cambió en 19 de 30 reescrituras idénticas
- *   en win32), así que no se usa como canal y el hueco se declara. Nótese
- *   que el sello ES el sha256 de los bytes: una escritura que preserva los
- *   bytes preserva el sello, aunque viole la lectura-sólo.
+ *   sirve para cerrar ese hueco (cambia de forma INTERMITENTE ante
+ *   reescrituras idénticas en win32), así que no se usa como canal y el
+ *   hueco se declara. Nótese que el sello ES el sha256 de los bytes: una
+ *   escritura que preserva los bytes preserva el sello, aunque viole la
+ *   lectura-sólo.
+ * - Es CIEGA A LA ESCRITURA QUE TERMINA MÁS TARDE: mide justo después de que
+ *   `fn` retorna. Una escritura diferida no está en la foto (pinchado en la
+ *   prueba «LÍMITE»). Con `fs/promises.writeFile` sin esperar es peor que un
+ *   hueco: es una CARRERA, medida aquí como cazada en unas ejecuciones y
+ *   perdida en otras. Por eso NO se afirma que la notación le sea
+ *   indiferente: le es indiferente cómo se NOMBRE la ruta, no cuándo
+ *   termine la escritura.
+ * - Es ciega al FLUJO DE DATOS ALTERNO: `volumes.json:x` cambia el fichero
+ *   sin cambiar los bytes del flujo principal, que es lo que ella lee. El
+ *   cerco sí lo deniega (§6bis); la sonda no lo vería.
  */
 
 import test from 'node:test';
@@ -387,7 +398,7 @@ test('CA-2 · el resto del cerco: estado, fuera del root, otro root, extensión,
   }
 });
 
-test('CA-2 · importPack con `ledgerPath` al manifiesto: denegado, manifiesto intacto', () => {
+test('CA-2 · importPack con `ledgerPath` al manifiesto: denegado, pero el manifiesto YA está resellado (→ U253b)', () => {
   const { root, restore } = setupRoot();
   const packRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'u253-pack-'));
   try {
@@ -435,8 +446,249 @@ test('CA-2 · importPack con `ledgerPath` al manifiesto: denegado, manifiesto in
     const texto = fs.readFileSync(path.join(root, 'volumes.json'), 'utf8');
     assert.doesNotMatch(texto, /"kind":"import_pack"/, 'ni una línea de JSONL en el manifiesto');
     JSON.parse(texto); // sigue siendo JSON válido
+
+    // Lo que el cerco impide es la ESCRITURA DEL LEDGER sobre el artefacto.
+    // NO impide que el import ya hubiera resellado antes de llegar ahí: la
+    // sonda tiene el dato y aquí se asevera en vez de omitirlo. El título
+    // anterior («manifiesto intacto») avalaba algo que esta misma prueba
+    // desmiente.
+    assert.equal(
+      r.mutado,
+      true,
+      'el manifiesto YA fue resellado por el paso 5 antes de que el cerco denegara el asiento'
+    );
+    const cfg = JSON.parse(texto);
+    assert.ok(cfg.volumes && cfg.volumes.demo, 'el volumen quedó declarado en el manifiesto');
+    assert.equal(
+      fs.existsSync(path.join(root, 'DISK_07', 'DEMO', 'raw', 'a.json')),
+      true,
+      'y el corpus ya aterrizó'
+    );
+    // La atomicidad de `importPack` NO es de este WP: vive en `import.mjs`,
+    // fuera del ALCANCE_DIFF, y su arreglo es linaje de U255
+    // («NOTHING LANDS HALFWAY»). Enrutado a U253b. Aquí sólo queda medido y
+    // dicho, para que nadie lea este verde como «el root queda limpio».
   } finally {
     fs.rmSync(packRoot, { recursive: true, force: true });
+    restore();
+  }
+});
+
+// ── §6bis · FLUJO DE DATOS ALTERNO (NTFS) ──────────────────────────────────
+
+test('CA-2 · flujo alterno: `volumes.json:oculto.jsonl` escribía DENTRO del artefacto', (t) => {
+  if (process.platform !== 'win32') {
+    t.skip('los flujos de datos alternos son de NTFS; en POSIX `:` es un carácter normal');
+    return;
+  }
+  const { root, restore } = setupRoot();
+  try {
+    const deniega = (ledgerPath, code, motivo) => {
+      const e = capturaError(() => resolveOpsLedgerPath({ ledgerPath }), motivo);
+      assert.equal(e.name, 'LedgerPathDenegada', `${motivo}: clase`);
+      assert.equal(e.code, code, `${motivo}: código`);
+    };
+    // Las tres barreras fallaban a la vez: el nombre completo ya no era el del
+    // artefacto, la ruta sí terminaba en `.jsonl`, y el inodo no existía aún.
+    deniega('volumes.json:oculto.jsonl', 'ledger_path_artefacto_sellado', 'flujo sobre manifiesto');
+    deniega('volumes.state.json:x.jsonl', 'ledger_path_artefacto_sellado', 'flujo sobre estado');
+    deniega('sub/volumes.json:x.jsonl', 'ledger_path_extension_no_jsonl', 'flujo sobre anidado');
+    // Aun cuando el fichero base sea admisible, el flujo es un escondite: un
+    // asiento ahí es invisible para quien lea la ruta normal.
+    deniega('ok.jsonl:escondite', 'ledger_path_flujo_alterno', 'flujo sobre fichero legítimo');
+
+    // Y el manifiesto no recibió ni un byte por esa vía.
+    const r = vigilaManifiesto(() => {
+      try {
+        appendOpsLedger({ kind: 'import_pack' }, { ledgerPath: 'volumes.json:oculto.jsonl' });
+      } catch {
+        /* denegado, que es el punto */
+      }
+    });
+    assert.equal(r.mutado, false);
+    assert.equal(
+      fs.readdirSync(root).some((n) => n.includes(':')),
+      false
+    );
+  } finally {
+    restore();
+  }
+});
+
+// ── §6ter · MUTANTES DE LA NORMALIZACIÓN DE RUTAS ──────────────────────────
+// Cinco mutantes sobrevivían con la suite en verde. Cada aserción de aquí
+// existe para matar uno concreto; se nombra cuál.
+
+test('CA-4 · M4 · ruta absoluta a OTRO volumen o UNC no es «relativa»: DENIEGA', () => {
+  const { root, restore } = setupRoot();
+  try {
+    const deniega = (ledgerPath, motivo) => {
+      const e = capturaError(() => resolveOpsLedgerPath({ ledgerPath }), motivo);
+      assert.equal(e.code, 'ledger_path_fuera_del_cerco', `${motivo}: código`);
+    };
+    // MATA M4 (quitar `isAbsolute(rel)`): `relative()` entre volúmenes
+    // distintos devuelve una ruta ABSOLUTA que no empieza por `..`, así que
+    // sin ese término se colaba entera.
+    if (process.platform === 'win32') {
+      const otraUnidad = root.toLowerCase().startsWith('d:') ? 'E:' : 'D:';
+      deniega(`${otraUnidad}\\evil\\x.jsonl`, 'otra unidad');
+      deniega('\\\\servidor\\comparte\\x.jsonl', 'UNC');
+      // MENOR: un prefijo `\\?\` reventaba con `EISDIR ... lstat 'C:'` crudo.
+      // Ahora degrada a denegación reconocible del cerco.
+      deniega('\\\\?\\C:\\Windows\\x.jsonl', 'prefijo \\\\?\\');
+    } else {
+      deniega('/evil/x.jsonl', 'absoluta POSIX');
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('CA-4 · M6 · `.jsonl` debe TERMINAR la ruta, no aparecer en medio', () => {
+  const { root, restore } = setupRoot();
+  try {
+    // MATA M6 (`endsWith` → `includes`): un ejecutable con `.jsonl` incrustado.
+    const e = capturaError(
+      () => resolveOpsLedgerPath({ ledgerPath: path.join(root, 'x.jsonl.exe') }),
+      'x.jsonl.exe'
+    );
+    assert.equal(e.code, 'ledger_path_extension_no_jsonl');
+  } finally {
+    restore();
+  }
+});
+
+test('CA-4 · M9 · una ruta relativa se ancla al ROOT, jamás al cwd del proceso', () => {
+  const { root, restore } = setupRoot();
+  try {
+    // MATA M9 (anclar a cwd): con `resolve(candidata)` esto daría una ruta
+    // bajo el directorio de trabajo, que además está fuera del root.
+    assert.equal(
+      resolveOpsLedgerPath({ ledgerPath: path.join('sub', 'a.jsonl') }),
+      path.join(fs.realpathSync(root), 'sub', 'a.jsonl')
+    );
+    assert.notEqual(path.resolve('sub', 'a.jsonl'), resolveOpsLedgerPath({ ledgerPath: 'sub/a.jsonl' }));
+  } finally {
+    restore();
+  }
+});
+
+test('CA-4 · M1 · la comparación respeta la sensibilidad a mayúsculas de la plataforma', () => {
+  const { root, restore } = setupRoot();
+  try {
+    if (process.platform === 'win32') {
+      // MATA M1 (`normaliza` → identidad): sin plegar mayúsculas, `VOLUMES.JSON`
+      // dejaría de reconocerse como el artefacto y caería en el código de
+      // extensión — denegado, sí, pero por el motivo equivocado.
+      const e = capturaError(
+        () => resolveOpsLedgerPath({ ledgerPath: 'VOLUMES.JSON' }),
+        'artefacto en mayúsculas'
+      );
+      assert.equal(e.code, 'ledger_path_artefacto_sellado');
+      // Y, del otro lado, una extensión en mayúsculas SÍ es válida en win32.
+      assert.equal(
+        resolveOpsLedgerPath({ ledgerPath: 'OK.JSONL' }),
+        path.join(fs.realpathSync(root), 'OK.JSONL')
+      );
+    } else {
+      // En POSIX los nombres distinguen mayúsculas: `VOLUMES.JSON` no es el
+      // artefacto, y `.JSONL` no es la extensión del contrato.
+      const e = capturaError(
+        () => resolveOpsLedgerPath({ ledgerPath: 'OK.JSONL' }),
+        'extensión en mayúsculas en POSIX'
+      );
+      assert.equal(e.code, 'ledger_path_extension_no_jsonl');
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('CA-4 · M3 · `..` escapa sólo como SEGMENTO completo; `..raro.jsonl` es legítimo', () => {
+  const { root, restore } = setupRoot();
+  const otro = fs.mkdtempSync(path.join(os.tmpdir(), 'u253-m3-'));
+  try {
+    // MATA el mutante inverso (`startsWith('..' + sep)` → `startsWith('..')`):
+    // un fichero cuyo nombre EMPIEZA por dos puntos no escapa de ningún sitio.
+    // Antes se denegaba con `fuera_del_cerco`, un código que mentía.
+    assert.equal(
+      resolveOpsLedgerPath({ ledgerPath: '..raro.jsonl' }),
+      path.join(fs.realpathSync(root), '..raro.jsonl')
+    );
+    // Y el escape de verdad sigue denegado.
+    const e = capturaError(
+      () => resolveOpsLedgerPath({ ledgerPath: path.join('..', path.basename(otro), 'x.jsonl') }),
+      'escape real por segmento ..'
+    );
+    assert.equal(e.code, 'ledger_path_fuera_del_cerco');
+  } finally {
+    fs.rmSync(otro, { recursive: true, force: true });
+    restore();
+  }
+});
+
+test('CA-2 · un directorio `.jsonl` se deniega en el cerco, no revienta al apendar', () => {
+  const { root, restore } = setupRoot();
+  try {
+    fs.mkdirSync(path.join(root, 'dir.jsonl'));
+    const e = capturaError(() => resolveOpsLedgerPath({ ledgerPath: 'dir.jsonl' }), 'directorio');
+    assert.equal(e.name, 'LedgerPathDenegada');
+    assert.equal(e.code, 'ledger_path_es_directorio');
+  } finally {
+    restore();
+  }
+});
+
+test('CA-5 · `opts` NULO (no sólo el campo ausente) no revienta en las tres funciones', () => {
+  const { root, restore } = setupRoot();
+  try {
+    // El CA anterior cubrió la ausencia del CAMPO; nunca la del OBJETO.
+    assert.equal(resolveOpsLedgerPath(null), path.join(root, DEFAULT_LEDGER_NAME));
+    assert.deepEqual(readOpsLedger(null), []);
+    assert.equal(appendOpsLedger({ kind: 'ops' }, null).seq, 1);
+    assert.equal(appendOpsLedger(null, null).kind, 'ops', 'ni el propio asiento nulo');
+  } finally {
+    restore();
+  }
+});
+
+// ── §6quater · LÍMITE DECLARADO DE LA SONDA ────────────────────────────────
+
+test('LÍMITE · la sonda es CIEGA a la escritura DIFERIDA (declarado, no cubierto)', async () => {
+  const { root, restore } = setupRoot();
+  try {
+    const ruta = path.join(root, 'volumes.json');
+    const antes = fs.readFileSync(ruta, 'utf8');
+    // La sonda fotografía justo después de que `fn` RETORNA. Una escritura que
+    // termina más tarde no está en la foto. No es un problema de notación: es
+    // que el instante de medida es SÍNCRONO.
+    //
+    // Se difiere con `setTimeout` a propósito, para que la prueba sea
+    // determinista. Con `fs/promises.writeFile` sin esperar el resultado es
+    // una CARRERA —medido en este WP: cazada en unas ejecuciones y perdida en
+    // otras—, y una barrera que a veces ve y a veces no es peor que un hueco
+    // declarado: no se puede razonar sobre ella.
+    let hecho;
+    const escrito = new Promise((res) => {
+      hecho = res;
+    });
+    const r = vigilaManifiesto(() => {
+      setTimeout(() => {
+        fs.writeFileSync(ruta, '{"diferido":true}\n', 'utf8');
+        hecho();
+      }, 0);
+    });
+    await escrito;
+    const despues = fs.readFileSync(ruta, 'utf8');
+
+    assert.equal(r.mutado, false, 'la sonda NO lo vio');
+    assert.notEqual(despues, antes, 'y sin embargo el fichero cambió');
+    // Si alguien hace la sonda consciente de lo asíncrono, esta prueba se
+    // pondrá roja: entonces hay que actualizarla, no silenciarla. Está aquí
+    // para que el hueco sea visible en la salida de la suite, no sólo en el
+    // reporte. Lo que SÍ resiste, medido: `openSync`+`writeSync`,
+    // `copyFileSync`, `renameSync`, `truncateSync` y `appendFileSync`.
+  } finally {
     restore();
   }
 });
