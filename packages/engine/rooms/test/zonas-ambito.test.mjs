@@ -510,6 +510,51 @@ test('CA4 · la misma zona repetida es UNA membresía y UNA entrega, no dos', as
   await h.close();
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CA2 · el espacio de nombres es disjunto POR LOS DOS LADOS
+// (contrarrevisión: el guardia estaba sólo en el id de zona)
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('CA2 · una SALA no puede llamarse como el canal de una zona (vector de la contrarrevisión)', async (t) => {
+  const h = await bootServer(t);
+  const ROOM = 'ROOM_U196_DISJUNTO';
+  const TOPIC = 'DISJUNTO';
+  const CANAL_DE_ZONA = `${ROOM}::z:norte`;
+
+  // Ana pide la zona norte por la vía legítima.
+  const ana = await subscriber(h, 'ana', ROOM, ['norte'], TOPIC);
+  await waitForSubscribes(h.socketServer, 1);
+
+  // Bruno intenta entrar al MISMO canal disfrazando el nombre de la sala,
+  // sin declarar zona ninguna. `room` es entrada externa (ZEUS_SCRIPTORIUM_ROOM,
+  // ?room=), así que esto no es un llamante hostil hipotético.
+  await assert.rejects(
+    () => subscriber(h, 'bruno', CANAL_DE_ZONA, undefined, TOPIC),
+    /no puede contener/,
+    'una sala con el separador debe rechazarse al suscribir'
+  );
+
+  // Y el sentido contrario: emitir a ese nombre "de sala", sin zona.
+  const src = await emitter(h, 'fuente');
+  assert.throws(
+    () => emitRoomEvent(src, TOPIC, { colado: true }, CANAL_DE_ZONA),
+    /no puede contener/,
+    'una sala con el separador debe rechazarse al emitir'
+  );
+
+  // El canal de ana sigue teniendo un solo miembro y nadie coló nada.
+  const tracker = trackDeliveries(h.socketServer);
+  emitRoomEvent(src, TOPIC, { donde: 'norte' }, ROOM, 'norte');
+  const [e] = await waitForBroadcasts(tracker, TOPIC, 1);
+  assert.equal(e.deliveries, 1, 'sigue habiendo UN socket en el canal de la zona');
+
+  await silencio();
+  assert.deepEqual(ana.seen, [{ donde: 'norte' }]);
+
+  tracker.restore();
+  await h.close();
+});
+
 test('CA4 · dos suscriptores en la MISMA zona son una conversación de dos (2 entregas)', async (t) => {
   const h = await bootServer(t);
   const ROOM = 'ROOM_U196_MISMA';

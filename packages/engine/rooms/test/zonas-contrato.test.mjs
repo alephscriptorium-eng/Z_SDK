@@ -140,6 +140,79 @@ test('CA4 · tipos imposibles fallan cerrado', () => {
   assert.throws(() => resolveZoneChannels('', 'norte'), /room debe ser/);
 });
 
+// La rama SIN zonas de resolveZoneChannels no la cubría nadie: el guardia de
+// `zoneChannel` satisfacía el test anterior. Sin `assertRoom` propio, esto
+// devolvía `{ channels: [''] }` en silencio.  (mutante X13)
+test('CA4 · resolveZoneChannels valida la sala TAMBIÉN cuando no hay zonas', () => {
+  assert.throws(() => resolveZoneChannels('', undefined), /room debe ser/);
+  assert.throws(() => resolveZoneChannels('   ', null), /room debe ser/);
+  assert.throws(() => resolveZoneChannels('', []), /room debe ser/);
+  assert.throws(() => resolveZoneChannels(undefined, undefined), /room debe ser/);
+});
+
+// ─── BLOQUEANTE · el separador prohibido POR LOS DOS LADOS ─────────────────
+
+test('el nombre de SALA tampoco puede llevar el separador (espacios disjuntos)', () => {
+  const disfraz = `SALA${ZONE_SCOPE_SEPARATOR}norte`;
+  // sin zonas: la vía por la que se colaba
+  assert.throws(() => resolveZoneChannels(disfraz, undefined), /no puede contener/);
+  assert.throws(() => resolveZoneChannels(disfraz, null), /no puede contener/);
+  assert.throws(() => resolveZoneChannels(disfraz, []), /no puede contener/);
+  // con zonas
+  assert.throws(() => resolveZoneChannels(disfraz, ['sur']), /no puede contener/);
+  assert.throws(() => zoneChannel(disfraz, 'sur'), /no puede contener/);
+
+  // Sin el guardia, estos dos nombres colisionan. Con él, es imposible
+  // construir el mismo canal por dos caminos distintos.
+  assert.equal(zoneChannel('SALA', 'norte'), disfraz);
+});
+
+test('el guardia de sala cubre las cuatro puertas públicas', () => {
+  const disfraz = `SALA${ZONE_SCOPE_SEPARATOR}norte`;
+  const client = fakeClient();
+  assert.throws(() => emitRoomEvent(client, 'T', {}, disfraz), /no puede contener/);
+  assert.throws(() => setState(client, disfraz, {}), /no puede contener/);
+  assert.throws(() => makeMaster(client, disfraz, {}), /no puede contener/);
+  assert.equal(client.roomCalls.length, 0, 'ninguna emisión escapó');
+});
+
+// ─── MENOR · la asimetría de la cadena vacía, declarada y clavada ──────────
+
+test("la cadena vacía NO es simétrica entre suscribir y emitir, y es a propósito", () => {
+  // Suscribir: el blanco cae a la sala desnuda (el ámbito más pequeño).
+  assert.deepEqual(resolveZoneChannels('SALA', '').channels, ['SALA']);
+  assert.deepEqual(resolveZoneChannels('SALA', '   ').channels, ['SALA']);
+
+  // Emitir: el blanco LANZA. Tratarlo como ausencia publicaría en un destino
+  // que el llamante no pidió y que ningún suscriptor de zona escucha.
+  const client = fakeClient();
+  assert.throws(() => emitRoomEvent(client, 'T', {}, 'SALA', ''), /no puede ser vacío/);
+  assert.throws(() => emitRoomEvent(client, 'T', {}, 'SALA', '   '), /no puede ser vacío/);
+  assert.throws(() => setState(client, 'SALA', {}, ''), /no puede ser vacío/);
+  assert.throws(() => makeMaster(client, 'SALA', {}, ''), /no puede ser vacío/);
+  assert.equal(client.roomCalls.length, 0, 'ninguna emisión con zona en blanco escapó');
+
+  // Y la ausencia de verdad sí pasa por la sala desnuda en ambas mitades.
+  emitRoomEvent(client, 'T', {}, 'SALA', undefined);
+  emitRoomEvent(client, 'T', {}, 'SALA', null);
+  assert.deepEqual(
+    client.roomCalls.map((c) => c.room),
+    ['SALA', 'SALA']
+  );
+});
+
+// ─── MENOR · mayúsculas: decidido, no accidental ──────────────────────────
+
+test('el id de zona es SENSIBLE A MAYÚSCULAS: Norte y norte son dos ámbitos', () => {
+  assert.notEqual(zoneChannel('SALA', 'Norte'), zoneChannel('SALA', 'norte'));
+  assert.deepEqual(normalizeZones(['Norte', 'norte']), ['Norte', 'norte']);
+  assert.equal(resolveZoneChannels('SALA', ['Norte', 'norte']).channels.length, 2);
+  // Lo único que se normaliza es el blanco de los bordes.
+  assert.deepEqual(normalizeZones([' norte ', 'norte']), ['norte']);
+  // El nombre de sala tampoco se pliega.
+  assert.notEqual(zoneChannel('SALA', 'n'), zoneChannel('sala', 'n'));
+});
+
 // ─── el cable ──────────────────────────────────────────────────────────────
 
 test('connectAndJoin: sin zonas, un CLIENT_SUSCRIBE a la sala desnuda y sin campo de zona', async () => {

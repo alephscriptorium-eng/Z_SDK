@@ -47,6 +47,14 @@ export {
 export const ZONE_SCOPE_SEPARATOR = '::z:';
 
 /**
+ * Valida un nombre de sala.
+ *
+ * El separador está prohibido **en los dos lados**, no sólo en la zona. Un
+ * guardia de un solo lado no hace disjuntos los espacios de nombres: con
+ * `room = 'SALA::z:norte'` y `zones` omitido se cae en el canal de la zona
+ * `norte` sin haber pedido zona ninguna, y al revés. Y `room` es entrada
+ * externa (`ZEUS_SCRIPTORIUM_ROOM`, `?room=`), no una constante del código.
+ *
  * @param {unknown} room
  * @returns {string}
  */
@@ -54,6 +62,13 @@ function assertRoom(room) {
   if (typeof room !== 'string' || !room.trim()) {
     throw new TypeError(
       `[rooms] room debe ser una cadena no vacía; recibido ${JSON.stringify(room)}`
+    );
+  }
+  if (room.includes(ZONE_SCOPE_SEPARATOR)) {
+    throw new TypeError(
+      `[rooms] el nombre de sala no puede contener "${ZONE_SCOPE_SEPARATOR}": ` +
+        `${JSON.stringify(room)}. Ese sufijo es el ámbito de zona; una sala que ` +
+        'lo lleve se colaría en el canal de una zona sin declararla.'
     );
   }
   return room;
@@ -91,6 +106,15 @@ function assertZoneId(zone) {
 
 /**
  * Canal físico de una zona dentro de una sala.
+ *
+ * SENSIBLE A MAYÚSCULAS, decidido y declarado: `'Norte'` y `'norte'` son
+ * **dos zonas distintas**, igual que son dos salas distintas para socket.io.
+ * El id de zona es un token opaco y no se normaliza. Plegar mayúsculas
+ * uniría dos ámbitos que el llamante declaró separados, y unir ámbitos es
+ * ensanchar — la única dirección que este WP no se permite. Lo único que se
+ * recorta es el espacio en blanco de los bordes (`' norte '` → `'norte'`),
+ * porque ahí no hay ambigüedad de intención.
+ *
  * @param {string} room
  * @param {string} zone
  * @returns {string}
@@ -244,7 +268,7 @@ export async function connectAndJoin(client, user, options = {}) {
  * @param {string} [zone]
  */
 export function makeMaster(client, room, data = {}, zone) {
-  const channel = zone == null ? room : zoneChannel(room, zone);
+  const channel = zone == null ? assertRoom(room) : zoneChannel(room, zone);
   client.room('MAKE_MASTER', { ...data, room: channel }, channel);
 }
 
@@ -256,7 +280,11 @@ export function makeMaster(client, room, data = {}, zone) {
  * @param {string} [zone]
  */
 export function setState(client, room, data, zone) {
-  client.room('SET_STATE', data, zone == null ? room : zoneChannel(room, zone));
+  client.room(
+    'SET_STATE',
+    data,
+    zone == null ? assertRoom(room) : zoneChannel(room, zone)
+  );
 }
 
 /**
@@ -275,14 +303,23 @@ export function onState(client, cb) {
  * ningún suscriptor de zona. No hay forma de emitir «a todas las zonas» de
  * una vez: alcanzar N zonas cuesta N emisiones, y eso es el precio declarado.
  *
+ * ASIMETRÍA DECLARADA con la suscripción: aquí «ausencia» es sólo `null` /
+ * `undefined`. `zone: ''` **lanza**, mientras que `zones: ''` al suscribir
+ * cae a la sala desnuda. Es deliberado y no simétrico a propósito: al
+ * suscribir, tratar el blanco como ausencia da el ámbito MÁS PEQUEÑO (no
+ * recibes de más); al emitir, tratarlo como ausencia mandaría el mensaje a
+ * un destino que el llamante no pidió y que ningún suscriptor de zona oye.
+ * Un `cfg.zona ?? ''` se suscribe bien y revienta al emitir — revienta a
+ * propósito, en vez de publicar en el sitio equivocado en silencio.
+ *
  * @param {import('@zeus/socket-core/client').SocketClient} client
  * @param {string} event
  * @param {unknown} data
  * @param {string} [room]
- * @param {string} [zone]
+ * @param {string} [zone] `null`/`undefined` = sala desnuda; `''` lanza
  */
 export function emitRoomEvent(client, event, data, room = config.room, zone) {
-  client.room(event, data, zone == null ? room : zoneChannel(room, zone));
+  client.room(event, data, zone == null ? assertRoom(room) : zoneChannel(room, zone));
 }
 
 /**
