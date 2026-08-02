@@ -61,6 +61,9 @@
     "ajv": "^8.17.1",
     "yaml": "^2.8.0"
   },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  },
   "publishConfig": {
     "registry": "https://npm.scriptorium.escrivivir.co"
   },

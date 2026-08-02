@@ -27,8 +27,21 @@
  *
  * WHAT THIS GATE DOES NOT DO: it never PARSES a declaration. `existsSync` is
  * the whole test, so an empty or syntactically broken `.d.ts` passes here
- * while `tsc` reports TS2306/TS1138. Giving it a parser would mean depending
- * on `typescript`, against its zero-dependency design. Declared debt: WP-U264.
+ * while `tsc` reports TS2306/TS1005. Giving it a parser would mean depending
+ * on `typescript`, against its zero-dependency design.
+ *
+ * That is still true and this file still has zero dependencies. What WP-U264
+ * changed is WHO does the parsing: `test/types.test.mjs` compiles the whole
+ * declaration set with the `typescript` this package now pins, and runs under
+ * `node --test` so the CI matrix covers it. Its vectors assert that this gate
+ * does not NOTICE them — the blindness is the deliberate division of labour,
+ * not the debt. The debt was that nobody else was looking.
+ *
+ * And the blindness is 31 of the 50, not all 50: leg J below reads the prose
+ * of the 19 `schemas/` declarations, so an EMPTY one loses the note and trips
+ * `J:attribute_contract_missing`. What leg J cannot see, because it matches a
+ * string rather than compiling, is one of those 19 left syntactically BROKEN
+ * with the note still in it — measured `ok=true` here, `TS1010` under `tsc`.
  *
  * Usage: node test/gate-exports-types.mjs [pkgDir]
  * Exit code 0 = clean, 1 = findings. Zero dependencies, no runtime import of

@@ -1,0 +1,27 @@
+/**
+ * Vector WP-U264 · una de las 19 declaraciones de `schemas/` ROTA **con la
+ * nota de atributo INTACTA**.
+ *
+ * Es el hueco que deja la pierna J del gate de U245: J no compila nada, busca
+ * la cadena `with { type: 'json' }` en la prosa. Aquí la prosa está entera y
+ * bien cerrada —J queda legítimamente satisfecha, no por accidente— y lo que
+ * está roto es el código de debajo. El gate sale `ok=true` con sus
+ * `50 declarations`; `tsc` no pasa de la primera llave.
+ *
+ * REQUIRES AN IMPORT ATTRIBUTE. The runtime target of this subpath is the
+ * literal `.json` file, so Node refuses the bare form:
+ *
+ * ```ts
+ *   import volumesRegistrySchema from '@zeus/linea-kit/schemas/volumes.json'
+ *     with { type: 'json' };            // <- mandatory
+ * ```
+ *
+ * Without it: `ERR_IMPORT_ATTRIBUTE_MISSING` at load time.
+ */
+
+import type { JsonSchemaDocument } from '../common.js';
+
+declare const schema: {
+  document: JsonSchemaDocument;
+
+export default schema;
