@@ -25,11 +25,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { REPO_ROOT, runAllGates } from '../../scripts/gates/scan.mjs';
 import { EXCEPTIONS } from '../../scripts/gates/exceptions.mjs';
 import {
   PATRONES_IDENTIDAD,
-  TOPE_BYTES,
+  buscarDockerfiles,
   censarVolumenes,
   esHueco,
   formatearCenso,
@@ -83,7 +84,10 @@ function con(dir, fn) {
 /** @type {Record<string, string>} */
 const VECTORES = {
   'pem-privada': `${'-----BEGIN'} PRIVATE ${'KEY-----'}\n${'A'.repeat(64)}\n${'-----END'} PRIVATE ${'KEY-----'}`,
-  jwt: `authorization = ${'ey'}${'J'}${'NOESUNTOKENSINTETICO'}.${'ZWpwbG9zaW50ZXRpY28'}.${'firma-sintetica-invalida'}`,
+  // El JWT va SOLO en su línea, sin campo que lo nombre: con `authorization`
+  // delante lo cazaba también `campo-identidad` y el censo de mutación lo
+  // denunciaba con razón —un vector que cazan dos patrones no mide a ninguno—.
+  jwt: `${'ey'}${'J'}${'NOESUNTOKENSINTETICO'}.${'ZWpwbG9zaW50ZXRpY28'}.${'firma-sintetica-invalida'}`,
   'url-con-credencial': `dsn = ${'postgres://'}usuario:${'clave-sintetica-u231'}@base.invalid/db`,
   'ssb-privada': `{"curve":"ed25519","${'private'}": "${'A'.repeat(43)}.ed25519"}`,
   'ssb-invitacion': `pub.invalid:8008:@${'B'.repeat(43)}.ed25519~${'C'.repeat(43)}`,
@@ -146,6 +150,126 @@ test('un `${VAR}` de plantilla NO es un secreto — es la forma que usa volumes.
   assert.deepEqual(hallazgosEnTexto('api_key = changeme'), []);
   assert.ok(esHueco('${X}') && esHueco('<algo>') && esHueco('corto'));
   assert.ok(!esHueco('valor-sintetico-que-ningun-servicio-conoce'));
+});
+
+// ---------------------------------------------------------------------------
+// 1 bis · LOS SIETE FALSOS POSITIVOS CENSADOS.
+//
+// El arreglo anterior de esta clase cerró EL CASO que tenía delante —`${VAR}`—
+// y no LA CLASE. Estos siete son configuración corriente y correcta; cada uno
+// enrojecía. Un gate que pinta de rojo lo bueno se desactiva, y entonces deja
+// de vigilar también lo malo: por eso van antes que cualquier ampliación.
+// ---------------------------------------------------------------------------
+
+/** @type {[string, string][]} */
+const FALSOS_POSITIVOS = [
+  ['plantilla de llaves dobles (Helm, Jinja, Actions)', 'password: {{DB_PASSWORD}}'],
+  ['plantilla de paréntesis (Make, Azure)', 'password: $(DB_PASSWORD)'],
+  ['plantilla de porcentajes (cmd)', 'password: %DB_PASSWORD%'],
+  ['referencia a otra configuración', 'password: .Values.global.registrySecretName'],
+  ['URL de documentación sobre rotación', 'secret: https://docs.example.invalid/guia/rotacion-de-claves'],
+  ['valor centinela de un enum', 'credentials: inherit-from-operator-env'],
+  ['texto de i18n que repite su etiqueta', '"contraseña": "Contraseña olvidada, revise su correo"']
+];
+
+test('contraprueba: los siete falsos positivos censados salen limpios', () => {
+  /** @type {string[]} */
+  const rojos = [];
+  for (const [nombre, texto] of FALSOS_POSITIVOS) {
+    const h = hallazgosEnTexto(texto);
+    if (h.length > 0) rojos.push(`${nombre} — cazado por [${h.map((x) => x.id).join(', ')}]: ${texto}`);
+  }
+  assert.deepEqual(
+    rojos,
+    [],
+    'vuelve a haber falsos positivos sobre configuración correcta:\n' + rojos.join('\n')
+  );
+});
+
+test('contraprueba: los siete siguen limpios POR EL GATE, sembrados en un volumen', () => {
+  // El helper puro y el escáner pueden divergir; aquí se mide el camino real.
+  for (const [nombre, texto] of FALSOS_POSITIVOS) {
+    const dir = arbol(({ fichero }) => fichero('VOLUMES/DISK_09/DEMO/config.yaml', `${texto}\n`));
+    con(dir, () => {
+      assert.deepEqual(scanClaveEnVolumen({ repoRoot: dir }), [], `falso positivo por el gate: ${nombre}`);
+    });
+  }
+});
+
+test('la precisión NO se compró aflojando: cada hueco tiene su gemelo que SÍ cae', () => {
+  // Un clasificador de huecos demasiado ancho es un agujero con otro nombre.
+  // Para cada clase de hueco, un valor de la MISMA forma que sí es material.
+  const gemelos = [
+    // URL: sin material es referencia; con un tramo de 24 caracteres es la credencial
+    ['url con material', `secret: https://hooks.example.invalid/servicios/T00/B00/${'Xk29fJqLm4Tz8vBn1QwErT'}`],
+    // kebab: sin palabra de configuración no es centinela
+    ['kebab sin centinela', 'password: correct-horse-battery-staple'],
+    // referencia: sin el punto inicial no es una ruta de configuración
+    ['dotted sin punto inicial', 'password: Values.global.registrySecretName'],
+    // i18n: sólo se perdona si el valor ES la etiqueta
+    ['texto que no repite la etiqueta', '"contraseña": "Xk29fJqLm4Tz8vBn1QwErTyU"']
+  ];
+  for (const [nombre, texto] of gemelos) {
+    assert.ok(hallazgosEnTexto(texto).length > 0, `el clasificador de huecos se tragó material: ${nombre}`);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 1 ter · EL LÉXICO, EN LOS DOS IDIOMAS.
+//
+// Estaba sólo en inglés, en un repo escrito en castellano cuya regla se llama
+// `clave-en-volumen` y cuya doctrina dice «claves de pub, tokens de registry,
+// credenciales de VPS». Dos de esas tres palabras no las reconocía nadie.
+// ---------------------------------------------------------------------------
+
+/** Las trece que se fugaban, medidas con el gate real antes de cerrarlas. */
+const SE_FUGABAN = [
+  'clave',
+  'contraseña',
+  'contrasena',
+  'secreto',
+  'credencial',
+  'credenciales',
+  'auth',
+  'authorization',
+  'privkey',
+  'clave_privada',
+  'clave_secreta',
+  'claveApi',
+  'semilla'
+];
+
+test('el léxico reconoce identidad en castellano, no sólo en inglés', () => {
+  const material = 'Xk29fJqLm4Tz8vBn1QwErTyU';
+  /** @type {string[]} */
+  const fugas = [];
+  for (const campo of SE_FUGABAN) {
+    if (hallazgosEnTexto(`${campo}: ${material}`).length === 0) fugas.push(campo);
+  }
+  assert.deepEqual(fugas, [], `nombres de identidad que el detector no reconoce:\n${fugas.join('\n')}`);
+});
+
+test('el léxico en castellano también caza POR EL GATE, sembrado en un volumen', () => {
+  for (const campo of SE_FUGABAN) {
+    const dir = arbol(({ fichero }) => {
+      fichero('VOLUMES/DISK_09/DEMO/x.yaml', `${campo}: Xk29fJqLm4Tz8vBn1QwErTyU\n`);
+    });
+    con(dir, () => {
+      assert.equal(scanClaveEnVolumen({ repoRoot: dir }).length, 1, `el gate no caza \`${campo}\``);
+    });
+  }
+});
+
+test('`key` a secas sigue FUERA del léxico, y `clave` a secas DENTRO', () => {
+  // La asimetría es medida, no de gusto: sobre los 1741 ficheros trackeados,
+  // `clave` cuesta +17 hallazgos y `key` +196. Las cifras y su comando están en
+  // el reporte. Si alguien mete `key`, este test se lo recuerda.
+  assert.equal(hallazgosEnTexto('key: Xk29fJqLm4Tz8vBn1QwErTyU').length, 0, '`key` a secas volvió al léxico');
+  assert.ok(hallazgosEnTexto('clave: Xk29fJqLm4Tz8vBn1QwErTyU').length > 0);
+  // y los compuestos de `key` siguen dentro, que es lo que hace tolerable excluirla
+  for (const campo of ['api_key', 'secret_key', 'private_key', 'access_key']) {
+    assert.ok(hallazgosEnTexto(`${campo}: Xk29fJqLm4Tz8vBn1QwErTyU`).length > 0, campo);
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -263,13 +387,22 @@ test('CA rojo: el CÓDIGO de lectura que pide una credencial para abrir un volum
   });
 });
 
-test('contraprueba: un env LOCALIZADOR (root, path, url) no es una identidad', () => {
+test('la superficie de env del contrato de lectura NO es enumerable, y se dice', () => {
+  // ESTE TEST CERTIFICABA UN PUNTO CIEGO. Fijaba la lista en un solo elemento
+  // —`ZEUS_VOLUMES_ROOT`— porque el censo sólo sabía leer `process.env.X`
+  // literal. `resolve.mjs:71` hace `process.env[envKey]`, con la clave decidida
+  // por el manifiesto: la superficie real no se puede enumerar leyendo código.
+  // Un test verde sobre un subconteo es peor que no tener test.
   const censo = censarVolumenes({ repoRoot: REPO_ROOT });
   assert.deepEqual(
     censo.envsDeCodigo.map((e) => `${e.name}:${e.clase}`),
-    ['ZEUS_VOLUMES_ROOT:localizador'],
+    ['ZEUS_VOLUMES_ROOT:localizador', '[envKey]:dinamico'],
     'el contrato de lectura real cambió de superficie de env; recontar'
   );
+  assert.equal(censo.enumerable, false, 'hay lectura dinámica: el censo no puede decirse exhaustivo');
+  assert.match(formatearCenso(censo), /NO es enumerable/);
+  // y ninguna de las dos es una identidad, que es lo que se quería afirmar
+  assert.deepEqual(censo.envsDeCodigo.filter((e) => e.clase === 'identidad'), []);
   const porVolumen = Object.fromEntries(censo.filas.map((f) => [f.id, f.envs]));
   assert.deepEqual(porVolumen, {
     firehose: ['ZEUS_FIREHOSE_REMOTE_PATH'],
@@ -329,7 +462,7 @@ test('CA rojo: .dockerignore que no cubre .env ni los DISK vivos', () => {
   });
 });
 
-test('CA rojo: .dockerignore que excluye y luego RE-INCLUYE con `!` (la última gana)', () => {
+test('CA rojo: re-inclusión de un TROZO de un disco vivo, después de excluirlo', () => {
   const dir = arbol(({ fichero }) => {
     fichero('Dockerfile', 'FROM node:22\n');
     fichero('.dockerignore', '.env\nVOLUMES/**\n!VOLUMES/DISK_01/semillas\nVOLUMES/DISK_04\n');
@@ -337,8 +470,55 @@ test('CA rojo: .dockerignore que excluye y luego RE-INCLUYE con `!` (la última 
   con(dir, () => {
     const ofensas = scanContextoImagen({ repoRoot: dir });
     assert.equal(ofensas.length, 1, JSON.stringify(ofensas, null, 2));
-    assert.match(ofensas[0].detail, /RE-INCLUYE/);
+    assert.match(ofensas[0].detail, /DENTRO del contexto/);
     assert.match(ofensas[0].detail, /DISK_01/);
+    // el informe nombra la regla que decide: sin eso, el operador no sabe cuál
+    // de las quince líneas de su .dockerignore tiene que tocar
+    assert.match(ofensas[0].detail, /!VOLUMES\/DISK_01\/semillas/);
+  });
+});
+
+test('contraprueba: la re-inclusión ANTES de la exclusión no es un agujero (gana la última)', () => {
+  // Docker aplica la ÚLTIMA regla que casa. Este `.dockerignore` es CORRECTO.
+  // El modelo de dos `some()` independientes lo pintaba de rojo: falso positivo
+  // sobre configuración buena, que es la clase que obliga a desactivar un gate.
+  const dir = arbol(({ fichero }) => {
+    fichero('Dockerfile', 'FROM node:22\n');
+    fichero('.dockerignore', '!VOLUMES/DISK_01\n.env\nVOLUMES/DISK_01\nVOLUMES/DISK_04\n');
+  });
+  con(dir, () => {
+    assert.deepEqual(scanContextoImagen({ repoRoot: dir }), []);
+  });
+});
+
+test('contraprueba: una clase de caracteres `[14]` SÍ cubre lo que dice cubrir', () => {
+  // `[...]` es sintaxis de Go filepath.Match, que es la que usa Docker.
+  // Escaparla como literal leía `DISK_0[14]` como «no excluye DISK_01» y salía
+  // rojo sobre un .dockerignore correcto y más preciso que el nuestro.
+  const dir = arbol(({ fichero }) => {
+    fichero('Dockerfile', 'FROM node:22\n');
+    fichero('.dockerignore', '.env\nVOLUMES/DISK_0[14]\n');
+  });
+  con(dir, () => {
+    assert.deepEqual(scanContextoImagen({ repoRoot: dir }), []);
+  });
+});
+
+test('CA rojo: el contexto NO se adivina — los dos plausibles tienen que estar cerrados', () => {
+  // `ops/.dockerignore` presente y la raíz sin nada. Un
+  // `docker build -f ops/Dockerfile .` usa la RAÍZ como contexto y ni abre el
+  // de `ops/`. La primera versión asumía «el directorio del Dockerfile» y
+  // certificaba VERDE justo ese caso: no es «no mirar», es mirar el fichero
+  // equivocado y decir OK.
+  const dir = arbol(({ fichero }) => {
+    fichero('ops/Dockerfile', 'FROM node:22\n');
+    fichero('ops/.dockerignore', '.env\nVOLUMES/DISK_01\nVOLUMES/DISK_04\n');
+  });
+  con(dir, () => {
+    const ofensas = scanContextoImagen({ repoRoot: dir });
+    assert.equal(ofensas.length, 1, JSON.stringify(ofensas, null, 2));
+    assert.match(ofensas[0].detail, /contexto plausible/);
+    assert.match(ofensas[0].detail, /docker build -f ops\/Dockerfile \./);
   });
 });
 
@@ -438,14 +618,44 @@ test('omite: un patrón malformado LANZA en vez de barrerse a sí mismo', () => 
   assert.throws(() => hallazgosEnTexto('x', [null]), /malformado/);
 });
 
-test('omite: fichero por encima del tope NO se salta en silencio — se denuncia', () => {
+test('un fichero GRANDE se inspecciona entero, no se denuncia por grande', () => {
+  // Había un tope de 8 MB que denunciaba el fichero en vez de leerlo. El README
+  // de este árbol cifra el firehose en 38 MB y `.gitignore:51` da por hecho que
+  // ese DISK puede aparecer localmente: el gate enrojecía sobre estado local
+  // normal y SIN secretos, por algo que el operador no puede arreglar. Ésa es
+  // la presión de desactivación contra la que avisa la cabecera del módulo.
+  const relleno = `${'linea de relleno sin nada interesante\n'.repeat(60_000)}`; // ~2,2 MB
   const dir = arbol(({ fichero }) => {
-    fichero('VOLUMES/DISK_09/DEMO/gordo.bin', 'x'.repeat(TOPE_BYTES + 1));
+    fichero('VOLUMES/DISK_09/DEMO/gordo.log', `${relleno}${VECTORES['token-de-proveedor']}\n${relleno}`);
   });
   con(dir, () => {
     const ofensas = scanClaveEnVolumen({ repoRoot: dir });
     assert.equal(ofensas.length, 1, JSON.stringify(ofensas, null, 2));
-    assert.match(ofensas[0].detail, /tope de inspección/);
+    assert.match(ofensas[0].detail, /token-de-proveedor/);
+    assert.doesNotMatch(ofensas[0].detail, /tope/, 'volvió a haber tope: leer el porqué en TOPE_BYTES');
+    // y el número de línea sobrevive al troceado
+    assert.equal(ofensas[0].line, 60_001);
+  });
+});
+
+test('un fichero grande y LIMPIO no inventa hallazgos al trocearlo', () => {
+  const dir = arbol(({ fichero }) => {
+    fichero('VOLUMES/DISK_09/DEMO/limpio.log', 'nada que ver aqui, de verdad\n'.repeat(80_000));
+  });
+  con(dir, () => {
+    assert.deepEqual(scanClaveEnVolumen({ repoRoot: dir }), []);
+  });
+});
+
+test('omite: un árbol de volúmenes SIN ficheros es rojo — «cero barridos» no es «cero secretos»', () => {
+  // Modo de fallo natural de `--root`: apuntar a la carpeta de al lado.
+  const dir = arbol(({ dir: d }) => {
+    fs.rmSync(path.join(d, 'VOLUMES', 'volumes.json'));
+  });
+  con(dir, () => {
+    const ofensas = scanClaveEnVolumen({ repoRoot: dir });
+    assert.equal(ofensas.length, 1, JSON.stringify(ofensas, null, 2));
+    assert.match(ofensas[0].detail, /ni un fichero que barrer/);
   });
 });
 
@@ -507,6 +717,37 @@ test('omite: una excepción anotada para esta regla NO exime — es ella la ofen
     false,
     'el test dejó sucia la lista real de excepciones'
   );
+});
+
+test('la prohibición de eximir cubre LAS TRES reglas, no sólo una', () => {
+  // Cobertura desigual: sólo `clave-en-volumen` tenía vector rojo. Una regla
+  // cuya prohibición no está probada es una regla cuya prohibición nadie sabe
+  // si funciona — y son las tres las que la doctrina declara sin excepción.
+  const casos = [
+    {
+      regla: 'volumen-exige-secreto',
+      escanea: (dir) => scanVolumenExigeSecreto({ repoRoot: dir })
+    },
+    {
+      regla: 'contexto-imagen',
+      escanea: (dir) => scanContextoImagen({ repoRoot: dir })
+    }
+  ];
+  for (const { regla, escanea } of casos) {
+    const intrusa = { path: 'VOLUMES/lo-que-sea', rule: regla, reason: 'motivo impecable, e igual de inválido' };
+    const dir = arbol(() => {});
+    EXCEPTIONS.push(intrusa);
+    try {
+      con(dir, () => {
+        const denuncia = escanea(dir).find((o) => o.path === 'scripts/gates/exceptions.mjs');
+        assert.ok(denuncia, `la excepción prohibida para \`${regla}\` no se denunció`);
+        assert.match(denuncia.detail, /NO admite excepción/);
+      });
+    } finally {
+      EXCEPTIONS.splice(EXCEPTIONS.indexOf(intrusa), 1);
+    }
+    assert.equal(EXCEPTIONS.includes(intrusa), false, 'el test dejó sucia la lista real');
+  }
 });
 
 test('omite: una lista de excepciones INSERVIBLE no se lee como «nadie eximió nada»', () => {
@@ -619,6 +860,194 @@ test('censo de mutación: matar una ruta obligatoria del contexto deja pasar su 
       assert.match(ofensas[0].detail, new RegExp(ruta.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// 4 bis · EL CAMINO DEL ROOT DE OPERADOR, DE PUNTA A PUNTA.
+//
+// Es la mitigación que el módulo y `VOLUMES/README.md` le ofrecen al operador
+// para el límite grande —el árbol de datos vivo vive fuera del repo—. Antes se
+// afirmaba sin ejercerse: `--root` sólo estaba cableado al censo, que es CA2, y
+// el barrido de CONTENIDO no tenía CLI. Resultado: respondía VERDE sobre un
+// root con una clave sembrada. Un límite declarado sobre una mitigación que no
+// existe no es un límite declarado. Estos tests recorren el CLI de verdad.
+// ---------------------------------------------------------------------------
+
+const CLI = path.join(REPO_ROOT, 'scripts', 'gates', 'claves.mjs');
+
+/** @param {string[]} args */
+function cli(args) {
+  const r = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
+  return { code: r.status, out: `${r.stdout}${r.stderr}` };
+}
+
+/** Un root de operador: es YA el árbol de volúmenes, no tiene `VOLUMES/` dentro. */
+function rootDeOperador(escribir) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-u231-root-'));
+  const fichero = (rel, contenido) => {
+    const abs = path.join(dir, ...rel.split('/'));
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, contenido);
+  };
+  fichero('volumes.json', JSON.stringify({ volumes: { ssb: { disk: 'DISK_04', path: 'DISK_04/SSB' } } }, null, 2));
+  escribir({ dir, fichero });
+  return dir;
+}
+
+test('CLI: `--barrido --root` encuentra la clave sembrada en un root de operador', () => {
+  const root = rootDeOperador(({ fichero }) => {
+    fichero('DISK_04/SSB/secret', `${VECTORES['ssb-privada']}\n`);
+  });
+  con(root, () => {
+    const { code, out } = cli(['--barrido', '--root', root]);
+    assert.equal(code, 1, `debía salir 1 y salió ${code}:\n${out}`);
+    assert.match(out, /1 hallazgo/);
+    assert.match(out, /DISK_04\/SSB\/secret/);
+    assert.match(out, /ssb-privada/);
+    // y la ruta sale relativa al root apuntado, no como `../../../Users/…`
+    assert.doesNotMatch(out, /\.\.\/\.\.\//, 'rutas en `../../..`: el informe no sabe contra qué imprime');
+  });
+});
+
+test('CLI: `--root` a secas hace censo Y barrido', () => {
+  const root = rootDeOperador(({ fichero }) => {
+    fichero('DISK_04/SSB/secret', `${VECTORES['ssb-privada']}\n`);
+  });
+  con(root, () => {
+    const { code, out } = cli(['--root', root]);
+    assert.equal(code, 1, out);
+    assert.match(out, /volumen\s+\|/, 'falta el censo');
+    assert.match(out, /barrido de identidad/, 'falta el barrido');
+  });
+});
+
+test('CLI: un root de operador LIMPIO sale 0 y lo dice', () => {
+  const root = rootDeOperador(({ fichero }) => {
+    fichero('DISK_04/SSB/registry.json', '{"entradas": []}\n');
+  });
+  con(root, () => {
+    const { code, out } = cli(['--barrido', '--root', root]);
+    assert.equal(code, 0, out);
+    assert.match(out, /limpio \(0 hallazgos\)/);
+  });
+});
+
+test('CLI: `--root` sin valor contesta con el uso, no con una traza', () => {
+  const { code, out } = cli(['--censo', '--root']);
+  assert.equal(code, 2, out);
+  assert.match(out, /`--root` necesita una ruta/);
+  assert.doesNotMatch(out, /TypeError|ERR_INVALID_ARG_TYPE/, 'una traza de node no es un mensaje de uso');
+});
+
+test('CLI: `--root` a una ruta que no existe se queja en vez de barrer la nada', () => {
+  const { code, out } = cli(['--barrido', '--root', path.join(os.tmpdir(), 'no-existe-u231-xyz')]);
+  assert.equal(code, 2, out);
+  assert.match(out, /no existe/);
+});
+
+test('CLI: sin banderas, imprime el uso y sale 2', () => {
+  const { code, out } = cli([]);
+  assert.equal(code, 2);
+  assert.match(out, /--barrido/, 'el uso tiene que anunciar el barrido, no sólo el censo');
+});
+
+// ---------------------------------------------------------------------------
+// 4 ter · Higiene del propio gate
+// ---------------------------------------------------------------------------
+
+test('ningún fichero de gates lleva espacios en blanco irregulares', () => {
+  // `npm run lint` no se puede correr aquí (este worktree no tiene
+  // node_modules) y por ese hueco se coló un U+200B metido dentro de un JSDoc
+  // para que la secuencia de comodines no cerrase el comentario: invisible al
+  // leer, y `no-irregular-whitespace` —que es ERROR en la config recomendada—
+  // sobre el único fichero de `scripts/gates/` que rompía la línea base.
+  // Este guardián no necesita node_modules.
+  // Escrito en ESCAPES y no en caracteres literales, por dos razones: uno,
+  // ponerlos a pelo mete en este fichero justo lo que el test persigue; y dos,
+  // U+2028 es terminador de linea para el parser, asi que la primera version de
+  // esta linea —con los caracteres literales— ni siquiera compilaba. El defecto
+  // que caza es de la misma clase que el que cometio al nacer.
+  // Alternancia y no clase de caracteres: `no-misleading-character-class` marca
+  // como error meter un ZWJ dentro de un `[...]` porque puede unir lo de al lado.
+  // Lo dijo el propio lint prestado, sobre este mismo guardian.
+  const RAROS = /\u200b|\u200c|\u200d|\ufeff|\u00a0|\u2007|\u202f|\u2028|\u2029/;
+  /** @type {string[]} */
+  const ofensas = [];
+  for (const dir of ['scripts/gates', 'test/gates']) {
+    const base = path.join(REPO_ROOT, dir);
+    for (const nombre of fs.readdirSync(base)) {
+      if (!nombre.endsWith('.mjs')) continue;
+      const rel = `${dir}/${nombre}`;
+      fs.readFileSync(path.join(base, nombre), 'utf8')
+        .split('\n')
+        .forEach((l, i) => {
+          if (!RAROS.test(l)) return;
+          const col = l.search(RAROS);
+          ofensas.push(`${rel}:${i + 1}:${col + 1} U+${l.codePointAt(col).toString(16).toUpperCase()}`);
+        });
+    }
+  }
+  assert.deepEqual(ofensas, [], `espacio en blanco irregular (rompe \`npm run lint\`):\n${ofensas.join('\n')}`);
+});
+
+test('un id de volumen con metacaracteres no tumba las diez reglas', () => {
+  // `new RegExp(\`"${id}"…\`)` sin escapar: un volumen llamado `demo(` lanza
+  // SyntaxError y se lleva por delante el arnés entero. Es el fallo en abierto
+  // contra el que argumenta el propio módulo, cometido dentro de él.
+  const dir = arbol(({ fichero }) => {
+    fichero(
+      'VOLUMES/volumes.json',
+      JSON.stringify({ volumes: { 'demo(': { path: 'D/X' }, 'a[b': { path: 'D/Y' }, 'c*d': { path: 'D/Z' } } }, null, 2)
+    );
+  });
+  con(dir, () => {
+    assert.doesNotThrow(() => censarVolumenes({ repoRoot: dir }));
+    const censo = censarVolumenes({ repoRoot: dir });
+    assert.deepEqual(censo.filas.map((f) => f.id), ['demo(', 'a[b', 'c*d']);
+    assert.doesNotThrow(() => runAllGates({ repoRoot: dir, files: [] }));
+  });
+});
+
+test('un directorio ilegible NO se traga en silencio al buscar recetas de imagen', () => {
+  // Asimétrico con `recorrerVolumen`, que denuncia toda rareza: `catch { return }`
+  // convierte «no pude mirar» en «no hay nada».
+  const inexistente = path.join(os.tmpdir(), 'u231-no-existe-jamas');
+  const { recetas, rarezas } = buscarDockerfiles(inexistente);
+  assert.deepEqual(recetas, []);
+  assert.equal(rarezas.length, 1, JSON.stringify(rarezas));
+  assert.match(rarezas[0].detail, /ilegible/);
+});
+
+test('el censo ve las cuatro formas de leer el entorno, no sólo la literal', () => {
+  const dir = arbol(({ fichero }) => {
+    fichero(
+      'packages/engine/presets-sdk/src/volumes/resolve.mjs',
+      'export const a = () => process.env.ZEUS_VOLUMES_ROOT;\n' +
+        "export const b = () => process.env['ZEUS_OTRO_PATH'];\n" +
+        'export const c = () => process.env?.ZEUS_TERCER_TOKEN;\n' +
+        'const { ZEUS_CUARTO_SECRET, ZEUS_QUINTO_PATH } = process.env;\n' +
+        'export const d = (k) => process.env[k];\n'
+    );
+    // y un submódulo, y un .ts: el censo plano y sólo-.mjs no los veía
+    fichero('packages/engine/presets-sdk/src/volumes/sub/hondo.ts', 'export const e = () => process.env.ZEUS_HONDO_PASSWORD;\n');
+  });
+  con(dir, () => {
+    const censo = censarVolumenes({ repoRoot: dir });
+    const vistos = censo.envsDeCodigo.map((e) => `${e.name}:${e.clase}`).sort();
+    assert.deepEqual(vistos, [
+      'ZEUS_CUARTO_SECRET:identidad',
+      'ZEUS_HONDO_PASSWORD:identidad',
+      'ZEUS_OTRO_PATH:localizador',
+      'ZEUS_QUINTO_PATH:localizador',
+      'ZEUS_TERCER_TOKEN:identidad',
+      'ZEUS_VOLUMES_ROOT:localizador',
+      '[k]:dinamico'
+    ]);
+    assert.equal(censo.enumerable, false);
+    // las tres identidades son ofensa
+    const ofensas = scanVolumenExigeSecreto({ repoRoot: dir });
+    assert.equal(ofensas.length, 3, JSON.stringify(ofensas, null, 2));
+  });
 });
 
 // ---------------------------------------------------------------------------

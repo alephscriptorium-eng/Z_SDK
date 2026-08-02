@@ -49,21 +49,33 @@
  *
  *   1. **El árbol de datos VIVO.** Los DISK reales viven FUERA del monorepo
  *      (`ZEUS_VOLUMES_ROOT`, `VOLUMES/README.md:6-8`). Por defecto esto barre
- *      `VOLUMES/` EN EL REPO, que hoy son 16 ficheros de fixture. Para barrer
- *      un root de operador hay que pasárselo: `--root <ruta>` / `volumesDir`.
+ *      `VOLUMES/` EN EL REPO, que hoy son 16 ficheros de fixture. Para un root
+ *      de operador: `--barrido --root <ruta>` (contenido) y `--censo --root`
+ *      (contrato). Los dos caminos tienen test de punta a punta; la primera
+ *      versión sólo cableaba el censo y respondía VERDE sobre un root con una
+ *      clave sembrada.
  *   2. **El historial de git.** Un secreto ya commiteado y luego borrado no lo
  *      ve nadie aquí: esto mira el árbol de trabajo. Purgar historial es otro
  *      trabajo y otro coste (reescritura + rotación de la credencial).
  *   3. **El tarball de npm.** `files`/`.npmignore` es otro contexto de
  *      publicación; lo mira `test/gates/paridad-publicacion.test.mjs`, no esto.
- *   4. **Contextos de build que no sean el directorio del Dockerfile.** Un
- *      `docker build -f x/Dockerfile .` con contexto distinto, o un `compose`
- *      con `build.context`, no se modelan. Hoy no hay ni Dockerfile ni compose.
- *   5. **Secreto cifrado, comprimido o en UTF-16.** El barrido es byte-a-byte
- *      sobre latin1: caza ASCII. Un `.tar.gz` con una clave dentro pasa.
- *   6. **Un campo llamado `key` a secas.** Se excluye del léxico a propósito:
- *      en YAML/JSON `key:` es vocabulario general y meterlo enrojece el árbol.
- *      Se exigen `api_key`, `secret_key`, `private_key`, `access_key`.
+ *   4. **Contextos de build que no sean el directorio de la receta ni la raíz.**
+ *      Se exigen cerrados esos DOS, que son los convenios reales; un `compose`
+ *      con `build.context` a un tercer sitio no se modela. Hoy no hay ni
+ *      Dockerfile ni compose.
+ *   5. **Secreto cifrado, comprimido o en UTF-16.** El barrido decodifica UTF-8
+ *      (que cubre ASCII y el castellano con tilde). Un `.tar.gz` con una clave
+ *      dentro, o un fichero en UTF-16, pasan.
+ *   6. **La FORMA del valor, en tres casos corrientes** — `{"tokens": ["…"]}`
+ *      (la comilla corta la captura), YAML de bloque (`api_key: |` con el valor
+ *      en la línea siguiente) y `ENV API_KEY valor` sin `=`. Los tres exigen
+ *      parseo real de JSON/YAML/Dockerfile y no más expresiones regulares;
+ *      están abiertos como **WP-U269**. El tercero cae dentro del corpus de
+ *      `contexto-imagen`, o sea dentro de la mitad de imagen de CA1.
+ *   7. **Un campo llamado `key` a secas.** Fuera del léxico por coste medido
+ *      (+178 hallazgos sobre el árbol; ver `LEXICO_IDENTIDAD`).
+ *   8. **Identidad sin forma ni nombre.** Una cadena de alta entropía en un
+ *      campo llamado `blob` no la caza nada: es el precio de no usar entropía.
  */
 
 import fs from 'node:fs';
@@ -104,10 +116,16 @@ const DIRS_SALTADOS = new Set([
 ]);
 
 /**
- * Tope de inspección por fichero. Un fichero más grande NO se salta en
- * silencio: se denuncia. Saltar es la forma más barata de fallar en abierto.
+ * YA NO HAY TOPE DE INSPECCIÓN, y la constante se queda escrita para que quede
+ * el registro de por qué se fue: había un tope de 8 MB que denunciaba el
+ * fichero en vez de leerlo. Con el firehose cifrado en 38 MB por el README de
+ * este mismo árbol, eso enrojecía estado local normal y sin secretos. Ver
+ * `hallazgosEnFichero`, que lee por tramos con memoria acotada.
+ *
+ * @deprecated sin uso desde la devolución de U231; no reintroducir un tope sin
+ * leer antes ese comentario.
  */
-export const TOPE_BYTES = 8 * 1024 * 1024;
+export const TOPE_BYTES = null;
 
 // ---------------------------------------------------------------------------
 // Léxico
@@ -118,10 +136,66 @@ export const TOPE_BYTES = 8 * 1024 * 1024;
  * dentro de un fichero de volumen, y el nombre de una variable de entorno de la
  * que depende la lectura de un volumen.
  *
- * `key` a secas queda FUERA a propósito (ver límite 6 de la cabecera).
+ * ESTABA SÓLO EN INGLÉS, y era un agujero grande en un repo escrito en
+ * castellano cuya regla se llama `clave-en-volumen`. La doctrina que este
+ * módulo cita habla de «**claves** de pub, tokens de registry, **credenciales**
+ * de VPS» (R6:55-56): dos de esas tres palabras no las reconocía el detector.
+ * Medido con el gate real sembrando en un volumen, pasaban limpios `clave`,
+ * `contraseña`, `contrasena`, `secreto`, `credencial`, `auth`, `authorization`
+ * y `privkey` — este último porque el ancla lo rompía (`secret` + `o` no es
+ * `secreto`). Cerrado aquí; el censo de fugas vive en el test.
+ *
+ * `clave` A SECAS ENTRA; `key` a secas NO, y la asimetría es MEDIDA, no de
+ * gusto. Mismo detector, mismo corpus —los 1741 ficheros trackeados—, moviendo
+ * sólo el léxico:
+ *
+ *   sin `clave` ni `key` a secas ....  104 hallazgos
+ *   con `clave`  (el elegido) .......  121   (+17)
+ *   con `clave` y `key` .............  300  (+196)
+ *
+ * `key` cuesta once veces más que `clave` porque en YAML/JSON `key:` es
+ * vocabulario general de mapa; `clave` tiene ese uso mucho más raro. Diecisiete
+ * de más sobre el árbol entero es asumible para no perder la palabra que la
+ * doctrina usa literalmente; ciento noventa y seis no lo es. El comando que
+ * produce las tres cifras está en el reporte del WP.
+ *
+ * (Ojo: el corpus de ESTE gate no es el árbol entero sino `VOLUMES/**` y las
+ * recetas de imagen, donde las tres variantes dan CERO. Las cifras de arriba
+ * son la cota superior si el corpus creciera, no lo que se paga hoy.)
  */
-export const LEXICO_IDENTIDAD =
-  /(?:pass(?:word|phrase|wd)?|pwd|secret|token|credentials?|api[_-]?key|apikey|access[_-]?key|secret[_-]?key|private[_-]?key|signing[_-]?key|bearer|session[_-]?key)/i;
+export const LEXICO_IDENTIDAD = new RegExp(
+  [
+    // inglés
+    'pass(?:word|phrase|wd)?',
+    'pwd',
+    'secrets?',
+    'tokens?',
+    'credentials?',
+    'api[_-]?key',
+    'apikey',
+    'access[_-]?key',
+    'secret[_-]?key',
+    'private[_-]?key',
+    'privkey',
+    'signing[_-]?key',
+    'session[_-]?key',
+    'auth(?:orization|entication)?',
+    'bearer',
+    // castellano
+    'contrase(?:ñ|n)as?',
+    'secretos?',
+    'secretas?',
+    'credencial(?:es)?',
+    // los compuestos primero: legibilidad, no corrección (la alternancia
+    // retrocede sola, pero leerlo al revés confunde a quien dé de alta uno)
+    'clave[_-]?(?:privada|secreta|api|de[_-]?api|maestra)',
+    'claveprivada',
+    'claveapi',
+    'claves?',
+    'semillas?'
+  ].join('|'),
+  'i'
+);
 
 /** El mismo léxico, anclado como palabra completa dentro de un nombre. */
 const LEXICO_ANCLADO = new RegExp(`(?<![A-Za-z0-9])${LEXICO_IDENTIDAD.source}(?![A-Za-z0-9])`, 'i');
@@ -132,21 +206,84 @@ const LEXICO_ANCLADO = new RegExp(`(?<![A-Za-z0-9])${LEXICO_IDENTIDAD.source}(?!
  * `"${ZEUS_SSB_PUB_URL}"` nunca fue una credencial.
  */
 const HUECOS = [
-  /^\$\{[^}]*\}$/, // plantilla de env: la forma que usa volumes.json
+  // --- plantillas de sustitución. La primera versión sólo conocía `${VAR}`:
+  //     cerraba el CASO, no la CLASE, y seguían enrojeciendo las otras tres
+  //     sintaxis corrientes. Son huecos por la misma razón exacta.
+  /^\$\{[^}]*\}$/, // ${VAR} — la forma que usa volumes.json
+  /^\{\{[^}]*\}\}$/, // {{VAR}} — Helm, Jinja, Handlebars, GitHub Actions
+  /^\$\([^)]*\)$/, // $(VAR) — Make, Azure Pipelines, sustitución de shell
+  /^%[A-Za-z0-9_]+%$/, // %VAR% — cmd de Windows
   /^\$[A-Za-z_][A-Za-z0-9_]*$/, // $VAR de shell
   /^<[^>]*>$/, // <pon-aqui-lo-tuyo>
+  // --- referencia a otra configuración, no un valor. `.Values.global.…` de
+  //     Helm es el caso censado; se exige que empiece por punto para no
+  //     tragarse por accidente una credencial que lleve puntos dentro.
+  /^\.[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+$/,
   /^process\.env\./,
-  /^(?:x+|\*+|\.+|-+|0+)$/i, // relleno
+  // --- relleno y centinelas de una sola palabra
+  /^(?:x+|\*+|\.+|-+|0+)$/i,
   /^(?:changeme|change_me|example|redacted|null|undefined|true|false|todo|tbd|none|empty|placeholder|pendiente)$/i,
   /^(?:your|my|tu|mi)[_-]/i,
   /_(?:here|aqui)$/i
 ];
 
-/** @param {string} valor */
-export function esHueco(valor) {
+/**
+ * Palabras de configuración. Un valor en kebab/snake minúsculo que contenga
+ * alguna es un CENTINELA (`inherit-from-operator-env`), no una credencial.
+ *
+ * Se exige una de estas palabras en vez de aceptar todo kebab minúsculo porque
+ * una frase de paso de diceware —`correct-horse-battery-staple`— es kebab
+ * minúsculo Y ES un secreto. Ésa es la línea, y es estrecha a propósito.
+ */
+const CENTINELAS =
+  /(?:^|[_-])(?:inherit|inherited|default|defaults|none|disabled|enabled|env|environment|operator|external|managed|vault|unset|auto|from|via|see|ref|reference|same|inline|file|path|url|host|port|local|remote|fixture|sample|dummy|fake|test|mock)(?:$|[_-])/;
+
+/** Un valor que es exactamente el nombre de su campo, ignorando caja y tildes. */
+function sinTildes(s) {
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+}
+
+/**
+ * ¿Es una URL de referencia (documentación, portal) y no material?
+ *
+ * Una URL NO es en general un hueco: un webhook de Slack ES la credencial. Por
+ * eso se exige que no lleve consulta, ni fragmento, ni ningún tramo de ruta con
+ * pinta de material (20+ caracteres de alfabeto de token). Así
+ * `https://docs…/rotacion-de-claves` es hueco y
+ * `https://hooks…/T0/B0/XXXXXXXXXXXXXXXXXXXXXXXX` no lo es.
+ *
+ * @param {string} v
+ */
+function esUrlDeReferencia(v) {
+  if (!/^https?:\/\//i.test(v)) return false;
+  if (/[?#]/.test(v)) return false;
+  const tramos = v.replace(/^https?:\/\//i, '').split('/');
+  return !tramos.some((t) => /^[A-Za-z0-9_-]{20,}$/.test(t));
+}
+
+/**
+ * ¿El valor es un hueco —plantilla, referencia, centinela, texto humano— en vez
+ * de material de identidad?
+ *
+ * `nombre` es el nombre del campo del que cuelga, y se usa para un caso que no
+ * se puede decidir mirando sólo el valor: una cadena de i18n cuyo texto repite
+ * su propia etiqueta («contraseña» → «Contraseña olvidada»). Ninguna credencial
+ * es igual al nombre de su campo.
+ *
+ * @param {string} valor
+ * @param {string} [nombre] nombre del campo, si se conoce
+ */
+export function esHueco(valor, nombre = '') {
   const v = valor.trim();
   if (v.length < 8) return true; // demasiado corto para ser una credencial
-  return HUECOS.some((re) => re.test(v));
+  if (HUECOS.some((re) => re.test(v))) return true;
+  if (esUrlDeReferencia(v)) return true;
+  if (/^[a-z][a-z0-9]*(?:[_-][a-z0-9]+)+$/.test(v) && CENTINELAS.test(v)) return true;
+  if (nombre && sinTildes(v) === sinTildes(nombre)) return true;
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -198,16 +335,23 @@ export const PATRONES_IDENTIDAD = Object.freeze([
   {
     id: 'campo-identidad',
     que: 'campo de identidad con valor literal (no es un hueco de plantilla)',
-    // El valor se captura en dos ramas y el orden importa: la plantilla
-    // `${VAR}` PRIMERO, porque `}` está fuera de la clase de la segunda rama
-    // (es delimitador de JSON) y sin esta rama el valor capturado sería
-    // `${ZEUS_ALGO_TOKEN` sin cerrar — que ya no parece un hueco y enrojecía
-    // `volumes.json`. Lo cazó el test de falsos positivos, no la lectura.
+    // LAS PLANTILLAS VAN PRIMERO, y son CUATRO, no una. `}` y `)` están fuera
+    // de la clase de la rama general (son delimitadores de JSON y de lista), así
+    // que sin ramas propias el valor capturado se trunca —`${ZEUS_ALGO_TOKEN`,
+    // `{{DB_PASSWORD`, `$(DB_PASSWORD)`— deja de parecer un hueco y enrojece.
+    //
+    // La primera versión añadió sólo la rama de `${VAR}`: cerró EL CASO que
+    // tenía delante y no LA CLASE, y las otras tres sintaxis seguían en rojo.
+    // Ésta es la clase entera, y las cuatro tienen contraprueba.
     re: new RegExp(
-      `(?<![A-Za-z0-9])["']?(${LEXICO_IDENTIDAD.source})["']?\\s*[:=]\\s*["']?(\\$\\{[^}]*\\}|[^\\s,;"'}\\])]{8,200})`,
+      `(?<![A-Za-z0-9])["']?(${LEXICO_IDENTIDAD.source})["']?\\s*[:=]\\s*["']?` +
+        `(\\$\\{[^}]*\\}|\\{\\{[^}]*\\}\\}|\\$\\([^)]*\\)|%[A-Za-z0-9_]+%|[^\\s,;"'}\\])]{8,200})`,
       'i'
     ),
-    valida: (m) => !esHueco(m[2])
+    // El nombre del campo (m[1]) viaja al clasificador: hay un hueco —el texto
+    // de i18n que repite su propia etiqueta— que no se puede decidir mirando
+    // sólo el valor.
+    valida: (m) => !esHueco(m[2], m[1])
   }
 ]);
 
@@ -252,6 +396,86 @@ export function hallazgosEnTexto(texto, patrones = PATRONES_IDENTIDAD) {
   return out.sort((a, b) => a.line - b.line || a.id.localeCompare(b.id));
 }
 
+/**
+ * Los hallazgos de un FICHERO, leyéndolo por tramos.
+ *
+ * POR QUÉ NO SE LEE ENTERO. La primera versión leía el fichero de una vez y
+ * denunciaba lo que pasara de 8 MB —«no se salta en silencio, se denuncia»—.
+ * Suena fail-closed y es un tiro en el pie: el README de este mismo árbol cifra
+ * el firehose en **38 MB**, y `.gitignore:51` da por hecho que ese DISK puede
+ * aparecer localmente. O sea que el gate enrojecía sobre estado local NORMAL,
+ * sin ningún secreto, y por un motivo que el operador no puede arreglar. Es
+ * exactamente la presión de desactivación contra la que avisa la cabecera de
+ * este módulo, construida dentro de él.
+ *
+ * Ahora se lee por tramos de 1 MiB con un solape de 64 KiB, se cuentan los
+ * saltos de línea para no perder el número de línea, y no hay tope: un DISK de
+ * 38 MB se inspecciona entero con memoria acotada.
+ *
+ * LÍMITE DECLARADO: una coincidencia que se extendiera más allá del solape
+ * —64 KiB— y cayera justo sobre una frontera de tramo se perdería. Ninguno de
+ * los patrones de hoy puede acercarse a eso.
+ *
+ * @param {string} abs
+ * @param {readonly Patron[]} [patrones]
+ * @returns {{ id: string, que: string, line: number }[]}
+ */
+export function hallazgosEnFichero(abs, patrones = PATRONES_IDENTIDAD) {
+  const TRAMO = 1024 * 1024;
+  const SOLAPE = 64 * 1024;
+  const tam = fs.statSync(abs).size;
+  if (tam <= TRAMO) {
+    // UTF-8, no latin1. Se leía en latin1 «porque los patrones son ASCII y así
+    // byte↔carácter es 1:1», y con el léxico sólo inglés eso se sostenía. En
+    // cuanto el léxico aprendió castellano dejó de sostenerse: `contraseña` en
+    // un fichero UTF-8 son los bytes C3 B1, que en latin1 se leen `Ã±` y no
+    // casan con nada. O sea que el campo con tilde se le escapaba al gate. Lo
+    // cazó el test del léxico corriendo POR EL GATE, no el del detector puro.
+    //
+    // No se pierde nada al cambiar: una secuencia ASCII nunca es UTF-8
+    // inválido, así que PEM, JWT y los tokens de proveedor siguen casando
+    // igual dentro de un binario. UTF-16 sigue siendo punto ciego declarado.
+    return hallazgosEnTexto(fs.readFileSync(abs).toString('utf8'), patrones);
+  }
+  const fd = fs.openSync(abs, 'r');
+  try {
+    const buf = Buffer.allocUnsafe(TRAMO);
+    /** @type {{ id: string, que: string, line: number }[]} */
+    const out = [];
+    const vistos = new Set();
+    let pos = 0;
+    // Saltos de línea que quedan ESTRICTAMENTE antes de `pos`. Invariante: la
+    // primera línea del tramo que empieza en `pos` es la global `lineaBase + 1`,
+    // así que la línea global de un hallazgo es `lineaBase + h.line`. Nada más.
+    // (La primera versión sumaba y luego restaba las líneas del solape, con lo
+    // que las contaba dos veces: 61 726 donde tocaba 60 001. Lo cazó su test.)
+    let lineaBase = 0;
+    while (pos < tam) {
+      const leidos = fs.readSync(fd, buf, 0, TRAMO, pos);
+      if (leidos <= 0) break;
+      // Ver la nota de codificación arriba. En el troceado, un carácter
+      // multibyte partido por la frontera da un carácter de reemplazo en la
+      // costura; el solape hace que la coincidencia se vea igual en el tramo
+      // siguiente, donde ya está entera.
+      const texto = buf.subarray(0, leidos).toString('utf8');
+      for (const h of hallazgosEnTexto(texto, patrones)) {
+        const linea = lineaBase + h.line;
+        const llave = `${h.id}:${linea}`;
+        if (vistos.has(llave)) continue; // el solape ve dos veces lo mismo
+        vistos.add(llave);
+        out.push({ id: h.id, que: h.que, line: linea });
+      }
+      if (pos + leidos >= tam) break;
+      const avance = Math.max(1, leidos - SOLAPE);
+      lineaBase += (texto.slice(0, avance).match(/\n/g) ?? []).length;
+      pos += avance;
+    }
+    return out.sort((a, b) => a.line - b.line || a.id.localeCompare(b.id));
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // La prohibición de eximir
 // ---------------------------------------------------------------------------
@@ -291,9 +515,23 @@ export function motivosDeExcepcionProhibida(regla, lista = EXCEPTIONS) {
 // Recorrido del árbol de datos
 // ---------------------------------------------------------------------------
 
-/** @param {string} raiz @param {string} abs */
-function rel(raiz, abs) {
-  return path.relative(raiz, abs).split(path.sep).join('/');
+/**
+ * Ruta para el informe. Relativa a la raíz cuando cuelga de ella; ABSOLUTA
+ * cuando no.
+ *
+ * Un `../../../Users/…/Temp/…` no es una ruta, es un síntoma: fue lo que delató
+ * que el camino de `--root` nunca se había ejercido de punta a punta. Un
+ * barrido sobre un root de operador vive fuera del repo por definición, así que
+ * ésa es la ruta que hay que imprimir.
+ *
+ * @param {string} base @param {string} abs
+ */
+function rel(base, abs) {
+  const r = path.relative(base, abs).split(path.sep).join('/');
+  if (r === '' || r.startsWith('../') || path.isAbsolute(r)) {
+    return abs.split(path.sep).join('/');
+  }
+  return r;
 }
 
 /**
@@ -309,7 +547,7 @@ function rel(raiz, abs) {
  * @param {string} raiz
  * @returns {{ ficheros: string[], rarezas: { path: string, detail: string }[] }}
  */
-export function recorrerVolumen(dir, raiz) {
+export function recorrerVolumen(dir, base) {
   /** @type {string[]} */
   const ficheros = [];
   /** @type {{ path: string, detail: string }[]} */
@@ -321,7 +559,7 @@ export function recorrerVolumen(dir, raiz) {
       if (e.isDirectory()) {
         if (DIRS_SALTADOS.has(e.name)) {
           rarezas.push({
-            path: rel(raiz, abs),
+            path: rel(base, abs),
             detail: `directorio excluido del barrido (${e.name}) DENTRO de un árbol de volúmenes: no debería existir aquí`
           });
           continue;
@@ -334,7 +572,7 @@ export function recorrerVolumen(dir, raiz) {
         continue;
       }
       rarezas.push({
-        path: rel(raiz, abs),
+        path: rel(base, abs),
         detail:
           'entrada que no es fichero ni directorio (enlace simbólico u otro): el barrido no puede ' +
           'afirmar qué contiene, y un enlace a material de identidad es el vector exacto de este WP'
@@ -350,11 +588,16 @@ export function recorrerVolumen(dir, raiz) {
 // ---------------------------------------------------------------------------
 
 /**
- * @param {{ repoRoot?: string, volumesDir?: string, patrones?: readonly Patron[] }} [opts]
+ * @param {{ repoRoot?: string, volumesDir?: string, baseInforme?: string, patrones?: readonly Patron[] }} [opts]
  * @returns {Ofensa[]}
  */
 export function scanClaveEnVolumen(opts = {}) {
   const raiz = opts.repoRoot ?? RAIZ;
+  // `base` es contra QUE se imprimen las rutas; `raiz` es donde vive el repo.
+  // Separarlos es lo que permite apuntar `--root` a un arbol de operador sin que
+  // el informe salga en `../../../` ni el censo busque el contrato de lectura
+  // dentro de los datos del operador.
+  const base = opts.baseInforme ?? raiz;
   const patrones = opts.patrones ?? PATRONES_IDENTIDAD;
   const dirVol = opts.volumesDir ?? path.join(raiz, 'VOLUMES');
   /** @type {Ofensa[]} */
@@ -386,7 +629,7 @@ export function scanClaveEnVolumen(opts = {}) {
   if (!fs.existsSync(dirVol)) {
     ofensas.push({
       rule: 'clave-en-volumen',
-      path: rel(raiz, dirVol),
+      path: rel(base, dirVol),
       detail:
         'el árbol de volúmenes NO existe: sin árbol no hay barrido, y «cero ficheros barridos» ' +
         'no es «cero secretos». Rojo por ausencia (CA3 · hostil-omite)'
@@ -396,30 +639,33 @@ export function scanClaveEnVolumen(opts = {}) {
   if (!fs.statSync(dirVol).isDirectory()) {
     ofensas.push({
       rule: 'clave-en-volumen',
-      path: rel(raiz, dirVol),
+      path: rel(base, dirVol),
       detail: 'la ruta del árbol de volúmenes existe pero no es un directorio'
     });
     return ofensas;
   }
 
-  const { ficheros, rarezas } = recorrerVolumen(dirVol, raiz);
+  const { ficheros, rarezas } = recorrerVolumen(dirVol, base);
   for (const r of rarezas) ofensas.push({ rule: 'clave-en-volumen', path: r.path, detail: r.detail });
 
+  // «Cero ficheros barridos» tampoco es «cero secretos». Un `volumesDir` que
+  // existe pero está vacío —o que sólo trae el manifiesto— es el modo de fallo
+  // natural del camino `--root`: se apunta a la carpeta equivocada, sale verde
+  // y el operador se queda tranquilo. Rojo.
+  if (ficheros.length === 0) {
+    ofensas.push({
+      rule: 'clave-en-volumen',
+      path: rel(base, dirVol),
+      detail:
+        'el árbol de volúmenes existe pero NO tiene ni un fichero que barrer: «cero ficheros ' +
+        'barridos» no es «cero secretos» (CA3 · hostil-omite). ¿Es éste el root que se quería?'
+    });
+    return ofensas;
+  }
+
   for (const abs of ficheros) {
-    const relPath = rel(raiz, abs);
-    const bytes = fs.statSync(abs).size;
-    if (bytes > TOPE_BYTES) {
-      ofensas.push({
-        rule: 'clave-en-volumen',
-        path: relPath,
-        detail: `${bytes} bytes: por encima del tope de inspección (${TOPE_BYTES}). No se salta en silencio — se denuncia`
-      });
-      continue;
-    }
-    // latin1: byte↔carácter 1:1, nunca lanza, y los patrones son ASCII. Lo que
-    // no sea ASCII (UTF-16, comprimido, cifrado) es punto ciego declarado.
-    const texto = fs.readFileSync(abs).toString('latin1');
-    for (const h of hallazgosEnTexto(texto, patrones)) {
+    const relPath = rel(base, abs);
+    for (const h of hallazgosEnFichero(abs, patrones)) {
       ofensas.push({
         rule: 'clave-en-volumen',
         path: relPath,
@@ -439,6 +685,52 @@ export function scanClaveEnVolumen(opts = {}) {
 
 /** Ficheros que forman el contrato de lectura de un volumen (API pública U200). */
 const API_LECTURA = 'packages/engine/presets-sdk/src/volumes';
+
+/** Extensiones de código del contrato de lectura. No sólo `.mjs`. */
+const EXT_CODIGO = /\.(?:mjs|js|cjs|mts|cts|ts|tsx)$/i;
+
+/**
+ * Los ficheros de código bajo un directorio, RECURSIVAMENTE. La primera versión
+ * hacía un `readdirSync` plano y filtraba por `.mjs`: un submódulo o un `.ts`
+ * que leyera una credencial quedaba fuera del censo sin que nadie lo notara.
+ *
+ * @param {string} dir
+ * @returns {string[]} absolutos, ordenados
+ */
+function ficherosDeCodigo(dir) {
+  /** @type {string[]} */
+  const out = [];
+  /** @param {string} d */
+  const anda = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (DIRS_SALTADOS.has(e.name)) continue;
+      const abs = path.join(d, e.name);
+      if (e.isDirectory()) anda(abs);
+      else if (e.isFile() && EXT_CODIGO.test(e.name)) out.push(abs);
+    }
+  };
+  anda(dir);
+  return out;
+}
+
+/**
+ * Las cuatro formas de leer el entorno. Las tres últimas se le escapaban a la
+ * primera versión, que sólo conocía `process.env.X` y `process.env['X']`:
+ *
+ *   1 `process.env.X` y `process.env?.X`
+ *   2 `process.env['X']`
+ *   3 `const { X, Y } = process.env` (desestructuración)
+ *   4 `process.env[loQueSea]` — DINÁMICA: no se puede enumerar
+ */
+const RE_LECTURA_ENV = new RegExp(
+  [
+    'process\\.env\\??\\.([A-Za-z_][A-Za-z0-9_]*)',
+    "process\\.env\\??\\[\\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\\s*\\]",
+    '(?:const|let|var)\\s*\\{([^}]*)\\}\\s*=\\s*process\\.env',
+    "process\\.env\\??\\[\\s*(?!['\"])([^\\]]+)\\]"
+  ].join('|'),
+  'g'
+);
 
 /**
  * @typedef {object} FilaCenso
@@ -460,14 +752,19 @@ const API_LECTURA = 'packages/engine/presets-sdk/src/volumes';
  *   - el CÓDIGO de lectura: cualquier `process.env.X` que lean los módulos de
  *     `packages/engine/presets-sdk/src/volumes/`.
  *
- * @param {{ repoRoot?: string, volumesDir?: string }} [opts]
+ * @param {{ repoRoot?: string, volumesDir?: string, baseInforme?: string }} [opts]
  * @returns {{ manifiesto: string, estado: string, filas: FilaCenso[], envsDeCodigo: { name: string, path: string, line: number, clase: string }[], problemas: { path: string, detail: string }[] }}
  */
 export function censarVolumenes(opts = {}) {
   const raiz = opts.repoRoot ?? RAIZ;
+  // `base` es contra QUE se imprimen las rutas; `raiz` es donde vive el repo.
+  // Separarlos es lo que permite apuntar `--root` a un arbol de operador sin que
+  // el informe salga en `../../../` ni el censo busque el contrato de lectura
+  // dentro de los datos del operador.
+  const base = opts.baseInforme ?? raiz;
   const dirVol = opts.volumesDir ?? path.join(raiz, 'VOLUMES');
   const manifiestoAbs = path.join(dirVol, 'volumes.json');
-  const manifiesto = rel(raiz, manifiestoAbs);
+  const manifiesto = rel(base, manifiestoAbs);
   /** @type {{ path: string, detail: string }[]} */
   const problemas = [];
   /** @type {FilaCenso[]} */
@@ -532,7 +829,12 @@ export function censarVolumenes(opts = {}) {
             }
           };
           anda(entrada, id);
-          const linea = lineas.findIndex((l) => new RegExp(`"${id}"\\s*:\\s*\\{`).test(l)) + 1;
+          // El id se ESCAPA antes de entrar en un RegExp. Sin esto, un volumen
+          // llamado `demo(` lanza SyntaxError y se lleva por delante las diez
+          // reglas del arnés — el fallo en abierto contra el que argumenta §3
+          // de este mismo módulo, cometido dentro de él.
+          const idEscapado = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const linea = lineas.findIndex((l) => new RegExp(`"${idEscapado}"\\s*:\\s*\\{`).test(l)) + 1;
           filas.push({
             id,
             envs: [...envs].sort(),
@@ -560,25 +862,45 @@ export function censarVolumenes(opts = {}) {
         'se puede afirmar que leer un volumen no pide una identidad. Rojo por ausencia (CA3)'
     });
   } else {
-    for (const nombre of fs.readdirSync(dirApi).sort()) {
-      if (!nombre.endsWith('.mjs')) continue;
-      const abs = path.join(dirApi, nombre);
+    for (const abs of ficherosDeCodigo(dirApi)) {
       const lineas = fs.readFileSync(abs, 'utf8').split('\n');
       lineas.forEach((l, i) => {
-        for (const m of l.matchAll(/process\.env(?:\.([A-Za-z0-9_]+)|\[\s*['"]([A-Za-z0-9_]+)['"]\s*\])/g)) {
-          const name = m[1] ?? m[2];
-          envsDeCodigo.push({
-            name,
-            path: rel(raiz, abs),
-            line: i + 1,
-            clase: LEXICO_ANCLADO.test(name) ? 'identidad' : 'localizador'
-          });
+        for (const m of l.matchAll(RE_LECTURA_ENV)) {
+          // m[1] `process.env.X` · m[2] `process.env['X']` · m[3] destructuring
+          // · m[4] presente cuando el índice NO es un literal → lectura dinámica
+          if (m[4] !== undefined) {
+            envsDeCodigo.push({
+              name: `[${m[4].trim()}]`,
+              path: rel(base, abs),
+              line: i + 1,
+              clase: 'dinamico'
+            });
+            continue;
+          }
+          for (const name of (m[3] ?? m[1] ?? m[2]).split(',').map((s) => s.trim().split(':')[0].trim())) {
+            if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) continue;
+            envsDeCodigo.push({
+              name,
+              path: rel(base, abs),
+              line: i + 1,
+              clase: LEXICO_ANCLADO.test(name) ? 'identidad' : 'localizador'
+            });
+          }
         }
       });
     }
   }
 
-  return { manifiesto, estado, filas, envsDeCodigo, problemas };
+  // Una sola lectura dinámica basta para que este censo NO sea exhaustivo, y
+  // hay que decirlo aquí y no en la prosa: `resolve.mjs:71` hace
+  // `process.env[envKey]`, con la clave decidida por el MANIFIESTO. O sea que
+  // la superficie de env del contrato de lectura no se puede enumerar leyendo
+  // el código; lo que la acota es la superficie 1. La primera versión de este
+  // censo ni veía esa línea y afirmaba «hoy hay uno»: era un subconteo
+  // presentado como inventario.
+  const enumerable = !envsDeCodigo.some((e) => e.clase === 'dinamico');
+
+  return { manifiesto, estado, filas, envsDeCodigo, enumerable, problemas };
 }
 
 /**
@@ -634,10 +956,17 @@ export const RUTAS_FUERA_DEL_CONTEXTO = Object.freeze([
 /**
  * ¿El patrón de `.dockerignore` alcanza esta ruta?
  *
- * `**` matchea CERO o más directorios, no «uno o más»: `**​/.env` cubre el
- * `.env` de la raíz, y traducirlo a `.*​/` lo dejaba fuera —el vector que este
- * gate existe para cerrar—. Lo cazó la contraprueba del `.dockerignore` bien
- * escrito, que salía roja con la traducción ingenua.
+ * El comodín doble matchea CERO o más directorios, no «uno o más»: la forma
+ * «doble asterisco, barra, .env» cubre el `.env` de la raíz, y traducirla
+ * exigiendo la barra lo dejaba fuera —el vector que este gate existe para
+ * cerrar—. Lo cazó la contraprueba del `.dockerignore` bien escrito, que salía
+ * roja con la traducción ingenua.
+ *
+ * (Los comodines se nombran en palabras y no en símbolos porque su secuencia
+ * literal cierra este mismo bloque de comentario. La primera versión los
+ * escribió en símbolos y los separó con un espacio de ancho cero, que es
+ * invisible al leer y `no-irregular-whitespace` en `npm run lint`. Fue el
+ * único fichero de `scripts/gates/` que rompió la línea base del lint.)
  *
  * @param {string} patron
  * @param {string} ruta
@@ -650,32 +979,58 @@ function patronCubre(patron, ruta) {
   if (p === '') return false;
   let re = '';
   // Se tokeniza en «dos asteriscos y barra», «dos asteriscos», «un asterisco»,
-  // «interrogante» o tramo literal. El tramo literal se traga la barra que
-  // precede a los dos asteriscos, de modo que VOLUMES/** sale como VOLUMES/.*:
-  // cubre lo que cuelga y no el directorio en si, que es la semantica de Docker.
-  for (const t of p.match(/\*\*\/|\*\*|\*|\?|[^*?]+/g) ?? []) {
+  // «interrogante», CLASE DE CARACTERES o tramo literal. El tramo literal se
+  // traga la barra que precede a los dos asteriscos, de modo que VOLUMES/**
+  // sale como VOLUMES/.*: cubre lo que cuelga y no el directorio en si, que es
+  // la semantica de Docker.
+  //
+  // La clase `[...]` es de Go `filepath.Match`, que es lo que Docker usa. La
+  // primera version la escapaba como literal, asi que un `.dockerignore`
+  // CORRECTO con `VOLUMES/DISK_0[14]` se leia como «no excluye DISK_01» y salia
+  // rojo. Falso positivo sobre configuracion buena, que es la peor clase.
+  for (const t of p.match(/\*\*\/|\*\*|\*|\?|\[!?\]?[^\]]*\]|[^*?[]+/g) ?? []) {
     if (t === '**/') re += '(?:.*/)?';
     else if (t === '**') re += '.*';
     else if (t === '*') re += '[^/]*';
     else if (t === '?') re += '[^/]';
+    else if (t.startsWith('[') && t.endsWith(']')) re += t.startsWith('[!') ? `[^${t.slice(2, -1)}]` : t;
     else re += t.replace(/[.+^${}()|[\]\\]/g, '\\$&');
   }
   return new RegExp('^' + re + '(?:/.*)?$').test(ruta);
 }
 
 /**
- * ¿Una regla de re-inclusión (`!patron`) devuelve al contexto la ruta que había
- * que dejar fuera? Se mira en LAS DOS DIRECCIONES a propósito: `!VOLUMES/DISK_01`
- * la devuelve entera, pero `!VOLUMES/DISK_01/semillas` devuelve un trozo, y un
- * trozo de un disco vivo dentro de la imagen es exactamente el fallo. La primera
- * versión sólo miraba una dirección y el vector del trozo se le escapaba: lo
- * cazó su test, no la lectura.
+ * ¿Queda esta ruta FUERA del contexto de imagen, según las reglas dadas?
  *
- * @param {string} patron sin el `!`
+ * Docker aplica **la última regla que casa**, no «alguna excluye y alguna
+ * re-incluye». La primera version modelaba eso con dos `some()` independientes
+ * y por eso daba falso positivo sobre un `.dockerignore` correcto que pusiera
+ * la re-inclusion ANTES de la exclusion —donde el orden dice que gana la
+ * exclusion—. Se cambia el modelo entero en vez de parchear el sintoma: una
+ * pasada, la ultima que casa manda.
+ *
+ * Se considera que casa tambien la re-inclusion de un TROZO de lo excluido
+ * (`!VOLUMES/DISK_01/semillas`): un trozo de un disco vivo dentro de la imagen
+ * es el mismo fallo que el disco entero.
+ *
+ * @param {string[]} reglas lineas utiles del .dockerignore, en orden
  * @param {string} ruta
+ * @returns {{ fuera: boolean, decide: string|null }}
  */
-function reinclusionAlcanza(patron, ruta) {
-  return patronCubre(patron, ruta) || patronCubre(ruta, patron);
+function quedaFueraDelContexto(reglas, ruta) {
+  let fuera = false;
+  let decide = null;
+  for (const r of reglas) {
+    const niega = r.startsWith('!');
+    const patron = niega ? r.slice(1) : r;
+    const casa = niega
+      ? patronCubre(patron, ruta) || patronCubre(ruta, patron)
+      : patronCubre(patron, ruta);
+    if (!casa) continue;
+    fuera = !niega;
+    decide = r;
+  }
+  return { fuera, decide };
 }
 
 /**
@@ -685,18 +1040,31 @@ function reinclusionAlcanza(patron, ruta) {
  * la segunda puerta ya está vigilada; es exactamente la lección de
  * `sincronia/notas/NOTA-Z-2026-07-26-R7-matriz-migracion-y-loadstartpack.md:71-74`.
  *
+ * Un directorio ILEGIBLE se denuncia, no se traga. La primera versión hacía
+ * `catch { return; }` y seguía como si nada: asimétrico con `recorrerVolumen`,
+ * que denuncia cualquier rareza, y fallo en abierto de manual — «no pude mirar»
+ * saliendo como «no hay nada».
+ *
  * @param {string} raiz
- * @returns {string[]} absolutos
+ * @returns {{ recetas: string[], rarezas: { path: string, detail: string }[] }}
  */
-export function buscarDockerfiles(raiz) {
+export function buscarDockerfiles(raiz, base = raiz) {
   /** @type {string[]} */
-  const out = [];
+  const recetas = [];
+  /** @type {{ path: string, detail: string }[]} */
+  const rarezas = [];
   /** @param {string} d */
   const anda = (d) => {
     let entradas;
     try {
       entradas = fs.readdirSync(d, { withFileTypes: true });
-    } catch {
+    } catch (e) {
+      rarezas.push({
+        path: rel(base, d),
+        detail:
+          `directorio ilegible durante la búsqueda de recetas de imagen (${e.code ?? e.message}): ` +
+          'no se puede afirmar que no haya un Dockerfile dentro'
+      });
       return;
     }
     for (const e of entradas.sort((a, b) => a.name.localeCompare(b.name))) {
@@ -711,12 +1079,12 @@ export function buscarDockerfiles(raiz) {
         /^(?:dockerfile|containerfile)(?:\..+)?$/i.test(e.name) ||
         /\.(?:dockerfile|containerfile)$/i.test(e.name)
       ) {
-        out.push(abs);
+        recetas.push(abs);
       }
     }
   };
   anda(raiz);
-  return out;
+  return { recetas, rarezas };
 }
 
 /**
@@ -725,6 +1093,11 @@ export function buscarDockerfiles(raiz) {
  */
 export function scanContextoImagen(opts = {}) {
   const raiz = opts.repoRoot ?? RAIZ;
+  // `base` es contra QUE se imprimen las rutas; `raiz` es donde vive el repo.
+  // Separarlos es lo que permite apuntar `--root` a un arbol de operador sin que
+  // el informe salga en `../../../` ni el censo busque el contrato de lectura
+  // dentro de los datos del operador.
+  const base = opts.baseInforme ?? raiz;
   const patrones = opts.patrones ?? PATRONES_IDENTIDAD;
   /** @type {Ofensa[]} */
   const ofensas = [];
@@ -732,11 +1105,13 @@ export function scanContextoImagen(opts = {}) {
     ofensas.push({ rule: 'contexto-imagen', path: 'scripts/gates/exceptions.mjs', detail: detalle });
   }
 
-  for (const abs of buscarDockerfiles(raiz)) {
-    const relDockerfile = rel(raiz, abs);
+  const { recetas, rarezas } = buscarDockerfiles(raiz, base);
+  for (const r of rarezas) ofensas.push({ rule: 'contexto-imagen', path: r.path, detail: r.detail });
+
+  for (const abs of recetas) {
+    const relDockerfile = rel(base, abs);
     // (a) identidad escrita DENTRO del Dockerfile (ENV/ARG con valor).
-    const texto = fs.readFileSync(abs).toString('latin1');
-    for (const h of hallazgosEnTexto(texto, patrones)) {
+    for (const h of hallazgosEnFichero(abs, patrones)) {
       ofensas.push({
         rule: 'contexto-imagen',
         path: relDockerfile,
@@ -745,46 +1120,59 @@ export function scanContextoImagen(opts = {}) {
       });
     }
 
-    // (b) la SEGUNDA PUERTA. Contexto asumido = el directorio del Dockerfile,
-    //     que es el convenio por defecto. Un build lanzado con otro contexto no
-    //     lo ve este gate: límite declarado en la cabecera (punto 4).
-    const dirContexto = path.dirname(abs);
-    const di = path.join(dirContexto, '.dockerignore');
-    const relDi = rel(raiz, di);
-    if (!fs.existsSync(di)) {
-      ofensas.push({
-        rule: 'contexto-imagen',
-        path: relDockerfile,
-        detail:
-          `no hay .dockerignore en el contexto (${relDi}): sin él el contexto es el árbol entero, ` +
-          '.env y los DISK vivos incluidos. «El .dockerignore es la segunda puerta y es la que falla» (NOTA-Z R7:73)'
-      });
-      continue;
-    }
-    const lineas = fs.readFileSync(di, 'utf8').split('\n');
-    const reglas = lineas.map((l) => l.trim()).filter((l) => l !== '' && !l.startsWith('#'));
-    if (reglas.length === 0) {
-      ofensas.push({
-        rule: 'contexto-imagen',
-        path: relDi,
-        detail: '.dockerignore presente pero SIN reglas: la puerta está puesta y abierta (CA3 · hostil-omite)'
-      });
-      continue;
-    }
-    for (const { ruta, porque } of RUTAS_FUERA_DEL_CONTEXTO) {
-      const excluye = reglas.some((r) => !r.startsWith('!') && patronCubre(r, ruta));
-      const reincluye = reglas.some((r) => r.startsWith('!') && reinclusionAlcanza(r.slice(1), ruta));
-      if (!excluye) {
+    // (b) la SEGUNDA PUERTA.
+    //
+    // EL CONTEXTO NO SE PUEDE ADIVINAR: lo fija quien lanza `docker build`, y
+    // el `.dockerignore` que Docker lee es el del CONTEXTO, no el de al lado
+    // del Dockerfile. La primera versión asumía «el directorio del Dockerfile»
+    // y con eso certificaba VERDE un `ops/.dockerignore` que un
+    // `docker build -f ops/Dockerfile .` ni abriría. «No mira» y «mira el
+    // fichero equivocado y dice OK» no son lo mismo, y lo segundo es peor.
+    //
+    // Se exige por tanto que TODO contexto plausible esté cerrado: el
+    // directorio de la receta y la raíz del repo. Un contexto que no sea
+    // ninguno de los dos sigue sin modelarse, y sigue declarado.
+    const candidatos = [...new Set([path.dirname(abs), raiz])];
+    for (const dirContexto of candidatos) {
+      const di = path.join(dirContexto, '.dockerignore');
+      const relDi = rel(base, di);
+      const comoSeLanza =
+        dirContexto === raiz
+          ? `docker build -f ${relDockerfile} .` // contexto = raíz
+          : `docker build ${rel(base, dirContexto)}`; // contexto = dir de la receta
+      if (!fs.existsSync(di)) {
         ofensas.push({
           rule: 'contexto-imagen',
-          path: relDi,
-          detail: `no excluye \`${ruta}\` del contexto de imagen — ${porque}`
+          path: relDockerfile,
+          detail:
+            `no hay .dockerignore en un contexto plausible (${relDi}, el de \`${comoSeLanza}\`): ` +
+            'sin él el contexto es el árbol entero, .env y los DISK vivos incluidos. ' +
+            '«El .dockerignore es la segunda puerta y es la que falla» (NOTA-Z R7:73)'
         });
-      } else if (reincluye) {
+        continue;
+      }
+      const reglas = fs
+        .readFileSync(di, 'utf8')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l !== '' && !l.startsWith('#'));
+      if (reglas.length === 0) {
         ofensas.push({
           rule: 'contexto-imagen',
           path: relDi,
-          detail: `excluye \`${ruta}\` y luego la RE-INCLUYE con \`!\`: la última gana y vuelve al contexto — ${porque}`
+          detail: '.dockerignore presente pero SIN reglas: la puerta está puesta y abierta (CA3 · hostil-omite)'
+        });
+        continue;
+      }
+      for (const { ruta, porque } of RUTAS_FUERA_DEL_CONTEXTO) {
+        const { fuera, decide } = quedaFueraDelContexto(reglas, ruta);
+        if (fuera) continue;
+        ofensas.push({
+          rule: 'contexto-imagen',
+          path: relDi,
+          detail: decide
+            ? `deja \`${ruta}\` DENTRO del contexto de imagen: la última regla que casa es \`${decide}\` — ${porque}`
+            : `no excluye \`${ruta}\` del contexto de imagen — ${porque}`
         });
       }
     }
@@ -793,9 +1181,20 @@ export function scanContextoImagen(opts = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// CLI del censo (CA2): `node scripts/gates/claves.mjs --censo [--root <ruta>]`
-// El gate en sí va por `npm run gates` (runAllGates); esto sólo IMPRIME la
-// lista, que es lo que CA2 pide entregar.
+// CLI. El gate del repo va por `npm run gates` (runAllGates); esto es para
+// apuntar a un root de operador, que es donde vive el árbol de datos VIVO.
+//
+//   --censo    [--root <ruta>]   CA2: qué exige cada volumen para ser leído
+//   --barrido  [--root <ruta>]   CA1: identidad DENTRO del árbol de datos
+//   --root <ruta>                sin más banderas, hace los dos
+//
+// POR QUÉ EXISTE `--barrido`. La primera versión sólo cableaba `--root` al
+// censo, y el censo es CA2. O sea que la mitigación que este mismo módulo y el
+// `VOLUMES/README.md` le ofrecían al operador para cerrar el límite grande
+// —«apúntalo a tu root»— respondía VERDE sobre un root con una clave sembrada,
+// porque el barrido de CONTENIDO no tenía CLI ninguno. Un límite declarado
+// sobre una mitigación que no existe no es un límite declarado: es un falso
+// verde con documentación.
 // ---------------------------------------------------------------------------
 
 /** @param {ReturnType<typeof censarVolumenes>} censo */
@@ -811,6 +1210,12 @@ export function formatearCenso(censo) {
   if (censo.envsDeCodigo.length === 0) out.push('  (ninguno)');
   for (const e of censo.envsDeCodigo) {
     out.push(`  ${e.name} — ${e.clase} — ${e.path}:${e.line}`);
+  }
+  if (!censo.enumerable) {
+    out.push(
+      '  ⚠ hay lectura DINÁMICA de entorno: esta superficie NO es enumerable leyendo el código.',
+      '    La clave la decide el manifiesto, así que lo que acota de verdad es la tabla de arriba.'
+    );
   }
   out.push('');
   out.push(
@@ -828,14 +1233,63 @@ export function formatearCenso(censo) {
   return out.join('\n');
 }
 
+const USO = [
+  'uso:',
+  '  node scripts/gates/claves.mjs --censo   [--root <ruta a un arbol VOLUMES>]',
+  '  node scripts/gates/claves.mjs --barrido [--root <ruta a un arbol VOLUMES>]',
+  '  node scripts/gates/claves.mjs --root <ruta>          (censo + barrido)',
+  '',
+  'salida: 0 limpio · 1 hay hallazgos o problemas · 2 error de uso'
+].join('\n');
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const iRoot = args.indexOf('--root');
-  const opts = iRoot >= 0 ? { volumesDir: path.resolve(args[iRoot + 1]) } : {};
-  if (args.includes('--censo')) {
-    console.log(formatearCenso(censarVolumenes(opts)));
-  } else {
-    console.log('uso: node scripts/gates/claves.mjs --censo [--root <ruta a un arbol VOLUMES>]');
+  let opts = {};
+  if (iRoot >= 0) {
+    const valor = args[iRoot + 1];
+    // `--root` sin valor lanzaba un TypeError de `path.resolve(undefined)`. Un
+    // error de uso se contesta con el uso, no con una traza.
+    if (!valor || valor.startsWith('--')) {
+      console.error('error: `--root` necesita una ruta.\n');
+      console.error(USO);
+      process.exit(2);
+    }
+    const volumesDir = path.resolve(valor);
+    if (!fs.existsSync(volumesDir)) {
+      console.error(`error: la ruta de --root no existe: ${volumesDir}\n`);
+      console.error(USO);
+      process.exit(2);
+    }
+    // `repoRoot` pasa a ser el propio root: así las rutas del informe salen
+    // relativas a lo que el operador apuntó y no como `../../../…`.
+    opts = { volumesDir, repoRoot: volumesDir };
+  }
+
+  const quiereCenso = args.includes('--censo');
+  const quiereBarrido = args.includes('--barrido');
+  const ambos = !quiereCenso && !quiereBarrido && iRoot >= 0;
+  if (!quiereCenso && !quiereBarrido && !ambos) {
+    console.log(USO);
     process.exit(2);
   }
+
+  let sucio = false;
+  if (quiereCenso || ambos) {
+    const censo = censarVolumenes(opts);
+    console.log(formatearCenso(censo));
+    if (censo.problemas.length > 0 || censo.filas.some((f) => f.identidades.length > 0)) sucio = true;
+  }
+  if (quiereBarrido || ambos) {
+    if (quiereCenso || ambos) console.log('');
+    // `repoRoot` se ajusta arriba, así que el barrido mira el root apuntado y
+    // no `<root>/VOLUMES`: un root de operador YA es el árbol de volúmenes.
+    const ofensas = scanClaveEnVolumen(opts);
+    console.log(`barrido de identidad: ${ofensas.length === 0 ? 'limpio (0 hallazgos)' : `${ofensas.length} hallazgo(s)`}`);
+    for (const o of ofensas) {
+      console.log(`  ${o.path}${o.line != null ? `:${o.line}` : ''} — ${o.detail}`);
+    }
+    if (ofensas.length > 0) sucio = true;
+  }
+  process.exit(sucio ? 1 : 0);
 }

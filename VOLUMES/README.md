@@ -79,16 +79,28 @@ Lo vigila `scripts/gates/claves.mjs`, que entra en `npm run gates`. Barre
 excepciones**: una entrada en `scripts/gates/exceptions.mjs` que nombre una de
 sus reglas es ella misma una ofensa.
 
-El censo de qué exige cada volumen para ser leído:
+Dos comprobaciones, y hacen cosas distintas:
 
 ```
-node scripts/gates/claves.mjs --censo               # este árbol
-node scripts/gates/claves.mjs --censo --root <ruta> # un root de operador
+node scripts/gates/claves.mjs --censo     # qué EXIGE cada volumen para ser leído
+node scripts/gates/claves.mjs --barrido   # si hay una identidad DENTRO de los datos
 ```
 
-Lo que el gate **no** ve, dicho aquí para que nadie lo suponga: el root vivo
-apuntado por `ZEUS_VOLUMES_ROOT` (fuera del monorepo — hay que pasarle
-`--root`), el historial de git, y cualquier secreto cifrado o comprimido.
+Sobre un root propio —que es donde viven los datos de verdad— añade `--root`;
+sin banderas hace las dos:
+
+```
+node scripts/gates/claves.mjs --root /ruta/a/tu/VOLUMES
+```
+
+Sale `0` si está limpio, `1` si hay hallazgos, `2` si te equivocaste al
+invocarlo.
+
+Lo que el gate **no** ve, dicho aquí para que nadie lo suponga: el root vivo si
+no se lo apuntas con `--root` (por defecto sólo mira este árbol del repo), el
+historial de git, un `.env` que alguien trackee a la fuerza, y cualquier secreto
+cifrado, comprimido o en UTF-16. Tres formas de valor —arrays JSON, YAML de
+bloque y `ENV CLAVE valor` sin `=`— tampoco: están abiertas como **WP-U269**.
 
 ## Read API
 
