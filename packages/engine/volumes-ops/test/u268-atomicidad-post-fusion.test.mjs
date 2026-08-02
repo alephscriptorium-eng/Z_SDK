@@ -409,6 +409,13 @@ test('CA-3 control · sin bloqueo, el staging se retira y el resultado lo dice',
   try {
     const res = importPack({ packRoot, role: 'operator', actorId: 'op-1' });
     assert.equal(res.ok, true, JSON.stringify(res).slice(0, 300));
+    assert.deepEqual(res.ledger.volumes, ['demo'], 'el asiento nombra los volúmenes');
+    assert.equal(res.ledger.manifestSha256.after, res.manifestSha256);
+    assert.deepEqual(
+      res.steps.map((s) => s.step),
+      ['verificar', 'familia', 'staging', 'validar', 'fusionar', 'sellar', 'no-link'],
+      'el orden del parte no cambia aunque `sellar` se anote detrás del asiento'
+    );
     assert.equal(res.staging.eliminado, true);
     assert.equal(res.staging.causa, null);
     assert.equal(fs.existsSync(res.staging.dir), false, 'el staging nunca sobrevive (contrato §1)');
@@ -605,6 +612,19 @@ test('E5 · ancla viva en el resultado → post-fusion/symlink_en_resultado, dic
       c.findings.some((f) => f.kind === 'enlace_vivo'),
       JSON.stringify(c.findings)
     );
+    // Y la recuperación se EJECUTA, no se observa: retirada el ancla que la
+    // respuesta enumera, el cerco deja de verla y el root queda íntegro.
+    for (const rel of res.recuperacion.rutas) {
+      fs.rmSync(path.join(root, 'DISK_07', 'DEMO', rel.split('/').join(path.sep)), {
+        recursive: true,
+        force: true
+      });
+    }
+    assert.deepEqual(
+      scanRootCerco({ root }).findings.filter((f) => f.kind === 'enlace_vivo'),
+      []
+    );
+    assert.equal(verifyRootIntegrity().ok, true);
   } finally {
     limpia();
     restore();
@@ -656,6 +676,187 @@ test('E6 · SELLAR lanzando → se REVIERTE: el root vuelve byte a byte y el imp
   }
 });
 
+// ── §3b · B1 · EL SELLO SE MUEVE ANTES DE QUE `sealManifest` DEVUELVA ───────
+//
+// `manifest.mjs:72-77` escribe en (b) y hashea en (d). La primera versión de
+// este WP revertía en cuanto SELLAR lanzaba, **suponiendo** el manifiesto
+// intacto; en la subventana entre (b) y (d) esa suposición es falsa y el revert
+// devolvía el corpus al staging, donde el `finally` lo BORRABA. Los dos casos
+// van aquí porque son el defecto que la contrarrevisión encontró, no un extra.
+
+test('B1 · escritura COMPLETA y fallo después → NO se revierte, y el corpus SIGUE en destino', async () => {
+  const inestable = escribeManifiestoInestable('completa');
+  const mutante = await cargaMutante([], { 'manifest.mjs': inestable.url });
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  try {
+    const selloAntes = selloDe(root);
+    let lanzo = null;
+    let res = null;
+    try {
+      res = mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+    } catch (err) {
+      lanzo = err;
+    }
+    assert.equal(lanzo, null, 'sigue sin escaparse como excepción');
+    assert.equal(res.step, 'post-fusion');
+    assert.equal(res.error, 'sello_sin_confirmar');
+    // Lo que la versión anterior decía al revés:
+    assert.equal(res.aterrizado, true, 'el corpus aterrizó y se DICE');
+    assert.equal(aterrizo(root), true, 'y sigue en destino: NO se revirtió');
+    assert.notEqual(res.sellado.after, null, 'el sello se midió, no se supuso');
+    assert.equal(res.sellado.before, selloAntes);
+    assert.notEqual(res.sellado.after, selloAntes, 'y CAMBIÓ');
+    assert.equal(res.sellado.after, selloDe(root), 'el sello declarado es el que hay en disco');
+    assert.equal(res.asiento, false);
+    assert.equal(res.causa.code, 'EIO');
+    // Recuperación EJECUTABLE, y es la misma que E1 porque el estado es el mismo.
+    assert.equal(res.recuperacion.via, 'appendOpsLedger');
+    assert.equal(res.recuperacion.entrada.manifestSha256.after, selloDe(root));
+    assert.deepEqual(res.recuperacion.entrada.volumes, ['demo']);
+    assert.equal(verifyRootIntegrity().ok, false);
+    appendOpsLedger(res.recuperacion.entrada, { ledgerPath: res.recuperacion.ledgerPath });
+    const v = verifyRootIntegrity();
+    assert.equal(v.ok, true, JSON.stringify(v.findings));
+  } finally {
+    limpia();
+    restore();
+    mutante.limpia();
+    inestable.limpia();
+  }
+});
+
+test('B1 · escritura TRUNCADA (disco lleno) → manifiesto_a_medias, y tampoco se borran los datos', async () => {
+  const inestable = escribeManifiestoInestable('trunca');
+  const mutante = await cargaMutante([], { 'manifest.mjs': inestable.url });
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  try {
+    const selloAntes = selloDe(root);
+    const res = mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+    assert.equal(res.step, 'post-fusion');
+    assert.equal(res.error, 'manifiesto_a_medias');
+    assert.equal(res.aterrizado, true);
+    assert.equal(aterrizo(root), true, 'el corpus sigue en destino: revertir lo habría borrado');
+    assert.notEqual(res.sellado.after, selloAntes);
+    assert.equal(res.asiento, false);
+    assert.equal(res.causa.code, 'ENOSPC');
+    assert.equal(res.recuperacion.via, 'operador');
+    assert.deepEqual(res.recuperacion.volumenesEnDestino, [{ id: 'demo', path: 'DISK_07/DEMO' }]);
+    // El manifiesto está roto de verdad: no se finge que se puede seguir.
+    assert.throws(() => JSON.parse(fs.readFileSync(rutaManifiesto(root), 'utf8')));
+  } finally {
+    limpia();
+    restore();
+    mutante.limpia();
+    inestable.limpia();
+  }
+});
+
+test('B1 censo · sin la pregunta por el sello, el revert vuelve y BORRA el corpus', async () => {
+  // Amputación exacta: se sustituye la comprobación por la suposición anterior
+  // («si sealManifest lanzó, el sello está intacto»). Si esta prueba se quedara
+  // verde, la guarda de B1 no estaría sosteniendo nada.
+  const inestable = escribeManifiestoInestable('completa');
+  const mutante = await cargaMutante(
+    {
+      re: /const selloIntacto = vivo !== null && vivo\.sha256 === sealBefore\.sha256;/g,
+      con: 'const selloIntacto = true;',
+      veces: 1
+    },
+    { 'manifest.mjs': inestable.url }
+  );
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  try {
+    const res = mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+    assert.equal(res.error, 'sellar_interrumpido', 'vuelve a la salida de la versión anterior');
+    assert.equal(res.aterrizado, false, 'y vuelve a declararlo al revés…');
+    assert.equal(res.sellado, null);
+    assert.equal(aterrizo(root), false, '…mientras BORRA el corpus del usuario');
+    const v = verifyRootIntegrity();
+    assert.equal(v.ok, false);
+    assert.ok(
+      v.findings.some((f) => f.error === 'volumen_ausente'),
+      `el manifiesto declara un volumen cuyos ficheros ya no existen: ${JSON.stringify(v.findings)}`
+    );
+  } finally {
+    limpia();
+    restore();
+    mutante.limpia();
+    inestable.limpia();
+  }
+});
+
+/**
+ * Sustituto de `fusion-guard.mjs` cuyo `deshacerFusion` deja el PRIMER
+ * movimiento sin deshacer y lo declara. Es la forma exacta que produce el
+ * módulo real cuando un rename de vuelta falla — conducta ya probada con un
+ * fallo REAL en `fusion-guard.test.mjs:721-723`. Lo que se ejercita aquí es la
+ * otra mitad: la TRADUCCIÓN de ese inventario al contrato de `importPack`, que
+ * es la rama que sostiene el argumento «un rollback que puede fallar exige
+ * declarar el medio-aterrizaje igual». No hay vector portable para hacer
+ * fracasar un rename de vuelta desde dentro de `importPack` (declarado).
+ */
+function escribeFusionParcial() {
+  const abs = path.join(AQUI, `.fusion-parcial-${process.pid}-${semillaMutante++}.mjs`);
+  fs.writeFileSync(
+    abs,
+    `import { deshacerFusion as deshacerDeVerdad } from ${JSON.stringify(urlSrc('fusion-guard.mjs'))};
+export * from ${JSON.stringify(urlSrc('fusion-guard.mjs'))};
+export function deshacerFusion(aplicados) {
+  const r = deshacerDeVerdad(aplicados.slice(1));
+  return {
+    deshechos: r.deshechos,
+    sinDeshacer: [
+      ...r.sinDeshacer,
+      {
+        to: aplicados[0].to,
+        from: aplicados[0].from,
+        causa: { name: 'Error', code: 'EPERM', syscall: 'rename', message: 'inyectado' }
+      }
+    ]
+  };
+}
+`,
+    'utf8'
+  );
+  return { url: pathToFileURL(abs).href, limpia: () => fs.rmSync(abs, { force: true }) };
+}
+
+test('E6b · revert que NO consigue deshacerlo todo → aterrizado:true y recuperación de operador', async (t) => {
+  if (!vectorDisponible('escritura')) {
+    t.skip('este entorno no sabe hacer un fichero no escribible (¿superusuario?)');
+    return;
+  }
+  const parcial = escribeFusionParcial();
+  const mutante = await cargaMutante([], { 'fusion-guard.mjs': parcial.url });
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  const manifiesto = rutaManifiesto(root);
+  try {
+    bloqueaEscritura(manifiesto);
+    const res = mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+    assert.equal(res.step, 'sellar');
+    assert.equal(res.error, 'sellar_interrumpido');
+    // La rama que faltaba por cubrir, y es la que sostiene la razón #1 de la
+    // decisión: cuando el rollback no llega, se DICE que aterrizó.
+    assert.equal(res.aterrizado, true);
+    assert.equal(res.revertido.sinDeshacer.length, 1);
+    assert.equal(res.revertido.sinDeshacer[0].causa.code, 'EPERM');
+    assert.equal(res.recuperacion.via, 'operador');
+    assert.deepEqual(res.recuperacion.rutas, [path.join(root, 'DISK_07', 'DEMO')]);
+    // Y el disco le da la razón al parte: lo no deshecho sigue en destino.
+    assert.equal(aterrizo(root), true);
+  } finally {
+    sueltaEscritura(manifiesto);
+    limpia();
+    restore();
+    mutante.limpia();
+    parcial.limpia();
+  }
+});
+
 // ── §4 · Las recuperaciones, EJECUTADAS ────────────────────────────────────
 
 test('CA-2 · recuperación del asiento: apendar la entrada devuelta hace arrancar el root', (t) => {
@@ -675,6 +876,11 @@ test('CA-2 · recuperación del asiento: apendar la entrada devuelta hace arranc
     assert.equal(res.recuperacion.ledgerPath, ledger);
     assert.equal(res.recuperacion.entrada.kind, 'import_pack');
     assert.equal(res.recuperacion.entrada.manifestSha256.after, selloDe(root));
+    assert.equal(res.recuperacion.entrada.manifestSha256.before, res.sellado.before);
+    // El asiento debe nombrar los volúmenes: un `volumes: []` pasaba antes.
+    assert.deepEqual(res.recuperacion.entrada.volumes, ['demo']);
+    assert.equal(res.recuperacion.entrada.role, 'operator');
+    assert.equal(res.recuperacion.entrada.pack.packHash.length, 64);
     assert.equal(verifyRootIntegrity().ok, false);
 
     // La recuperación es EJECUTABLE, no un consejo: la entrada exacta viaja.
@@ -751,31 +957,42 @@ test('CA-2 · recuperación de la inspección: recuperado el permiso, la pregunt
 // ── §5 · CENSO DE MUTACIÓN ─────────────────────────────────────────────────
 
 /**
- * Construye un `import.mjs` MUTANTE con UNA amputación. Una por prueba y no
- * todas a la vez, a propósito: la regla es que un negativo no está verificado
- * hasta que se desactiva **su** guardián y se comprueba que enrojece; con las
- * amputaciones mezcladas no se sabría cuál sostiene cuál.
+ * Construye un `import.mjs` MUTANTE. Normalmente con UNA amputación —la regla es
+ * que un negativo no está verificado hasta que se desactiva **su** guardián y se
+ * comprueba que enrojece, y con las amputaciones mezcladas no se sabría cuál
+ * sostiene cuál—; cuando hacen falta dos se dice y se dice por qué.
+ *
+ * `redirige` cambia el MÓDULO al que apunta un `import` relativo, sin tocar una
+ * sola línea de la lógica de `import.mjs`. Es lo que permite ejercitar el
+ * `catch` de SELLAR con un `sealManifest` que falla como falla un disco lleno:
+ * el código bajo prueba queda **idéntico al que se entrega**, y lo sustituido es
+ * la pieza que no se puede reventar de verdad en una suite portable.
  *
  * El mutante se escribe DENTRO de `test/` para que sus especificadores desnudos
  * (`@zeus/…`) sigan resolviendo por la cadena del paquete; los relativos se
  * reescriben a URL absoluta de `src/`, así que usa los MISMOS módulos que el
  * original. Lee del DISCO: corriendo esto contra una base sin las guardas, la
  * prueba enrojece por no encontrar qué amputar, que también es información.
- * @param {{re:RegExp, con:string, veces:number}} amputacion
+ *
+ * @param {{re:RegExp, con:string, veces:number}|{re:RegExp, con:string, veces:number}[]} amputaciones
+ * @param {Record<string,string>} [redirige] — `'manifest.mjs' → <url del sustituto>`
  */
 let semillaMutante = 0;
-async function cargaMutante(amputacion) {
+async function cargaMutante(amputaciones = [], redirige = {}) {
+  const lista = Array.isArray(amputaciones) ? amputaciones : [amputaciones];
   let mutada = fs.readFileSync(path.join(SRC, 'import.mjs'), 'utf8');
-  const casados = mutada.match(amputacion.re);
-  assert.equal(
-    casados ? casados.length : 0,
-    amputacion.veces,
-    `la amputación ${amputacion.re} debía tocar ${amputacion.veces} sitio(s)`
-  );
-  mutada = mutada.replace(amputacion.re, amputacion.con);
+  for (const amputacion of lista) {
+    const casados = mutada.match(amputacion.re);
+    assert.equal(
+      casados ? casados.length : 0,
+      amputacion.veces,
+      `la amputación ${amputacion.re} debía tocar ${amputacion.veces} sitio(s)`
+    );
+    mutada = mutada.replace(amputacion.re, amputacion.con);
+  }
   mutada = mutada.replace(
     / from '\.\/([^']+)'/g,
-    (_, f) => ` from ${JSON.stringify(pathToFileURL(path.join(SRC, f)).href)}`
+    (_, f) => ` from ${JSON.stringify(redirige[f] ?? pathToFileURL(path.join(SRC, f)).href)}`
   );
   const abs = path.join(AQUI, `.mutante-u268-${process.pid}-${semillaMutante++}.mjs`);
   fs.writeFileSync(abs, mutada, 'utf8');
@@ -788,19 +1005,146 @@ async function cargaMutante(amputacion) {
   }
 }
 
-/** `throw err;` al principio del `catch`: devuelve el tramo a salir LANZANDO. */
+const urlSrc = (f) => pathToFileURL(path.join(SRC, f)).href;
+
+/**
+ * Sustituto de `manifest.mjs` que reproduce el ESTADO EN DISCO de los dos fallos
+ * que dejan el sello movido y hacen lanzar a `sealManifest`
+ * (`manifest.mjs:72-77` escribe en (b) y hashea en (d)):
+ *  - `trunca`: `writeFileSync` trunca al abrir y muere a media escritura —
+ *    disco lleno. El manifiesto queda TRUNCADO y sealManifest lanza `ENOSPC`;
+ *  - `completa`: la escritura termina (se usa el sellador REAL, así que los
+ *    bytes son exactamente los suyos) y el fallo llega después, donde el hash.
+ * Todo lo demás del módulo se re-exporta sin tocar.
+ * @param {'trunca'|'completa'} modo
+ */
+function escribeManifiestoInestable(modo) {
+  const abs = path.join(AQUI, `.manifiesto-inestable-${process.pid}-${semillaMutante++}.mjs`);
+  fs.writeFileSync(
+    abs,
+    `import fs from 'node:fs';
+import { sealManifest as sellarDeVerdad, resolveManifestPath } from ${JSON.stringify(urlSrc('manifest.mjs'))};
+export * from ${JSON.stringify(urlSrc('manifest.mjs'))};
+export function sealManifest(config) {
+  if (${JSON.stringify(modo)} === 'trunca') {
+    fs.writeFileSync(resolveManifestPath(), \`\${JSON.stringify(config, null, 2)}\\n\`.slice(0, 40), 'utf8');
+    const e = new Error('ENOSPC: no space left on device, write');
+    e.code = 'ENOSPC';
+    e.syscall = 'write';
+    throw e;
+  }
+  sellarDeVerdad(config);
+  const e = new Error('EIO: i/o error, read');
+  e.code = 'EIO';
+  e.syscall = 'read';
+  throw e;
+}
+`,
+    'utf8'
+  );
+  return { url: pathToFileURL(abs).href, limpia: () => fs.rmSync(abs, { force: true }) };
+}
+
+/** `throw err;` al principio del `catch`: desactiva ESE tramo con nombre. */
 const relanza = (codigo) => ({
   re: new RegExp(`return trasFusion\\('${codigo}'`, 'g'),
   con: `throw err; return trasFusion('${codigo}'`,
   veces: 1
 });
+/** La red de última línea, desactivada. */
+const SIN_RED = relanza('post_sello_interrumpido');
 
-test('CENSO · sin el envoltorio del asiento, vuelve a LANZAR con el root ya sellado', async (t) => {
+/**
+ * Amputado un envoltorio con nombre, la red de abajo lo recoge: el fallo ya no
+ * se escapa, pero **pierde su código y su recuperación**, que es exactamente lo
+ * que ese envoltorio compra. Se comprueba las dos cosas: que el código
+ * específico desaparece y que la red da el genérico.
+ */
+async function censoDeEnvoltorio({ codigo, prepara, suelta, conVolumen = false }) {
+  const mutante = await cargaMutante(relanza(codigo));
+  const s = conVolumen ? setupRootConVolumen() : setupRoot();
+  const { packRoot, limpia } = buildPack();
+  try {
+    prepara(s.root);
+    const res = mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+    assert.equal(res.ok, false);
+    assert.notEqual(
+      res.error,
+      codigo,
+      `amputado el envoltorio, ${codigo} NO puede seguir saliendo`
+    );
+    assert.equal(res.error, 'post_sello_interrumpido', 'lo recoge la red, sin nombre propio');
+    assert.equal(res.aterrizado, true);
+    return { res, root: s.root };
+  } finally {
+    suelta?.(s.root);
+    limpia();
+    s.restore();
+    mutante.limpia();
+  }
+}
+
+test('CENSO · sin el envoltorio del asiento, se pierde el código y la nota propios', async (t) => {
   if (!vectorDisponible('escritura')) {
     t.skip('este entorno no sabe hacer un fichero no escribible (¿superusuario?)');
     return;
   }
-  const mutante = await cargaMutante(relanza('asiento_no_escribible'));
+  await censoDeEnvoltorio({
+    codigo: 'asiento_no_escribible',
+    prepara: (root) => {
+      fs.writeFileSync(rutaLedger(root), '', 'utf8');
+      bloqueaEscritura(rutaLedger(root));
+    },
+    suelta: (root) => sueltaEscritura(rutaLedger(root))
+  });
+});
+
+test('CENSO · sin el envoltorio de los contadores, se pierde su código', async (t) => {
+  if (!vectorDisponible('escritura')) {
+    t.skip('este entorno no sabe hacer un fichero no escribible (¿superusuario?)');
+    return;
+  }
+  await censoDeEnvoltorio({
+    codigo: 'estado_no_escribible',
+    prepara: (root) => {
+      fs.writeFileSync(
+        rutaEstado(root),
+        `${JSON.stringify({ version: 1, volumes: {} }, null, 2)}\n`,
+        'utf8'
+      );
+      bloqueaEscritura(rutaEstado(root));
+    },
+    suelta: (root) => sueltaEscritura(rutaEstado(root))
+  });
+});
+
+test('CENSO · sin el envoltorio de NO-LINK, se pierde su código', async (t) => {
+  if (!vectorDisponible('listado')) {
+    t.skip('este entorno no sabe denegar el listado de un directorio (¿superusuario?)');
+    return;
+  }
+  const opacoDe = (root) => path.join(root, 'DISK_07', 'DEMO', 'opaco');
+  await censoDeEnvoltorio({
+    codigo: 'resultado_no_inspeccionable',
+    conVolumen: true,
+    prepara: (root) => {
+      fs.mkdirSync(opacoDe(root), { recursive: true });
+      fs.writeFileSync(path.join(opacoDe(root), 'x.txt'), 'x', 'utf8');
+      bloqueaListado(opacoDe(root));
+    },
+    suelta: (root) => sueltaListado(opacoDe(root))
+  });
+});
+
+test('CENSO · sin la RED y sin el envoltorio, la excepción vuelve a ESCAPARSE (conducta de la base)', async (t) => {
+  if (!vectorDisponible('escritura')) {
+    t.skip('este entorno no sabe hacer un fichero no escribible (¿superusuario?)');
+    return;
+  }
+  // Dos amputaciones a la vez, y se dice por qué: la promesa «ninguna excepción
+  // escapa de la zona posterior a FUSIONAR» la sostienen ENTRE LOS DOS, así que
+  // el negativo de esa frase exige quitar los dos. Con uno solo, el otro tapa.
+  const mutante = await cargaMutante([SIN_RED, relanza('asiento_no_escribible')]);
   const { root, restore } = setupRoot();
   const { packRoot, limpia } = buildPack();
   const ledger = rutaLedger(root);
@@ -814,7 +1158,7 @@ test('CENSO · sin el envoltorio del asiento, vuelve a LANZAR con el root ya sel
     } catch (err) {
       lanzo = err;
     }
-    assert.ok(lanzo, 'sin el envoltorio DEBE volver a lanzar');
+    assert.ok(lanzo, 'sin red ni envoltorio DEBE volver a lanzar');
     assert.equal(lanzo.code, 'EPERM');
     assert.notEqual(huellaArbol(root), antes, 'y con el root ya mutado');
     assert.equal(aterrizo(root), true);
@@ -827,58 +1171,39 @@ test('CENSO · sin el envoltorio del asiento, vuelve a LANZAR con el root ya sel
   }
 });
 
-test('CENSO · sin el envoltorio de los contadores, vuelve a LANZAR', async (t) => {
-  if (!vectorDisponible('escritura')) {
-    t.skip('este entorno no sabe hacer un fichero no escribible (¿superusuario?)');
-    return;
-  }
-  const mutante = await cargaMutante(relanza('estado_no_escribible'));
+test('B2 · un fallo en el hueco sello↔asiento sale por la RED, no como excepción', async () => {
+  // El hueco exacto que señaló la contrarrevisión: el `steps.push` de `sellar`
+  // corría sin envolver entre el sello y el asiento. Se le inyecta un fallo ahí
+  // —no hay vector natural para que un `.map` reviente— y se exige que salga por
+  // el contrato con el asiento YA escrito.
+  // El ancla evita saltos de línea: `src/` está en CRLF y un patrón con `\n`
+  // no casaría (lo aprendimos enrojeciendo, no razonándolo).
+  const mutante = await cargaMutante({
+    re: / {8}step: 'sellar',/g,
+    con: "        step: (() => { const e = new Error('inyectado en el hueco'); e.code = 'ETEST'; throw e; })(),",
+    veces: 1
+  });
   const { root, restore } = setupRoot();
   const { packRoot, limpia } = buildPack();
-  const estado = rutaEstado(root);
   try {
-    fs.writeFileSync(estado, `${JSON.stringify({ version: 1, volumes: {} }, null, 2)}\n`, 'utf8');
-    bloqueaEscritura(estado);
     let lanzo = null;
+    let res = null;
     try {
-      mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+      res = mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
     } catch (err) {
       lanzo = err;
     }
-    assert.ok(lanzo, 'sin el envoltorio DEBE volver a lanzar');
-    assert.equal(lanzo.code, 'EPERM');
-    assert.equal(aterrizo(root), true);
+    assert.equal(lanzo, null, 'la red impide que se escape');
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'post-fusion');
+    assert.equal(res.error, 'post_sello_interrumpido');
+    assert.equal(res.causa.code, 'ETEST');
+    assert.equal(res.aterrizado, true);
+    // El asiento ya estaba: por eso el root sigue arrancando pese al fallo.
+    assert.equal(res.asiento.kind, 'import_pack');
+    assert.equal(hayAsientoDeImport(root), true);
+    assert.equal(verifyRootIntegrity().ok, true);
   } finally {
-    sueltaEscritura(estado);
-    limpia();
-    restore();
-    mutante.limpia();
-  }
-});
-
-test('CENSO · sin el envoltorio de NO-LINK, vuelve a LANZAR', async (t) => {
-  if (!vectorDisponible('listado')) {
-    t.skip('este entorno no sabe denegar el listado de un directorio (¿superusuario?)');
-    return;
-  }
-  const mutante = await cargaMutante(relanza('resultado_no_inspeccionable'));
-  const { root, restore } = setupRootConVolumen();
-  const { packRoot, limpia } = buildPack();
-  const opaco = path.join(root, 'DISK_07', 'DEMO', 'opaco');
-  try {
-    fs.mkdirSync(opaco, { recursive: true });
-    fs.writeFileSync(path.join(opaco, 'x.txt'), 'x', 'utf8');
-    bloqueaListado(opaco);
-    let lanzo = null;
-    try {
-      mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
-    } catch (err) {
-      lanzo = err;
-    }
-    assert.ok(lanzo, 'sin el envoltorio DEBE volver a lanzar');
-    assert.equal(lanzo.syscall, 'scandir');
-  } finally {
-    sueltaListado(opaco);
     limpia();
     restore();
     mutante.limpia();
@@ -897,8 +1222,8 @@ test('CENSO · restaurado el ORDEN de la base (contadores antes del asiento), el
   // El ancla no lleva salto de línea a propósito: `src/` está en CRLF y un
   // patrón con `\n` no casaría (lo aprendimos enrojeciendo, no razonándolo).
   const mutante = await cargaMutante({
-    re: / {4}let seat;/g,
-    con: '    for (const volId of Object.keys(pack.volumes)) syncVolumeCounters(volId);\n    let seat;',
+    re: / {4}let seat = null;/g,
+    con: '    for (const volId of Object.keys(pack.volumes)) syncVolumeCounters(volId);\n    let seat = null;',
     veces: 1
   });
   const { root, restore } = setupRoot();
@@ -907,16 +1232,21 @@ test('CENSO · restaurado el ORDEN de la base (contadores antes del asiento), el
   try {
     fs.writeFileSync(estado, `${JSON.stringify({ version: 1, volumes: {} }, null, 2)}\n`, 'utf8');
     bloqueaEscritura(estado);
+    const selloAntes = selloDe(root);
     let lanzo = null;
+    let res = null;
     try {
-      mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
+      res = mutante.importPack({ packRoot, role: 'operator', actorId: 'op-1' });
     } catch (err) {
       lanzo = err;
     }
-    assert.ok(lanzo, 'con el orden de la base, el fallo escapa entre el sello y el asiento');
+    // Con el orden de la base el fallo cae ENTRE el sello y el asiento. La red
+    // de última línea impide que se escape —por eso ya no se exige «lanza»—,
+    // pero lo que el REORDEN compraba se pierde igual, y eso es lo que se mide.
+    assert.ok(lanzo || res?.error === 'post_sello_interrumpido', JSON.stringify(res));
     assert.equal(aterrizo(root), true, 'corpus aterrizado');
-    assert.notEqual(selloDe(root), null);
-    assert.equal(hayAsientoDeImport(root), false, 'manifiesto sellado y CERO asiento');
+    assert.notEqual(selloDe(root), selloAntes, 'manifiesto ya re-sellado');
+    assert.equal(hayAsientoDeImport(root), false, 'y CERO asiento: eso es lo que el orden evita');
     const v = verifyRootIntegrity();
     assert.equal(v.ok, false, 'y el root NO arranca');
     assert.ok(

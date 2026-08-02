@@ -5,8 +5,28 @@
 | agente | worker swarm Scriptorium (worktree `C:/S_LAB/wt/z-u268`) |
 | fecha | 2026-08-02 |
 | rama | `wp/u268-atomicidad-despues-de-fusionar` |
-| commit(s) | `6c124e3` (sobre `c005196`) |
-| estado propuesto | listo para revisión |
+| commit(s) | `6c124e3`, `7cf0168`, + devolución (sobre `c005196`) |
+| estado propuesto | devuelto-corregido (2 bloqueantes + 4 menores) |
+
+## Devolución · qué cambió respecto de la primera entrega
+
+**B1 era una regresión que destruía datos, y la contrarrevisión tenía razón en
+todo.** Mi tesis («revertir sólo mientras el sello no esté puesto») no estaba
+implementada: estaba SUPUESTA. `manifest.mjs:72-77` **escribe en (b) y hashea en
+(d)**, así que entre las dos hay una subventana en la que el sello ya cambió; mi
+`catch` revertía sin preguntar, el corpus volvía al staging, el `finally` lo
+borraba, y el resultado decía `aterrizado:false, sellado:null` mientras el
+manifiesto declaraba el import. Peor que la base, que al menos dejaba los
+ficheros. Reproducido, corregido y con censo propio en §6.
+
+**B2 también**: «un PAR sin nada en medio» era prosa. Entre el sello y el asiento
+corrían tres cosas sin envolver. Corregido moviendo el parte de `sellar` detrás
+del asiento y añadiendo una **red de última línea**; la frase está reescrita para
+decir lo que el código hace. §7.
+
+Los cuatro menores, cerrados (§8). Lo que la contrarrevisión dio por bueno
+—re-apuntado de U253b, revert de E6 bajo su huella más fuerte, E4, las
+recuperaciones de E1/E2/E3, el reorden— no se tocó salvo donde B1/B2 obligaban.
 
 ## Qué se hizo
 
@@ -20,25 +40,26 @@ asiento**— y ese estado **deja el root sin arrancar** (`verify.mjs` §2 →
 `noop:true` y no escribe asiento.
 
 La decisión es **(b) declarar el medio-aterrizaje**, con **una mezcla
-intencional y dicha**: se **revierte** en el único tramo donde revertir es
-honesto —SELLAR lanzando, con la fusión aplicada y el manifiesto todavía
-intacto—, y se **declara** en todo lo que ocurre con el sello ya puesto. El
-argumento está abajo (§3) y también en la cabecera de `src/import.mjs`.
+intencional y dicha**: se **revierte sólo cuando se PRUEBA que el sello no se ha
+movido** —leyéndolo del disco, no suponiéndolo por la fase— y se **declara** en
+todo lo demás. El argumento está abajo (§3), la corrección de la primera versión
+en §6, y las dos cosas también en la cabecera de `src/import.mjs`.
 
 Además de declarar, se corrigió la **causa de fondo, que era de ORDEN y no de
-guardas**: entre `sealManifest` y `appendOpsLedger` corrían dos operaciones que
-podían lanzar. Ahora el sello y el asiento son un par sin nada en medio, y los
-contadores y NO-LINK van detrás. Con eso, cuatro de los seis dejan de dejar el
-root sin arrancar.
+guardas**: entre `sealManifest` y `appendOpsLedger` corrían operaciones que
+podían lanzar y dejar el manifiesto sellado sin asiento. Ahora **entre el sello y
+el asiento no queda nada que pueda escaparse** (los contadores, NO-LINK y el
+parte de `sellar` van detrás, y una red de última línea recoge lo que quede). Con
+eso, cuatro de los seis dejan de dejar el root sin arrancar.
 
 ## Archivos tocados
 
 | archivo | qué |
 | --- | --- |
-| `packages/engine/volumes-ops/src/import.mjs` | modificado — cabecera reescrita (la frontera y la decisión con su argumento); `limpiarStaging()` exportada; `finally` que no puede lanzar; envoltorio de SELLAR con revert; asiento movido justo detrás del sello; contadores y NO-LINK detrás del asiento y envueltos; `step:'post-fusion'` con `aterrizado`/`sellado`/`asiento`/`recuperacion`/`causa`; `staging` en toda salida posterior a STAGING |
+| `packages/engine/volumes-ops/src/import.mjs` | modificado — cabecera reescrita (la frontera y la decisión con su argumento); `limpiarStaging()` exportada; `finally` que no puede lanzar; envoltorio de SELLAR que **mide el sello antes de decidir si revierte** (B1); `construyeAsiento()` y `manifiestoVivo()` en un solo sitio; asiento inmediatamente tras el sello; partes de `fusionar`/`sellar` reubicados y **red de última línea** (B2); contadores y NO-LINK detrás del asiento y envueltos; `step:'post-fusion'` con `aterrizado`/`sellado`/`asiento`/`recuperacion`/`causa`; `staging` en toda salida posterior a STAGING |
 | `packages/engine/volumes-ops/src/fusion-guard.mjs` | modificado — `applyFusion` devuelve además `movimientos` (aditivo); `deshacerFusion` documenta su segundo y último llamante, del mismo lado de la frontera |
 | `packages/engine/volumes-ops/src/index.mjs` | modificado — exporta `limpiarStaging` (su promesa necesita prueba directa) |
-| `packages/engine/volumes-ops/test/u268-atomicidad-post-fusion.test.mjs` | **creado** — 18 casos: el `finally`, las seis entradas como contrato, las recuperaciones ejecutadas y el censo de mutación (7 amputaciones, una por prueba) |
+| `packages/engine/volumes-ops/test/u268-atomicidad-post-fusion.test.mjs` | **creado** — 24 casos: el `finally`, las seis entradas como contrato, los dos vectores de B1 con su censo, el hueco de B2, la rama `sinDeshacer`, las cinco recuperaciones ejecutadas y el censo de mutación (8 amputaciones) |
 | `packages/engine/volumes-ops/test/u253b-import-atomico.test.mjs` | modificado — su censo exigía «vuelve a LANZAR», conducta que U268 elimina a propósito; ahora exige lo que su guarda protege (deja de salir por su paso **y el root muta**). El porqué, escrito en el propio fichero |
 
 **No se tocó** `src/ledger-cerco.mjs` ni `src/ledger.mjs` (U253a, aceptado), ni
@@ -55,7 +76,8 @@ anterior al merge de U253b: en `c005196` estaban en `:885`, `:910`, `:913`,
 ## §1 · Cómo se midió
 
 Arnés propio, temporal, borrado al terminar (`test/.sonda-u268.mjs`,
-`test/.medida-u268.mjs`, `test/.sonda-mutante.mjs`). Root de usar y tirar en
+`test/.medida-u268.mjs`, `test/.sonda-mutante.mjs`, y en la devolución
+`test/.b1-u268.mjs` y `test/.dc-probe.mjs`). Root de usar y tirar en
 `os.tmpdir()` con `ZEUS_VOLUMES_ROOT`, pack sintético de dos corpus.
 
 **Huella del árbol entero** (CA-5), no inspección: por cada entrada del root, en
@@ -165,7 +187,9 @@ cwd dentro del directorio.
 | E3 | walk de NO-LINK con subdirectorio sin listado | LANZA `EPERM scandir`, sin asiento | `post-fusion` / `resultado_no_inspeccionable`, **con asiento** | **sí** (era «no») |
 | E4 | `rmSync` del `finally` sobre import COMPLETO | LANZA `EBUSY`, **sustituye al `return` de éxito** | `ok:true` + `staging:{eliminado:false, causa}` | sí |
 | E5 | `symlink_en_resultado` tras fusionar y sellar | `{ok:false, step:'no-link'}` **callando que aterrizó** | `post-fusion` / `symlink_en_resultado` + `aterrizado`, `sellado`, `asiento` | **sí** (era «no»); el cerco sigue viendo `enlace_vivo` |
-| E6 | `sealManifest` sobre manifiesto no escribible | LANZA `EPERM`, corpus en destino sin entrada en el manifiesto | `sellar` / `sellar_interrumpido` **con revert**: huella del árbol **IGUAL** | sí, y el import **se puede repetir** |
+| E6 | `sealManifest` sobre manifiesto no escribible (**el sello no llega a moverse**) | LANZA `EPERM`, corpus en destino sin entrada en el manifiesto | `sellar` / `sellar_interrumpido` **con revert**: huella del árbol **IGUAL** | sí, y el import **se puede repetir** |
+| E7 | `sealManifest` lanzando **con el sello YA movido** (escritura completa) — §6 | LANZA `EIO`, corpus en destino, `ledger_ausente` | `post-fusion` / `sello_sin_confirmar`, **sin revertir**, sello medido del disco | no, y la recuperación (apendar el asiento) lo devuelve a `ok` |
+| E8 | ídem con **escritura truncada** (disco lleno) — §6 | LANZA `ENOSPC`, corpus en destino, `manifiesto_ilegible` | `post-fusion` / `manifiesto_a_medias`, **sin revertir** | no; recuperación de operador (restaurar `volumes.json`) |
 
 ## §3 · La decisión, con su argumento
 
@@ -218,7 +242,11 @@ escribibilidad se ha añadido.
 | `estado_no_escribible` | `syncVolumeCounters(volId)` — el estado es regenerable midiendo | `CA-2 · recuperación del estado vivo…` |
 | `resultado_no_inspeccionable` | `assertVolumesRootBootable` / `scanRootCerco` vuelven a hacer la pregunta sobre el root entero | `CA-2 · recuperación de la inspección…` |
 | `symlink_en_resultado` | retirada manual del ancla; el cerco de arranque la sigue viendo | `E5 …` (se comprueba el `enlace_vivo`) |
-| `sellar_interrumpido` | root ya devuelto a su estado previo → corregir la causa y **repetir el import** | `E6 …` → `ok:true` |
+| `sellar_interrumpido` (sin `sinDeshacer`) | root ya devuelto a su estado previo → corregir la causa y **repetir el import** | `E6 …` → `ok:true` |
+| `sellar_interrumpido` (con `sinDeshacer`) | `via:'operador'` con las `rutas` que no se pudieron deshacer, antes de repetir | `E6b …` |
+| `sello_sin_confirmar` | `appendOpsLedger` con la entrada, `after` = **sello vivo del disco** | `B1 · escritura COMPLETA…` → `verifyRootIntegrity().ok === true` |
+| `manifiesto_a_medias` | `via:'operador'`: restaurar `volumes.json`; el corpus **sigue en destino** y va enumerado | `B1 · escritura TRUNCADA…` |
+| `post_sello_interrumpido` (red) | según haya asiento o no; si no, la entrada viaja igual | `B2 · un fallo en el hueco…` |
 | `staging.eliminado:false` | el staging sobrevive dentro del root y lo ve el cerco; `causa` con syscall y ruta | `CA-3 …` |
 
 ## §4 · CA-3 · el `finally`, distinguible del éxito SIEMPRE
@@ -247,23 +275,30 @@ directorio bloqueado, sobre uno normal y sobre uno inexistente.
 ## §5 · Censo de mutación (CA-6)
 
 Regla aplicada al pie: *un negativo no está verificado hasta que desactivas su
-guardián y compruebas que enrojece*. **Una amputación por prueba, no todas a la
-vez**: con las amputaciones mezcladas no se sabría cuál sostiene cuál. Cada
-amputación asevera cuántos sitios debía tocar; si deja de casar, la prueba
-enrojece por no encontrar qué amputar.
+guardián y compruebas que enrojece*. **Una amputación por prueba**, salvo la #4,
+que necesita dos y lo dice. Cada amputación asevera cuántos sitios debía tocar;
+si deja de casar, la prueba enrojece por no encontrar qué amputar.
 
 | # | guardián desactivado | cómo | qué se exige al enrojecer | resultado |
 | - | -------------------- | ---- | ------------------------- | --------- |
-| 1 | envoltorio del asiento | `throw err;` al frente del `catch` | vuelve a LANZAR `EPERM` con el root ya sellado y sin asiento | ✅ |
-| 2 | envoltorio de contadores | ídem | vuelve a LANZAR `EPERM` | ✅ |
-| 3 | envoltorio de NO-LINK | ídem | vuelve a LANZAR `scandir` | ✅ |
-| 4 | **el ORDEN** (contadores antes del asiento) | se reinserta la llamada donde estaba en la base, sin envolver | manifiesto sellado, **cero asiento**, `verifyRootIntegrity` → `ledger_ausente`: **el root deja de arrancar** | ✅ |
-| 5 | el deshacer de SELLAR | `deshacerFusion(...)` → `{deshechos:[],sinDeshacer:[]}` | el root queda tocado, el corpus en destino, y la **segunda pasada da `slot_ocupado`** | ✅ |
-| 6 | `limpiarStaging` | se restaura el `rmSync` desnudo | el import COMPLETO (con asiento) vuelve a morir por el conserje y **no hay `return`** | ✅ |
-| 7 | la declaración del ancla | `trasFusion(...)` → `fail('no-link', ...)` | vuelve a `step:'no-link'` y **deja de decir** `aterrizado`/`sellado` | ✅ |
+| 1 | envoltorio del asiento | `throw err;` al frente del `catch` | **pierde su código y su nota**: cae en la red como `post_sello_interrumpido` | ✅ |
+| 2 | envoltorio de contadores | ídem | ídem | ✅ |
+| 3 | envoltorio de NO-LINK | ídem | ídem | ✅ |
+| 4 | **la RED + el envoltorio del asiento** (las dos: la promesa la sostienen entre ambas, con una sola la otra tapa — declarado) | ídem ×2 | la excepción **vuelve a ESCAPARSE** con el root sellado y sin asiento: conducta de la base | ✅ |
+| 5 | **la pregunta por el sello** (B1) | `selloIntacto` → `true` (la suposición de la 1ª entrega) | vuelve `sellar_interrumpido` con `aterrizado:false` y **BORRA el corpus** (`volumen_ausente`) | ✅ |
+| 6 | **el ORDEN** (contadores antes del asiento) | se reinserta la llamada donde estaba en la base, sin envolver | manifiesto sellado, **cero asiento**, `verifyRootIntegrity` → `ledger_ausente` | ✅ |
+| 7 | el deshacer de SELLAR | `deshacerFusion(...)` → `{deshechos:[],sinDeshacer:[]}` | el root queda tocado, el corpus en destino, y la **segunda pasada da `slot_ocupado`** | ✅ |
+| 8 | `limpiarStaging` | se restaura el `rmSync` desnudo | el import COMPLETO (con asiento) vuelve a morir por el conserje y **no hay `return`** | ✅ |
+| 9 | la declaración del ancla | `trasFusion(...)` → `fail('no-link', ...)` | vuelve a `step:'no-link'` y **deja de decir** `aterrizado`/`sellado` | ✅ |
 
-La amputación 4 es la que aísla el **reorden** de los envoltorios: si el orden no
-fuera portante, ese caso seguiría dando asiento y root arrancable. No lo da.
+La #6 aísla el **reorden** de los envoltorios: si el orden no fuera portante, ese
+caso seguiría dando asiento y root arrancable. No lo da. La #5 es la que la
+contrarrevisión hizo falta para que existiera.
+
+**Cambio respecto de la primera entrega**: 1–3 exigían «vuelve a LANZAR». Con la
+red de última línea eso dejó de ser cierto —y es una mejora, no una pérdida—, así
+que ahora exigen lo que el envoltorio realmente compra (su código y su nota) y el
+«vuelve a lanzar» se mide en la #4, donde corresponde.
 
 **Y un enrojecimiento que no era mío pero lo provocó este WP**: el censo de
 U253b exigía «sin la guarda DEBE volver a lanzar». U268 elimina esa conducta a
@@ -273,6 +308,114 @@ root **sigue mutando** (los nueve casos → `post-fusion/asiento_no_escribible` 
 el volumen a medias). Es decir: **U268 no vuelve redundantes las precondiciones
 de U253b**; lo que compra cada una es distinto y ahora está escrito en el
 fichero.
+
+## §6 · B1 · el revert se estrecha al tramo que la tesis sí argumenta
+
+### El defecto
+
+`sealManifest` (`manifest.mjs:72-77`): `(a) readManifestRaw → (b) writeFileSync
+→ (c) resetVolumesCache → (d) hashManifest`. **El sello se pone en (b)**, no
+cuando la función devuelve. Mi `catch` envolvía las cuatro y revertía
+incondicionalmente, con `sellado: null` y `aterrizado` como constantes derivadas
+en vez de medidas.
+
+### Cómo se reprodujo
+
+No hay vector portable para un disco lleno, así que se sustituye **sólo
+`manifest.mjs`** por un módulo que re-exporta todo y cuyo `sealManifest`
+reproduce el ESTADO EN DISCO de los dos fallos. `import.mjs` queda **byte a byte
+el que se entrega** — lo único redirigido es el especificador del `import`:
+
+- `trunca` → escribe un `volumes.json` truncado (que es lo que hace
+  `writeFileSync` con `ENOSPC`: trunca al abrir) y lanza `ENOSPC`;
+- `completa` → llama al sellador REAL (bytes exactos) y lanza después, donde
+  está el hash.
+
+```
+$ node test/.b1-u268.mjs
+```
+
+### Antes / primera entrega / ahora
+
+| | base `c005196` | 1ª entrega U268 | ahora |
+| --- | --- | --- | --- |
+| **`completa`** · lanza | `EIO` (escapa) | no | no |
+| · devuelve | — | `sellar/sellar_interrumpido` | `post-fusion/sello_sin_confirmar` |
+| · `aterrizado` | — | **`false`** (falso) | `true` |
+| · `sellado` | — | **`null`** (falso) | `{before, after}` **medido del disco** |
+| · corpus en destino | **sí** | **NO — BORRADO** | **sí** |
+| · `verifyRoot` | `ledger_ausente` | `ledger_ausente` + `volumen_ausente` | `ledger_ausente` |
+| · recuperación | (ninguna) | *«volvió a su estado previo»* → `noop` | `appendOpsLedger` con la entrada, `after` = sello vivo → `verifyRoot.ok` |
+| **`trunca`** · lanza | `ENOSPC` (escapa) | no | no |
+| · devuelve | — | `sellar/sellar_interrumpido` (`aterrizado:false`) | `post-fusion/manifiesto_a_medias` (`aterrizado:true`) |
+| · corpus en destino | **sí** | **NO — BORRADO** | **sí** |
+| · `verifyRoot` | `manifiesto_ilegible` | `manifiesto_ilegible` | `manifiesto_ilegible` |
+
+En los dos vectores el resultado de ahora **iguala o mejora a la base y ya no
+destruye nada**.
+
+### La regla, y por qué se enuncia así
+
+> **se revierte SÓLO si se PRUEBA que el sello no se movió.**
+
+No por fases («antes de SELLAR»), que es lo que falló: la fase no es un instante.
+Se lee el manifiesto vivo y se compara con `sealBefore.sha256`. **«No se puede
+leer» no es prueba** y cae del lado de no revertir — el lado que no destruye. Con
+el sello movido se distingue si el manifiesto **dice** lo que este import quería
+sellar (parsea y declara el `packHash` de todos los volúmenes: `sello_sin_confirmar`,
+misma cura que E1) o no (`manifiesto_a_medias`, recuperación de operador con los
+volúmenes en destino enumerados). Se le pregunta al artefacto, no se re-serializa
+para compararlo: eso habría duplicado el formato del escritor.
+
+**E6 sigue revirtiendo** (`attrib +R` → el sello no llega a moverse), con la misma
+huella de árbol idéntica. La condición no se ha aflojado, se ha estrechado.
+
+### Censo de B1
+
+`const selloIntacto = vivo !== null && …` → `const selloIntacto = true;`
+(la suposición de la 1ª entrega). Resultado exigido: vuelve `sellar_interrumpido`
+con `aterrizado:false`, **el corpus desaparece** y `verifyRoot` añade
+`volumen_ausente`. Verde.
+
+## §7 · B2 · la frase, ajustada a lo que el código hace
+
+Entre `sealManifest` y `appendOpsLedger` corrían sin envolver el `steps.push` de
+`sellar` (con sus `.map`/`.filter`), la asignación de `trasFusion` y el literal
+del asiento. Y el `steps.push` de `fusionar` también estaba desnudo, ya en zona
+posterior a la fusión.
+
+Lo hecho:
+1. el parte de `fusionar` pasa **dentro** del envoltorio de SELLAR (ahí el revert
+   aún es legítimo);
+2. el parte de `sellar` pasa **detrás del asiento** — es contabilidad y nadie
+   depende de él. **El orden del array `steps` no cambia**, y hay aserción que lo
+   fija (`['verificar','familia','staging','validar','fusionar','sellar','no-link']`);
+3. todo lo que queda tras el sello vive dentro de una **red de última línea** que
+   devuelve `post-fusion/post_sello_interrumpido` con `causa` y con si hay asiento.
+
+**La frase, reescrita** (cabecera del módulo): ya no dice «un par sin nada en
+medio» —eso era prosa— sino **«entre el sello y el asiento no queda nada que
+pueda ESCAPARSE»**, con el paréntesis explícito: *no es que no corra nada en
+medio; es que nada de lo que corre puede salirse.*
+
+Prueba del hueco exacto que señaló la contrarrevisión: se inyecta un fallo en el
+`steps.push` de `sellar` y se exige `post_sello_interrumpido` con el asiento ya
+escrito y el root arrancando. Y el censo correspondiente: **amputadas la red Y el
+envoltorio** (las dos, porque la promesa la sostienen entre ambas, y con una sola
+la otra tapa), la excepción vuelve a escaparse con el root sellado y sin asiento.
+
+Efecto sobre el censo anterior: amputar un envoltorio con nombre ya no produce
+una excepción —la red lo recoge—, así que esos tres casos ahora exigen lo que el
+envoltorio realmente compra: **que su código y su nota propios desaparezcan**.
+
+## §8 · Los cuatro menores
+
+| menor | qué se hizo |
+| --- | --- |
+| la rama `sinDeshacer > 0` sin guardián | **cubierta** (`E6b`): sustituto de `fusion-guard.mjs` cuyo `deshacerFusion` deja el primer movimiento sin deshacer y lo declara — la forma exacta que produce el módulo real, cuya conducta con un fallo REAL ya prueba `fusion-guard.test.mjs:721-723`. Se exige `aterrizado:true`, `sinDeshacer.length===1`, `via:'operador'` con sus `rutas`, y que **el disco confirme el parte** (lo no deshecho sigue en destino). Los dos mutantes que sobrevivían ahora mueren |
+| `entradaAsiento.volumes` sin fijar | fijado en tres sitios: el asiento del import feliz, la entrada de recuperación de E1 y la de B1·`completa` (`deepEqual ['demo']`), más `role`, `packHash` y `manifestSha256.before` |
+| «las cinco recuperaciones se ejecutan» era 4 + 1 observada | **`symlink_en_resultado` ahora se ejecuta**: se retiran las anclas que la respuesta enumera y se exige que el cerco deje de verlas y `verifyRootIntegrity().ok === true`. Son cinco ejecutadas |
+| CA-5 re-apuntado aceptaba `lanzo \|\| post-fusion` | **estrechado a lo medido**: se exige `lanzo === null` y `step === 'post-fusion'` para los nueve, más `aterrizado === true` |
 
 ## Evidencia
 
@@ -299,26 +442,32 @@ ok 5 - E2 · estado vivo no escribible → post-fusion/estado_no_escribible, y e
 ok 6 - E3 · árbol resultante ilegible → post-fusion/resultado_no_inspeccionable
 ok 7 - E5 · ancla viva en el resultado → post-fusion/symlink_en_resultado, diciendo que aterrizó
 ok 8 - E6 · SELLAR lanzando → se REVIERTE: el root vuelve byte a byte y el import se puede repetir
-ok 9 - CA-2 · recuperación del asiento: apendar la entrada devuelta hace arrancar el root
-ok 10 - CA-2 · recuperación del estado vivo: re-medir escribe lo que faltaba
-ok 11 - CA-2 · recuperación de la inspección: recuperado el permiso, la pregunta se vuelve a hacer
-ok 12 - CENSO · sin el envoltorio del asiento, vuelve a LANZAR con el root ya sellado
-ok 13 - CENSO · sin el envoltorio de los contadores, vuelve a LANZAR
-ok 14 - CENSO · sin el envoltorio de NO-LINK, vuelve a LANZAR
-ok 15 - CENSO · restaurado el ORDEN de la base (contadores antes del asiento), el root deja de arrancar
-ok 16 - CENSO · sin el deshacer de SELLAR, el root queda a medias y el import NO se puede repetir
-ok 17 - CENSO · con el `finally` desnudo, el import COMPLETO vuelve a morir por el conserje
-ok 18 - CENSO · sin la declaración del ancla, `symlink_en_resultado` vuelve a callar que aterrizó
-# tests 18
-# pass 18
+ok 9 - B1 · escritura COMPLETA y fallo después → NO se revierte, y el corpus SIGUE en destino
+ok 10 - B1 · escritura TRUNCADA (disco lleno) → manifiesto_a_medias, y tampoco se borran los datos
+ok 11 - B1 censo · sin la pregunta por el sello, el revert vuelve y BORRA el corpus
+ok 12 - E6b · revert que NO consigue deshacerlo todo → aterrizado:true y recuperación de operador
+ok 13 - CA-2 · recuperación del asiento: apendar la entrada devuelta hace arrancar el root
+ok 14 - CA-2 · recuperación del estado vivo: re-medir escribe lo que faltaba
+ok 15 - CA-2 · recuperación de la inspección: recuperado el permiso, la pregunta se vuelve a hacer
+ok 16 - CENSO · sin el envoltorio del asiento, se pierde el código y la nota propios
+ok 17 - CENSO · sin el envoltorio de los contadores, se pierde su código
+ok 18 - CENSO · sin el envoltorio de NO-LINK, se pierde su código
+ok 19 - CENSO · sin la RED y sin el envoltorio, la excepción vuelve a ESCAPARSE (conducta de la base)
+ok 20 - B2 · un fallo en el hueco sello↔asiento sale por la RED, no como excepción
+ok 21 - CENSO · restaurado el ORDEN de la base (contadores antes del asiento), el root deja de arrancar
+ok 22 - CENSO · sin el deshacer de SELLAR, el root queda a medias y el import NO se puede repetir
+ok 23 - CENSO · con el `finally` desnudo, el import COMPLETO vuelve a morir por el conserje
+ok 24 - CENSO · sin la declaración del ancla, `symlink_en_resultado` vuelve a callar que aterrizó
+# tests 24
+# pass 24
 # fail 0
 # skipped 0
 ```
 
 ```
 $ node --test test/*.test.mjs        # paquete entero
-# tests 258
-# pass 256
+# tests 264
+# pass 262
 # fail 0
 # skipped 2
 ```
@@ -386,24 +535,42 @@ Dicho aquí y también en la cabecera del fichero de prueba.
    **otro** proceso— no se reproduce; se ejercita el mismo código de error por
    una vía plantable. Y no se cubre ninguna carrera entre dos `importPack`
    simultáneos: sigue fuera del contrato, como antes de este WP.
-5. **`sellar_interrumpido` por el CÓMPUTO del sello.** El vector medido es
-   `volumes.json` no escribible (`EPERM` en la escritura). El envoltorio cubre
+5. **`sellar_interrumpido` por el CÓMPUTO del sello.** El vector natural medido
+   es `volumes.json` no escribible (`EPERM` en la escritura). El envoltorio cubre
    **también** el cómputo (`sha256File` de lo aterrizado, `snapshotOf`,
    `measurePath`) porque la frase «ninguna excepción escapa de la zona posterior
    a FUSIONAR» sólo es cierta si cubre la región entera; pero **no tengo vector
    natural** para hacer lanzar ese cómputo, y por eso hay **un solo código** en
    vez de una taxonomía inventada: la `causa` lleva el syscall real. Dicho como
    límite, no como cobertura.
-6. **El entorno superusuario.** Como root los modos POSIX no bloquean nada.
+6. **Tres fallos se ejercitan por INYECCIÓN, no por vector natural**, y en los
+   tres se sustituye una pieza vecina dejando `import.mjs` **byte a byte el que
+   se entrega** (se redirige el especificador del `import`, no la lógica):
+   - los dos de §6 (**disco lleno** y **fallo tras la escritura**) sustituyen
+     `manifest.mjs`. No hay forma portable de llenar un disco ni de hacer fallar
+     el `readFileSync` de (d) habiendo pasado el de (a);
+   - la rama `sinDeshacer > 0` sustituye `fusion-guard.mjs`. **No conseguí
+     plantar un rename de vuelta fallido desde dentro de `importPack`**: probé
+     denegar `DC` en el directorio destino (no bloquea, medido en
+     `test/.dc-probe.mjs`), handles abiertos (no bloquean) y cwd (sí bloquea un
+     rename, pero el directorio no existe hasta después de fusionar). Lo que sí
+     está probado con un fallo REAL es que `deshacerFusion` produce ese
+     inventario (`fusion-guard.test.mjs:721-723`); lo inyectado es sólo su
+     traducción al contrato;
+   - el fallo del hueco de B2, porque un `.map` sobre un array construido por
+     nosotros no revienta solo.
+   En los tres casos el estado en disco que ve el código bajo prueba es el REAL.
+7. **El entorno superusuario.** Como root los modos POSIX no bloquean nada.
    Cada vector se **autoverifica** sobre un directorio de usar y tirar antes de
    que ninguna prueba se apoye en él; si no bloquea, el caso se **abstiene con
    `skip`**. En un CI que corra como root, esos casos no se ejecutan y hay que
-   saberlo: no serían verdes, serían omitidos. (En esta máquina, `win32`, los 18
-   corren.)
-7. **El resto del contrato de import.** Este WP no toca VERIFICAR, STAGING,
+   saberlo: no serían verdes, serían omitidos. (En esta máquina, `win32`, los 24
+   corren; en `ubuntu-latest` como usuario normal deberían correr todos también,
+   pero **no lo he verificado** — no hice push.)
+8. **El resto del contrato de import.** Este WP no toca VERIFICAR, STAGING,
    VALIDAR, el gate NO-OP ni los cuatro drivers; su cobertura es la de sus
    propios WP.
-8. **CI.** No se hizo push, así que no hay run que enseñar. Verde local ≠ gate
+9. **CI.** No se hizo push, así que no hay run que enseñar. Verde local ≠ gate
    CI, y el brief prohíbe el push.
 
 ## Demolición
@@ -414,8 +581,17 @@ Dicho aquí y también en la cabecera del fichero de prueba.
 - Se corrigió la frase que este WP tenía por encargo juzgar. «Every failure
   leaves the root intact … Nothing lands halfway» era falsa para esta familia.
   Ahora la cabecera dice **dónde está la frontera**: garantía hasta FUSIONAR;
-  desde SELLAR, tres promesas comprobables (ninguna excepción escapa, el
-  medio-aterrizaje se nombra con recuperación, la limpieza no cambia el
-  desenlace).
+  desde ahí, cuatro promesas comprobables (ninguna excepción escapa, el
+  medio-aterrizaje se nombra con recuperación, nada entre sello y asiento puede
+  escaparse, la limpieza no cambia el desenlace).
+- **Se demolió una frase mía de la primera entrega**, y es la lección de esta
+  devolución: «revertir mientras el sello no esté puesto» describía una FASE, y
+  la fase no es un instante — `sealManifest` escribe a la mitad. Enunciar la
+  condición por fases dejaba el código creyendo algo que no había mirado.
+  Sustituida por una condición **que se comprueba**: se revierte si y sólo si el
+  sello leído del disco coincide con el previo.
+- **Se demolió la otra**: «un par sin nada en medio» no describía el código sino
+  el propósito. Ahora se promete lo que se puede sostener —que nada de lo que
+  corre en medio puede escaparse— y hay red y prueba para ello.
 - No se añadió ninguna sonda de escribibilidad. La CA la prohíbe y no hacía
-  falta: el arreglo era de orden y de envoltorio.
+  falta: el arreglo era de orden, de envoltorio y de preguntar en vez de suponer.

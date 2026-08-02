@@ -785,10 +785,16 @@ test('CA-5 · amputadas las guardas, TODOS los casos vuelven a lanzar tras mutar
           'ledger_en_ruta_de_fusion',
           `${caso.nombre}: amputada la guarda, no puede seguir saliendo por la guarda de fusión`
         );
-        assert.ok(
-          lanzo || salida?.step === 'post-fusion',
-          `${caso.nombre}: sin la guarda el fallo se descubre TARDE (lanza o post-fusion), no antes`
+        // Medido: los NUEVE devuelven `post-fusion`, así que se exige eso y no
+        // un «o lanza o…» que aceptaría de más. Si un día uno volviera a
+        // lanzar, esta prueba lo dirá en vez de taparlo.
+        assert.equal(lanzo, null, `${caso.nombre}: U268 ya no deja escapar excepciones`);
+        assert.equal(
+          salida?.step,
+          'post-fusion',
+          `${caso.nombre}: sin la guarda el fallo se descubre TARDE, con el root ya tocado`
         );
+        assert.equal(salida?.aterrizado, true, `${caso.nombre}: y el resultado lo declara`);
         assert.notEqual(
           huellaArbol(root),
           antes,
