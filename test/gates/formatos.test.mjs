@@ -47,6 +47,7 @@ import {
   formatoDe
 } from '../../scripts/gates/formatos.mjs';
 import { REPO_ROOT } from '../../scripts/gates/scan.mjs';
+import { TOKEN_LEY, violacionesDeConservacion } from './conservacion.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(AQUI, '../../scripts/gates/claves.mjs');
@@ -590,52 +591,6 @@ test('el analizador de YAML se retira ante lo que declaró no modelar', () => {
 // el reporte.
 // ---------------------------------------------------------------------------
 
-/** Un token candidato: lo bastante largo para poder ser material. */
-const TOKEN_LEY = /[A-Za-z0-9_@.+/=:~-]{8,}/g;
-
-/**
- * Violaciones de la ley de conservación. Lista vacía = conserva.
- * @param {string} texto @param {string} formato
- * @returns {string[]}
- */
-export function violacionesDeConservacion(texto, formato) {
-  let campos;
-  try {
-    campos = camposDe(formato, texto);
-  } catch (e) {
-    if (e instanceof NoEntiendo) return []; // retirada = conserva
-    throw e;
-  }
-  /** @type {string[]} */
-  const out = [];
-  const heno = campos.flatMap((c) => [c.nombre, c.valor]).filter(Boolean).join('');
-  const opacos = campos.filter((c) => c.opaco).map((c) => c.valor);
-
-  // LEY 1 — sólo formatos de DATOS. En CÓDIGO un token suelto es un
-  // identificador (`defineConfig`, `console.log`), no un dato: allí un secreto
-  // vive siempre dentro de un literal o de un comentario, y de eso se ocupan la
-  // ley 2 y el canario de B3.
-  if (formato !== 'codigo') {
-    texto.split('\n').forEach((l, i) => {
-      for (const bruto of l.match(TOKEN_LEY) ?? []) {
-        const t = bruto.replace(/^[:=,.]+/, '').replace(/[:=,.]+$/, '');
-        if (t.length < 8) continue;
-        if (heno.includes(t)) continue;
-        out.push(`L1 línea ${i + 1}: el token ${JSON.stringify(t.slice(0, 40))} no lo mira nadie`);
-      }
-    });
-  }
-
-  // LEY 2 — un valor juzgado como átomo que en realidad lleva estructura.
-  for (const c of campos) {
-    if (c.opaco || typeof c.valor !== 'string') continue;
-    if (hallazgosEnTexto(c.valor).length === 0) continue;
-    if (opacos.some((o) => o.includes(c.valor))) continue;
-    out.push(`L2 línea ${c.line}: el valor de \`${c.nombre}\` lleva estructura con material y nadie lo barre`);
-  }
-  return out;
-}
-
 test('LEY DE CONSERVACIÓN: ningún token del CORPUS REAL se pierde', { timeout: 300_000 }, () => {
   // Sobre los ficheros trackeados de verdad, no sobre vectores escogidos. Fue
   // esta ley la que encontró que `parameters: []` y `position: { x: 4 }` dejaban
@@ -706,16 +661,68 @@ test('LEY DE CONSERVACIÓN: las formas corrientes de configuración conservan', 
   assert.deepEqual(rotas, [], 'la ley de conservación se rompe:\n' + rotas.join('\n'));
 });
 
-test('la ley DETECTA una pérdida sembrada — si no, no estaría midiendo nada', () => {
-  // Control positivo de la propia ley: un analizador de mentira que se traga
-  // una línea tiene que violarla. Sin esto, «0 violaciones» podría significar
-  // «la ley no mira».
+test('MATAR A LA LEY se nota: analizador mutilado -> ley 1 enrojece', () => {
+  // B8. El control positivo anterior NO llamaba a la funcion: simulaba la idea
+  // con un `heno` escrito a mano. Por eso la ley entera se podia sustituir por
+  // `return []` con las 96 pruebas en verde. Esto llama a la funcion DE VERDAD
+  // con un analizador mutilado, asi que:
+  //   · si alguien devuelve `[]` desde la ley, este test enrojece;
+  //   · si alguien apaga la ley 1, este test enrojece.
   const texto = `id: demo\napi_key: ${MATERIAL}\n`;
+  // El analizador de verdad conserva.
   assert.deepEqual(violacionesDeConservacion(texto, 'yaml'), []);
-  // El mismo texto, pero fingiendo que el analizador sólo vio la primera línea:
-  const heno = ['id', 'demo'];
-  const perdidos = (texto.match(TOKEN_LEY) ?? []).filter((t) => !heno.join('').includes(t));
-  assert.ok(perdidos.includes(MATERIAL), 'la ley no vería el material perdido');
+  // Uno que se traga la segunda linea, NO.
+  const mutilado = () => [{ nombre: 'id', valor: 'demo', line: 1 }];
+  const v = violacionesDeConservacion(texto, 'yaml', mutilado);
+  assert.ok(
+    v.length > 0,
+    'la LEY 1 no ve una linea entera perdida: o esta apagada o devuelve vacio'
+  );
+  assert.match(v[0], /^L1 /, `la violacion no viene de la ley 1: ${JSON.stringify(v)}`);
+});
+
+test('MATAR A LA LEY se nota: blob juzgado como atomo -> ley 2 enrojece', () => {
+  // El gemelo del anterior para la LEY 2, que es la unica que cubre el codigo.
+  // Si alguien la apaga, esto enrojece; si alguien devuelve `[]`, tambien.
+  const texto = `const cfg = 'api_key: ${MATERIAL}';\n`;
+  assert.deepEqual(violacionesDeConservacion(texto, 'codigo'), []);
+  // Un analizador que ve el blob pero lo juzga como si fuera un atomo: ni lo
+  // analiza ni lo marca opaco. Es exactamente la forma de B3.
+  const comoAtomo = () => [{ nombre: 'cfg', valor: `api_key: ${MATERIAL}`, line: 1 }];
+  const v = violacionesDeConservacion(texto, 'codigo', comoAtomo);
+  assert.ok(
+    v.length > 0,
+    'la LEY 2 no ve un documento juzgado como atomo: o esta apagada o devuelve vacio'
+  );
+  assert.match(v[0], /^L2 /, `la violacion no viene de la ley 2: ${JSON.stringify(v)}`);
+});
+
+test('la ley se retira cuando el analizador lanza, y eso NO es conservar por vacio', () => {
+  // Que lanzar cuente como conservar es correcto —quien llama barre en crudo—
+  // pero tiene que ser por LANZAR, no porque la ley no mire. Se comprueba que
+  // el mismo texto con un analizador que NO lanza si viola.
+  const texto = `id: demo\napi_key: ${MATERIAL}\n`;
+  const queLanza = () => {
+    throw new NoEntiendo('de mentira');
+  };
+  assert.deepEqual(violacionesDeConservacion(texto, 'yaml', queLanza), []);
+  const queCalla = () => [];
+  assert.ok(
+    violacionesDeConservacion(texto, 'yaml', queCalla).length > 0,
+    'devolver cero campos EN SILENCIO tiene que violar la ley'
+  );
+});
+
+test('la clave de deduplicacion lleva la LINEA: dos fugas no se funden en una', () => {
+  // m11. Quitar la linea de la clave de deduplicacion dejaba la suite verde y
+  // bajaba el corpus de 83 a 61 sobre los MISMOS 49 ficheros: no se pierde
+  // seguridad —el gate sigue rojo— pero se pierde INFORME, y el operador se
+  // queda sin saber cuantas fugas hay ni donde. Pieza con carga y sin guardian.
+  const texto = `api_key: ${MATERIAL}\notro: 1\ntoken: ${MATERIAL}\n`;
+  const h = hallazgosDe(texto, 'x.yaml');
+  assert.equal(h.length, 2, `dos campos de identidad en lineas distintas son DOS hallazgos: ${JSON.stringify(h)}`);
+  assert.deepEqual(h.map((x) => x.line), [1, 3]);
+  assert.deepEqual(new Set(h.map((x) => x.id)), new Set(['campo-identidad']));
 });
 
 test('la ley NO sustituye a la vigilancia de sintaxis: las dos clases siguen contadas', () => {
@@ -732,7 +739,7 @@ test('la ley NO sustituye a la vigilancia de sintaxis: las dos clases siguen con
   assert.equal(cuenta(/^\s*(if\s*\(.*\)\s*)?return null;/), 3, 'cambió el número de `return null`');
   // `catch (e)` y `catch {`: las dos formas.
   assert.equal(cuenta(/catch\s*[({]/), 1, 'apareció un `catch` nuevo (con o sin paréntesis)');
-  assert.equal(cuenta(/opaco: true/), 8, 'cambió el número de valores marcados OPACOS');
+  assert.equal(cuenta(/opaco: true/), 9, 'cambió el número de valores marcados OPACOS');
 });
 
 test('un formato desconocido sigue el camino de siempre — no se inventa analizador', () => {

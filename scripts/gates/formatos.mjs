@@ -1064,6 +1064,12 @@ export function camposDeCodigo(texto) {
         }
         if (!cerrada) throw new NoEntiendo(`codigo: expresion regular sin cerrar (linea ${linea})`);
         while (k < n && /[a-z]/.test(texto[k])) k += 1; // banderas
+        // OPACA, igual que el literal y el comentario. Era la CUARTA aparición
+        // de la misma forma —una salida que consume texto, no lanza y no marca—
+        // después de B1, B3 y B5: `const re = /api_key=…/` se perdía entero.
+        // Una expresión regular es texto que el lexer reconoce pero NO entiende:
+        // exactamente la definición de opaco.
+        campos.push({ nombre: '', valor: texto.slice(i, k), line: linea, opaco: true });
         i = k;
         ultimo = '/';
         ultimaPalabra = '';

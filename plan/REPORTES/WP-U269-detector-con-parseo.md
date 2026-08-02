@@ -4,280 +4,245 @@ Rama `wp/u269-detector-con-parseo`, worktree `C:/S_LAB/wt/z-u269`.
 Continúa el límite 6 que `WP-U231` dejó abierto **a propósito**, para no entrar
 en carrera armamentística de expresiones regulares.
 
-**Cuarta entrega.** Cuatro devoluciones, **el mismo defecto mío las cuatro
-veces**: una frase absoluta sobre una superficie que no había enumerado entera.
+**Quinta entrega.** Y el patrón que hay que mirar ya no son los agujeros del
+detector: son **los instrumentos con los que digo haberlos cerrado**.
 
 | vuelta | la frase | lo que la rompió |
 |---|---|---|
 | 1.ª | «la retirada nunca a silencio» | `flujoYaml` devolvía `null` al no entender |
 | 2.ª | «la duda se lanza, **siempre**» | un `catch` en `camposDeCodigo` se la comía |
-| 3.ª | «0 de 9 clases perdidas» | eran 8 pérdidas; una era media clase que yo enumeraba como cerrada |
-| 4.ª | «las salidas silenciosas son exactamente las auditadas» | **el instrumento contaba dos formas sintácticas, no las salidas** |
+| 3.ª | «0 de 9 clases perdidas» | eran 8; una era media clase que yo daba por cerrada |
+| 4.ª | «las salidas silenciosas son exactamente las auditadas» | el instrumento contaba **sintaxis**, no salidas |
+| 5.ª | «esto no se evade porque no hay lista que evadir» | **la ley entera se sustituye por `return []` y nada enrojece** |
 
-La 4.ª es la que importa: **el instrumento que puse para no repetir el error lo
-repitió**. Contar `return null` y `catch\s*\(` es una lista, y —como avisa la
-doctrina de U231— *mientras el instrumento sea una lista, el mutante que la
-evade existe*: `catch {` sin paréntesis la evadía, y también `return campos;`.
-
-Así que esta vuelta el instrumento **deja de mirar el código y mira el
-resultado**: una **ley de conservación** (§3). No se evade añadiendo una salida,
-porque no hay lista que evadir. Y está **demostrado** que caza: revirtiendo cada
-arreglo de este WP, la ley enrojece **sin conocerlos**.
+Tres instrumentos seguidos —censo de mutación, recuento sintáctico, ley de
+conservación— **que nadie podía matar**, escritos por alguien que cita en el
+propio WP que *una regla que nadie puede matar no vigila nada*. Esta vuelta lo
+cierra: el censo mata ahora también al fichero de test, y la ley tiene el
+analizador **inyectable** para poder mutilarlo (§3).
 
 ---
 
 ## 1 · El antes y el después
 
-Misma orden, sólo cambia el detector:
-
 ```
 $ node <scratchpad>/densidad.mjs C:/S_LAB/wt/z-u269 --detalle
 
-ANTES  (detector de U231, de main)   1762 trackeados · HALLAZGOS: 135 en 77 ficheros
-DESPUÉS (con analizadores)           1762 trackeados · HALLAZGOS:  83 en 49 ficheros
+ANTES  (detector de U231, de main)   1763 trackeados · HALLAZGOS: 135 en 77 ficheros
+DESPUÉS (con analizadores)           1763 trackeados · HALLAZGOS:  88 en 50 ficheros
 ```
 
-**135 → 83.** Diff de conjuntos, **en bruto** (m8): **55 se van, 3 llegan**. El
-neto que citaba antes como «+22» era eso, un neto; el bruto de aquella medición
-era 23 que llegaban y 1 que se movía de línea (`claves.mjs:424`→`:433`,
-desplazamiento por mis propias ediciones, no pérdida). Queda dicho.
+**135 → 88.** Bruto: **50 se van, 3 llegan**. Sube de 83 a 88 respecto a la
+vuelta anterior, y **sube a propósito**: son cinco líneas más que el suelo opaco
+recupera al cerrar B7, y **las cinco las señala `main` también**. Es el mismo
+intercambio de siempre en este WP: prefiero ruido que `main` ya tenía a silencio
+que sólo tendría yo.
 
-Los 3 que llegan son los declarados en las vueltas anteriores —una constante de
+Los 3 que llegan son los declarados desde la 2.ª vuelta (una constante de
 VERSIÓN con `CREDENCIAL` en el nombre, un `token_env` cuyo valor es el NOMBRE de
-una variable de entorno, y un `approvalToken` de fixture—. **No los cierro**:
-pedirían una lista de sufijos inocentes.
+una variable de entorno, un `approvalToken` de fixture). No los cierro: pedirían
+una lista de sufijos inocentes.
 
 ---
 
-## 2 · B5 — la 57.ª `continue`, tercera aparición de la misma clase
+## 2 · B7 — cuarta aparición de la misma clase
 
-Un comentario **fuera** de una continuación de Dockerfile se marcaba opaco;
-**dentro** de la continuación se tiraba. El mismo texto se barría o no según
-dónde estuviera.
+La rama de expresión regular de `camposDeCodigo` consumía el literal entero y
+**no emitía campo ni marcaba opaco**: `i = k; continue;`. La misma forma que B1,
+B3 y B5 — una salida que no lanza y no marca.
 
 ```
-$ node <scratchpad>/u269-b5.mjs <claves.mjs de main>
-caso                                                   main rama lanza
-ENV con comentario dentro de la continuacion              1    1    no
-RUN con comentario dentro de la continuacion              1    1    no
-dos comentarios seguidos dentro de la continuacion        1    1    no
-CONTROL: el mismo comentario FUERA de la continuacion     1    1    no
+$ node <scratchpad>/u269-w-b7.mjs <claves.mjs de main>
+caso                                     main rama lanza
+regex simple                                1    1    no
+regex con bandera                           1    1    no
+regex dentro de un return                   1    1    no
+regex en una clase de caracteres            1    1    no
+CONTROL literal                             1    1    no
 
-PIERDE vs main: 0 de 4
+PIERDE vs main: 0 de 6
 ```
 
-Arreglo: empujar el comentario como opaco antes del `continue`.
+Arreglo: el mecanismo que ya existía —marcarla `opaco`—. Una expresión regular
+es texto que el lexer **reconoce pero no entiende**, que es la definición de
+opaco.
 
-**El aviso de método sirvió**: la fixture se construye **por líneas**
-(`['ENV A=1 \\', '# api_key=…'].join('\n')`), nunca con `printf`. Un `printf` no
-produce la barra+salto y el intento sale verde, que parece prueba de que el
-agujero no existe.
+**Y cayó exactamente donde yo había declarado el punto débil.** No es una
+casualidad afortunada: §8.7 de la vuelta anterior decía que la ley 1 salta el
+código y que allí sólo cubre la ley 2. Lo escribí, y aun así entregué con el
+agujero dentro. Declarar un hueco no es cerrarlo.
 
 ---
 
-## 3 · B6 — de contar salidas a una LEY DE CONSERVACIÓN
+## 3 · B8 — el guardián que vigila no estaba vigilado
 
-Elijo **la vía que propones**, no la barata. (La barata también está, como
-cinturón además de tirantes, y con el título acotado a lo que cuenta: §3.3.)
+La ley se podía apagar entera sin que nada lo notase:
 
-### 3.1 · La ley
+| mutante | suite ANTES | suite AHORA |
+|---|---|---|
+| `violacionesDeConservacion` → `return []` siempre | **verde** | **ROJO** (M31, 3 tests) |
+| ley 1 apagada | **verde** | **ROJO** (M32, 2 tests) |
+| ley 2 apagada | **verde** | **ROJO** (M33, 1 test) |
 
-No mira el código; mira el resultado de analizar una entrada.
+**Causa**: mi control positivo no llamaba a la función. Simulaba la idea con un
+`heno` escrito a mano — comprobaba el concepto, no la implementación. Es la
+misma familia que «probar la función no es probar el camino», aplicada al
+instrumento en vez de al código.
 
-- **Ley 1 · cobertura.** En un formato de **datos**, todo token candidato de la
-  entrada tiene que aparecer en el nombre o en el valor de alguna campo. Si el
-  analizador no lo mira, se perdió.
-- **Ley 2 · anidamiento.** Ninguna campo NO opaca puede llevar dentro una forma
-  `nombre: valor` con material sin que una campo OPACA la cubra. Juzgar un
-  documento como si fuera un átomo es no juzgarlo.
-- Si el analizador **lanza**, conserva por definición: quien llama se retira al
-  barrido crudo y mira el fichero entero.
+**Arreglo**: `violacionesDeConservacion(texto, formato, analizar = camposDe)`.
+Con el analizador inyectable, tres controles **llaman a la función de verdad**:
 
-La ley 1 se aplica a JSON, JSONL, YAML y Dockerfile. **En código no**, y la
-razón se escribe: allí un token suelto es un identificador (`defineConfig`,
-`console.log`), no un dato; un secreto en código vive siempre dentro de un
-literal o de un comentario, y de eso se ocupan la ley 2 y el canario de B3.
+- un analizador **mutilado** que se traga una línea → la ley 1 tiene que verlo;
+- un analizador que juzga un blob **como átomo** (la forma exacta de B3) → la
+  ley 2 tiene que verlo;
+- uno que **lanza** → conserva, frente a otro que **calla** → viola. Que lanzar
+  cuente como conservar tiene que ser por lanzar, no porque la ley no mire.
 
-### 3.2 · Qué encontró, y qué demuestra
+Y **el censo de mutación muta ahora también `test/gates/`**, que es donde vive
+la ley. Un instrumento que sólo se puede matar desde fuera del alcance del censo
+no está vigilado.
 
-Aplicada al **corpus real** encontró tres huecos de contabilidad que nadie
-buscaba: la clave que abre un bloque, la clave de un objeto JSON y **la clave
-que lleva una colección de flujo** (`parameters: []`, `position: { x: 4 }`) no
-se declaraban consumidas — seis ficheros de `spec/`. Cerrado emitiendo esas
-claves con valor vacío (que es hueco por longitud: **cero impacto en detección**,
-y hay mutante para cada una). Hoy:
+### 3.1 · La ley salió de su fichero de test
+
+Vive en `test/gates/conservacion.mjs`. La demostración de que caza corre **fuera
+de la suite**, y si usara una copia de la ley, copia y ley podrían divergir sin
+que nadie lo notara. Ahora las dos importan el mismo módulo.
+
+### 3.2 · Hasta dónde llega la ley, medido
+
+La frase que la vuelta pasada era más ancha que mi evidencia, sustituida por la
+que sí mido:
+
+> **La ley cubre los formatos de datos por cobertura de tokens, y el código sólo
+> por la ley 2. Lo que en código no llega a ser campo no lo mira nadie.**
+
+Demostrado revirtiendo cada arreglo, en procesos hijo:
 
 ```
-$ node <scratchpad>/u269-ley.mjs --corpus
-ficheros con formato conocido mirados: 1140
-ficheros que VIOLAN la ley: 0
-```
+$ node <scratchpad>/u269-w-ley-demo.mjs
+SIN REVERTIR (arbol entregado)                        corpus: 0 · bateria: 0/16
 
-**Y la prueba de que no es decorado** — se revierte cada arreglo de este WP y se
-mide la ley sobre el corpus y sobre una batería **genérica** de 15 formas de
-configuración (no vectores de los bugs). Cada medición en un **proceso hijo**,
-porque reutilizar el proceso hace que la caché de módulos de ESM devuelva el
-`formatos.mjs` sin mutar y las reversiones salgan «0 violaciones» —me pasó, y es
-el mismo error que ya me costó una medición del léxico—:
-
-```
-$ node <scratchpad>/u269-ley-demo.mjs
-SIN REVERTIR (arbol entregado)                       corpus:    0 · bateria: 0/15
-
-B1 completo · las dos mitades a la vez               corpus:    0 · bateria: 2/15
-B1a solo · flujoYaml devuelve null (no basta)        corpus:    0 · bateria: 0/15
-B1b solo · parYaml pierde la clave (no basta: lanza) corpus:    0 · bateria: 0/15
-B3 · el literal de codigo deja de marcarse opaco     corpus:    3 · bateria: 2/15
-B5 · el comentario dentro de la continuacion se tira corpus:    0 · bateria: 1/15
-m6 · el `%` vuelve a saltarse en silencio            corpus:    0 · bateria: 1/15
+B1 completo · las dos mitades a la vez                corpus: 0 · bateria: 2/16
+B1a solo · flujoYaml devuelve null (no basta)         corpus: 0 · bateria: 0/16
+B1b solo · parYaml pierde la clave (no basta: lanza)  corpus: 0 · bateria: 0/16
+B3 · el literal de codigo deja de marcarse opaco      corpus: 3 · bateria: 2/16
+B5 · el comentario dentro de la continuacion se tira  corpus: 0 · bateria: 1/16
+B7 (DECLARADO: la ley NO llega) · la regex            corpus: 0 · bateria: 0/16
+   ^ la ley NO lo caza, y esta declarado: lo cubre el canario u269-w-b7.mjs
+m6 · el `%` vuelve a saltarse en silencio             corpus: 0 · bateria: 1/16
 
 agujeros REALES que la ley caza SIN buscarlos: 4 de 4
 ```
 
-Dos cosas que decir de ahí, y las dos importan:
-
-1. **B1 sólo se reproduce revirtiendo las DOS mitades.** Con `parYaml` bueno
-   nunca se llega a la salida mala; con `flujoYaml` bueno la duda lanza y se
-   retira. Medir las mitades por separado habría dado «la ley no lo caza», y
-   habría sido falso. Los dos «solo» quedan como **controles**: media reversión
-   no es un agujero, y la ley **acierta al no señalarlos**.
-2. La ley tiene su propio **control positivo** en la suite: si el analizador se
-   tragara una línea, la ley tiene que verlo. Sin eso, «0 violaciones» podría
-   significar «la ley no mira».
-
-### 3.3 · Lo que la ley NO es
-
-No es una demostración de que los analizadores sean correctos. Es una
-demostración de que **nada de la entrada se pierde sin que alguien lo mire**.
-El test de recuento sintáctico se mantiene, **con el título acotado** —«las dos
-clases siguen contadas», no «las salidas son exactamente las auditadas»— porque
-avisa antes, al escribir el código y no al correr el corpus. Sus expresiones van
-ensanchadas: `catch\s*[({]` cubre el binding opcional de ES2019, que era la
-evasión.
+**La ley caza cuatro de cinco y NO caza B7.** Lo digo así, con la cifra, en vez
+de decir que caza. Los dos «solo» son controles: media reversión no es un
+agujero y la ley acierta al no señalarlos.
 
 ---
 
-## 4 · B1, B2, B3, del ciclo anterior
-
-```
-B1 (mapa de flujo YAML)          0 de 8 formas se escapan   (main: 8 de 8)
-B2 (clases de pérdida vs U231)   0 de 9 clases perdidas
-B3 (blob en literal de código)   PIERDE vs main: 0 de 10
-```
-
-Sobre los **+22** de B3, y ahora con tu propia medición que es más fuerte que la
-mía: **23 de 23** hallazgos nuevos caen en líneas que `main` también señala. No
-es ruido nuevo; es ruido que la rama estaba comprando con silencio.
-
----
-
-## 5 · Censo de mutación: 29 mutantes
+## 4 · Censo de mutación: 35 mutantes, 0 vivos
 
 | bloque | resultado |
 |---|---|
-| M1–M17 (vueltas 1-3) | 17 rojos |
-| M18–M24 (los cinco `throw` de m1, B3, m6) | 7 rojos |
-| **M25** · B5: el comentario dentro de la continuación se tira | **rojo** |
-| **M26** · `trozosDocker` ignora las comillas | **sobrevive — INERTE, declarado** |
-| **M27** · YAML: la clave que abre bloque no se contabiliza | **rojo** (la ley) |
-| **M28** · JSON: la clave no se contabiliza | **rojo** (la ley) |
-| **M29** · YAML: la clave con colección de flujo no se contabiliza | **rojo** (la ley) |
+| M1–M29 (vueltas 1-4) | rojos |
+| **M30** · B7: la regex deja de marcarse opaca | rojo |
+| **M31** · **la LEY entera devuelve vacío** | **rojo (3 tests)** |
+| **M32** · **la LEY 1 apagada** | **rojo (2 tests)** |
+| **M33** · **la LEY 2 apagada** | **rojo (1 test)** |
+| **M34** · m11: la clave de deduplicación pierde la línea | rojo |
+| **M35** · m12: el lexer no reconoce el cierre de la regex | **sobrevive — INERTE, declarado** |
 
-**29 mutantes · 0 vivos · 0 no aplicados.**
+**Piezas sin guardián, declaradas y medidas** (dos, y las dos sin carga):
 
-**m7 · la pieza sin guardián y sin carga, registrada.** `trozosDocker` ignorando
-las comillas deja la suite verde, y **no es load-bearing**: cuatro formas se
-siguen cazando. Queda en el censo marcada `INERTE`, y el censo la trata aparte:
-si algún día **enrojece**, es que ha pasado a tener carga y hay que mirarla. Es
-el mismo trato que le di al quinto `throw` de m1.
+- `trozosDocker` ignorando las comillas (m7, 4.ª vuelta): cuatro formas se
+  siguen cazando.
+- **m12 · el cierre de la expresión regular**: si el lexer deja de reconocerlo,
+  todo lanza → retirada → **más** cobertura, no menos. **Falla hacia el lado
+  seguro**, que es la única razón por la que se admite sin guardián.
 
-Tres mutantes salieron vivos a lo largo del WP y hubo que escribirles guardián
-(M3 y M7 en la 1.ª vuelta, M9 y M12 en la 2.ª, M15 en la 3.ª). El patrón que se
-repite: **sobrevivían porque otro mecanismo tapaba el agujero** —seguridad
-cubierta, precisión no—. El guardián correcto en esos casos exige que la pieza
-se **entienda**, no que alguien lo cace.
+El censo las trata aparte: si alguna **enrojece**, es que ha ganado carga.
 
 ---
 
-## 6 · Menores de esta vuelta
+## 5 · Menores
 
-- **m7 · cerrado**, ver §5.
-- **m8 · cerrado**: el bruto va en §1 junto al neto.
-- **m9 · las 57 `continue`, con su desenlace.** En la vuelta anterior las declaré
-  sin demostrarlas **y B5 estaba dentro**. La cautela fue acertada; entregar con
-  el agujero dentro, no. Desenlace:
-
-  | grupo | n.º | desenlace |
-  |---|---|---|
-  | avance de índice en los escáneres (JSON, YAML, Dockerfile, lexer) | 51 | control de bucle: no saltan contenido, avanzan sobre él |
-  | línea en blanco / directiva `%YAML`,`%TAG` / `---` | 4 | no hay contenido que perder |
-  | `ARG X` y `ENV X` sin valor | 2 | no hay valor que juzgar |
-  | **comentario dentro de una continuación de Dockerfile** | **1** | **era B5 — ahora marca opaco** |
-
-  Y lo que sostiene la tabla no es la tabla: es que **la ley de conservación
-  pasa sobre los 1140 ficheros del corpus**. Si alguna de las 51 perdiera
-  contenido, la ley lo vería sin que yo la hubiera clasificado bien.
+- **m10 · el `heno` no llevaba separador**, y era peor de lo que parecía: la
+  línea tenía un byte de control **`\x01` crudo**, invisible, que es por lo que
+  se lee como `join('')`. **Es la segunda vez que entrego un byte de control
+  invisible** (la primera fue el NUL de m2). Sustituido por `join('\n')` visible,
+  y **barridos los cinco ficheros entregados**: 0 bytes de control en todos.
+- **m11 · cerrado**: la clave de deduplicación lleva la línea, con guardián
+  (M34). Sin ella el corpus baja de 88 a ~61 sobre los mismos ficheros: no se
+  pierde seguridad —el gate sigue rojo— pero **se pierde informe**, y el
+  operador se queda sin saber cuántas fugas hay ni dónde.
+- **m12 · registrada** como pieza inerte, §4.
+- **m13 · scratchpad**: todo lo mío va ya con prefijo `u269-w-`. Los ficheros del
+  revisor no se han tocado; el que me faltaba (`u269-ley.mjs`) no se recuperó y
+  su contenido vive ahora en `test/gates/conservacion.mjs`, que es donde tenía
+  que haber estado.
+- **La corrección que agradezco**: el ataque de «un valor mal leído pero
+  contabilizado» no produce regresión, porque `main` tampoco los caza. La puerta
+  que declaré abierta no da a ninguna pérdida. Queda declarada igual, pero sin
+  coste.
 
 ---
 
-## 7 · Lo demás, sin cambios
+## 6 · Lo demás
 
 - **No hay dependencia nueva.** El gate no necesita `node_modules`.
-- **Retiradas**: 1141 con formato conocido, 1 supera 1 MiB (`package-lock.json`),
-  de los 1140 restantes 1132 OK y 8 retiradas.
-- **Coste**: 2356 ms contra los 4880 del detector que sustituye — el suelo opaco
-  cuesta +27 % sobre la vuelta anterior y sigue en **la mitad** que U231.
-- **Ficheros en LF y sin NUL**, verificado **en el blob** con `git cat-file`.
+- **La ley entra en CI**: `test:gates` está en `ci.yml:47` y `release.yml:52`.
+- **Coste**: 1648 ms contra 2810 de `main`, por debajo de la mitad.
+- **Higiene verificada en el blob**: NUL=0, CRLF=0, 0 bytes de control.
 
 ---
 
-## 8 · Qué límite queda declarado
+## 7 · Qué límite queda declarado
 
-1. **Markdown, `.env` y texto plano no se analizan**: barrido crudo. **22 de los
-   83 están en `.md`**.
-2. **Una frase de paso con espacios LITERALES no se caza.** Con guiones sí.
-3. **Los 3 falsos positivos de §1**, y los **10 de los ficheros del WP** (2 en
+1. **La ley 1 no se aplica a código.** En código la cobertura la da sólo la ley
+   2, que inspecciona valores de campos: **lo que no llega a ser campo no lo
+   mira nadie**. Es el hueco por el que entró B7 y **sigue siendo el punto más
+   débil**; lo tapan los canarios de literal, comentario y regex, que son una
+   lista de formas y por tanto evadibles.
+2. **La ley no demuestra que los analizadores sean correctos**, sólo que no
+   pierden entrada. Un valor mal leído pero contabilizado la satisface —y está
+   medido que eso no produce regresión frente a `main`.
+3. **Markdown, `.env` y texto plano no se analizan**: **22 de los 88 están en
+   `.md`**.
+4. **Los 3 falsos positivos de §1** y los **10 de los ficheros del WP** (2 en
    `claves.mjs`, 8 en el test: un corpus que prueba un detector de secretos
-   contiene cadenas con forma de secreto, por construcción).
-4. **Una tirada en mayúsculas sin separador** (`AUTHTOKEN`) no se parte en
-   palabras.
-5. **Ficheros de más de 1 MiB** van por el camino troceado de U231.
-6. **YAML es un subconjunto**: anclas, alias, etiquetas, claves complejas, claves
-   de fusión y flujo multilínea **se retiran**.
-7. **La ley 1 no se aplica a código.** Allí la cobertura la dan la ley 2 y el
-   canario de literales y comentarios. Es el punto más débil de la
-   demostración y por eso va escrito aquí y no enterrado.
-8. **La ley no demuestra que los analizadores sean correctos**, sólo que no
-   pierden entrada. Un valor mal leído pero contabilizado la satisface.
-9. **`trozosDocker` no tiene guardián** (m7), declarado inerte y medido.
-10. **Sigue sin haber entropía ni lista de excepciones.** Lo que este WP no toca,
-    y U231 ya declaraba: historial de git, tarball de npm, UTF-16, contextos de
-    build que no sean el directorio de la receta ni la raíz.
+   contiene cadenas con forma de secreto).
+5. **Frase de paso con espacios literales**, **tirada en mayúsculas sin
+   separador** (`AUTHTOKEN`), **ficheros >1 MiB**, y el **subconjunto de YAML**
+   (anclas, alias, etiquetas, claves complejas, fusión, flujo multilínea).
+6. **Dos piezas sin guardián**, ambas sin carga y ambas fallando hacia el lado
+   seguro (§4).
+7. **Sigue sin haber entropía ni lista de excepciones.** Lo que el WP no toca, y
+   U231 ya declaraba: historial de git, tarball de npm, UTF-16, contextos de
+   build que no sean el directorio de la receta ni la raíz.
 
 ---
 
-## 9 · Estado de las comprobaciones
+## 8 · Estado de las comprobaciones
 
 ```
-$ node scripts/gates/run.mjs                 ->  gates: OK (0 offenders) · rc=0
-$ node --test test/gates/*.test.mjs          ->  195 tests · 195 pass · 0 fail
-$ node --test test/gates/formatos.test.mjs   ->   36 tests ·  36 pass · 0 fail
-$ node <scratchpad>/u269-mutar.mjs           ->  29 mutantes · 0 vivos · rc=0
-$ node <scratchpad>/u269-ley.mjs --corpus    ->  1140 ficheros · 0 violaciones
-$ node <scratchpad>/u269-ley-demo.mjs        ->  4 de 4 agujeros cazados a ciegas · rc=0
-$ node <scratchpad>/u269-b1-cli.mjs          ->  0 de 8 formas se escapan
-$ node <scratchpad>/u269-b2.mjs              ->  0 de 9 clases perdidas
-$ node <scratchpad>/u269-b3.mjs              ->  0 de 10 pierde vs main
-$ node <scratchpad>/u269-b5.mjs              ->  0 de 4 pierde vs main
+$ node scripts/gates/run.mjs                  ->  gates: OK (0 offenders) · rc=0
+$ node --test test/gates/*.test.mjs           ->  199 tests · 199 pass · 0 fail
+$ node <scratchpad>/u269-mutar.mjs            ->  35 mutantes · 0 vivos · rc=0
+$ node <scratchpad>/u269-w-ley-hijo.mjs       ->  CORPUS=0 BATERIA=0/16
+$ node <scratchpad>/u269-w-ley-demo.mjs       ->  4 de 4 agujeros cazados a ciegas · rc=0
+$ node <scratchpad>/u269-b1-cli.mjs           ->  0 de 8 formas se escapan
+$ node <scratchpad>/u269-b2.mjs               ->  0 de 9 clases perdidas
+$ node <scratchpad>/u269-b3.mjs               ->  0 de 10 pierde vs main
+$ node <scratchpad>/u269-b5.mjs               ->  0 de 4 pierde vs main
+$ node <scratchpad>/u269-w-b7.mjs             ->  0 de 6 pierde vs main
 ```
 
-`npm run lint` no se puede correr: no hay `node_modules` en esta máquina.
-
-## 10 · Ficheros
+## 9 · Ficheros
 
 | fichero | qué |
 |---|---|
-| `scripts/gates/formatos.mjs` | analizadores de JSON, JSONL, YAML de bloque, Dockerfile y lexer de código; `NoEntiendo`, la retirada, los **ocho** valores opacos y la contabilidad de claves consumidas |
-| `scripts/gates/claves.mjs` | `hallazgosEstructurales`, encaminamiento con retirada, `esHuecoEstructural`, `esNombreDeIdentidad`, ancla cerrada, compilación izada sin `g` ni `y` |
-| `test/gates/formatos.test.mjs` | 36 tests, incluida la **ley de conservación** sobre el corpus real |
+| `scripts/gates/formatos.mjs` | analizadores de JSON, JSONL, YAML de bloque, Dockerfile y lexer de código; `NoEntiendo`, la retirada, los **nueve** valores opacos y la contabilidad de claves consumidas |
+| `scripts/gates/claves.mjs` | `hallazgosEstructurales`, encaminamiento con retirada, `esHuecoEstructural`, `esNombreDeIdentidad` |
+| `test/gates/conservacion.mjs` | **nuevo** — la ley de conservación, fuera del fichero de test para que la demostración no use una copia |
+| `test/gates/formatos.test.mjs` | 39 tests, incluidos los tres que **matan a la ley** y comprueban que se nota |
 | `test/gates/claves.test.mjs` | cifras del léxico actualizadas |
