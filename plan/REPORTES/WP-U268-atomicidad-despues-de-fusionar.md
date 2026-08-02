@@ -75,9 +75,21 @@ anterior al merge de U253b: en `c005196` estaban en `:885`, `:910`, `:913`,
 
 ## §1 · Cómo se midió
 
-Arnés propio, temporal, borrado al terminar (`test/.sonda-u268.mjs`,
-`test/.medida-u268.mjs`, `test/.sonda-mutante.mjs`, y en la devolución
-`test/.b1-u268.mjs` y `test/.dc-probe.mjs`). Root de usar y tirar en
+Arnés propio y temporal. **Ninguno de estos ficheros existe: se borraron al
+terminar y nunca entraron en git**, así que las menciones de abajo son NOMBRES DE
+LO QUE CORRÍ, no rutas que nadie pueda abrir — cuando cito su salida, la pego
+literal aquí y digo cómo se re-deriva:
+
+| script (no conservado) | para qué |
+| --- | --- |
+| `.sonda-u268.mjs` | qué vectores de bloqueo existen en esta máquina (§1) |
+| `.medida-u268.mjs` | las seis entradas, antes y después (§2) |
+| `.sonda-mutante.mjs` | qué devuelve el mutante de U253b tras U268 (§5) |
+| `.b1-u268.mjs` | los dos vectores de B1, contra la base y contra lo entregado (§6) |
+| `.dc-probe.mjs` | si denegar `DC` bloquea el rename de vuelta (§ «Qué NO cubro» 6) |
+
+Lo que SÍ queda en el árbol y se puede abrir es el CA:
+`test/u268-atomicidad-post-fusion.test.mjs`. Root de usar y tirar en
 `os.tmpdir()` con `ZEUS_VOLUMES_ROOT`, pack sintético de dos corpus.
 
 **Huella del árbol entero** (CA-5), no inspección: por cada entrada del root, en
@@ -284,7 +296,7 @@ si deja de casar, la prueba enrojece por no encontrar qué amputar.
 | 1 | envoltorio del asiento | `throw err;` al frente del `catch` | **pierde su código y su nota**: cae en la red como `post_sello_interrumpido` | ✅ |
 | 2 | envoltorio de contadores | ídem | ídem | ✅ |
 | 3 | envoltorio de NO-LINK | ídem | ídem | ✅ |
-| 4 | **la RED + el envoltorio del asiento** (las dos: la promesa la sostienen entre ambas, con una sola la otra tapa — declarado) | ídem ×2 | la excepción **vuelve a ESCAPARSE** con el root sellado y sin asiento: conducta de la base | ✅ |
+| 4 | **la RED + el envoltorio del asiento** (dos a la vez, y sólo para esta conducta — ver la nota de abajo) | ídem ×2 | la excepción **vuelve a ESCAPARSE** con el root sellado y sin asiento: conducta de la base | ✅ |
 | 5 | **la pregunta por el sello** (B1) | `selloIntacto` → `true` (la suposición de la 1ª entrega) | vuelve `sellar_interrumpido` con `aterrizado:false` y **BORRA el corpus** (`volumen_ausente`) | ✅ |
 | 6 | **el ORDEN** (contadores antes del asiento) | se reinserta la llamada donde estaba en la base, sin envolver | manifiesto sellado, **cero asiento**, `verifyRootIntegrity` → `ledger_ausente` | ✅ |
 | 7 | el deshacer de SELLAR | `deshacerFusion(...)` → `{deshechos:[],sinDeshacer:[]}` | el root queda tocado, el corpus en destino, y la **segunda pasada da `slot_ocupado`** | ✅ |
@@ -294,6 +306,15 @@ si deja de casar, la prueba enrojece por no encontrar qué amputar.
 La #6 aísla el **reorden** de los envoltorios: si el orden no fuera portante, ese
 caso seguiría dando asiento y root arrancable. No lo da. La #5 es la que la
 contrarrevisión hizo falta para que existiera.
+
+**Precisión sobre la #4, porque mi primera redacción decía de más.** Escribí «la
+promesa la sostienen entre ambas, con una sola la otra tapa» como si el censo no
+aislara. **No es cierto en general y la contrarrevisión lo midió**: cada guarda
+enrojece SOLA —la red por el caso `B2 · un fallo en el hueco…`, el envoltorio del
+asiento por `E1` y por `CA-2 · recuperación del asiento`—. Lo que necesita las
+dos amputaciones es **una sola conducta**: que la excepción llegue a ESCAPARSE,
+que es precisamente la que las dos tapan por separado. La frase valía para eso y
+sólo para eso.
 
 **Cambio respecto de la primera entrega**: 1–3 exigían «vuelve a LANZAR». Con la
 red de última línea eso dejó de ser cierto —y es una mejora, no una pérdida—, así
@@ -332,8 +353,12 @@ el que se entrega** — lo único redirigido es el especificador del `import`:
   está el hash.
 
 ```
-$ node test/.b1-u268.mjs
+$ node test/.b1-u268.mjs      # probe medido y NO conservado (ver §1)
 ```
+
+Los dos vectores quedan además como CA permanente y abrible, sobre el mismo
+sustituto: `B1 · escritura COMPLETA…`, `B1 · escritura TRUNCADA…` y su censo, en
+`test/u268-atomicidad-post-fusion.test.mjs`.
 
 ### Antes / primera entrega / ahora
 
@@ -401,8 +426,18 @@ medio; es que nada de lo que corre puede salirse.*
 Prueba del hueco exacto que señaló la contrarrevisión: se inyecta un fallo en el
 `steps.push` de `sellar` y se exige `post_sello_interrumpido` con el asiento ya
 escrito y el root arrancando. Y el censo correspondiente: **amputadas la red Y el
-envoltorio** (las dos, porque la promesa la sostienen entre ambas, y con una sola
-la otra tapa), la excepción vuelve a escaparse con el root sellado y sin asiento.
+envoltorio** —las dos sólo para la conducta «escaparse», que es la que ambas
+tapan; cada una enrojece sola para lo suyo (§5)—, la excepción vuelve a escaparse
+con el root sellado y sin asiento.
+
+**Lo que la red NO cubre, dicho aquí y en la cabecera del módulo**: el `catch` de
+SELLAR queda fuera de ella. Hoy nada de lo que hay dentro lanza, pero **está
+protegido por CONSTRUCCIÓN, no por red** —revisado pieza a pieza: `manifiestoVivo`
+atrapa lo suyo y devuelve `null`, `deshacerFusion` no lanza por contrato, el resto
+son literales y `.map` sobre arrays propios—. Eso es **más débil que una red** y
+no tiene vector conocido: es una propiedad del código de hoy, no del contrato.
+Queda escrito en el sitio para que quien meta una llamada ahí sepa que **entra en
+zona sin red**.
 
 Efecto sobre el censo anterior: amputar un envoltorio con nombre ya no produce
 una excepción —la red lo recoge—, así que esos tres casos ahora exigen lo que el
@@ -550,13 +585,25 @@ Dicho aquí y también en la cabecera del fichero de prueba.
      `manifest.mjs`. No hay forma portable de llenar un disco ni de hacer fallar
      el `readFileSync` de (d) habiendo pasado el de (a);
    - la rama `sinDeshacer > 0` sustituye `fusion-guard.mjs`. **No conseguí
-     plantar un rename de vuelta fallido desde dentro de `importPack`**: probé
-     denegar `DC` en el directorio destino (no bloquea, medido en
-     `test/.dc-probe.mjs`), handles abiertos (no bloquean) y cwd (sí bloquea un
-     rename, pero el directorio no existe hasta después de fusionar). Lo que sí
-     está probado con un fallo REAL es que `deshacerFusion` produce ese
-     inventario (`fusion-guard.test.mjs:721-723`); lo inyectado es sólo su
-     traducción al contrato;
+     plantar un rename de vuelta fallido desde dentro de `importPack`.** Los tres
+     intentos, **medidos y no conservados** (el probe se borró y nunca entró en
+     git; se re-deriva en diez líneas: crear `padre/` y `staging/DEMO/`, aplicar
+     el bloqueo, `renameSync` de ida y de vuelta, mirar cuál lanza):
+
+     ```
+     icacls <padre> /deny <usuario>:(DC)   → Se procesaron correctamente 1 archivos
+     rename ENTRADA (applyFusion):  OK
+     rename VUELTA (deshacerFusion): OK  ← el vector NO bloquea
+     platform: win32
+     ```
+
+     …más handles abiertos (`rename con handle abierto: OK`) y cwd (`rename del
+     cwd: LANZA EBUSY rename` — bloquea de verdad, pero el directorio de destino
+     no existe hasta DESPUÉS de fusionar, así que no hay dónde poner el cwd a
+     tiempo). Lo que sí está probado con un fallo REAL es que `deshacerFusion`
+     produce ese inventario: `fusion-guard.test.mjs:708-728` ocupa la ruta de
+     vuelta con un directorio y `renameSync` lanza sin mock de por medio. Lo
+     inyectado aquí es sólo su TRADUCCIÓN al contrato de `importPack`;
    - el fallo del hueco de B2, porque un `.map` sobre un array construido por
      nosotros no revienta solo.
    En los tres casos el estado en disco que ve el código bajo prueba es el REAL.

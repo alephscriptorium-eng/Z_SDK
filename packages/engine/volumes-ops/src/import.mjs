@@ -62,6 +62,24 @@
  * Staging vive DENTRO del root destino (mismo dispositivo) y la fusión es
  * rename-only.
  *
+ * ── ZONA SIN RED, Y HAY QUE SABERLO ANTES DE METER CÓDIGO AHÍ ─────────────
+ * La red de última línea cubre lo que va DESPUÉS del sello. **El `catch` de
+ * SELLAR queda fuera de ella**: si algo de lo que hay dentro de ese `catch`
+ * lanzara, la excepción se escaparía de `importPack`.
+ *
+ * Hoy no lo hace, y no por una guarda: **esa región no está protegida por red,
+ * está protegida por CONSTRUCCIÓN** — se revisó pieza a pieza que nada de lo que
+ * hay ahí puede lanzar solo (`manifiestoVivo` ya atrapa lo suyo y devuelve
+ * `null`, `deshacerFusion` no lanza por contrato, y el resto son literales y
+ * `.map` sobre arrays propios). **Eso es más débil que una red** y no tiene
+ * vector conocido a día de hoy: es una propiedad del código actual, no una
+ * garantía del contrato.
+ *
+ * Quien añada una llamada dentro de ese `catch` —una lectura, un borrado, un
+ * log que toque disco— **entra en zona sin red** y rompe la promesa de arriba
+ * sin que ninguna prueba lo cace. Si hace falta meter algo ahí, lo que
+ * corresponde es envolverlo, no confiar en que siga sin lanzar.
+ *
  * ── U255 · «NOTHING LANDS HALFWAY» ERA UNA FRASE, NO UNA GARANTÍA ─────────
  * Las dos líneas de arriba y el paso 4 del contrato («pase 1 (dry): TODA
  * colisión se detecta ANTES de mover nada … root intacto») eran falsas para
@@ -1100,6 +1118,13 @@ export function importPack(opts) {
       }
       sealAfter = sealManifest(sealed);
     } catch (err) {
+      // ⚠ ZONA SIN RED. Este `catch` está FUERA de la red de última línea (que
+      // sólo cubre lo posterior al sello): lo que lance aquí dentro se escapa de
+      // `importPack`. Hoy nada lo hace, pero **por construcción, no por guarda**
+      // —revisado pieza a pieza—, y eso es más débil que una red. Antes de
+      // añadir aquí cualquier llamada que toque disco, envolverla. Ver la
+      // cabecera del módulo.
+      //
       // Se PREGUNTA por el sello antes de decidir. Ver el bloque de arriba.
       const vivo = manifiestoVivo();
       const selloIntacto = vivo !== null && vivo.sha256 === sealBefore.sha256;
