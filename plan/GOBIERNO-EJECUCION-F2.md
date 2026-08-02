@@ -854,6 +854,52 @@ Fallo de cualquier paso = DoD no cumplida; no hay «pasa con notas».
 
 ---
 
+## ✎ 2026-08-02 · DOS NUMERACIONES DE OLA, Y HAY QUE DECIRLO
+
+Este documento numera las **olas del plan** (G1…G8, arriba). La sala ha estado
+numerando **bloques de sesión** con los mismos dígitos, y **no son lo mismo**.
+Medido hoy, fila a fila:
+
+| plan | fichas | estado real |
+| ---- | ------ | ----------- |
+| Olas 1–3 (G1–G3) | 15 | ✅ ejecutadas |
+| Carril D (GD) | 8 | ✅ ejecutado, gate abierto |
+| **Olas 4–8 (G4–G8)** | **28** | **CERO empezadas** |
+
+Lo que la sala llamó «olas 4 a 8» fueron **carril D + reparación**: `U251`–`U263`,
+nacidas de contrarrevisiones, no del plan. Fue trabajo real y necesario —seis
+formas de burlar un portero, una importación que dejaba la biblioteca a medias,
+cuatro copias de una misma regla, la publicación sin red— pero **el plan lleva
+cinco bloques sin moverse** y el documento no lo decía. Ahora lo dice.
+
+**Regla que sale de aquí**: un bloque de sesión se nombra `B<n>`; una ola del
+plan se nombra por su gate. Nunca los dos con el mismo número.
+
+## Bloque **B9** — composición cargada (2026-08-02)
+
+Compuesto tras separar el frente LORE-HM a su propio swarm
+(`C:\S\scriptorium\plan\GOBIERNO-LORE-HM.md`), que **libera la capacidad
+entera** de este swarm. Techos: Z **6**, V **3**.
+
+| # | ficha | qué cierra | por qué en B9 |
+| - | ----- | ---------- | ------------- |
+| 1 | **U253** `P1` | las dos evasiones que ningún probe ve: `resolveManifestPath()` público y `ledgerPath` sin validar, en `volumes-ops/src/` | **y dispara sola la verificación de `Release`**: toca `packages/**`, que es el filtro de rutas que el arreglo de U263 nunca activó. La publicación del motor lleva **8+ runs en rojo y cero verdes** |
+| 2 | **U245** `P1` | tipos públicos de `@zeus/linea-kit`, todos los subpaths | **desbloquea al otro swarm**: `WP-HUB-100` y `105` exigen reusar sus schemas publicados. Ventana abierta desde `GD`. Frontera dura: **cero cambios en `src/**`** — ortogonal a U253, que vive en `volumes-ops` |
+| 3 | **U181** `P1` | las seis UIs (`editor`, `player`, `player-3d`, `3d-monitor`, `cache-browser`, `firehose-browser`) arrancan **desde catálogo**, con puerto por variable | **reanuda el plan**: es la primera ficha de la ola 4 del plan, parada desde el 31 de julio |
+| 4 | **U196** `P1` | `zones` deja de ser filtro opaco y pasa a ámbito real: mismo topic × 2 zonas = **2 conversaciones**, con fan-out medido | mismo lote de plan; sin solape de ficheros con las otras tres |
+
+**V (3)**: `V96` el suelo de cobertura que mide distinto en Windows y en CI —hoy
+el trinquete da un rojo que no es una regresión, en la máquina donde más se
+corre— · `V92` tres citas que apuntan a ficheros borrados · `V79` aceptar la
+plantilla de brief, que ya está escrita y evita las nueve trampas censadas.
+
+**Riesgo declarado de B9**: U181 y U196 son **territorio nuevo** tras cinco
+bloques de reparación, y en este programa **ninguna entrega ha pasado la
+contrarrevisión a la primera**. Si las dos vuelven, B9 cierra a 2 de 4 en Z y
+eso será el dato, no un imprevisto.
+
+---
+
 ## Autoverificación de CA de U232
 
 **CA1 — ningún WP huérfano de gate.** Recorrido de los 66:
