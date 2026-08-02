@@ -316,6 +316,22 @@ const VECTORS = [
     target: 'types/model.d.ts',
     expect: /error TS1\d{3}/,
     causa: 'TS1xxx — error de gramática, la declaración no se puede ni leer'
+  },
+  {
+    // El hueco que deja la pierna J, y el único de los cuatro que cae sobre
+    // las 19 del comodín `./schemas/*`. J no compila: busca la cadena
+    // `with { type: 'json' }` en la prosa, así que caza la declaración VACÍA
+    // —que la pierde— pero no ésta, que la conserva entera y bien cerrada y
+    // tiene el código roto debajo. Sin este vector, de las 50 declaraciones
+    // habría 19 cuyo único guardián frente a la corrupción sintáctica sería
+    // un mecanismo sin negativo que lo fije.
+    name: 'rota CON la nota puesta · schema del comodín (types/schemas/volumes.json.d.ts)',
+    vector: 'rota-con-nota.d.ts.vector',
+    target: 'types/schemas/volumes.json.d.ts',
+    expect: /error TS1\d{3}/,
+    causa:
+      'TS1xxx — gramática rota mientras la nota del atributo sigue puesta, ' +
+      'que es justo lo que la pierna J del gate no puede ver'
   }
 ];
 

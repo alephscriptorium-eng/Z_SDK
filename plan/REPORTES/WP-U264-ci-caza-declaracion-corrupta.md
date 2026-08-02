@@ -153,9 +153,10 @@ se rompe.
 | 3 | vector `vacía` sobre `types/model.d.ts` → `TS2306` |
 | 4 | vector `vacía` sobre `types/index.d.ts` (**barril raíz**, subpath `.`) → `TS2306` |
 | 5 | vector `rota` sobre `types/model.d.ts` → `TS1xxx` |
-| 6 | `types/check.mjs` entero: los 2 consumidores y los **13** `must-fail`, cada uno nombrado en la salida |
+| 6 | vector `rota CON la nota puesta` sobre `types/schemas/volumes.json.d.ts` → `TS1xxx`. **El hueco de la pierna J** (§8.4) |
+| 7 | `types/check.mjs` entero: los 2 consumidores y los **13** `must-fail`, cada uno nombrado en la salida |
 
-**Atribución del rojo** (3,4,5), anclada tras la contrarrevisión: **todos** los
+**Atribución del rojo** (3,4,5,6), anclada tras la contrarrevisión: **todos** los
 errores tienen que ser atribuibles al objetivo, y «atribuible» es que `tsc`
 sitúe el diagnóstico **en** el fichero (`<ruta>(lin,col):`, la vía de la
 declaración *rota*) **o** lo cite como **sujeto** del mensaje
@@ -174,9 +175,24 @@ se sostiene sea cual sea la línea base. Medido en §5, D8.
 ### 3.2 `test/types/corrupt/` (nuevo) — los vectores guardados
 
 `vacia.d.ts.vector` (0 bytes), `rota.d.ts.vector` (707 bytes, `model.d.ts`
-cortado a la mitad) y un `README.md`. Sufijo `.vector` a propósito: son
-**contenido**, no declaraciones vivas, y así ningún `tsc -p` ni barrido de
-`.d.ts` los carga por accidente.
+cortado a la mitad), `rota-con-nota.d.ts.vector` y un `README.md`. Sufijo
+`.vector` a propósito: son **contenido**, no declaraciones vivas, y así ningún
+`tsc -p` ni barrido de `.d.ts` los carga por accidente.
+
+**El tercero cubre el bloque de 19 que los otros dos no tocaban.** Conserva el
+docblock **entero y bien cerrado** —o sea que la pierna J del gate queda
+satisfecha **de verdad**, no por accidente— y rompe el código de debajo. Es el
+único de los cuatro vectores que cae sobre el comodín `./schemas/*`:
+
+```
+GATE  ok=true  []  decls=50        ← la pierna J está contenta y no lo ve
+TSC   exit=2   3 errores, los tres en types/schemas/volumes.json.d.ts
+```
+
+Lo destapé **al acotar la frase del §8.4** y lo declaré sin vector; la
+contrarrevisión pidió el vector, con razón: *un guardián sin negativo no está
+verificado*, y aquí el mecanismo cazaba algo que nada fijaba. Verificado en
+las dos direcciones (§5, D9 y D10).
 
 ### 3.3 El `probe.ts`, que no es adorno
 
@@ -196,6 +212,12 @@ Un fichero vacío es un **script válido**. `types/index.d.ts` es el barril raí
 —lo apunta el subpath `.`— y **no lo importa nadie**, así que vacío compila
 limpio. Sólo enrojece si alguien lo importa. El test genera un `probe.ts` que
 importa las 50 declaraciones una a una.
+
+> **Esta justificación está INFRA-declarada, y lo midió la contrarrevisión, no
+> yo.** Yo lo sostengo con el barril raíz, como si fuera un caso de esquina.
+> Vaciando las **50** declaraciones una a una: **0 de 50 escapan con probe,
+> 25 de 50 sin él**. El `probe.ts` no salva un caso: sostiene **la mitad de la
+> superficie**. Atribución en §5.1.
 
 ### 3.4 `test/types/check.mjs` (modificado) — ver §4
 
@@ -248,10 +270,16 @@ exit=2  6.4s   lineas con error TS = 181   ficheros distintos = 37
 **180 de 36 ficheros ajenos + 1 del propio fichero.** La causa es el conjunto
 de 84 paquetes ambientales bajo `--lib ES2022` sin DOM, **no** ninguno en
 concreto: el mayor es `@types/webxr` con 44 y `@types/d3-array` sólo aporta 2
-— salía impreso porque **ordena primero**, no porque pesara. *(Corregido en la
-contrarrevisión: la versión anterior de este reporte y el comentario de
-`check.mjs` atribuían los 181 a `d3-array`. El total era correcto; la
-atribución, no.)*
+— salía impreso porque **ordena primero**, no porque pesara.
+
+*(La versión anterior de este reporte **y el comentario de `check.mjs`**
+atribuían los 181 a `d3-array`. El total era correcto; la atribución, no. Lo
+cazó la contrarrevisión, y por qué importa que estuviera **en el comentario**
+está en §5.2.)*
+
+**Y la vacuidad no era de un fichero: era de la pierna entera.** Yo la demostré
+sobre `b2-hop.ts`; la contrarrevisión neutralizó **los trece uno a uno** bajo
+la configuración tal como se fusionó U245 — **13 de 13 verdes vacíos** (§5.1).
 
 `check.mjs` sólo miraba `run.status !== 0`. **Guardián desactivado** —
 `b2-hop.ts` reemplazado por algo que compila limpio:
@@ -299,12 +327,20 @@ Ningún negativo se da por bueno sin ver que **enrojece por lo que dice**.
 | D6 | sólo `--typeRoots` fuera, atribución puesta | **6 rojo** | `FAIL must-fail/b2-hop.ts — rejected, but NOT by anything in the file` |
 | D7 | el centinela **creado** (`mkdir __sin-tipos-ambientales__`) | **rojo en los dos sitios** | `not ok 0 … EXISTE, y su único trabajo es faltar` · `check.mjs` → `FAIL … EXISTS. It is a sentinel` `EXIT=1` |
 | D8 | una declaración de schema **vacía en el árbol vivo** | rojos 2, 3, 4 y 6; la aserción CA5 dispara **0 veces** | `hay errores que no se sitúan en types/model.d.ts ni lo citan como sujeto` + `probe.ts(53,25): TS2306: File 'types/schemas/volumes.json.d.ts' is not a module.` |
+| D9 | la inyección del vector `rota-con-nota` (no se corrompe nada) | **7 rojo** con SU causa | `types/schemas/volumes.json.d.ts corrompida con rota-con-nota.d.ts.vector y tsc salió 0 … Causa esperada: TS1xxx — gramática rota mientras la nota del atributo sigue puesta` |
+| D10 | **la nota del propio vector** borrada | **7 rojo**, y por la aserción CA5 | `el gate existsSync SÍ nota este vector: [{"leg":"J","code":"attribute_contract_missing", …}]` |
 
 **D2 y D4 son los que más dicen.** D2 porque separa quién caza qué: el
 compilador equivocado lo caza la guarda 1, **no** los vectores (2-5 siguen
 verdes con 4.9.5, o sea que sin esa guarda el pin podría pudrirse en silencio).
 D4 porque aísla el `probe.ts` a **un solo** vector: si hubiera enrojecido los
 tres, el probe estaría tapando el mecanismo real de los otros dos.
+
+**D10 es el que hace honesto al vector nuevo.** Sin él, que el gate viejo dijera
+`ok` sobre la copia con la nota puesta podría ser casualidad. Borrándole la nota
+al vector, la pierna J **sí** dispara y la aserción CA5 lo caza: o sea que la
+ceguera medida es exactamente «J satisfecha y aun así no lo ve», que es lo que
+el vector afirma.
 
 **D8 es el que exigió la contrarrevisión y el que más cambió el diseño.** Antes,
 la aserción CA5 pedía `gate.ok === true` sobre la copia corrompida; con una
@@ -317,13 +353,44 @@ el fichero que de verdad está roto.
 **D5b es el mismo experimento que en §4, y ahí está la diferencia**: antes del
 arreglo salía `PASS`/`EXIT=0`; ahora sale `FAIL`/`EXIT=1`.
 
+### 5.1 Medidas de la contrarrevisión adversarial — no son mías
+
+Estas tres las midió **la contrarrevisión adversarial**, no este worker, y van
+aquí porque son **evidencia más fuerte que la que yo aporté**. Se separan a
+propósito para que dentro de seis meses se pueda leer **quién midió qué**.
+
+| medida | quién | qué añade sobre lo que yo medí |
+| --- | --- | --- |
+| **13 de 13 negativos vacíos** | contrarrevisión | Yo demostré la vacuidad **sobre un caso** (`b2-hop.ts`). La contrarrevisión neutralizó **los trece uno a uno** bajo la configuración **tal como se fusionó U245**: 13/13 verdes vacíos. El hallazgo no era una anécdota de un fichero, era la pierna entera |
+| **Los dos mecanismos, en las DOS direcciones** | contrarrevisión | Yo medí una dirección (D6: `typeRoots` OFF, atribución ON). Faltaba la otra. La matriz completa: `typeRoots OFF + atribución ON` → `rejected, but NOT by anything in the file` · `typeRoots ON + atribución OFF` → `COMPILED. The declaration stopped biting` · **ambos OFF (= U245)** → `PASS` vacuo. Son independientes de verdad, no defensa en profundidad de adorno |
+| **25 de 50 dependen del `probe`** | contrarrevisión | Ésta **me favorece y no la sabía**. Yo justifico el `probe.ts` con el barril raíz (§3.3). Vaciando las 50 declaraciones una a una: **0 de 50 escapan con probe, 25 de 50 sin él**. Mi justificación estaba **infra-declarada**: el probe no sostiene un caso, sostiene **la mitad de la superficie** |
+
+La contrarrevisión verificó además el **runtime CERO contra tres puntos** —
+`HEAD`, `main` y el commit con el que se selló U245 — y las tres afirmaciones
+de la excepción del lockfile (§2.2), incluida la disposición en disco que
+**sólo produce una instalación real**.
+
+### 5.2 La lección, que no es el detalle
+
+El menor ① de la contrarrevisión —la atribución falsa de los 181 errores a
+`@types/d3-array`— **no era un error de prosa del informe**. La cita vivía en
+el **comentario de `check.mjs`**, así que se habría propagado **desde el
+código**.
+
+Es la **tercera vez** en esta jornada que una cita rancia viaja en una
+**cabecera** en vez de en un informe, y las tres veces ha sido peor por eso:
+**un informe lo lee quien va a buscarlo; una cabecera se la cuenta a todo el
+que toque el fichero.** U245 ya lo vio en su segunda devolución, cuando su
+referencia falsa a `WP-U246` resultó estar en la cabecera del gate y no sólo en
+el reporte. Sigue pasando.
+
 ---
 
 ## 6 · Verde completo
 
 ```
 $ ZEUS_VOLUMES_ROOT=$(pwd)/VOLUMES npm test -w @zeus/linea-kit
-# tests 66   # suites 19   # pass 66   # fail 0   # skipped 0
+# tests 67   # suites 19   # pass 67   # fail 0   # skipped 0
 EXIT=0
 ```
 
@@ -336,7 +403,8 @@ ok 3 - la copia SIN mutar compila limpia (el banco no es la causa del rojo)
 ok 4 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
 ok 5 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
 ok 6 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
-ok 7 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
+ok 7 - vector rota CON la nota puesta · schema del comodín (types/schemas/volumes.json.d.ts) ENROJECE
+ok 8 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
 ```
 
 Resto:
@@ -427,7 +495,8 @@ ok 4 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
 not ok 5 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
       hay errores que no se sitúan en types/index.d.ts ni lo citan como sujeto
 ok 6 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
-not ok 7 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
+ok 7 - vector rota CON la nota puesta · schema del comodín (…/volumes.json.d.ts) ENROJECE
+not ok 8 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
 EXIT=1
 
 $ node test/gate-exports-types.mjs
@@ -444,7 +513,9 @@ Tres cosas que conviene entender del rojo, porque no son obvias:
 - **El 5 enrojece por la aserción de atribución nueva**, no por su vector:
   apunta a `index.d.ts` y se encuentra además los errores de `model.d.ts`, que
   no le pertenecen. El mensaje lo dice con esas palabras en vez de fingir que
-  el vector falló.
+  el vector falló. Los vectores **de gramática** (6 y 7) se quedan verdes
+  porque un error de sintaxis hace que `tsc` **no llegue a la fase semántica**:
+  su único error es el suyo, y por tanto todo lo que ven es atribuible.
 - **El gate `exports-types` se queda VERDE** con sus `50 declarations`. No es un
   fallo: es la ceguera declarada de U245 sobre las 31 no-schema (§8.4), y los
   vectores la aseveran a propósito comparándola contra su línea base.
@@ -493,10 +564,15 @@ Tres cosas que conviene entender del rojo, porque no son obvias:
    tsc        → types/schemas/volumes.json.d.ts(16,1): error TS1010: '*/' expected.  EXIT=2
    ```
 
-   La caza el **mecanismo** nuevo (se compilan las 50, no una selección), pero
-   **no he dejado vector guardado para ese caso**: los tres que hay apuntan a
-   `model.d.ts` y a `index.d.ts`, o sea al bloque de 31. Queda dicho, no
-   escondido.
+   **Cerrado en la ronda siguiente**, a petición de la contrarrevisión y con
+   razón: el mecanismo la cazaba (se compilan las 50, no una selección) pero
+   **nada la fijaba**, que es justo lo que se pierde en el siguiente refactor.
+   El cuarto vector, `rota-con-nota.d.ts.vector` (§3.2), es el negativo de ese
+   guardián, verificado en las dos direcciones (§5, D9 y D10).
+
+   Entre las dos comprobaciones, las 50 quedan cubiertas: la pierna J caza la
+   **vacía** de las 19 de `schemas/`, y el compilado nuevo caza **la vacía y la
+   rota de las 50**, con vector guardado para cada forma.
 5. **El `typescript@4.9.5` transitivo de la raíz** sigue ahí. No lo he movido
    (habría sido un lockfile mucho más caro y fuera de alcance). Lo que hay es
    la guarda que enrojece si alguna vez es **ése** el que acaba compilando este
