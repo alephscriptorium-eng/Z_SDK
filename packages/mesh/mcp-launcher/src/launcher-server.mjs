@@ -3,6 +3,7 @@
  */
 
 import { createStandardMcpServer, promptMessages } from '@zeus/presets-sdk/mcp';
+import { readEnvPort } from '@zeus/presets-sdk/env';
 import { ProcessManager } from './process-manager.mjs';
 import { resolveCatalog, PORT_TABLE } from './catalog.mjs';
 import * as tools from './tools.mjs';
@@ -10,11 +11,17 @@ import * as tools from './tools.mjs';
 export const SERVER_NAME = 'mcp-launcher';
 export const SERVER_VERSION = '0.1.0';
 
-/** Launcher bind port from ZEUS_MCP_LAUNCHER or presets-sdk PORT_TABLE. */
+/**
+ * Launcher bind port from ZEUS_MCP_LAUNCHER or presets-sdk PORT_TABLE.
+ *
+ * WP-U266 · aqui vivia literalmente el antipatron que cierra la ficha:
+ * `if (raw && Number.isFinite(Number(raw))) return Number(raw)`, que aceptaba
+ * `0`, `-1`, `65536`, `3.5` y `0x10`. Estaba muerto por accidente —el import de
+ * `PORT_TABLE` aborta antes— pero revivia en cuanto alguien arreglase la
+ * rancidez de `PORT_TABLE` (el O9 de U181). Ahora pasa por la fuente unica.
+ */
 export function resolveLauncherPort() {
-  const raw = process.env.ZEUS_MCP_LAUNCHER;
-  if (raw && Number.isFinite(Number(raw))) return Number(raw);
-  return PORT_TABLE.launcher;
+  return readEnvPort('ZEUS_MCP_LAUNCHER', PORT_TABLE.launcher);
 }
 
 function getResourceRegistry(manager) {

@@ -19,8 +19,33 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   resolveRoomClientConfig,
-  DEFAULT_ZEUS_UI_MESH
+  DEFAULT_ZEUS_UI_MESH,
+  readEnvPortAlias,
+  uiPortEnvChain
 } from '@zeus/room-client-browser';
+
+/**
+ * Puerto de escucha desde el entorno, validado (WP-U266).
+ *
+ * Hasta U266 esto era `Number(process.env.OPERATOR_UI_PORT ?? …)` duplicado en
+ * dos sitios. Reparto de meritos, medido por ablacion y no supuesto:
+ *  - `ZEUS_PORT_OPERATOR_UI` **ya la cubria** `resolveRoomClientConfig()`, que
+ *    llama a `resolveZeusUiPorts()` (room-client-browser/src/index.mjs:29) al
+ *    construir `defaultZeusConfig()`. Con el `Number(...)` viejo, ese caso
+ *    aborta igual: salta OTRO guardian.
+ *  - `OPERATOR_UI_PORT`, el alias legado, **no lo conoce nadie mas**. Ese era
+ *    el hueco de verdad: con el codigo viejo, `OPERATOR_UI_PORT=0` arrancaba y
+ *    anunciaba `Serving at http://localhost:55770` — un efimero presentado como
+ *    suyo, exit 124 por timeout del arnes porque el proceso seguia vivo.
+ *
+ * Se centraliza en una sola funcion para que los dos sitios no puedan volver a
+ * divergir, y `OPERATOR_UI_PORT` mantiene la prioridad que ya tenia.
+ */
+function puertoOperatorUiDeEntorno() {
+  // El orden vive en la fuente única (`UI_PORT_ENV_CHAIN`), para que el
+  // catálogo y `stop:services` anuncien el mismo puerto que aquí se ata.
+  return readEnvPortAlias(uiPortEnvChain('operator'), DEFAULT_ZEUS_UI_MESH.operator.port);
+}
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // Angular 20 application build emits under dist/public/browser/.
@@ -59,13 +84,10 @@ function defaultZeusConfig() {
  * @returns {Promise<{ port: number, close: () => Promise<void> }>}
  */
 export async function createOperatorUiServer({ port, host = 'localhost', zeus } = {}) {
-  const resolvedPort =
-    port ??
-    Number(
-      process.env.OPERATOR_UI_PORT ??
-        process.env.ZEUS_PORT_OPERATOR_UI ??
-        DEFAULT_ZEUS_UI_MESH.operator.port
-    );
+  // `port` explicito (incluido `0` = puerto efimero) NO se valida: es codigo
+  // pidiendo un puerto, no configuracion mal formada. Ver `config.mjs` de
+  // socket-server para la misma distincion.
+  const resolvedPort = port ?? puertoOperatorUiDeEntorno();
   const ZEUS = zeus ?? defaultZeusConfig();
   if (!ZEUS.puerta) {
     ZEUS.puerta = puertaZeusSlice({
@@ -158,11 +180,7 @@ export async function createOperatorUiServer({ port, host = 'localhost', zeus } 
 const isMain = process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url;
 
 if (isMain) {
-  const PORT = Number(
-    process.env.OPERATOR_UI_PORT ??
-      process.env.ZEUS_PORT_OPERATOR_UI ??
-      DEFAULT_ZEUS_UI_MESH.operator.port
-  );
+  const PORT = puertoOperatorUiDeEntorno();
   const ZEUS = defaultZeusConfig();
   const handle = await createOperatorUiServer({ port: PORT, zeus: ZEUS });
   console.log(

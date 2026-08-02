@@ -40,5 +40,13 @@ export function resolveRoomClientConfig(opts = {}) {
   return { scriptoriumUrl, room, sessionId, token };
 }
 
-export { DEFAULT_ZEUS_UI_MESH, resolveZeusUiPorts } from '@zeus/presets-sdk/env';
+// `readEnvPortAlias` viaja con los defaults porque `mesh/operator-ui/serve.mjs`
+// resuelve su puerto por aqui y no depende de `@zeus/presets-sdk` directamente
+// (WP-U266: sin esto, `ZEUS_PORT_OPERATOR_UI` mal formado seguia colandose).
+export {
+  DEFAULT_ZEUS_UI_MESH,
+  resolveZeusUiPorts,
+  readEnvPortAlias,
+  uiPortEnvChain
+} from '@zeus/presets-sdk/env';
 export { DEV_ROOM_CLIENT_CONFIG } from '../browser/dev-room-config.mjs';

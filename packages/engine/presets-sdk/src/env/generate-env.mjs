@@ -220,6 +220,15 @@ export function renderEnvExample(opts = {}) {
   lines.push('# Fuente única: packages/engine/presets-sdk/src/env/index.mjs');
   lines.push('# Uso: copiar a .env y ajustar; el .env del operador nunca se toca.');
   lines.push('# Clave comentada = opcional (rige el default de la fuente única).');
+  lines.push('#');
+  lines.push('# Precedencia (de mayor a menor): variable de proceso > este .env >');
+  lines.push('# default de la fuente única. Con la clave en el .env Y en el entorno');
+  lines.push('# del proceso, GANA EL PROCESO (dotenv.config() sin override).');
+  lines.push('#');
+  lines.push('# Los puertos se validan al arrancar: entero decimal 1..65535, sin');
+  lines.push('# signo, sin decimales, sin 0x, sin espacios y sin ceros a la');
+  lines.push('# izquierda. Un valor mal formado (0, -1, 65536, 3.5, 0x10, "03012")');
+  lines.push('# aborta el arranque; NO cae al default. Clave vacía = usar default.');
   lines.push('');
 
   lines.push(sectionLine('host'));

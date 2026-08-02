@@ -24,11 +24,57 @@ export const DEFAULT_SPEC_TOOL_PORTS: {
 export const MCP_PORT_ENV: Record<string, string>;
 /** UI id → ZEUS_* override var. */
 export const UI_PORT_ENV: Record<string, string>;
+/** UI id → cadena de claves (alias legados) en orden de precedencia real. */
+export const UI_PORT_ENV_CHAIN: Readonly<Record<string, readonly string[]>>;
+/** Cadena de claves de entorno de un slot, de mayor a menor prioridad. */
+export function uiPortEnvChain(uiId: string): string[];
 /** Spec tool id → ZEUS_* override var. */
 export const SPEC_TOOL_PORT_ENV: Record<string, string>;
 
 export function resolveValidateMode(scope?: 'http' | 'socket'): ValidateMode;
+
+/** Rango de puerto anunciable. El 0 queda fuera a proposito (WP-U266). */
+export const MIN_ZEUS_PORT: number;
+export const MAX_ZEUS_PORT: number;
+/** `code` estable del error de puerto mal formado. */
+export const ZEUS_PORT_ERROR_CODE: 'ZEUS_PUERTO_MAL_FORMADO';
+
+/**
+ * Configuracion de puerto invalida. Discriminar por `code`, no por
+ * `instanceof` (copias duplicadas del paquete rompen `instanceof`).
+ */
+export class ZeusPortConfigError extends Error {
+  code: 'ZEUS_PUERTO_MAL_FORMADO';
+  envVar: string;
+  rawValue: string;
+  motivo: string;
+}
+
+/** Valida la forma textual de un puerto sin mirar el entorno. */
+export function validarPuerto(
+  raw: string
+): { ok: true; value: number } | { ok: false; motivo: string };
+
+/**
+ * Puerto declarado en `name`, o `fallback` si la clave no esta configurada.
+ * **Lanza** `ZeusPortConfigError` si esta declarada pero mal formada
+ * (cambio de contrato de WP-U266: antes devolvia siempre un numero).
+ */
 export function readEnvPort(name: string, fallback: number): number;
+
+/**
+ * Como `readEnvPort` con una cadena de nombres (alias legados): gana el primero
+ * declarado y **solo se valida el que gana**.
+ *
+ * `env` gobierna de donde se leen las claves de ESTA llamada; **no aisla de
+ * `process.env`** (ni en el fallback, ni frente a un aborto que dispare un
+ * resolver del mesh). Ver el JSDoc de la implementacion — WP-U266 · M-1.
+ */
+export function readEnvPortAlias(
+  names: string[],
+  fallback: number,
+  env?: Record<string, string | undefined>
+): number;
 export function resolveZeusHost(fallback?: string): string;
 export function applyEnvToMcp(
   mcp: object,

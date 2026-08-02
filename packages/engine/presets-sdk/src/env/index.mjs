@@ -15,7 +15,28 @@ export const MONOREPO_ROOT = join(__dirname, '../../../../..');
 let _loaded = false;
 
 /**
- * Load .env from the monorepo root once per process.
+ * PRECEDENCIA DE CONFIGURACION (medida, no supuesta — WP-U266)
+ * ============================================================
+ * Cuando una misma clave esta en el `.env` de raiz y ademas en el entorno del
+ * proceso, **gana la variable de proceso**. Es consecuencia directa de llamar a
+ * `dotenv.config()` SIN `override: true` (linea de abajo): dotenv solo escribe
+ * en `process.env` las claves que aun no existen.
+ *
+ *   .env: ZEUS_PORT_EDITOR=14012   +   entorno: ZEUS_PORT_EDITOR=15012
+ *   -> resuelve 15012 (gana el proceso)
+ *
+ * De mayor a menor prioridad:
+ *   1. variable de proceso (`ZEUS_PORT_EDITOR=... node ...`, launcher, CI)
+ *   2. `.env` de la raiz del monorepo
+ *   3. el defecto declarado en este fichero (DEFAULT_ZEUS_UI_MESH / DEFAULT_ZEUS_MCP)
+ *
+ * Cambiar esto a `override: true` invierte 1 y 2 y romperia todo override por
+ * linea de comandos. Si algun dia se cambia, hay que cambiar tambien este
+ * bloque y los tests que lo fijan (`test/env-puerto-mal-formado.mjs`).
+ *
+ * El `.env` se carga UNA vez por proceso (`_loaded`): editar el fichero con el
+ * proceso vivo no tiene efecto hasta reiniciar.
+ *
  * @param {string} [repoRoot] — override monorepo root (tests).
  */
 export function loadZeusEnv(repoRoot = MONOREPO_ROOT) {
@@ -108,6 +129,45 @@ export const UI_PORT_ENV = {
   solveView: 'ZEUS_PORT_SOLVE_VIEW'
 };
 
+/**
+ * Alias LEGADOS por slot de UI, en su ORDEN DE PRECEDENCIA REAL — el que ya
+ * usaban los servidores, no el que nos gustaría (WP-U266 · M-a).
+ *
+ * Sin esta tabla, el alias sólo lo veía quien ATA y no quien ANUNCIA, y eso es
+ * el defecto de la ficha por otra puerta. Medido antes de existir, con
+ * configuración enteramente válida:
+ *
+ *   ZEUS_SCRIPTORIUM_PORT=5555
+ *     socket-server ATA en     5555
+ *     resolveCatalog() ANUNCIA 3017
+ *     resolveStopServicePorts  [3017]   ← `stop:services` no lo mataba
+ *
+ * Ojo al orden, que NO es uniforme y es deliberado: `scriptorium` lee primero
+ * la canónica; `operator` y `webrtcViewer` leen primero el alias, porque es lo
+ * que hacían sus servidores desde antes de este WP y cambiarlo movería el
+ * puerto a quien ya lo tuviera configurado.
+ *
+ * Un slot sin entrada aquí usa su clave canónica y punto.
+ */
+export const UI_PORT_ENV_CHAIN = Object.freeze({
+  scriptorium: Object.freeze(['ZEUS_PORT_SCRIPTORIUM', 'ZEUS_SCRIPTORIUM_PORT']),
+  operator: Object.freeze(['OPERATOR_UI_PORT', 'ZEUS_PORT_OPERATOR_UI']),
+  webrtcViewer: Object.freeze(['WEBRTC_VIEWER_PORT', 'ZEUS_PORT_WEBRTC_VIEWER'])
+});
+
+/**
+ * Cadena de claves de entorno para un slot, de mayor a menor prioridad.
+ * Es la ÚNICA definición del orden: quien ata y quien anuncia leen de aquí.
+ * @param {string} uiId
+ * @returns {string[]}
+ */
+export function uiPortEnvChain(uiId) {
+  const cadena = UI_PORT_ENV_CHAIN[uiId];
+  if (cadena) return [...cadena];
+  const canonica = UI_PORT_ENV[uiId];
+  return canonica ? [canonica] : [];
+}
+
 /** App id → override var (UI slots plus the debug MCP HTTP port). */
 const APP_PORT_ENV = { ...UI_PORT_ENV, debug: 'ZEUS_PORT_PLAYER_DEBUG' };
 
@@ -162,16 +222,167 @@ export function resolveValidateMode(scope) {
   return normalizeValidateMode(scoped ?? master);
 }
 
+/** Puerto TCP anunciable: 1..65535. El 0 queda FUERA a proposito (ver abajo). */
+export const MIN_ZEUS_PORT = 1;
+export const MAX_ZEUS_PORT = 65535;
+
+/** `code` estable del error de puerto mal formado. */
+export const ZEUS_PORT_ERROR_CODE = 'ZEUS_PUERTO_MAL_FORMADO';
+
 /**
+ * Configuracion de puerto invalida. Se lanza al RESOLVER, no al escuchar, para
+ * que un puerto mal formado no llegue nunca a anunciarse en el catalogo.
+ *
+ * Discriminar por `err.code === ZEUS_PORT_ERROR_CODE`, **no** por `instanceof`:
+ * en un monorepo con copias duplicadas del paquete `instanceof` falla entre
+ * instancias distintas del modulo. El `code` viaja.
+ */
+export class ZeusPortConfigError extends Error {
+  /**
+   * @param {string} envVar
+   * @param {string} raw
+   * @param {string} motivo
+   */
+  constructor(envVar, raw, motivo) {
+    super(
+      `Puerto mal formado: ${envVar}=${JSON.stringify(raw)} — ${motivo}. ` +
+        `Se espera un entero decimal entre ${MIN_ZEUS_PORT} y ${MAX_ZEUS_PORT} ` +
+        `(sin signo, sin decimales, sin 0x, sin espacios, sin ceros a la izquierda). ` +
+        `Deja la clave vacia o sin declarar para usar el valor por defecto.`
+    );
+    this.name = 'ZeusPortConfigError';
+    this.code = ZEUS_PORT_ERROR_CODE;
+    this.envVar = envVar;
+    this.rawValue = raw;
+    this.motivo = motivo;
+  }
+}
+
+/**
+ * Valida la forma textual de un puerto SIN mirar el entorno.
+ *
+ * Deliberadamente estricta sobre la cadena cruda y no sobre `Number(raw)`,
+ * porque `Number` acepta como puerto cosas que no lo son: `Number('0x10')` es
+ * 16, `Number('  ')` es 0 y `Number('03012')` es 3012. `Number.isFinite` no es
+ * una validacion de puerto — era el defecto que cerro WP-U266.
+ *
+ * @param {string} raw
+ * @returns {{ ok: true, value: number } | { ok: false, motivo: string }}
+ */
+export function validarPuerto(raw) {
+  const s = String(raw);
+  // Sin `trim`: un valor de solo espacios es configuracion mal formada, no
+  // "sin configurar". Si se trimara, "  " caeria en el defecto en silencio,
+  // que es justo el falso verde que este WP prohibe.
+  if (!/^[0-9]+$/.test(s)) {
+    return { ok: false, motivo: 'no es un entero decimal sin signo' };
+  }
+  if (s.length > 1 && s[0] === '0') {
+    return { ok: false, motivo: 'lleva ceros a la izquierda' };
+  }
+  const n = Number(s);
+  if (n < MIN_ZEUS_PORT || n > MAX_ZEUS_PORT) {
+    // El 0 cae aqui, y es el vector que abrio la ficha: `listen(0)` pide un
+    // puerto efimero al SO, asi que el catalogo anunciaba 0 mientras el bind
+    // real caia en 56206. Un puerto anunciable no puede ser 0.
+    return { ok: false, motivo: `fuera de rango ${MIN_ZEUS_PORT}..${MAX_ZEUS_PORT}` };
+  }
+  return { ok: true, value: n };
+}
+
+/**
+ * Puerto declarado en `name`, o `fallback` si la clave no esta configurada.
+ *
+ * CONTRATO (cambiado en WP-U266 — antes devolvia siempre un numero):
+ * - clave ausente o cadena vacia -> `fallback` (el caso "sin configurar")
+ * - valor bien formado           -> el entero
+ * - valor mal formado            -> **lanza** `ZeusPortConfigError`
+ *
+ * Lanza en vez de caer al defecto a proposito: caer al defecto convierte un
+ * `ZEUS_PORT_EDITOR=abc` en un arranque verde escuchando en otro sitio, que es
+ * un falso verde. Fallar aqui —al resolver— garantiza que el valor mal formado
+ * no llegue ni al bind ni al catalogo.
+ *
+ * Precedencia `.env` vs proceso: gana el proceso. Ver `loadZeusEnv`.
+ *
  * @param {string} name
  * @param {number} fallback
+ * @returns {number}
+ * @throws {ZeusPortConfigError} si el valor esta declarado pero mal formado
  */
 export function readEnvPort(name, fallback) {
   loadZeusEnv();
   const raw = process.env[name];
   if (raw == null || raw === '') return fallback;
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : fallback;
+  const r = validarPuerto(raw);
+  if (!r.ok) throw new ZeusPortConfigError(name, raw, r.motivo);
+  return r.value;
+}
+
+/**
+ * Como `readEnvPort`, pero con una cadena de nombres: gana el PRIMERO que este
+ * declarado, y **solo se valida el que gana**.
+ *
+ * Existe para los servidores que arrastran un alias legado
+ * (`ZEUS_PORT_SCRIPTORIUM` con su viejo `ZEUS_SCRIPTORIUM_PORT`,
+ * `ZEUS_PORT_OPERATOR_UI` con `OPERATOR_UI_PORT`). Antes de WP-U266 esos dos
+ * resolvian con `Number(process.env.X ?? …)` a mano y por eso se quedaron fuera
+ * de la validacion: el defecto de la ficha seguia vivo en ellos aunque
+ * `readEnvPort` ya validara.
+ *
+ * Solo el ganador se valida a proposito: que un alias que NO se usa este mal
+ * escrito no debe tumbar un arranque que no lo lee.
+ *
+ * `env` permite pasar un mapa distinto de `process.env` (lo necesita
+ * `webrtc-viewer/src/game-bridge.mjs`, cuya API publica lo recibe por
+ * parametro). Con `env` explicito NO se carga el `.env` de raiz.
+ *
+ * ALCANCE EXACTO DE `env`, porque una version anterior de este comentario decia
+ * «quien pasa su propio mapa esta diciendo "resuelve contra ESTO"» y **eso
+ * prometia un aislamiento que esta funcion NO da** (WP-U266 · M-1):
+ *
+ *  - `env` gobierna **de donde se leen las claves de esta llamada**, y nada mas.
+ *  - **NO aisla de `process.env`** en los dos sentidos que importan:
+ *      · el `fallback` que recibe suele venir de `resolveZeusUiPorts()`, que lee
+ *        `process.env` (asi que un valor BIEN formado del proceso se cuela como
+ *        defecto);
+ *      · y si el llamante ha invocado antes un resolver del mesh, un valor MAL
+ *        formado en `process.env` **aborta la llamada aunque el mapa explicito
+ *        sea valido**. Medido:
+ *
+ *          process.env ZEUS_PORT_OASIS_WEBRTC=0x10
+ *          + env={ ZEUS_PORT_OASIS_WEBRTC: '5555' }   ->  rc=1, ABORTA
+ *
+ * Esa conducta **se conserva a proposito**: abortar ante cualquier
+ * configuracion mal formada es lo que pide la CA de la ficha, y falla ruidoso.
+ * Lo que se corrige aqui es la promesa, no el comportamiento. Si algun dia hace
+ * falta aislamiento de verdad, hay que pasarle el mapa tambien a los resolvers
+ * del mesh, que hoy no lo aceptan.
+ *
+ * @param {string[]} names — de mayor a menor prioridad
+ * @param {number} fallback
+ * @param {Record<string, string|undefined>} [env] — por defecto `process.env`
+ * @returns {number}
+ * @throws {ZeusPortConfigError} si el nombre que gana esta mal formado
+ */
+export function readEnvPortAlias(names, fallback, env) {
+  // `env == null` cubre `null` Y `undefined` a proposito: el parametro por
+  // defecto de JS solo captura `undefined`, asi que un `null` que llegue desde
+  // una API publica —`resolveWebRtcViewerEndpoint(null)` lo permite— reventaba
+  // con un `TypeError: Cannot read properties of null` en vez de comportarse
+  // como "sin mapa propio" (WP-U266 · M-i). Un error opaco donde deberia haber
+  // fallback es un mal error.
+  const delProceso = env == null;
+  if (delProceso) loadZeusEnv();
+  const fuente = delProceso ? process.env : env;
+  for (const name of names) {
+    const raw = fuente[name];
+    if (raw == null || raw === '') continue;
+    const r = validarPuerto(raw);
+    if (!r.ok) throw new ZeusPortConfigError(name, raw, r.motivo);
+    return r.value;
+  }
+  return fallback;
 }
 
 /** Default host when ZEUS_HOST is unset. */
@@ -206,10 +417,12 @@ export function applyEnvToMcp(mcp, host) {
 export function applyEnvToUis(uis, host) {
   const out = structuredClone(uis);
   const resolvedHost = resolveZeusHost(host || 'localhost');
-  for (const [uiId, envKey] of Object.entries(UI_PORT_ENV)) {
+  for (const uiId of Object.keys(UI_PORT_ENV)) {
     if (!out[uiId]) continue;
     out[uiId].host = resolvedHost;
-    out[uiId].port = readEnvPort(envKey, out[uiId].port);
+    // Por la CADENA, no por la clave suelta: si el servidor ata por un alias
+    // legado, el catálogo tiene que anunciar ESE puerto (WP-U266 · M-a).
+    out[uiId].port = readEnvPortAlias(uiPortEnvChain(uiId), out[uiId].port);
   }
   return out;
 }
@@ -257,6 +470,10 @@ export function resolveZeusUiPorts(baseUis = DEFAULT_ZEUS_UI_MESH) {
  * @param {number} fallback
  */
 export function resolveAppPort(appId, fallback) {
+  // Misma cadena que `applyEnvToUis`: el que ata y el que anuncia no pueden
+  // leer las claves en orden distinto (WP-U266 · M-a).
+  const cadena = UI_PORT_ENV_CHAIN[appId] ? uiPortEnvChain(appId) : null;
+  if (cadena) return readEnvPortAlias(cadena, fallback);
   const envKey = APP_PORT_ENV[appId];
   return envKey ? readEnvPort(envKey, fallback) : fallback;
 }
@@ -312,8 +529,34 @@ export function resolveSpecToolPorts(base = DEFAULT_SPEC_TOOL_PORTS) {
   };
 }
 
-/** Resolved spec tooling ports (AsyncAPI Studio + VitePress docs + MCP Inspector). */
-export const SPEC_TOOL_PORTS = resolveSpecToolPorts();
+/**
+ * Resolved spec tooling ports (AsyncAPI Studio + VitePress docs + MCP Inspector).
+ *
+ * PEREZOSO desde WP-U266, y no por estilo. Antes esto era
+ * `= resolveSpecToolPorts()` a nivel de modulo: con la validacion de puertos,
+ * un `ZEUS_PORT_DOCS=0` hacia que **todo `@zeus/presets-sdk` dejara de
+ * importarse** (medido: rc=1), arrastrando a consumidores que no tienen nada
+ * que ver con el tooling de spec — `mesh/linea-firehose/src/config.mjs` entre
+ * ellos. Cuatro claves de herramientas de desarrollo no pueden tumbar el
+ * paquete entero.
+ *
+ * Cada propiedad valida al leerse, asi que un valor mal formado sigue fallando
+ * ruidosamente; lo que cambia es CUANDO y a quien se lleva por delante.
+ */
+export const SPEC_TOOL_PORTS = Object.freeze({
+  get studio() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.studio, DEFAULT_SPEC_TOOL_PORTS.studio);
+  },
+  get docs() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.docs, DEFAULT_SPEC_TOOL_PORTS.docs);
+  },
+  get inspector() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.inspector, DEFAULT_SPEC_TOOL_PORTS.inspector);
+  },
+  get inspectorProxy() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.inspectorProxy, DEFAULT_SPEC_TOOL_PORTS.inspectorProxy);
+  }
+});
 
 /** Default MCP Inspector auth token (override: ZEUS_INSPECTOR_TOKEN). */
 export const DEFAULT_ZEUS_INSPECTOR_TOKEN = 'zeus-dev-inspector';

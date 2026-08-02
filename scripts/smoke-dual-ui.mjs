@@ -12,18 +12,26 @@
  */
 
 import { loadZeusEnv, DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk';
-import { DEFAULT_ZEUS_MCP } from '@zeus/presets-sdk/env';
+import { DEFAULT_ZEUS_MCP, readEnvPort, readEnvPortAlias, uiPortEnvChain } from '@zeus/presets-sdk/env';
 
 loadZeusEnv();
 
 const host = process.env.ZEUS_HOST || 'localhost';
+// WP-U266 · via `readEnvPort` y no `Number(...)`: este smoke comprueba puertos
+// donde deberia haber alguien escuchando, asi que apuntar a `:0` o `:NaN` por
+// un valor mal formado seria un rojo que no dice lo que pasa.
+// `scriptorium` y `operator` van por CADENA, no por la clave suelta: sus
+// servidores atan por un alias legado que gana (`OPERATOR_UI_PORT` en el caso
+// de operator-ui). Comprobar la clave canónica sería sondear un puerto distinto
+// del que el servidor está escuchando — el smoke daría rojo con el sistema
+// perfectamente sano, o verde apuntando a otro sitio (WP-U266 · M-c).
 const ports = {
-  scriptorium: Number(process.env.ZEUS_PORT_SCRIPTORIUM ?? DEFAULT_ZEUS_UI_MESH.scriptorium.port),
-  player: Number(process.env.ZEUS_PORT_PLAYER ?? DEFAULT_ZEUS_UI_MESH.player.port),
-  player3d: Number(process.env.ZEUS_PORT_PLAYER_3D ?? DEFAULT_ZEUS_UI_MESH.player3d.port),
-  operator: Number(process.env.ZEUS_PORT_OPERATOR_UI ?? DEFAULT_ZEUS_UI_MESH.operator.port),
-  lineaEspana: Number(process.env.ZEUS_MCP_LINEA_ESPAN ?? DEFAULT_ZEUS_MCP.lineas.espana),
-  lineaWp: Number(process.env.ZEUS_MCP_LINEA_WP ?? DEFAULT_ZEUS_MCP.lineas.wpHistoria),
+  scriptorium: readEnvPortAlias(uiPortEnvChain('scriptorium'), DEFAULT_ZEUS_UI_MESH.scriptorium.port),
+  player: readEnvPort('ZEUS_PORT_PLAYER', DEFAULT_ZEUS_UI_MESH.player.port),
+  player3d: readEnvPort('ZEUS_PORT_PLAYER_3D', DEFAULT_ZEUS_UI_MESH.player3d.port),
+  operator: readEnvPortAlias(uiPortEnvChain('operator'), DEFAULT_ZEUS_UI_MESH.operator.port),
+  lineaEspana: readEnvPort('ZEUS_MCP_LINEA_ESPAN', DEFAULT_ZEUS_MCP.lineas.espana),
+  lineaWp: readEnvPort('ZEUS_MCP_LINEA_WP', DEFAULT_ZEUS_MCP.lineas.wpHistoria),
 };
 
 /** @type {{ id: string, url: string, validate: (body: any) => boolean, required?: boolean }[]} */

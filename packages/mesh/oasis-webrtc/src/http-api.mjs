@@ -10,7 +10,9 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import {
   resolveZeusUiPorts,
-  resolveIceServers
+  resolveIceServers,
+  readEnvPortAlias,
+  uiPortEnvChain
 } from '@zeus/presets-sdk/env';
 import {
   SSB_WEBRTC_SIGNAL_TYPE,
@@ -24,12 +26,28 @@ const PUBLIC_DIR = join(__dirname, '../public');
 /**
  * @returns {{ host: string, port: number, path: string }}
  */
+/**
+ * WP-U266 · B3. Aqui vivia el MISMO defecto que en `webrtc-viewer/game-bridge`,
+ * y por la misma puerta: se lee el entorno **por parametro**, y la validacion
+ * de `resolveZeusUiPorts()` solo mira `process.env`. El contraste lo delataba:
+ *
+ *   resolveOasisWebrtcListen({ ZEUS_PORT_OASIS_WEBRTC: '0x10' }).port -> 16, rc=0
+ *   ZEUS_PORT_OASIS_WEBRTC=0x10 (por process.env)                     -> ABORTA, rc=1
+ *
+ * Punta a punta con `"0"` declarado: ataba en un efimero (61432) y anunciaba
+ * ese mismo efimero como si fuera el configurado.
+ *
+ * Este slot **no tiene alias legado**, asi que la cadena es de un solo nombre;
+ * se pide igual a `uiPortEnvChain` para no volver a escribir la clave a mano.
+ *
+ * @returns {{ host: string, port: number, path: string }}
+ */
 export function resolveOasisWebrtcListen(env = process.env) {
   const ui = resolveZeusUiPorts();
   const slot = ui.oasisWebrtc;
   return {
-    host: env.ZEUS_HOST || slot.host || 'localhost',
-    port: Number(env.ZEUS_PORT_OASIS_WEBRTC || slot.port),
+    host: env?.ZEUS_HOST || slot.host || 'localhost',
+    port: readEnvPortAlias(uiPortEnvChain('oasisWebrtc'), slot.port, env),
     path: slot.path || '/webrtc'
   };
 }
