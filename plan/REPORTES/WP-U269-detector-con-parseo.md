@@ -4,35 +4,31 @@ Rama `wp/u269-detector-con-parseo`, worktree `C:/S_LAB/wt/z-u269`.
 Continúa el límite 6 que `WP-U231` dejó abierto **a propósito**, para no entrar
 en carrera armamentística de expresiones regulares.
 
-**Tercera entrega.** Tres devoluciones, y las tres por **el mismo defecto mío**:
-escribir una frase absoluta sobre una superficie que no había enumerado entera.
+**Cuarta entrega.** Cuatro devoluciones, **el mismo defecto mío las cuatro
+veces**: una frase absoluta sobre una superficie que no había enumerado entera.
 
-| vuelta | la frase que escribí | lo que la rompió |
+| vuelta | la frase | lo que la rompió |
 |---|---|---|
 | 1.ª | «la retirada nunca a silencio» | `flujoYaml` devolvía `null` al no entender |
 | 2.ª | «la duda se lanza, **siempre**» | un `catch` en `camposDeCodigo` se la comía |
-| 3.ª | «0 de 9 clases perdidas» | había 8 pérdidas, y una era **media clase que enumeré como cerrada** |
+| 3.ª | «0 de 9 clases perdidas» | eran 8 pérdidas; una era media clase que yo enumeraba como cerrada |
+| 4.ª | «las salidas silenciosas son exactamente las auditadas» | **el instrumento contaba dos formas sintácticas, no las salidas** |
 
-No fallé en lógica ninguna de las tres veces. Fallé en **contar**. Por eso el
-cambio central de esta vuelta no es una línea de código: es que **la regla que
-gobierna `formatos.mjs` ha dejado de ser una promesa y es un recuento
-mecanizado** (§3). Si alguien añade un `return null` o un `catch`, un test se
-pone rojo y le obliga a clasificarlo.
+La 4.ª es la que importa: **el instrumento que puse para no repetir el error lo
+repitió**. Contar `return null` y `catch\s*\(` es una lista, y —como avisa la
+doctrina de U231— *mientras el instrumento sea una lista, el mutante que la
+evade existe*: `catch {` sin paréntesis la evadía, y también `return campos;`.
 
----
-
-## 0 · Denominador y cifras del encargo
-
-El encargo citaba «90 hallazgos en 1741 ficheros». Ninguna cifra se sostiene: el
-90 no aparece en el reporte de U231 (allí es 121) y el árbol tiene hoy **1762**
-ficheros trackeados. Todo lo de abajo está re-medido en este árbol.
+Así que esta vuelta el instrumento **deja de mirar el código y mira el
+resultado**: una **ley de conservación** (§3). No se evade añadiendo una salida,
+porque no hay lista que evadir. Y está **demostrado** que caza: revirtiendo cada
+arreglo de este WP, la ley enrojece **sin conocerlos**.
 
 ---
 
 ## 1 · El antes y el después
 
-Misma orden, **sólo cambia el detector** (se extrae el de `main` a un temporal y
-se apunta ahí `DETECTOR`):
+Misma orden, sólo cambia el detector:
 
 ```
 $ node <scratchpad>/densidad.mjs C:/S_LAB/wt/z-u269 --detalle
@@ -41,240 +37,222 @@ ANTES  (detector de U231, de main)   1762 trackeados · HALLAZGOS: 135 en 77 fic
 DESPUÉS (con analizadores)           1762 trackeados · HALLAZGOS:  83 en 49 ficheros
 ```
 
-**135 → 83.** Diff de conjuntos: **55 desaparecen, 3 aparecen**, y de los 3
-**ninguno lo señalaba `main`** (§1.2).
+**135 → 83.** Diff de conjuntos, **en bruto** (m8): **55 se van, 3 llegan**. El
+neto que citaba antes como «+22» era eso, un neto; el bruto de aquella medición
+era 23 que llegaban y 1 que se movía de línea (`claves.mjs:424`→`:433`,
+desplazamiento por mis propias ediciones, no pérdida). Queda dicho.
 
-La cifra subió de 61 a 83 en esta vuelta, y **subió a propósito**: es el precio
-de cerrar B3 (§2). Los 22 que vuelven **son todos líneas que `main` también
-señala** — comprobado con `comm`: la intersección de «los 22» con el conjunto de
-`main` es 22 de 22. O sea que el suelo opaco **no inventa ruido nuevo**;
-devuelve exactamente la cobertura que la rama estaba comprando con silencio.
-
-### 1.1 · Los 55 que desaparecen
-
-El valor no era un literal: llamadas a función asignadas a una variable `token`
-o `auth`, accesos a miembro, anotaciones de tipo de un parámetro `privateKey`,
-títulos de `test(...)` con la palabra `clave` en castellano corriente.
-
-**Cuatro de ellas SÍ llevan un literal de cadena** (lo midió la 2.ª
-contrarrevisión; mi frase absoluta anterior era falsa): dos son argumentos de
-una llamada (`path.join(...)`, `tempRoot(...)`), una es un valor por defecto tras
-un `??`, y la cuarta es el fixture de i18n del propio U231. Ninguna es una
-credencial de un servicio.
-
-### 1.2 · Los 3 que aparecen, declarados
-
-```
-packages/engine/embajador-kit/src/tipos.mjs:27                 una constante de VERSIÓN cuyo nombre lleva `CREDENCIAL`
-packages/mesh/linea-editor/src/editor-server.mjs:91            un campo `token_env` cuyo valor es el NOMBRE de una variable de entorno
-packages/mesh/linea-editor/test/reparto-autoria.test.mjs:262   un `approvalToken` de fixture
-```
-
-Nombres compuestos que el barrido de línea no veía y que `esNombreDeIdentidad`
-sí ve. **No los cierro**: pedirían una lista de sufijos inocentes (`_VERSION`,
-`_env`), que es el instrumento del que este WP intenta salir.
+Los 3 que llegan son los declarados en las vueltas anteriores —una constante de
+VERSIÓN con `CREDENCIAL` en el nombre, un `token_env` cuyo valor es el NOMBRE de
+una variable de entorno, y un `approvalToken` de fixture—. **No los cierro**:
+pedirían una lista de sufijos inocentes.
 
 ---
 
-## 2 · B3 — la clase de B1, viva en `camposDeCodigo`
+## 2 · B5 — la 57.ª `continue`, tercera aparición de la misma clase
 
-**Reproducido**: ocho formas, todas con `camposDe(...)` devolviendo **sin
-lanzar**, o sea en silencio y no en retirada.
+Un comentario **fuera** de una continuación de Dockerfile se marcaba opaco;
+**dentro** de la continuación se tiraba. El mismo texto se barría o no según
+dónde estuviera.
 
 ```
-$ node <scratchpad>/u269-b3.mjs <claves.mjs de main>
-caso                                   main rama(antes) lanza
-blob YAML en literal                      1     0         no   <-- PIERDE
-blob JSON con coma final                  1     0         no   <-- PIERDE
-blob JSON clave sin comillas              1     0         no   <-- PIERDE
-blob JSON con comentario dentro           1     0         no   <-- PIERDE
-casi-valido en plantilla                  1     0         no   <-- PIERDE
-blob .env en literal                      1     0         no   <-- PIERDE
-YAML en plantilla multilinea              1     0         no   <-- PIERDE
-.env en plantilla multilinea              1     0         no   <-- PIERDE
+$ node <scratchpad>/u269-b5.mjs <claves.mjs de main>
+caso                                                   main rama lanza
+ENV con comentario dentro de la continuacion              1    1    no
+RUN con comentario dentro de la continuacion              1    1    no
+dos comentarios seguidos dentro de la continuacion        1    1    no
+CONTROL: el mismo comentario FUERA de la continuacion     1    1    no
+
+PIERDE vs main: 0 de 4
 ```
 
-**Dos mecanismos, los dos míos:** un `catch` que se tragaba la duda, justificado
-con un comentario que decía que el literal «ya se juzgó por su propio nombre»
-—y el nombre es `cfg`—; y que **`camposDeCodigo` nunca marcaba `opaco` un
-literal**. Marqué opacos los comentarios, el cuerpo del bloque YAML y el
-argumento de `RUN`. El literal no.
+Arreglo: empujar el comentario como opaco antes del `continue`.
 
-**Arreglo y decisión.** El lexer sabe que eso **es** una cadena; **no** sabe qué
-hay dentro. Así que el literal se marca opaco **incondicionalmente** —ése es el
-suelo— y el análisis de JSON se queda encima como extra que da nombre de campo y
-línea propios. Tras el arreglo: **PIERDE vs main: 0 de 10**.
-
-**Pago el precio y lo escribo: 61 → 83, +22 falsos positivos.** Elijo pagar por
-tres razones, y la tercera es la que decide:
-
-1. Es la única opción que hace **cierta** la frase del fichero, y ésa es la
-   lección de esta devolución.
-2. La alternativa —cerrar sólo algunas sintaxis— sería otra superficie sin
-   enumerar: exactamente el error que llevo tres vueltas cometiendo.
-3. **Los 22 son líneas que `main` también señala** (22 de 22, medido). No es
-   ruido nuevo: es ruido que la rama estaba ocultando. Cambiar «ruido» por
-   «silencio» en un gate de secretos es el intercambio equivocado.
-
-Composición de los 22: **10 son fixtures de los propios tests de gates** (un
-corpus que prueba un detector de secretos contiene cadenas con forma de secreto,
-por construcción), 5 son títulos de `test(...)` en castellano y el resto,
-plantillas que generan tipos.
+**El aviso de método sirvió**: la fixture se construye **por líneas**
+(`['ENV A=1 \\', '# api_key=…'].join('\n')`), nunca con `printf`. Un `printf` no
+produce la barra+salto y el intento sale verde, que parece prueba de que el
+agujero no existe.
 
 ---
 
-## 3 · B4 — la auditoría, mecanizada en vez de prometida
+## 3 · B6 — de contar salidas a una LEY DE CONSERVACIÓN
 
-Enumeración **completa** de las salidas de `formatos.mjs`, obtenida con un
-recuento sobre el fichero (no a ojo), y clasificada una por una:
+Elijo **la vía que propones**, no la barata. (La barata también está, como
+cinturón además de tirantes, y con el título acotado a lo que cuenta: §3.3.)
 
-| clase | n.º | veredicto |
-|---|---|---|
-| `return null` | **3** | **auditadas**: `formatoDe` («no encamino este formato»), `parYaml` («no es una pareja»), `flujoYaml` («no es una colección de flujo»). Las tres son información POSITIVA, no duda. |
-| `catch` | **1** | el del análisis JSON dentro de un literal. **Legítimo sólo porque debajo hay un suelo opaco incondicional**; sin él (mutante M23) vuelve a ser el agujero B3. |
-| `throw NoEntiendo` | **14** | la duda. Cada uno con mutante propio (§5). |
-| `opaco: true` | **7** | comentario YAML · cuerpo de bloque YAML · comentario Dockerfile · argumento de instrucción no modelada · comentario de línea · comentario de bloque · **contenido de literal de cadena**. |
-| `return` sin valor | 7 | todos dentro de `valor()` del analizador JSON, que **consume o llama a `err()`**: no hay rama muda. |
-| `continue` / `break` | 57 / 8 | control de bucle de los escáneres (avance de índice, saltar línea en blanco). No son salidas del analizador. |
+### 3.1 · La ley
 
-**Y esto no es prosa: es un test.** `AUTHORÍA: las salidas silenciosas de
-formatos.mjs son exactamente las auditadas` fija los números de `return null`
-(3), `catch` (1) y `opaco: true` (7). Añadir cualquiera de los tres pone la
-suite roja con un mensaje que pide clasificarlo. **La frase del fichero ya no
-dice «siempre»: dice «hay exactamente tres y uno, y están auditados».**
+No mira el código; mira el resultado de analizar una entrada.
 
-Además se cerró **m6**, que era otra salida muda aunque no fuera regresión: toda
-línea que empezara por `%` se saltaba en silencio. Ahora sólo se saltan `%YAML`
-y `%TAG`; cualquier otra **lanza**.
+- **Ley 1 · cobertura.** En un formato de **datos**, todo token candidato de la
+  entrada tiene que aparecer en el nombre o en el valor de alguna campo. Si el
+  analizador no lo mira, se perdió.
+- **Ley 2 · anidamiento.** Ninguna campo NO opaca puede llevar dentro una forma
+  `nombre: valor` con material sin que una campo OPACA la cubra. Juzgar un
+  documento como si fuera un átomo es no juzgarlo.
+- Si el analizador **lanza**, conserva por definición: quien llama se retira al
+  barrido crudo y mira el fichero entero.
+
+La ley 1 se aplica a JSON, JSONL, YAML y Dockerfile. **En código no**, y la
+razón se escribe: allí un token suelto es un identificador (`defineConfig`,
+`console.log`), no un dato; un secreto en código vive siempre dentro de un
+literal o de un comentario, y de eso se ocupan la ley 2 y el canario de B3.
+
+### 3.2 · Qué encontró, y qué demuestra
+
+Aplicada al **corpus real** encontró tres huecos de contabilidad que nadie
+buscaba: la clave que abre un bloque, la clave de un objeto JSON y **la clave
+que lleva una colección de flujo** (`parameters: []`, `position: { x: 4 }`) no
+se declaraban consumidas — seis ficheros de `spec/`. Cerrado emitiendo esas
+claves con valor vacío (que es hueco por longitud: **cero impacto en detección**,
+y hay mutante para cada una). Hoy:
+
+```
+$ node <scratchpad>/u269-ley.mjs --corpus
+ficheros con formato conocido mirados: 1140
+ficheros que VIOLAN la ley: 0
+```
+
+**Y la prueba de que no es decorado** — se revierte cada arreglo de este WP y se
+mide la ley sobre el corpus y sobre una batería **genérica** de 15 formas de
+configuración (no vectores de los bugs). Cada medición en un **proceso hijo**,
+porque reutilizar el proceso hace que la caché de módulos de ESM devuelva el
+`formatos.mjs` sin mutar y las reversiones salgan «0 violaciones» —me pasó, y es
+el mismo error que ya me costó una medición del léxico—:
+
+```
+$ node <scratchpad>/u269-ley-demo.mjs
+SIN REVERTIR (arbol entregado)                       corpus:    0 · bateria: 0/15
+
+B1 completo · las dos mitades a la vez               corpus:    0 · bateria: 2/15
+B1a solo · flujoYaml devuelve null (no basta)        corpus:    0 · bateria: 0/15
+B1b solo · parYaml pierde la clave (no basta: lanza) corpus:    0 · bateria: 0/15
+B3 · el literal de codigo deja de marcarse opaco     corpus:    3 · bateria: 2/15
+B5 · el comentario dentro de la continuacion se tira corpus:    0 · bateria: 1/15
+m6 · el `%` vuelve a saltarse en silencio            corpus:    0 · bateria: 1/15
+
+agujeros REALES que la ley caza SIN buscarlos: 4 de 4
+```
+
+Dos cosas que decir de ahí, y las dos importan:
+
+1. **B1 sólo se reproduce revirtiendo las DOS mitades.** Con `parYaml` bueno
+   nunca se llega a la salida mala; con `flujoYaml` bueno la duda lanza y se
+   retira. Medir las mitades por separado habría dado «la ley no lo caza», y
+   habría sido falso. Los dos «solo» quedan como **controles**: media reversión
+   no es un agujero, y la ley **acierta al no señalarlos**.
+2. La ley tiene su propio **control positivo** en la suite: si el analizador se
+   tragara una línea, la ley tiene que verlo. Sin eso, «0 violaciones» podría
+   significar «la ley no mira».
+
+### 3.3 · Lo que la ley NO es
+
+No es una demostración de que los analizadores sean correctos. Es una
+demostración de que **nada de la entrada se pierde sin que alguien lo mire**.
+El test de recuento sintáctico se mantiene, **con el título acotado** —«las dos
+clases siguen contadas», no «las salidas son exactamente las auditadas»— porque
+avisa antes, al escribir el código y no al correr el corpus. Sus expresiones van
+ensanchadas: `catch\s*[({]` cubre el binding opcional de ES2019, que era la
+evasión.
 
 ---
 
-## 4 · B1 y B2, del ciclo anterior
+## 4 · B1, B2, B3, del ciclo anterior
 
-- **B1** (mapa de flujo de YAML devolvía `null` al no entender): cerrado.
-  **0 de 8 formas se escapan** (main: 8 de 8), control negativo verde.
-- **B2** (clases de pérdida frente a U231): **0 de 9 clases perdidas**.
+```
+B1 (mapa de flujo YAML)          0 de 8 formas se escapan   (main: 8 de 8)
+B2 (clases de pérdida vs U231)   0 de 9 clases perdidas
+B3 (blob en literal de código)   PIERDE vs main: 0 de 10
+```
+
+Sobre los **+22** de B3, y ahora con tu propia medición que es más fuerte que la
+mía: **23 de 23** hallazgos nuevos caen en líneas que `main` también señala. No
+es ruido nuevo; es ruido que la rama estaba comprando con silencio.
 
 ---
 
-## 5 · Censo de mutación: 24 mutantes, 24 rojos
+## 5 · Censo de mutación: 29 mutantes
 
-Línea base verde comprobada antes de empezar; `rc` del censo comprobado aparte
-del `tail`. Una mutación cuya ancla no aparece **exactamente una vez** cuenta
-como **fallo**, no como muerto — un ancla que no casa deja el fichero intacto y
-la suite verde, que parece un mutante muerto y no lo es. (Me pasó: dos
-mutaciones de esta vuelta dejaban el `throw` alcanzable y salían «vivas»; eran
-mutaciones rotas, no supervivientes.)
-
-Los 17 de la vuelta anterior, más los **siete nuevos** que exige la devolución:
-
-| mutante | qué revierte |
+| bloque | resultado |
 |---|---|
-| M18 · flujo: quitar el `throw` de «cola tras el cierre» | m1 · load-bearing |
-| M19 · flujo: quitar el `throw` de «sin equilibrar» | m1 · load-bearing |
-| M20 · flujo: quitar el `throw` de «mal cerrada» | m1 · load-bearing |
-| M21 · Dockerfile: quitar el `throw` de «no es instrucción» | m1 · load-bearing |
-| M22 · Dockerfile: quitar el `throw` de «trozo sin `=`» | m1 |
-| M23 · el literal de código deja de marcarse opaco | **B3** |
-| M24 · `%` vuelve a saltarse en silencio | m6 |
+| M1–M17 (vueltas 1-3) | 17 rojos |
+| M18–M24 (los cinco `throw` de m1, B3, m6) | 7 rojos |
+| **M25** · B5: el comentario dentro de la continuación se tira | **rojo** |
+| **M26** · `trozosDocker` ignora las comillas | **sobrevive — INERTE, declarado** |
+| **M27** · YAML: la clave que abre bloque no se contabiliza | **rojo** (la ley) |
+| **M28** · JSON: la clave no se contabiliza | **rojo** (la ley) |
+| **M29** · YAML: la clave con colección de flujo no se contabiliza | **rojo** (la ley) |
 
-**Y uno más salió VIVO al añadirlos: M15**, el análisis de JSON dentro del
-literal. Sobrevivía porque el suelo opaco lo cazaba igual: **seguridad cubierta,
-precisión no** —sin el análisis el hallazgo sale de un barrido a ciegas en vez de
-traer el nombre del campo—. Es el mismo patrón que M12 en la vuelta anterior, y
-se cierra igual: un test que exige que el blob **se entienda**, no que alguien lo
-cace. Con él, 24 de 24.
+**29 mutantes · 0 vivos · 0 no aplicados.**
 
-Sobre m1, y es justo: cinco `throw` que añadí **como arreglo de B1/B2** no
-tenían un solo guardián. Cuatro son load-bearing —revertidos, el material pasa de
-rojo a silencio— y el quinto no lo es: en su forma no hay ningún nombre de
-identidad que cazar y `main` tampoco caza nada. El test lo distingue
-explícitamente en vez de exigirle un hallazgo que no existe.
+**m7 · la pieza sin guardián y sin carga, registrada.** `trozosDocker` ignorando
+las comillas deja la suite verde, y **no es load-bearing**: cuatro formas se
+siguen cazando. Queda en el censo marcada `INERTE`, y el censo la trata aparte:
+si algún día **enrojece**, es que ha pasado a tener carga y hay que mirarla. Es
+el mismo trato que le di al quinto `throw` de m1.
 
----
-
-## 6 · Menores
-
-- **m2 · entregué el fichero binario.** `claves.mjs` llevaba **3 bytes NUL** y
-  había volteado de LF a CRLF, con lo que `file(1)` lo daba por `data` y el diff
-  pasaba de 72 líneas a 2819. **Corregido**: los NUL eran separadores donde iba
-  un espacio, y la alternativa `| ` del `split` era además **redundante**
-  (`[^A-Za-z0-9]+` ya casa el espacio), así que se ha quitado entera. El fichero
-  vuelve a ser **LF** y `file(1)` lo clasifica `JavaScript source`. Comprobado
-  que `esNombreDeIdentidad` da idéntico resultado (22 nombres, 0 diferencias), y
-  que el blob **almacenado en git** es LF y sin NUL (`git cat-file -p`), no sólo
-  la copia de trabajo.
-
-  **Los dos síntomas eran uno solo, y lo verifiqué en vez de suponerlo.** Esta
-  máquina tiene `core.autocrlf=true`, que normaliza CRLF→LF al commitear… salvo
-  que el fichero sea binario. Un NUL lo vuelve binario, la normalización se
-  desactiva y el CRLF entra tal cual. Comprobado con dos ficheros gemelos en un
-  repo de usar y tirar:
-
-  ```
-  con-nul.mjs    blob -> CRLF: 202 | NUL: 1
-  sin-nul.mjs    blob -> CRLF:   0 | NUL: 0
-  ```
-
-  O sea: **el NUL era la causa raíz de las dos cosas**, no dos descuidos. Quitarlo
-  arregla el CRLF sin tocar nada más. (Primero supuse que el NUL caía dentro de
-  la ventana de 8000 bytes con que `git diff` detecta binarios; medí y estaba en
-  el byte 11710, así que esa explicación era falsa. El experimento de arriba es
-  el que sostiene la afirmación.)
-- **m3 · §11.7 inducía a error, y en la dirección contraria a la temida.**
-  Corregido con tu medición: **`main` nunca detectó el literal por defecto** —
-  señalaba la *expresión*, y `cfg?.token ?? ""` y `cfg?.token` dan `main=1`
-  igual. Lo que se pierde es **uno de los falsos positivos**, no una detección.
-  Ya no figura como límite; figura en §1.1 como uno de los 55 que se van.
-- **m4 · cifra caducada dentro del código nuevo.** El comentario de
-  `esNombreDeIdentidad` decía «un autor sale once veces en este árbol». Ahora
-  dice lo medido: **en `main` el ancla rota no produce ni un falso positivo; por
-  el camino estructural produce 36**.
-- **m5 · §12 decía «aportan 0» y era incompleto.** Medido ahora: los ficheros
-  del WP aportan **10 de los 83** — `claves.mjs:6` (prosa de la cabecera de
-  U231) y `claves.mjs:424` (la descripción del patrón `url-con-credencial`, que
-  contiene `usuario:clave@` por definición), más **8 en
-  `test/gates/formatos.test.mjs`**, que son los vectores de contraprueba. Un
-  corpus que prueba un detector de secretos contiene cadenas con forma de
-  secreto: es inherente, y prefiero declararlo a contorsionar los tests.
-  **El reporte aporta 0.**
-- **m6 · cerrado**, ver §3.
+Tres mutantes salieron vivos a lo largo del WP y hubo que escribirles guardián
+(M3 y M7 en la 1.ª vuelta, M9 y M12 en la 2.ª, M15 en la 3.ª). El patrón que se
+repite: **sobrevivían porque otro mecanismo tapaba el agujero** —seguridad
+cubierta, precisión no—. El guardián correcto en esos casos exige que la pieza
+se **entienda**, no que alguien lo cace.
 
 ---
 
-## 7 · Lo demás, sin cambios respecto a la vuelta anterior
+## 6 · Menores de esta vuelta
 
-- **No hay dependencia nueva.** El gate no debe necesitar `node_modules`, y el
-  worktree entregado no lo tiene.
-- **Retiradas**: 1141 ficheros con formato conocido, de los que **1 supera 1 MiB**
-  (`package-lock.json`) y ni llega al analizador; de los 1140 restantes, **1132
-  OK y 8 retiradas**.
-- **Léxico re-medido**: 70 / **83** / 246 sobre 1762 ficheros. `key` sigue
-  costando ~3 veces lo que cuesta `clave`; la decisión de U231 no cambia.
-- **Coste**: el `npm run gates` de punta a punta es demasiado ruidoso en esta
-  máquina para afirmar nada (1,9–10,5 s en ambas versiones).
+- **m7 · cerrado**, ver §5.
+- **m8 · cerrado**: el bruto va en §1 junto al neto.
+- **m9 · las 57 `continue`, con su desenlace.** En la vuelta anterior las declaré
+  sin demostrarlas **y B5 estaba dentro**. La cautela fue acertada; entregar con
+  el agujero dentro, no. Desenlace:
+
+  | grupo | n.º | desenlace |
+  |---|---|---|
+  | avance de índice en los escáneres (JSON, YAML, Dockerfile, lexer) | 51 | control de bucle: no saltan contenido, avanzan sobre él |
+  | línea en blanco / directiva `%YAML`,`%TAG` / `---` | 4 | no hay contenido que perder |
+  | `ARG X` y `ENV X` sin valor | 2 | no hay valor que juzgar |
+  | **comentario dentro de una continuación de Dockerfile** | **1** | **era B5 — ahora marca opaco** |
+
+  Y lo que sostiene la tabla no es la tabla: es que **la ley de conservación
+  pasa sobre los 1140 ficheros del corpus**. Si alguna de las 51 perdiera
+  contenido, la ley lo vería sin que yo la hubiera clasificado bien.
+
+---
+
+## 7 · Lo demás, sin cambios
+
+- **No hay dependencia nueva.** El gate no necesita `node_modules`.
+- **Retiradas**: 1141 con formato conocido, 1 supera 1 MiB (`package-lock.json`),
+  de los 1140 restantes 1132 OK y 8 retiradas.
+- **Coste**: 2356 ms contra los 4880 del detector que sustituye — el suelo opaco
+  cuesta +27 % sobre la vuelta anterior y sigue en **la mitad** que U231.
+- **Ficheros en LF y sin NUL**, verificado **en el blob** con `git cat-file`.
 
 ---
 
 ## 8 · Qué límite queda declarado
 
 1. **Markdown, `.env` y texto plano no se analizan**: barrido crudo. **22 de los
-   83 están en `.md`** y son prosa de reportes.
+   83 están en `.md`**.
 2. **Una frase de paso con espacios LITERALES no se caza.** Con guiones sí.
-3. **Los 3 falsos positivos de §1.2**, y los **10 de los ficheros del WP** (m5).
+3. **Los 3 falsos positivos de §1**, y los **10 de los ficheros del WP** (2 en
+   `claves.mjs`, 8 en el test: un corpus que prueba un detector de secretos
+   contiene cadenas con forma de secreto, por construcción).
 4. **Una tirada en mayúsculas sin separador** (`AUTHTOKEN`) no se parte en
-   palabras: `AUTHTOKEN` y `AUTHOR` son el mismo problema sin diccionario.
+   palabras.
 5. **Ficheros de más de 1 MiB** van por el camino troceado de U231.
 6. **YAML es un subconjunto**: anclas, alias, etiquetas, claves complejas, claves
    de fusión y flujo multilínea **se retiran**.
-7. **Sigue sin haber detección por entropía** ni **lista de excepciones**.
-8. **Lo que este WP no toca**, y U231 ya declaraba: historial de git, tarball de
-   npm, UTF-16, contextos de build que no sean el directorio de la receta ni la
-   raíz.
-9. **Lo que esta auditoría NO demuestra**: que las 57 `continue` y las 8 `break`
-   sean correctas. Demuestra que son control de bucle y no salidas de analizador,
-   y que las dos clases que **sí** han producido agujeros —`return null` y
-   `catch`— están contadas y fijadas por un test. No escribo una frase más ancha.
+7. **La ley 1 no se aplica a código.** Allí la cobertura la dan la ley 2 y el
+   canario de literales y comentarios. Es el punto más débil de la
+   demostración y por eso va escrito aquí y no enterrado.
+8. **La ley no demuestra que los analizadores sean correctos**, sólo que no
+   pierden entrada. Un valor mal leído pero contabilizado la satisface.
+9. **`trozosDocker` no tiene guardián** (m7), declarado inerte y medido.
+10. **Sigue sin haber entropía ni lista de excepciones.** Lo que este WP no toca,
+    y U231 ya declaraba: historial de git, tarball de npm, UTF-16, contextos de
+    build que no sean el directorio de la receta ni la raíz.
 
 ---
 
@@ -282,13 +260,15 @@ explícitamente en vez de exigirle un hallazgo que no existe.
 
 ```
 $ node scripts/gates/run.mjs                 ->  gates: OK (0 offenders) · rc=0
-$ node --test test/gates/*.test.mjs          ->  193 tests · 193 pass · 0 fail
-$ node --test test/gates/formatos.test.mjs   ->   33 tests ·  33 pass · 0 fail
-$ node <scratchpad>/u269-mutar.mjs           ->  24 mutantes · 0 vivos · 0 no aplicados · rc=0
-$ node <scratchpad>/u269-b1-cli.mjs          ->  0 de 8 formas se escapan (main: 8 de 8)
+$ node --test test/gates/*.test.mjs          ->  195 tests · 195 pass · 0 fail
+$ node --test test/gates/formatos.test.mjs   ->   36 tests ·  36 pass · 0 fail
+$ node <scratchpad>/u269-mutar.mjs           ->  29 mutantes · 0 vivos · rc=0
+$ node <scratchpad>/u269-ley.mjs --corpus    ->  1140 ficheros · 0 violaciones
+$ node <scratchpad>/u269-ley-demo.mjs        ->  4 de 4 agujeros cazados a ciegas · rc=0
+$ node <scratchpad>/u269-b1-cli.mjs          ->  0 de 8 formas se escapan
 $ node <scratchpad>/u269-b2.mjs              ->  0 de 9 clases perdidas
-$ node <scratchpad>/u269-b3.mjs              ->  PIERDE vs main: 0 de 10
-$ file scripts/gates/claves.mjs              ->  JavaScript source, UTF-8 (LF)
+$ node <scratchpad>/u269-b3.mjs              ->  0 de 10 pierde vs main
+$ node <scratchpad>/u269-b5.mjs              ->  0 de 4 pierde vs main
 ```
 
 `npm run lint` no se puede correr: no hay `node_modules` en esta máquina.
@@ -297,7 +277,7 @@ $ file scripts/gates/claves.mjs              ->  JavaScript source, UTF-8 (LF)
 
 | fichero | qué |
 |---|---|
-| `scripts/gates/formatos.mjs` | analizadores de JSON, JSONL, YAML de bloque, Dockerfile y lexer de código; `NoEntiendo`, la retirada y los **siete** valores opacos |
-| `scripts/gates/claves.mjs` | `hallazgosEstructurales`, encaminamiento con retirada, `esHuecoEstructural`, `esNombreDeIdentidad`, ancla cerrada, compilación izada sin `g` ni `y`. **En LF y sin NUL** |
-| `test/gates/formatos.test.mjs` | 33 tests, incluida la **auditoría mecanizada** de salidas |
+| `scripts/gates/formatos.mjs` | analizadores de JSON, JSONL, YAML de bloque, Dockerfile y lexer de código; `NoEntiendo`, la retirada, los **ocho** valores opacos y la contabilidad de claves consumidas |
+| `scripts/gates/claves.mjs` | `hallazgosEstructurales`, encaminamiento con retirada, `esHuecoEstructural`, `esNombreDeIdentidad`, ancla cerrada, compilación izada sin `g` ni `y` |
+| `test/gates/formatos.test.mjs` | 36 tests, incluida la **ley de conservación** sobre el corpus real |
 | `test/gates/claves.test.mjs` | cifras del léxico actualizadas |

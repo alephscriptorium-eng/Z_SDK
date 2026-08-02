@@ -46,6 +46,7 @@ import {
   camposDeYaml,
   formatoDe
 } from '../../scripts/gates/formatos.mjs';
+import { REPO_ROOT } from '../../scripts/gates/scan.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(AQUI, '../../scripts/gates/claves.mjs');
@@ -538,7 +539,10 @@ test('un blob JSON válido en un literal se ENTIENDE, no sólo cae por el suelo 
   // vez de traer el nombre del campo. Es el mismo patrón que M12 en la vuelta
   // anterior, y se vigila igual: exigiendo que se ENTIENDA.
   const campos = camposDeCodigo(`const cfg = '{"api_key":"${MATERIAL}","otro":1}';\n`);
-  const porNombre = campos.filter((c) => c.nombre === 'api_key');
+  // Se filtra por valor NO vacío: cada clave produce además un campo de valor
+  // vacío que sólo declara «la he consumido» (contabilidad de la ley de
+  // conservación), y ése no es el que demuestra que se analizó el blob.
+  const porNombre = campos.filter((c) => c.nombre === 'api_key' && c.valor !== '');
   assert.equal(porNombre.length, 1, `el blob JSON no se analizó como JSON: ${JSON.stringify(campos)}`);
   assert.equal(porNombre[0].valor, MATERIAL);
   assert.equal(porNombre[0].opaco, undefined, 'el campo analizado no debe venir marcado opaco');
@@ -556,66 +560,179 @@ test('el analizador de YAML se retira ante lo que declaró no modelar', () => {
 });
 
 // ---------------------------------------------------------------------------
-// LA AUDITORÍA DE SALIDAS, MECANIZADA
+// LA LEY DE CONSERVACIÓN
 //
-// Tres vueltas, tres veces el mismo fallo: una frase absoluta sobre una
-// superficie que no había enumerado entera. «La retirada nunca a silencio» ->
-// `flujoYaml`. «La duda lanza, siempre» -> el `catch` de `camposDeCodigo`.
-// Las dos veces la frase era mía y las dos veces la rompió una salida que no
-// había contado.
+// Cuatro vueltas, cuatro veces el mismo fallo: una frase absoluta sobre una
+// superficie que no había enumerado entera. Y el instrumento que puse para no
+// repetirla —un test que CONTABA `return null` y `catch`— la repitió: contaba
+// dos FORMAS SINTÁCTICAS, no las salidas. Un `catch {` sin paréntesis lo
+// evadía, y también un `return campos;` en cualquier analizador.
 //
-// Este test sustituye la promesa por un recuento. No demuestra que las salidas
-// sean correctas —eso lo hacen los tests de arriba, uno por una— sino que son
-// LAS QUE SE HAN AUDITADO: si alguien añade un `return null` o un `catch` a un
-// analizador, esto se pone rojo y le obliga a clasificarlo aquí.
+// Contar sintaxis es la misma familia que la lista de nombres de U231:
+// mientras el instrumento sea una lista, el mutante que la evade existe.
+//
+// Así que el instrumento ya NO MIRA EL CÓDIGO: mira el RESULTADO.
+//
+//   LEY 1 · cobertura. En un formato de DATOS todo token de la entrada tiene
+//           que aparecer en el nombre o en el valor de alguna campo. Si el
+//           analizador no lo mira, se perdió.
+//   LEY 2 · anidamiento. Ninguna campo NO opaca puede llevar dentro una forma
+//           `nombre: valor` con material sin que una campo OPACA la cubra.
+//           Juzgar un documento como si fuera un átomo es no juzgarlo.
+//
+// Si el analizador LANZA, conserva por definición: quien llama se retira al
+// barrido crudo y mira el fichero entero.
+//
+// Esto no se evade añadiendo una salida nueva, porque no hay lista que evadir.
+// Y está DEMOSTRADO que caza: revirtiendo cada arreglo de este WP —B1 (las dos
+// mitades), B3, B5 y m6— la ley enrojece los cuatro **sin conocerlos**, y no
+// enrojece con media reversión, que no es un agujero. La demostración está en
+// el reporte.
 // ---------------------------------------------------------------------------
 
-test('AUDITORÍA: las salidas silenciosas de `formatos.mjs` son exactamente las auditadas', () => {
+/** Un token candidato: lo bastante largo para poder ser material. */
+const TOKEN_LEY = /[A-Za-z0-9_@.+/=:~-]{8,}/g;
+
+/**
+ * Violaciones de la ley de conservación. Lista vacía = conserva.
+ * @param {string} texto @param {string} formato
+ * @returns {string[]}
+ */
+export function violacionesDeConservacion(texto, formato) {
+  let campos;
+  try {
+    campos = camposDe(formato, texto);
+  } catch (e) {
+    if (e instanceof NoEntiendo) return []; // retirada = conserva
+    throw e;
+  }
+  /** @type {string[]} */
+  const out = [];
+  const heno = campos.flatMap((c) => [c.nombre, c.valor]).filter(Boolean).join('');
+  const opacos = campos.filter((c) => c.opaco).map((c) => c.valor);
+
+  // LEY 1 — sólo formatos de DATOS. En CÓDIGO un token suelto es un
+  // identificador (`defineConfig`, `console.log`), no un dato: allí un secreto
+  // vive siempre dentro de un literal o de un comentario, y de eso se ocupan la
+  // ley 2 y el canario de B3.
+  if (formato !== 'codigo') {
+    texto.split('\n').forEach((l, i) => {
+      for (const bruto of l.match(TOKEN_LEY) ?? []) {
+        const t = bruto.replace(/^[:=,.]+/, '').replace(/[:=,.]+$/, '');
+        if (t.length < 8) continue;
+        if (heno.includes(t)) continue;
+        out.push(`L1 línea ${i + 1}: el token ${JSON.stringify(t.slice(0, 40))} no lo mira nadie`);
+      }
+    });
+  }
+
+  // LEY 2 — un valor juzgado como átomo que en realidad lleva estructura.
+  for (const c of campos) {
+    if (c.opaco || typeof c.valor !== 'string') continue;
+    if (hallazgosEnTexto(c.valor).length === 0) continue;
+    if (opacos.some((o) => o.includes(c.valor))) continue;
+    out.push(`L2 línea ${c.line}: el valor de \`${c.nombre}\` lleva estructura con material y nadie lo barre`);
+  }
+  return out;
+}
+
+test('LEY DE CONSERVACIÓN: ningún token del CORPUS REAL se pierde', { timeout: 300_000 }, () => {
+  // Sobre los ficheros trackeados de verdad, no sobre vectores escogidos. Fue
+  // esta ley la que encontró que `parameters: []` y `position: { x: 4 }` dejaban
+  // la CLAVE sin contabilizar, en seis ficheros de `spec/` que nadie miraba.
+  const salida = spawnSync('git', ['--no-optional-locks', 'ls-files'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024
+  });
+  assert.equal(salida.status, 0, 'no se pudo listar el corpus');
+  const rutas = salida.stdout.split('\n').filter(Boolean);
+  assert.ok(rutas.length > 1000, `corpus sospechosamente corto: ${rutas.length}`);
+
+  /** @type {string[]} */
+  const malos = [];
+  let mirados = 0;
+  for (const rel of rutas) {
+    const formato = formatoDe(path.basename(rel));
+    if (!formato) continue;
+    // Se llama `leido` y no `abs` a propósito: el guardián estático de
+    // `arbol-inmutable.test.mjs` marca por NOMBRE, así que un `abs` derivado de
+    // `REPO_ROOT` contaminaría los `abs` de los helpers de arriba —que escriben
+    // en un temporal— y los denunciaría como escrituras sobre el árbol. El
+    // guardián tiene razón en ser tosco; el que se aparta soy yo.
+    const leido = path.join(REPO_ROOT, rel);
+    let st;
+    try {
+      st = fs.statSync(leido);
+    } catch {
+      continue;
+    }
+    if (!st.isFile() || st.size > 1024 * 1024) continue;
+    mirados += 1;
+    const v = violacionesDeConservacion(fs.readFileSync(leido).toString('utf8'), formato);
+    if (v.length > 0) malos.push(`${rel}: ${v[0]}`);
+  }
+  assert.ok(mirados > 500, `se miraron sólo ${mirados} ficheros: la ley no está midiendo nada`);
+  assert.deepEqual(malos.slice(0, 10), [], `la ley de conservación se rompe en ${malos.length} fichero(s)`);
+});
+
+test('LEY DE CONSERVACIÓN: las formas corrientes de configuración conservan', () => {
+  // Formas genéricas, NO vectores de los agujeros conocidos: es la batería con
+  // la que se demuestra que la ley caza B1/B3/B5/m6 al revertirlos.
+  /** @type {[string, string][]} */
+  const formas = [
+    ['yaml', `id: demo\napi_key: ${MATERIAL}\n`],
+    ['yaml', `cfg: {"host":"a.invalid","api_key":"${MATERIAL}"}\n`],
+    ['yaml', `{"api_key":"${MATERIAL}"}\n`],
+    ['yaml', `run: |\n  npm ci\n  export API_KEY=${MATERIAL}\n`],
+    ['yaml', `# api_key: ${MATERIAL}\nid: demo\n`],
+    ['yaml', `%foo: ${MATERIAL}\n`],
+    ['json', `{"tokens":["${MATERIAL}"]}\n`],
+    ['json', `{"api_key":${'9'.repeat(20)}}\n`],
+    ['dockerfile', ['FROM node:20', `ENV API_KEY ${MATERIAL}`, ''].join('\n')],
+    ['dockerfile', ['FROM node:20', 'ENV A=1 \\', `# api_key=${MATERIAL}`, '    B=2', ''].join('\n')],
+    ['dockerfile', ['FROM node:20', `RUN export API_KEY=${MATERIAL}`, ''].join('\n')],
+    ['codigo', `const cfg = 'api_key: ${MATERIAL}';\n`],
+    ['codigo', `const cfg = '{"api_key":"${MATERIAL}"}';\n`],
+    ['codigo', `// api_key = ${MATERIAL}\n`],
+    ['codigo', `const token = '${MATERIAL}';\n`]
+  ];
+  /** @type {string[]} */
+  const rotas = [];
+  for (const [formato, texto] of formas) {
+    const v = violacionesDeConservacion(texto, formato);
+    if (v.length > 0) rotas.push(`${formato}: ${v[0]} — ${JSON.stringify(texto.slice(0, 44))}`);
+  }
+  assert.deepEqual(rotas, [], 'la ley de conservación se rompe:\n' + rotas.join('\n'));
+});
+
+test('la ley DETECTA una pérdida sembrada — si no, no estaría midiendo nada', () => {
+  // Control positivo de la propia ley: un analizador de mentira que se traga
+  // una línea tiene que violarla. Sin esto, «0 violaciones» podría significar
+  // «la ley no mira».
+  const texto = `id: demo\napi_key: ${MATERIAL}\n`;
+  assert.deepEqual(violacionesDeConservacion(texto, 'yaml'), []);
+  // El mismo texto, pero fingiendo que el analizador sólo vio la primera línea:
+  const heno = ['id', 'demo'];
+  const perdidos = (texto.match(TOKEN_LEY) ?? []).filter((t) => !heno.join('').includes(t));
+  assert.ok(perdidos.includes(MATERIAL), 'la ley no vería el material perdido');
+});
+
+test('la ley NO sustituye a la vigilancia de sintaxis: las dos clases siguen contadas', () => {
+  // La ley de conservación es el instrumento PRINCIPAL y es el que no se evade.
+  // Esto es el cinturón además de los tirantes, y con el alcance dicho en el
+  // título: cuenta DOS FORMAS SINTÁCTICAS, no «las salidas». Se mantiene porque
+  // avisa antes —al escribir el código, no al correr el corpus— y porque las
+  // expresiones van ensanchadas tras la evasión que encontró la contrarrevisión:
+  // `catch {` sin paréntesis (binding opcional, ES2019) era invisible.
   const src = fs.readFileSync(path.resolve(AQUI, '../../scripts/gates/formatos.mjs'), 'utf8').split('\n');
   const util = src.filter((l) => !/^\s*(\*|\/\/)/.test(l));
   const cuenta = (re) => util.filter((l) => re.test(l)).length;
 
-  // Las DOS clases que han producido un agujero en este WP, con su censo.
-  //
-  //   `return null` x3, y cada uno significa información POSITIVA:
-  //     · `formatoDe`  — «no encamino este formato» (quien llama barre en crudo)
-  //     · `parYaml`    — «esto no es una pareja `clave: valor`»
-  //     · `flujoYaml`  — «esto no empieza por corchete ni llave: no es flujo»
-  //   Cualquier DUDA de esos mismos sitios lanza; hay mutante para cada uno.
-  assert.equal(
-    cuenta(/^\s*(if\s*\(.*\)\s*)?return null;/),
-    3,
-    'cambió el número de `return null` en formatos.mjs: clasifícalo aquí antes de seguir. ' +
-      '`null` sólo puede significar información POSITIVA; la duda se lanza.'
-  );
-
-  //   `catch` x1: el del análisis JSON dentro de un literal de código. Es
-  //   legítimo SÓLO porque debajo hay un suelo opaco incondicional que barre el
-  //   literal en crudo pase lo que pase. Sin ese suelo (mutante M23) vuelve a
-  //   ser un agujero, y esa fue exactamente la devolución B3.
-  assert.equal(
-    cuenta(/catch\s*\(/),
-    1,
-    'apareció un `catch` nuevo en formatos.mjs. Un `catch` convierte una duda en ' +
-      'silencio salvo que haya un suelo debajo: demuéstralo o quítalo.'
-  );
-
-  // Y el suelo que legitima ese `catch` tiene que seguir ahí. Los SIETE sitios
-  // donde este módulo admite que NO entiende lo que ve y lo manda a barrido
-  // crudo, enumerados —no «unos cuantos»—:
-  //   1 · comentario de YAML
-  //   2 · cuerpo de un escalar de bloque de YAML (`|`, `>`)
-  //   3 · comentario de Dockerfile
-  //   4 · argumento de una instrucción de Dockerfile que no declara pares (`RUN`)
-  //   5 · comentario de línea en código
-  //   6 · comentario de bloque en código
-  //   7 · contenido de un literal de cadena en código  <- el de B3
-  assert.equal(
-    cuenta(/opaco: true/),
-    7,
-    'cambió el número de valores marcados OPACOS. El suelo opaco es lo que hace ' +
-      'legítimo el `catch` y lo que cerró B3: si añades o quitas uno, enuméralo aquí.'
-  );
+  assert.equal(cuenta(/^\s*(if\s*\(.*\)\s*)?return null;/), 3, 'cambió el número de `return null`');
+  // `catch (e)` y `catch {`: las dos formas.
+  assert.equal(cuenta(/catch\s*[({]/), 1, 'apareció un `catch` nuevo (con o sin paréntesis)');
+  assert.equal(cuenta(/opaco: true/), 8, 'cambió el número de valores marcados OPACOS');
 });
 
 test('un formato desconocido sigue el camino de siempre — no se inventa analizador', () => {

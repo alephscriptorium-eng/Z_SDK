@@ -263,6 +263,11 @@ export function camposDeJson(texto) {
       for (;;) {
         blancos();
         const k = cadena();
+        // La clave se declara CONSUMIDA con valor vacío, igual que en YAML: si
+        // su valor es a su vez un objeto o un array, el `valor()` de abajo
+        // emitirá lo que haya dentro, pero la clave en sí ya está contabilizada.
+        // No cambia ninguna detección (vacío es hueco por longitud).
+        campos.push({ nombre: k.v, valor: '', line: k.line });
         blancos();
         if (texto[i] !== ':') err('se esperaba `:` tras la clave');
         i += 1;
@@ -308,6 +313,9 @@ export function camposDeJson(texto) {
     }
     for (const lit of ['true', 'false', 'null']) {
       if (texto.startsWith(lit, i)) {
+        // También se contabiliza, por la misma razón que las claves. Ninguno
+        // llega a 8 caracteres, así que no puede producir un hallazgo.
+        if (nombre !== null) campos.push({ nombre, valor: lit, line: linea });
         i += lit.length;
         return;
       }
@@ -689,6 +697,12 @@ export function camposDeYaml(texto) {
 
     const { clave, valor } = par;
     if (valor === '') {
+      // La clave que ABRE un bloque también se declara, con valor vacío. No
+      // cambia ninguna detección —un valor vacío es hueco por longitud— pero
+      // deja constancia de que el analizador la ha CONSUMIDO. Es lo que permite
+      // que la ley de conservación del test distinga «esto lo miré y no era un
+      // valor» de «esto se me escapó».
+      campos.push({ nombre: clave, valor: '', line: numero });
       pila.push({ indent, nombre: clave });
       i += 1;
       continue;
@@ -740,6 +754,11 @@ export function camposDeYaml(texto) {
 
     const flujo = flujoYaml(valor, clave, numero);
     if (flujo) {
+      // La clave que lleva una colección de flujo también se declara consumida.
+      // Sin esto, `parameters: []` y `position: { x: 4 }` dejaban la CLAVE sin
+      // contabilizar, y la ley de conservación del test lo veía —fue ella quien
+      // lo encontró, sobre seis ficheros de `spec/` del corpus real—.
+      campos.push({ nombre: clave, valor: '', line: numero });
       campos.push(...flujo);
       i += 1;
       continue;
@@ -848,6 +867,12 @@ export function camposDeDockerfile(texto) {
       i += 1;
       if (i >= lineas.length) break;
       if (/^\s*#/.test(lineas[i])) {
+        // OPACO TAMBIÉN AQUÍ. Era la 57.ª `continue`, y la única que perdía
+        // contenido: un comentario FUERA de una continuación se marcaba opaco
+        // (arriba) y DENTRO se tiraba, así que el mismo texto se barría o no
+        // según dónde estuviera. Tercera aparición de la misma clase que B1 y
+        // B3 — una salida que no lanza y no marca.
+        campos.push({ nombre: '', valor: lineas[i], line: i + 1, opaco: true });
         acumulado += escape; // el comentario no consume la continuación
         continue;
       }
@@ -864,6 +889,9 @@ export function camposDeDockerfile(texto) {
     }
     const instruccion = m[1].toUpperCase();
     const args = m[2].trim();
+    // El NOMBRE de la instrucción también se declara consumido (ley de
+    // conservación); su valor va aparte, abajo.
+    campos.push({ nombre: m[1], valor: '', line: numero });
 
     // Instrucciones que NO declaran pares nombre/valor (`RUN`, `COPY`, `CMD`…).
     // Su argumento es texto de otro lenguaje —`RUN export API_KEY=…` es shell—,
