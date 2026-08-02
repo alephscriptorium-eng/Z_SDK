@@ -22,10 +22,12 @@
  *        de que los mismos casos vuelvan a lanzar Y a mutar el root. Sin esto,
  *        §2 podría estar verde por motivos ajenos a la guarda.
  *
- * NO cubre (y está dicho en el reporte, §4): los demás puntos que pueden
+ * NO cubría (y estaba dicho en su reporte, §4): los demás puntos que podían
  * lanzar después de FUSIONAR y que no son el asiento — `sealManifest` sobre un
- * manifiesto no escribible (medido, EPERM), `syncVolumeCounters`, el walk de
- * NO-LINK y el `rmSync` del staging en el `finally`.
+ * manifiesto no escribible, `syncVolumeCounters`, el walk de NO-LINK y el
+ * `rmSync` del staging en el `finally`. **Los cierra WP-U268**, en
+ * `test/u268-atomicidad-post-fusion.test.mjs`; el §5 de aquí lleva anotado qué
+ * cambió esa decisión en su propio censo.
  */
 
 import test from 'node:test';
@@ -749,8 +751,9 @@ test('CA-5 · amputadas las guardas, TODOS los casos vuelven a lanzar tras mutar
         caso.prepara?.(root);
         const antes = huellaArbol(root);
         let lanzo = null;
+        let salida = null;
         try {
-          mutante.importPack({
+          salida = mutante.importPack({
             packRoot,
             role: 'operator',
             actorId: 'op-1',
@@ -759,11 +762,43 @@ test('CA-5 · amputadas las guardas, TODOS los casos vuelven a lanzar tras mutar
         } catch (err) {
           lanzo = err;
         }
-        assert.ok(lanzo, `${caso.nombre}: sin la guarda DEBE volver a lanzar`);
+        // ── U268 · POR QUÉ ESTE CENSO YA NO EXIGE «LANZA» ──────────────────
+        // Hasta U268 la marca de la amputación era una EXCEPCIÓN, porque el
+        // apéndice del asiento corría desnudo. U268 envuelve toda la zona
+        // posterior a FUSIONAR, así que el mutante ya no lanza: devuelve
+        // `post-fusion/asiento_no_escribible` (medido: los nueve casos).
+        //
+        // Eso NO vuelve redundantes las guardas de U253b, y es justo lo que
+        // vigila esta aserción: sin ellas el root SIGUE MUTANDO. Lo que la
+        // precondición compra es que el fallo se conozca con el root todavía
+        // intacto; lo que U268 compra es que, cuando ya no se puede, el daño se
+        // DECLARE en vez de escaparse. Exigir aquí «lanza» mediría la conducta
+        // de otro WP. Se exige lo que la guarda protege: que el import deje de
+        // salir por su propio paso, y que el root se mueva.
+        assert.notEqual(
+          salida?.step ?? null,
+          'precondicion-ledger',
+          `${caso.nombre}: amputada la guarda, no puede seguir saliendo por la precondición`
+        );
+        assert.notEqual(
+          salida?.error ?? null,
+          'ledger_en_ruta_de_fusion',
+          `${caso.nombre}: amputada la guarda, no puede seguir saliendo por la guarda de fusión`
+        );
+        // Medido: los NUEVE devuelven `post-fusion`, así que se exige eso y no
+        // un «o lanza o…» que aceptaría de más. Si un día uno volviera a
+        // lanzar, esta prueba lo dirá en vez de taparlo.
+        assert.equal(lanzo, null, `${caso.nombre}: U268 ya no deja escapar excepciones`);
+        assert.equal(
+          salida?.step,
+          'post-fusion',
+          `${caso.nombre}: sin la guarda el fallo se descubre TARDE, con el root ya tocado`
+        );
+        assert.equal(salida?.aterrizado, true, `${caso.nombre}: y el resultado lo declara`);
         assert.notEqual(
           huellaArbol(root),
           antes,
-          `${caso.nombre}: y DEBE haber mutado el root antes de lanzar`
+          `${caso.nombre}: y DEBE haber mutado el root — es lo que la precondición evitaba`
         );
         // «A medias» literal: el volumen está en disco (no todos los casos del
         // censo traen el mismo fichero, así que se pregunta por el volumen).

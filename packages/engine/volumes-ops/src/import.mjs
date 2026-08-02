@@ -26,9 +26,59 @@
  *   contrato de snapshot no se quede sin él para siempre. Los dos porqués,
  *   con su medida, en sus sitios.
  *
- * Every failure leaves the root intact (manifest seal unchanged) and the
- * staging directory removed. Nothing lands halfway: staging lives INSIDE
- * the destination root (same device) and fusion is rename-only.
+ * ── DÓNDE ESTÁ LA FRONTERA (U268 · lo que esta cabecera puede prometer) ────
+ * **Hasta FUSIONAR incluido**: todo fallo deja el root intacto —sello del
+ * manifiesto sin tocar, byte a byte— y el staging retirado. Ahí «nothing lands
+ * halfway» es una GARANTÍA, y la sostienen U255 (el plan entero antes del
+ * primer rename, con deshacer si un rename lanza) y U253b (el asiento se juzga
+ * antes de VERIFICAR).
+ *
+ * **La frontera NO está donde parece.** `sealManifest` escribe en
+ * `manifest.mjs:74` y sólo hashea en `:76`, así que «antes de SELLAR» no es un
+ * instante sino un tramo con una subventana dentro en la que el sello YA cambió
+ * aunque el sellador haya lanzado. Por eso la regla no se enuncia por fases sino
+ * por PRUEBA: **se revierte sólo si se comprueba que el sello no se movió**, y
+ * «no se puede leer» cae del lado de no revertir. La primera versión de U268 lo
+ * daba por hecho y **borraba el corpus del usuario** (medido; ver el bloque de
+ * U268 abajo).
+ *
+ * **Con el sello puesto ya no cabe deshacer**: el manifiesto re-sellado es la
+ * nueva verdad del root. Lo que se promete desde ahí es lo otro, y es
+ * comprobable:
+ *   - **ningún fallo posterior a FUSIONAR sale como excepción** — todos salen
+ *     por `{ok:false, step, error}` como el resto del contrato. Lo sostienen
+ *     cuatro envoltorios con nombre **y una red de última línea**
+ *     (`post_sello_interrumpido`) para lo que no tenga código propio; sin la
+ *     red la frase sería más ancha que el código;
+ *   - **el medio-aterrizaje se NOMBRA**: `step:'post-fusion'` con
+ *     `aterrizado:true`, el sello REAL (`sellado.before`/`after`, medido del
+ *     disco), si hay asiento o no, y una `recuperacion` EJECUTABLE;
+ *   - **entre el sello y el asiento no queda nada que pueda escaparse**: el
+ *     parte de `sellar` se anota DETRÁS del asiento y lo demás vive dentro de la
+ *     red. (No es que no corra nada en medio — eso era prosa; es que nada de lo
+ *     que corre puede salirse.)
+ *   - **la limpieza del staging no puede cambiar el desenlace**: viaja como
+ *     dato en `staging`, nunca como excepción.
+ * Staging vive DENTRO del root destino (mismo dispositivo) y la fusión es
+ * rename-only.
+ *
+ * ── ZONA SIN RED, Y HAY QUE SABERLO ANTES DE METER CÓDIGO AHÍ ─────────────
+ * La red de última línea cubre lo que va DESPUÉS del sello. **El `catch` de
+ * SELLAR queda fuera de ella**: si algo de lo que hay dentro de ese `catch`
+ * lanzara, la excepción se escaparía de `importPack`.
+ *
+ * Hoy no lo hace, y no por una guarda: **esa región no está protegida por red,
+ * está protegida por CONSTRUCCIÓN** — se revisó pieza a pieza que nada de lo que
+ * hay ahí puede lanzar solo (`manifiestoVivo` ya atrapa lo suyo y devuelve
+ * `null`, `deshacerFusion` no lanza por contrato, y el resto son literales y
+ * `.map` sobre arrays propios). **Eso es más débil que una red** y no tiene
+ * vector conocido a día de hoy: es una propiedad del código actual, no una
+ * garantía del contrato.
+ *
+ * Quien añada una llamada dentro de ese `catch` —una lectura, un borrado, un
+ * log que toque disco— **entra en zona sin red** y rompe la promesa de arriba
+ * sin que ninguna prueba lo cace. Si hace falta meter algo ahí, lo que
+ * corresponde es envolverlo, no confiar en que siga sin lanzar.
  *
  * ── U255 · «NOTHING LANDS HALFWAY» ERA UNA FRASE, NO UNA GARANTÍA ─────────
  * Las dos líneas de arriba y el paso 4 del contrato («pase 1 (dry): TODA
@@ -89,18 +139,64 @@
  *   - `ledger` con campos inutilizables (`{volumesRoot: 42}`) →
  *     `ledger_opts_invalidas`, en vez de un `TypeError` tardío.
  *
- * ── LO QUE ESTE WP **NO** CIERRA, dicho aquí y no sólo en el reporte ───────
- * Cierra la familia de fallos **conocibles ANTES de fusionar**. NO cierra la
- * conocible sólo DESPUÉS: un ledger legible pero **no escribible**, `sealManifest`
- * sobre un manifiesto no escribible, `syncVolumeCounters`, el walk de NO-LINK
- * —que además devuelve `{ok:false}` tras haber sellado, sin excepción de por
- * medio— y el `rmSync` del `finally`, donde un `EBUSY` SUSTITUYE al `return` de
- * un import que sí terminó. Esas seis son **una sola decisión aplazada** —qué
- * hacer cuando el fallo sólo es conocible después de FUSIONAR— y **no se
- * esquivan con más precondiciones**: una sonda de escribibilidad tendría que
- * tocar el root antes de VERIFICAR, que es justo lo que la CA de este WP
- * prohíbe. Van a **WP-U268** con su medida; el censo, con línea y estado, en el
- * §4 del reporte.
+ * ── U268 · LA DECISIÓN APLAZADA: QUÉ HACER DESPUÉS DE FUSIONAR ────────────
+ * U253b dejó SEIS puntos que sólo se conocen después de FUSIONAR, y los seis
+ * se midieron de nuevo antes de tocar nada (reporte §2, con la huella del árbol
+ * entero antes/después). En los cinco posteriores al sello el resultado era
+ * idéntico: **corpus aterrizado, manifiesto re-sellado, CERO asiento** — y
+ * cuatro de ellos ni siquiera salían por el contrato, salían LANZANDO.
+ *
+ * La decisión, con su argumento, es **declarar el medio-aterrizaje**, no
+ * revertirlo — salvo en el único tramo donde revertir es honesto. El porqué,
+ * en tres hechos MEDIDOS y no en una preferencia:
+ *  1. **Revertir después del sello exige ESCRIBIR**, y la clase entera de
+ *     fallos es «no se puede escribir en el root». Un rollback que falla en las
+ *     mismas condiciones que el fallo que repara no es atomicidad: es una
+ *     segunda oportunidad. Y como puede fallar, HABRÍA QUE DECLARAR EL
+ *     MEDIO-ATERRIZAJE IGUAL — (a) no ahorra (b), le añade un paso frágil.
+ *  2. **`deshacerFusion` (U255) declara en su propio contrato que no vale
+ *     después de SELLAR** («a partir de ahí los datos son la verdad y
+ *     deshacerlos dejaría el manifiesto mintiendo»). Estirarlo hasta aquí sería
+ *     ensanchar una frase por encima de su evidencia.
+ *  3. **En dos de los cinco no hay NADA que revertir**: el `rmSync` del
+ *     `finally` cae sobre un import COMPLETADO (con asiento incluido, medido), y
+ *     `symlink_en_resultado` describe un ancla viva que ya estaba en el destino
+ *     — deshacer borraría datos correctos y dejaría el ancla.
+ * Donde SÍ se revierte: **SELLAR lanzando CON EL SELLO COMPROBADAMENTE
+ * INTACTO**, que es exactamente lo que `deshacerFusion` declara cubrir. Ahí el
+ * root vuelve a su estado previo y el import se puede REPETIR — sin revertir no
+ * se podía, porque el corpus ya en destino hace que la segunda pasada muera con
+ * `slot_ocupado` (medido). La mezcla es intencional y está dicha: **revertir
+ * mientras se pueda PROBAR que el sello no se ha movido; declarar en cuanto se
+ * haya movido o no se pueda probar.**
+ *
+ * La primera versión de este WP escribía esa condición como «antes de SELLAR» y
+ * la daba por cierta sin mirar. Con la escritura hecha y el sellador lanzando
+ * —disco lleno, o cualquier fallo entre el `write` y el hash— revertía igual:
+ * devolvía el corpus al staging, el `finally` lo borraba, y el resultado decía
+ * `aterrizado:false, sellado:null` mientras el manifiesto declaraba el import.
+ * **Convertía un medio-aterrizaje recuperable en pérdida de datos permanente y
+ * lo declaraba al revés.** Ahora se pregunta al disco; el detalle, en el `catch`.
+ *
+ * Lo que cambia, en concreto:
+ *  - **entre el sello y el asiento no queda nada que pueda ESCAPARSE.** Ésta es
+ *    la raíz del defecto y no se arregla con guardas: entre `sealManifest` y
+ *    `appendOpsLedger` corrían `syncVolumeCounters` y el walk de NO-LINK, y
+ *    cualquiera de los dos lanzando dejaba un manifiesto que declara
+ *    `source.imported` sin asiento que lo respalde. Eso es `ledger_ausente` en
+ *    `verify.mjs` §2: **el root deja de arrancar**. Y no se repara re-importando
+ *    —la segunda pasada responde `noop:true` y no escribe asiento (medido)—, así
+ *    que el daño era PERMANENTE. Ahora los contadores y NO-LINK van DESPUÉS del
+ *    asiento, el parte de `sellar` también, y lo que quede en medio lo recoge la
+ *    red;
+ *  - **cuatro tramos envueltos y una red de última línea**, y con eso ninguna
+ *    excepción escapa de la zona posterior a FUSIONAR: SELLAR (→ revierte o
+ *    declara, según la prueba del sello), asiento, contadores, NO-LINK (→
+ *    declaran) y `post_sello_interrumpido` para el resto;
+ *  - **el `finally` deja de poder sustituir al `return`.** `limpiarStaging` no
+ *    lanza nunca; su desenlace viaja por REFERENCIA en el campo `staging` de
+ *    toda salida posterior a STAGING, así que un import completado ya no es
+ *    indistinguible de uno fallido.
  * Node-only.
  */
 
@@ -120,8 +216,8 @@ import { validate as validateSchema } from '@zeus/linea-kit/validate';
 import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
 import { VOLUMES_OPS_CATALOG } from './catalog.mjs';
 import { FAMILY_DRIVERS, detectVolumeFamily } from './drivers.mjs';
-import { applyFusion, causaDe, inspectFusionPlan } from './fusion-guard.mjs';
-import { hashManifest, sealManifest } from './manifest.mjs';
+import { applyFusion, causaDe, deshacerFusion, inspectFusionPlan } from './fusion-guard.mjs';
+import { hashManifest, readManifestRaw, sealManifest } from './manifest.mjs';
 import { syncVolumeCounters } from './counters.mjs';
 import { measurePath } from './measure.mjs';
 import { appendOpsLedger, readOpsLedger, resolveOpsLedgerPath } from './ledger.mjs';
@@ -210,6 +306,40 @@ function computePackHash(m) {
 }
 
 /**
+ * Retira el staging SIN PODER CAMBIAR EL DESENLACE (WP-U268).
+ *
+ * El `rmSync` del `finally` era la peor de las seis entradas medidas y no por
+ * ser la más probable, sino por lo que HACE: una excepción en un `finally`
+ * **sustituye al `return`**, así que un `EBUSY` al retirar un directorio
+ * temporal borraba el resultado de un import COMPLETO —corpus aterrizado,
+ * manifiesto re-sellado y asiento escrito— y lo entregaba al llamante como una
+ * excepción indistinguible de un fallo real (medido: §2·E4 del reporte). Un
+ * conserje no puede decidir si la obra salió bien.
+ *
+ * Así que la limpieza no lanza: devuelve su desenlace, y `importPack` lo publica
+ * en el campo `staging` de toda salida posterior a STAGING. Dos consecuencias
+ * declaradas:
+ *  - `maxRetries` existe porque el bloqueo típico (otro proceso con un handle
+ *    abierto un instante) es TRANSITORIO y el contrato §1 dice que el staging
+ *    nunca sobrevive; cuesta como mucho ~0,3 s y SÓLO en el camino que ya iba a
+ *    fallar. No convierte en éxito un bloqueo persistente: el de la prueba
+ *    (cwd dentro del staging) sigue devolviendo `eliminado:false`;
+ *  - cuando falla de verdad, el staging **sobrevive dentro del root** y lo ve el
+ *    cerco de arranque (`cerco.mjs` recorre el root entero). No se calla: sale
+ *    en `staging.causa` con syscall y ruta.
+ * @param {string} dir
+ * @returns {{ dir: string, eliminado: boolean, causa: object|null }}
+ */
+export function limpiarStaging(dir) {
+  try {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 });
+    return { dir, eliminado: true, causa: null };
+  } catch (err) {
+    return { dir, eliminado: false, causa: causaDe(err) };
+  }
+}
+
+/**
  * Import a Release pack (already expanded on disk) into the canonical
  * volumes root. See module header + plan/CONTRATO-IMPORT-PACK-v1.md.
  *
@@ -226,7 +356,22 @@ export function importPack(opts) {
   const { packRoot, actorId = 'ops', origin = null, ledger: ledgerOpts = {} } = opts || {};
   /** @type {object[]} */
   const steps = [];
-  const fail = (step, error, extra = {}) => ({ ok: false, step, error, steps, ...extra });
+  // U268 · el desenlace de la limpieza viaja por REFERENCIA: el `finally` lo
+  // rellena DESPUÉS de que cada `return` haya construido su objeto, y como es el
+  // mismo objeto el llamante lo ve relleno. Es lo que permite que la limpieza
+  // informe sin poder sustituir al resultado. `dir` sigue en `null` mientras no
+  // haya staging, y ése es el interruptor de si el campo aparece o no: una
+  // precondición denegada no puede hablar de un directorio que nunca existió.
+  /** @type {{ dir: string|null, eliminado: boolean|null, causa: object|null }} */
+  const limpieza = { dir: null, eliminado: null, causa: null };
+  const fail = (step, error, extra = {}) => ({
+    ok: false,
+    step,
+    error,
+    steps,
+    ...(limpieza.dir ? { staging: limpieza } : {}),
+    ...extra
+  });
 
   // Precondition (contract §0.6): operator-only intent; omitted role → player → denied.
   const role = resolveIntentRole({ role: opts?.role });
@@ -488,6 +633,7 @@ export function importPack(opts) {
     volumesRoot,
     `.import-staging-${pack.name.replace(/[^a-z0-9-]/gi, '_')}-${process.pid}-${Date.now()}`
   );
+  limpieza.dir = stagingDir;
   try {
     for (const rel of tree.files) {
       const from = join(dataRoot, rel.split('/').join(sep));
@@ -760,200 +906,522 @@ export function importPack(opts) {
     if (aplicacion.error) {
       return fail('fusionar', aplicacion.error.code, aplicacion.error.detail);
     }
-    steps.push({
-      step: 'fusionar',
-      ok: true,
-      moved: moves.length,
-      noopCorpora: noopCorpora.length,
+
+    /**
+     * El asiento del ledger, construido en UN solo sitio (U268·devolución B1).
+     * Se necesita en TRES: el apéndice normal, la recuperación cuando el
+     * apéndice falla, y la recuperación cuando `sealManifest` lanza CON EL SELLO
+     * YA PUESTO — ahí el `after` no es el que devolvió el sellador (no llegó a
+     * devolver nada) sino el que hay VIVO en disco. Por eso el sello entra por
+     * parámetro en vez de leerse de una variable.
+     * @param {string} after — sha256 del manifiesto tal como está en disco
+     */
+    const construyeAsiento = (after) => ({
+      kind: 'import_pack',
+      intent: 'import_pack',
+      role,
+      actorId,
+      pack: { name: pack.name, version: pack.version, packHash },
+      volumes: Object.keys(pack.volumes),
+      manifestSha256: { before: sealBefore.sha256, after },
+      noopCorpora,
       families: familyReports.map((f) => ({
         id: f.id,
         family: f.family,
-        moved: f.moved,
-        skipped: f.skipped,
         divergences: f.divergences.length,
         protectedSidecars: f.protectedSidecars.length,
         dedup: f.dedup.length
       }))
     });
 
+    /**
+     * El manifiesto TAL COMO ESTÁ EN DISCO ahora mismo. `null` si no se puede
+     * leer. No se cachea y no se supone: es la pregunta que faltaba en el
+     * `catch` de SELLAR (ver ahí).
+     * @returns {{ sha256: string, config: any|null }|null}
+     */
+    const manifiestoVivo = () => {
+      try {
+        const { raw } = readManifestRaw();
+        let config = null;
+        try {
+          config = JSON.parse(raw.toString('utf8'));
+        } catch {
+          config = null; // truncado o corrupto: es un DATO, no un fallo de aquí
+        }
+        return { sha256: createHash('sha256').update(raw).digest('hex'), config };
+      } catch {
+        return null;
+      }
+    };
+
     // ── 5 · SELLAR ───────────────────────────────────────────────────────
     // Rewrite the manifest via manifest.mjs (the ONE legitimate writer):
     // volume entries + corpora seeded with MEASURED files/bytes (contract
     // §0.3 — «import pobla corpora») + inert provenance.
-    const sealed = structuredClone(destConfig);
+    //
+    // ── U268 · REVERTIR SÓLO CON EL SELLO PROBADAMENTE INTACTO ────────────
+    // La primera versión de este WP revertía en cuanto `sealManifest` lanzaba,
+    // apoyándose en que «el manifiesto todavía está intacto». **Era una
+    // suposición, y era falsa**: `manifest.mjs:72-77` ESCRIBE en (b) y sólo
+    // hashea en (d), así que existe una subventana —del `open` que trunca hasta
+    // el hash— en la que el sello YA cambió. Revertir ahí no restaura nada:
+    // devuelve el corpus al staging, el `finally` lo borra, y el manifiesto se
+    // queda declarando un import cuyos ficheros ya no existen.
+    //
+    // Medido con inyección que reproduce el estado en disco (reporte §6):
+    //   - escritura COMPLETA y fallo posterior → la base dejaba `ledger_ausente`
+    //     con los ficheros EN DESTINO (reparable apendando el asiento); aquella
+    //     versión devolvía `aterrizado:false`, `sellado:null` y **borraba el
+    //     corpus** → `ledger_ausente` + `volumen_ausente`;
+    //   - escritura TRUNCADA (disco lleno: `writeFileSync` trunca al abrir) →
+    //     `manifiesto_ilegible` con el corpus borrado.
+    // Convertía un medio-aterrizaje recuperable en pérdida de datos permanente,
+    // y lo declaraba al revés. La regla, ahora, es una y se comprueba:
+    //
+    //          **se revierte SÓLO si se PRUEBA que el sello no se movió.**
+    //
+    // «No se puede leer el manifiesto» NO es prueba: cae del lado de no
+    // revertir, que es el lado que no destruye. Y con el sello movido no hay
+    // nada que deshacer —el manifiesto ya declara el import—, así que se sale
+    // por la misma puerta que el resto de la zona posterior al sello.
+    //
+    // El envoltorio cubre el CÓMPUTO además de la escritura a propósito. El
+    // vector natural medido es `volumes.json` no escribible (EPERM en
+    // `writeFileSync`, con el sello intacto); el cómputo —`sha256File` de lo
+    // aterrizado, `snapshotOf` del driver, `measurePath`— lee el destino y no
+    // tengo vector natural para hacerlo lanzar. Va dentro igualmente porque
+    // ninguna excepción debe escapar de la zona posterior a FUSIONAR. Un solo
+    // código (`sellar_interrumpido`) para no inventar taxonomía sin vector: la
+    // `causa` lleva syscall, código y ruta reales.
+    /** @type {{ path: string, sha256: string }} */
+    let sealAfter;
+    /** @type {object[]} */
     const importedReport = [];
-    for (const [volId, vol] of Object.entries(pack.volumes)) {
-      const prev = sealed.volumes[volId] || {};
-      // ── SELLO POR FICHERO (WP-U258) ────────────────────────────────────
-      // `pack.hashes` describe el PACK, no el destino: la familia LINEAS deja
-      // el fichero del destino intacto cuando diverge (driver-lineas.mjs:184)
-      // y NUNCA pisa un `.md` curado (:169). Sellar el hash del pack sería
-      // sellar una mentira en cuanto un import diverge, y el root dejaría de
-      // arrancar por su propia anotación. Así que se recomputa del DESTINO,
-      // después de FUSIONAR: se sella lo que ATERRIZÓ.
-      //
-      // Alcance declarado: el conjunto de rutas es el que el pack trajo para
-      // este volumen. Un fichero que ya viviera en el destino y que el pack no
-      // enumere NO entra en el sello — y es deliberado: el árbol vivo puede
-      // recibir material lateral que el repo no controla, y una igualdad de
-      // CONJUNTO convertiría eso en un arranque denegado. Lo que este sello
-      // garantiza es exacto: **cada fichero sellado sigue byte a byte igual, o
-      // el arranque se niega**. Las ALTAS no las cubre este leg (las cubren el
-      // snapshot de unidad, donde la familia lo sella, y el leg de corpora
-      // cuando el import sembró files/bytes).
-      //
-      // Coste declarado: el manifiesto crece una línea por fichero sellado. Es
-      // la misma escala que el `hashes` del manifiesto de pack (§0.2), que ya
-      // enumera fichero a fichero; no se introduce un orden de magnitud nuevo.
-      /** @type {Record<string, string>} */
-      const landedHashes = {};
-      /** @type {string[]} */
-      const noAterrizados = [];
-      for (const rel of volumeFilesById[volId] || []) {
-        const abs = join(volumesRoot, `${vol.path}/${rel}`.split('/').join(sep));
-        if (existsSync(abs)) landedHashes[rel] = sha256File(abs);
-        else noAterrizados.push(rel);
-      }
-      // Snapshot recomputado del DESTINO (ver el bloque de abajo). `null` si el
-      // volumen no es de familia o si su driver no sella snapshot.
-      const famDriver = families[volId] ? FAMILY_DRIVERS[families[volId]] : null;
-      const landedSnapshot = famDriver?.snapshotOf
-        ? famDriver.snapshotOf(join(volumesRoot, vol.path.split('/').join(sep)))
-        : null;
-      const corpora = (vol.corpora || []).map((c) => {
-        const corpusAbs = join(
-          volumesRoot,
-          `${vol.path}/${c.path || c.id}`.split('/').join(sep)
-        );
-        const m = measurePath(corpusAbs);
-        return {
-          id: c.id,
-          path: c.path || c.id,
-          label: c.label || c.id,
-          files: m.files,
-          bytes: m.bytes
-        };
-      });
-      sealed.volumes[volId] = {
-        ...prev,
-        disk: vol.disk,
-        path: vol.path,
-        readonly: vol.readonly ?? true,
-        label: vol.label || prev.label || volId,
-        ...(families[volId] ? { family: families[volId] } : {}),
-        source: {
-          ...(prev.source || {}),
-          imported: {
-            name: pack.name,
-            version: pack.version,
-            packHash,
-            importedAt: new Date().toISOString(),
-            ...(origin ? { origin } : {}), // inert metadata (cerco §10.8)
-            // Sello por fichero (U258): `<relPosix>` → sha256 de lo aterrizado.
-            ...(Object.keys(landedHashes).length > 0 ? { hashes: landedHashes } : {}),
-            // ── SNAPSHOT DE UNIDAD (U203 · recomputado del DESTINO en U259) ─
-            // Antes se copiaba del PLAN del driver, que se calcula sobre el
-            // STAGING. En FORCES daba igual (una unidad que difiera aborta el
-            // import), pero en LINEAS **no**: el driver conserva el fichero del
-            // destino cuando diverge y jamás pisa un `.md` curado, así que el
-            // árbol que queda tras fusionar NO es el del pack. Sellar el
-            // staging anotaría un árbol que el volumen no tiene y el root
-            // dejaría de arrancar POR HABER IMPORTADO BIEN — el defecto exacto
-            // que U258 cerró para el sello por fichero, aquí para el de unidad.
-            // Misma regla para las cuatro familias, un solo momento: **después
-            // de FUSIONAR, desde el destino**, con el `snapshotOf()` del propio
-            // driver que verifica.
-            ...(landedSnapshot ? { snapshot: landedSnapshot } : {})
-          }
-        },
-        ...(corpora.length > 0 ? { corpora } : {})
-      };
-      importedReport.push({
-        id: volId,
-        corpora,
-        hashes: Object.keys(landedHashes).length,
-        snapshot: landedSnapshot,
-        // Cero en todo camino de los drivers actuales; se REPORTA en vez de
-        // callarse para que un plan de fusión que deje un fichero sin
-        // aterrizar sea observable en la salida del import, no invisible.
-        unsealed: noAterrizados
-      });
-    }
-    const sealAfter = sealManifest(sealed);
-    // Live state tied to the new seal (U199 machinery).
-    for (const volId of Object.keys(pack.volumes)) {
-      syncVolumeCounters(volId);
-    }
-    steps.push({
-      step: 'sellar',
-      ok: true,
-      manifestSha256: sealAfter.sha256,
-      volumes: importedReport.map((v) => v.id),
-      hashes: importedReport.map((v) => ({ id: v.id, files: v.hashes, unsealed: v.unsealed.length })),
-      // U259 · qué ancló el snapshot de cada volumen, para que el sello sea
-      // observable en la salida del import y no sólo en el manifiesto.
-      snapshots: importedReport
-        .filter((v) => v.snapshot)
-        .map((v) => ({
-          id: v.id,
-          unit: typeof v.snapshot.unit === 'string' ? v.snapshot.unit : 'arbol-por-unidad',
-          units:
-            typeof v.snapshot.units === 'number'
-              ? v.snapshot.units
-              : Object.keys(v.snapshot).length
-        }))
-    });
-
-    // ── 7 · NO-LINK (result tree) ────────────────────────────────────────
-    let entriesChecked = 0;
-    for (const vol of Object.values(pack.volumes)) {
-      const landed = walkTree(join(volumesRoot, vol.path.split('/').join(sep)));
-      entriesChecked += landed.files.length;
-      if (landed.symlinks.length > 0) {
-        return fail('no-link', 'symlink_en_resultado', { symlinks: landed.symlinks });
-      }
-    }
-    steps.push({ step: 'no-link', ok: true, entriesChecked });
-
-    const seat = appendOpsLedger(
-      {
-        kind: 'import_pack',
-        intent: 'import_pack',
-        role,
-        actorId,
-        pack: { name: pack.name, version: pack.version, packHash },
-        volumes: Object.keys(pack.volumes),
-        manifestSha256: { before: sealBefore.sha256, after: sealAfter.sha256 },
-        noopCorpora,
+    try {
+      // El parte de FUSIONAR se anota AQUÍ DENTRO (devolución B2): estaba fuera
+      // de todo envoltorio y ya es zona posterior a la fusión, así que un fallo
+      // suyo se escapaba como excepción. Aquí queda cubierto por la misma regla
+      // —y por el revert, porque el sello todavía no está puesto.
+      steps.push({
+        step: 'fusionar',
+        ok: true,
+        moved: moves.length,
+        noopCorpora: noopCorpora.length,
         families: familyReports.map((f) => ({
           id: f.id,
           family: f.family,
+          moved: f.moved,
+          skipped: f.skipped,
           divergences: f.divergences.length,
           protectedSidecars: f.protectedSidecars.length,
           dedup: f.dedup.length
         }))
-      },
-      // La ruta YA RESUELTA por la precondición, no la propuesta cruda: es lo
-      // que hace que `ledgerPath` se lea una sola vez en toda la función. Ver
-      // el bloque de la precondición.
-      { ...ledgerFijo, ledgerPath }
-    );
+      });
+      const sealed = structuredClone(destConfig);
+      for (const [volId, vol] of Object.entries(pack.volumes)) {
+        const prev = sealed.volumes[volId] || {};
+        // ── SELLO POR FICHERO (WP-U258) ────────────────────────────────────
+        // `pack.hashes` describe el PACK, no el destino: la familia LINEAS deja
+        // el fichero del destino intacto cuando diverge (driver-lineas.mjs:184)
+        // y NUNCA pisa un `.md` curado (:169). Sellar el hash del pack sería
+        // sellar una mentira en cuanto un import diverge, y el root dejaría de
+        // arrancar por su propia anotación. Así que se recomputa del DESTINO,
+        // después de FUSIONAR: se sella lo que ATERRIZÓ.
+        //
+        // Alcance declarado: el conjunto de rutas es el que el pack trajo para
+        // este volumen. Un fichero que ya viviera en el destino y que el pack no
+        // enumere NO entra en el sello — y es deliberado: el árbol vivo puede
+        // recibir material lateral que el repo no controla, y una igualdad de
+        // CONJUNTO convertiría eso en un arranque denegado. Lo que este sello
+        // garantiza es exacto: **cada fichero sellado sigue byte a byte igual, o
+        // el arranque se niega**. Las ALTAS no las cubre este leg (las cubren el
+        // snapshot de unidad, donde la familia lo sella, y el leg de corpora
+        // cuando el import sembró files/bytes).
+        //
+        // Coste declarado: el manifiesto crece una línea por fichero sellado. Es
+        // la misma escala que el `hashes` del manifiesto de pack (§0.2), que ya
+        // enumera fichero a fichero; no se introduce un orden de magnitud nuevo.
+        /** @type {Record<string, string>} */
+        const landedHashes = {};
+        /** @type {string[]} */
+        const noAterrizados = [];
+        for (const rel of volumeFilesById[volId] || []) {
+          const abs = join(volumesRoot, `${vol.path}/${rel}`.split('/').join(sep));
+          if (existsSync(abs)) landedHashes[rel] = sha256File(abs);
+          else noAterrizados.push(rel);
+        }
+        // Snapshot recomputado del DESTINO (ver el bloque de abajo). `null` si el
+        // volumen no es de familia o si su driver no sella snapshot.
+        const famDriver = families[volId] ? FAMILY_DRIVERS[families[volId]] : null;
+        const landedSnapshot = famDriver?.snapshotOf
+          ? famDriver.snapshotOf(join(volumesRoot, vol.path.split('/').join(sep)))
+          : null;
+        const corpora = (vol.corpora || []).map((c) => {
+          const corpusAbs = join(
+            volumesRoot,
+            `${vol.path}/${c.path || c.id}`.split('/').join(sep)
+          );
+          const m = measurePath(corpusAbs);
+          return {
+            id: c.id,
+            path: c.path || c.id,
+            label: c.label || c.id,
+            files: m.files,
+            bytes: m.bytes
+          };
+        });
+        sealed.volumes[volId] = {
+          ...prev,
+          disk: vol.disk,
+          path: vol.path,
+          readonly: vol.readonly ?? true,
+          label: vol.label || prev.label || volId,
+          ...(families[volId] ? { family: families[volId] } : {}),
+          source: {
+            ...(prev.source || {}),
+            imported: {
+              name: pack.name,
+              version: pack.version,
+              packHash,
+              importedAt: new Date().toISOString(),
+              ...(origin ? { origin } : {}), // inert metadata (cerco §10.8)
+              // Sello por fichero (U258): `<relPosix>` → sha256 de lo aterrizado.
+              ...(Object.keys(landedHashes).length > 0 ? { hashes: landedHashes } : {}),
+              // ── SNAPSHOT DE UNIDAD (U203 · recomputado del DESTINO en U259) ─
+              // Antes se copiaba del PLAN del driver, que se calcula sobre el
+              // STAGING. En FORCES daba igual (una unidad que difiera aborta el
+              // import), pero en LINEAS **no**: el driver conserva el fichero del
+              // destino cuando diverge y jamás pisa un `.md` curado, así que el
+              // árbol que queda tras fusionar NO es el del pack. Sellar el
+              // staging anotaría un árbol que el volumen no tiene y el root
+              // dejaría de arrancar POR HABER IMPORTADO BIEN — el defecto exacto
+              // que U258 cerró para el sello por fichero, aquí para el de unidad.
+              // Misma regla para las cuatro familias, un solo momento: **después
+              // de FUSIONAR, desde el destino**, con el `snapshotOf()` del propio
+              // driver que verifica.
+              ...(landedSnapshot ? { snapshot: landedSnapshot } : {})
+            }
+          },
+          ...(corpora.length > 0 ? { corpora } : {})
+        };
+        importedReport.push({
+          id: volId,
+          corpora,
+          hashes: Object.keys(landedHashes).length,
+          snapshot: landedSnapshot,
+          // Cero en todo camino de los drivers actuales; se REPORTA en vez de
+          // callarse para que un plan de fusión que deje un fichero sin
+          // aterrizar sea observable en la salida del import, no invisible.
+          unsealed: noAterrizados
+        });
+      }
+      sealAfter = sealManifest(sealed);
+    } catch (err) {
+      // ⚠ ZONA SIN RED. Este `catch` está FUERA de la red de última línea (que
+      // sólo cubre lo posterior al sello): lo que lance aquí dentro se escapa de
+      // `importPack`. Hoy nada lo hace, pero **por construcción, no por guarda**
+      // —revisado pieza a pieza—, y eso es más débil que una red. Antes de
+      // añadir aquí cualquier llamada que toque disco, envolverla. Ver la
+      // cabecera del módulo.
+      //
+      // Se PREGUNTA por el sello antes de decidir. Ver el bloque de arriba.
+      const vivo = manifiestoVivo();
+      const selloIntacto = vivo !== null && vivo.sha256 === sealBefore.sha256;
 
-    return {
-      ok: true,
-      noop: false,
-      volumesRoot,
-      packHash,
-      manifestSha256: sealAfter.sha256,
-      manifestSha256Before: sealBefore.sha256,
-      imported: importedReport,
-      noopCorpora,
-      families: familyReports,
-      steps,
-      ledger: seat
-    };
+      if (!selloIntacto) {
+        // ── El sello YA se movió (o no se puede leer). NO se revierte. ─────
+        // Deshacer aquí sería sacar de destino unos ficheros que el manifiesto
+        // ya está declarando, y el `finally` los borraría con el staging.
+        const sellado = { before: sealBefore.sha256, after: vivo?.sha256 ?? null };
+        // ¿El manifiesto que hay en disco DICE lo que este import quería
+        // sellar? Se le pregunta a él, no se re-serializa: una escritura
+        // completa parsea y declara el `packHash` de todos los volúmenes; una
+        // truncada (disco lleno) ni siquiera parsea.
+        const completo =
+          Boolean(vivo?.config) &&
+          Object.keys(pack.volumes).every(
+            (id) => vivo.config.volumes?.[id]?.source?.imported?.packHash === packHash
+          );
+        return fail('post-fusion', completo ? 'sello_sin_confirmar' : 'manifiesto_a_medias', {
+          aterrizado: true,
+          volumes: Object.keys(pack.volumes),
+          sellado,
+          asiento: false,
+          causa: causaDe(err),
+          recuperacion: completo
+            ? {
+                // Mismo estado que `asiento_no_escribible`, misma cura: el
+                // manifiesto quedó escrito y sólo falta el asiento que lo
+                // respalde. El `after` es el sello VIVO, no el que el sellador
+                // iba a devolver.
+                via: 'appendOpsLedger',
+                ledgerPath,
+                entrada: construyeAsiento(vivo.sha256),
+                nota:
+                  'el manifiesto quedó ESCRITO pero el sellador no llegó a confirmarlo; el root ' +
+                  'no arranca sin asiento (verify.mjs · ledger_ausente) y repetir el import ' +
+                  'responde noop:true sin escribirlo'
+              }
+            : {
+                via: 'operador',
+                nota:
+                  'volumes.json quedó a medias (p. ej. disco lleno: writeFileSync trunca al ' +
+                  'abrir): NO se revirtió la fusión a propósito, el corpus sigue en destino. ' +
+                  'Restaurar el manifiesto y volver a importar; revertir habría borrado datos',
+                volumenesEnDestino: Object.entries(pack.volumes).map(([id, v]) => ({
+                  id,
+                  path: v.path
+                }))
+              }
+        });
+      }
+
+      // ── Sello PROBADAMENTE intacto ⇒ revertir es lo honesto (y hace falta:
+      // sin deshacer, el corpus queda en destino sin entrada en el manifiesto y
+      // la segunda pasada muere con `slot_ocupado`). El inventario de lo que NO
+      // se pudo deshacer viaja entero: un rollback que dice «todo restaurado»
+      // sin comprobarlo no vale (U255), y si queda algo sin deshacer entonces SÍ
+      // hubo medio-aterrizaje y se declara.
+      const vuelta = deshacerFusion(aplicacion.movimientos);
+      return fail('sellar', 'sellar_interrumpido', {
+        causa: causaDe(err),
+        aterrizado: vuelta.sinDeshacer.length > 0,
+        sellado: null,
+        asiento: false,
+        revertido: {
+          renombradosHechos: aplicacion.movimientos.length,
+          renombradosDeshechos: vuelta.deshechos.length,
+          sinDeshacer: vuelta.sinDeshacer
+        },
+        recuperacion:
+          vuelta.sinDeshacer.length === 0
+            ? {
+                via: 'importPack',
+                nota:
+                  'el root volvió a su estado previo: corregir la causa (p. ej. permiso de ' +
+                  'escritura sobre volumes.json) y repetir el mismo import'
+              }
+            : {
+                via: 'operador',
+                nota:
+                  'quedaron renombrados sin deshacer: retirar a mano las rutas de `sinDeshacer` ' +
+                  'antes de repetir el import, o el slot aparecerá ocupado',
+                rutas: vuelta.sinDeshacer.map((s) => s.to)
+              }
+      });
+    }
+    // ── U268 · A PARTIR DE AQUÍ EL SELLO ESTÁ PUESTO: SE DECLARA ──────────
+    // Molde único de las salidas de esta zona, para que ninguna se olvide de
+    // decir lo mismo: aterrizó, con qué sello, con o sin asiento, y cómo se
+    // repara. `step:'post-fusion'` es el nombre del medio-aterrizaje.
+    const trasFusion = (error, extra) =>
+      fail('post-fusion', error, {
+        aterrizado: true,
+        volumes: Object.keys(pack.volumes),
+        sellado: { before: sealBefore.sha256, after: sealAfter.sha256 },
+        ...extra
+      });
+
+    /** @type {object|null} */
+    let seat = null;
+    /** @type {object|null} */
+    let entradaAsiento = null;
+    // ── LA RED DE ÚLTIMA LÍNEA (devolución B2) ────────────────────────────
+    // La primera versión decía «el sello y el asiento son un PAR sin nada en
+    // medio». Era prosa: entre los dos corrían el `steps.push` de `sellar` (con
+    // sus `.map`/`.filter`) y el literal del asiento, **sin envolver**. La
+    // región era más corta, no protegida — y ahí reaparecía el defecto entero:
+    // excepción escapada, sello puesto, cero asiento, root que no arranca.
+    //
+    // Lo que se promete ahora es lo que el código hace: **entre el sello y el
+    // asiento no queda nada que pueda ESCAPARSE**. El parte de `sellar` se anota
+    // DETRÁS del asiento (es contabilidad, no depende de nadie), y todo lo que
+    // sigue vive dentro de esta red, que da nombre y `causa` a cualquier fallo
+    // sin código propio en vez de dejarlo salir como excepción.
+    try {
+      // ── 6 · ASIENTO — lo primero tras el sello ──────────────────────────
+      // Ésta es la corrección de fondo de U268, y es de ORDEN, no de guardas.
+      // Desde que `sealManifest` escribe, el manifiesto declara
+      // `source.imported` y `verify.mjs` §2 EXIGE un asiento `import_pack` que
+      // lo respalde: sin él devuelve `ledger_ausente` y
+      // `assertVolumesRootBootable` **niega el arranque**. Antes corrían aquí
+      // `syncVolumeCounters` y el walk de NO-LINK; cualquiera de los dos
+      // lanzando dejaba el root sin arrancar y sin vuelta atrás — re-importar
+      // responde `noop:true` sin escribir asiento (medido, §2·E1). Los dos
+      // tramos pasan a ir DESPUÉS.
+      try {
+        entradaAsiento = construyeAsiento(sealAfter.sha256);
+        seat = appendOpsLedger(
+          entradaAsiento,
+          // La ruta YA RESUELTA por la precondición, no la propuesta cruda: es lo
+          // que hace que `ledgerPath` se lea una sola vez en toda la función. Ver
+          // el bloque de la precondición.
+          { ...ledgerFijo, ledgerPath }
+        );
+      } catch (err) {
+        // `entradaAsiento` puede seguir en `null` si lo que falló fue
+        // construirla; entonces no hay nada que ofrecer y se dice, en vez de
+        // prometer una recuperación con `undefined` dentro.
+        // La ÚNICA de las seis que no se puede arreglar reordenando: el asiento es
+        // el último eslabón y su sitio ya no puede ser más temprano. Así que la
+        // recuperación tiene que ser EJECUTABLE, no un consejo: la entrada exacta
+        // que no se pudo escribir viaja en la respuesta, y apendarla sobre la
+        // misma ruta cuando vuelva a ser escribible devuelve el root a `ok:true`
+        // en `verifyRootIntegrity` (probado en el CA, no razonado aquí).
+        return trasFusion('asiento_no_escribible', {
+          asiento: false,
+          causa: causaDe(err),
+          recuperacion: {
+            via: entradaAsiento ? 'appendOpsLedger' : 'operador',
+            ledgerPath,
+            ...(entradaAsiento ? { entrada: entradaAsiento } : {}),
+            nota:
+              'el manifiesto ya declara este import y sin asiento el root NO arranca ' +
+              '(verify.mjs · sello_vs_ledger → ledger_ausente); repetir el import NO lo repara ' +
+              '(el gate NO-OP responde noop:true y no escribe asiento)' +
+              (entradaAsiento ? '' : '; la entrada del asiento no se llegó a construir')
+          }
+        });
+      }
+
+      // El parte de SELLAR se anota DETRÁS del asiento (devolución B2): es
+      // contabilidad y nadie depende de él, así que ponerlo aquí quita del
+      // hueco sello↔asiento lo último que corría sin envolver. El ORDEN del
+      // array `steps` no cambia — `sellar` sigue entre `fusionar` y `no-link`.
+      steps.push({
+        step: 'sellar',
+        ok: true,
+        manifestSha256: sealAfter.sha256,
+        volumes: importedReport.map((v) => v.id),
+        hashes: importedReport.map((v) => ({
+          id: v.id,
+          files: v.hashes,
+          unsealed: v.unsealed.length
+        })),
+        // U259 · qué ancló el snapshot de cada volumen, para que el sello sea
+        // observable en la salida del import y no sólo en el manifiesto.
+        snapshots: importedReport
+          .filter((v) => v.snapshot)
+          .map((v) => ({
+            id: v.id,
+            unit: typeof v.snapshot.unit === 'string' ? v.snapshot.unit : 'arbol-por-unidad',
+            units:
+              typeof v.snapshot.units === 'number'
+                ? v.snapshot.units
+                : Object.keys(v.snapshot).length
+          }))
+      });
+
+      // ── 7 · ESTADO VIVO (U199) — después del asiento ──────────────────────
+      // `volumes.state.json` es REGENERABLE MIDIENDO (state.mjs), así que su
+      // fallo no cuestiona lo aterrizado; pero tampoco se calla, porque el
+      // contrato §0.3 dice que el import siembra contadores. Sale por el contrato
+      // con su recuperación, que aquí es literalmente re-medir.
+      try {
+        for (const volId of Object.keys(pack.volumes)) {
+          syncVolumeCounters(volId);
+        }
+      } catch (err) {
+        return trasFusion('estado_no_escribible', {
+          asiento: seat,
+          causa: causaDe(err),
+          recuperacion: {
+            via: 'syncVolumeCounters',
+            volumenes: Object.keys(pack.volumes),
+            nota:
+              'el estado vivo es regenerable midiendo y no entra en el sello: el root arranca ' +
+              '(sello y asiento están puestos); volver a llamar cuando el fichero sea escribible'
+          }
+        });
+      }
+
+      // ── 8 · NO-LINK (result tree) ────────────────────────────────────────
+      // Dos desenlaces distintos y por eso dos códigos: el árbol NO SE PUDO
+      // RECORRER (un subdirectorio sin permiso de listado hace lanzar a
+      // `readdirSync` — medido, EPERM en scandir) no es lo mismo que recorrerlo y
+      // ENCONTRAR un ancla viva. El segundo ya salía por el contrato desde U201,
+      // pero callaba que el corpus estaba aterrizado y el manifiesto re-sellado:
+      // cumplía la letra y rompía la frase. Ahora lo dice.
+      let entriesChecked = 0;
+      /** @type {string[]} */
+      const anclas = [];
+      try {
+        for (const vol of Object.values(pack.volumes)) {
+          const landed = walkTree(join(volumesRoot, vol.path.split('/').join(sep)));
+          entriesChecked += landed.files.length;
+          anclas.push(...landed.symlinks);
+        }
+      } catch (err) {
+        return trasFusion('resultado_no_inspeccionable', {
+          asiento: seat,
+          causa: causaDe(err),
+          recuperacion: {
+            via: 'assertVolumesRootBootable',
+            nota:
+              'el import no pudo COMPROBAR el árbol resultante (no que esté mal): el guardián de ' +
+              'arranque recorre el root entero y vuelve a hacer esta pregunta cuando la ruta sea ' +
+              'legible; hasta entonces el root no está verificado'
+          }
+        });
+      }
+      if (anclas.length > 0) {
+        return trasFusion('symlink_en_resultado', {
+          asiento: seat,
+          symlinks: anclas,
+          recuperacion: {
+            via: 'operador',
+            rutas: anclas,
+            nota:
+              'ancla viva en el destino (cerco §10.8): el pack no la trajo —VERIFICAR las rechaza— ' +
+              'así que estaba ya en el root o la puso una carrera; retirarla a mano, el cerco de ' +
+              'arranque la sigue viendo como enlace_vivo'
+          }
+        });
+      }
+      steps.push({ step: 'no-link', ok: true, entriesChecked });
+
+      return {
+        ok: true,
+        noop: false,
+        volumesRoot,
+        packHash,
+        manifestSha256: sealAfter.sha256,
+        manifestSha256Before: sealBefore.sha256,
+        imported: importedReport,
+        noopCorpora,
+        families: familyReports,
+        steps,
+        ledger: seat,
+        // U268 · lo rellena el `finally` sobre ESTE mismo objeto. Un import
+        // completado cuyo staging no se pudo retirar sigue siendo `ok:true` y lo
+        // dice aquí; antes desaparecía entero detrás de un `EBUSY`.
+        staging: limpieza
+      };
+    } catch (err) {
+      // Red de última línea: lo que no tiene código propio en esta zona. No
+      // inventa diagnóstico —`causa` lleva el error entero— y dice si el asiento
+      // llegó a escribirse, que es lo que decide si el root arranca. Sin ella,
+      // «ninguna excepción escapa de la zona posterior a FUSIONAR» sería una
+      // frase más ancha que el código, que es justo lo que este carril caza.
+      return trasFusion('post_sello_interrumpido', {
+        asiento: seat ?? false,
+        causa: causaDe(err),
+        recuperacion: {
+          via: seat ? 'operador' : 'appendOpsLedger',
+          ...(seat ? {} : { ledgerPath, ...(entradaAsiento ? { entrada: entradaAsiento } : {}) }),
+          nota: seat
+            ? 'sello y asiento están puestos (el root arranca); revisar `causa` y re-verificar ' +
+              'con assertVolumesRootBootable'
+            : 'el sello está puesto y el asiento NO: sin él el root no arranca'
+        }
+      });
+    }
   } finally {
-    // Staging never survives — success or failure (contract §1).
-    rmSync(stagingDir, { recursive: true, force: true });
+    // Staging never survives — success or failure (contract §1). U268: y si no
+    // se puede retirar, se DICE; jamás se lanza desde aquí (ver `limpiarStaging`).
+    const r = limpiarStaging(stagingDir);
+    limpieza.eliminado = r.eliminado;
+    limpieza.causa = r.causa;
   }
 }

@@ -336,7 +336,11 @@ export function inspectFusionPlan(moves, volumesRoot) {
  * - nada posterior a SELLAR: quien llama no debe invocar esto una vez el
  *   manifiesto está re-sellado (a partir de ahí los datos son la verdad y
  *   deshacerlos dejaría el manifiesto mintiendo). `applyFusion` corre ANTES de
- *   SELLAR, por construcción.
+ *   SELLAR, por construcción. **U268 añade el SEGUNDO y último llamante, y cae
+ *   del mismo lado de esa frontera**: `import.mjs` deshace cuando SELLAR lanza,
+ *   con la fusión aplicada y el manifiesto todavía sin escribir. Todo lo que
+ *   ocurre con el sello YA puesto se DECLARA (`step:'post-fusion'`), no se
+ *   deshace — el porqué, con su medida, en la cabecera de `import.mjs`.
  *
  * @param {{from:string,to:string,slotVaciado:boolean,apartado:string|null,dirCreado:string|undefined}[]} aplicados
  * @returns {{ deshechos: string[], sinDeshacer: object[] }}
@@ -389,9 +393,18 @@ function borrarDirectoriosVacios(abs) {
  * fallo inyectado — el vector real (permiso, bloqueo de otro proceso) no es
  * reproducible en una suite portable, y un rollback sin prueba es una promesa.
  *
+ * ── U268 · POR QUÉ EL ÉXITO DEVUELVE TAMBIÉN LA LISTA ─────────────────────
+ * `movimientos` es el MISMO inventario que este módulo ya construía para poder
+ * deshacer cuando un rename lanza; hasta U268 se descartaba al salir bien y sólo
+ * viajaba el número. Lo necesita `import.mjs` para el único rollback que sigue
+ * siendo legítimo después de FUSIONAR: **SELLAR lanzando**, que ocurre con la
+ * fusión ya aplicada y el manifiesto todavía intacto — exactamente el tramo que
+ * `deshacerFusion` declara cubrir («nada posterior a SELLAR»). Es aditivo:
+ * `aplicados` sigue siendo el número y nadie que lo use cambia.
+ *
  * @param {{kind:string, volId:string, from:string, to:string}[]} moves
  * @param {string[]} slotsVacios — destinos a vaciar antes de renombrar
- * @returns {{ ok: true, aplicados: number } | { error: {code:string, detail:object} }}
+ * @returns {{ ok: true, aplicados: number, movimientos: object[] } | { error: {code:string, detail:object} }}
  */
 export function applyFusion(moves, slotsVacios = []) {
   const vaciar = new Set(slotsVacios.map((p) => resolve(p)));
@@ -432,5 +445,5 @@ export function applyFusion(moves, slotsVacios = []) {
       };
     }
   }
-  return { ok: true, aplicados: aplicados.length };
+  return { ok: true, aplicados: aplicados.length, movimientos: aplicados };
 }
