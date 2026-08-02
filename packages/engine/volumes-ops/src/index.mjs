@@ -17,6 +17,10 @@ export {
 } from './empty.mjs';
 export { syncVolumeCounters } from './counters.mjs';
 export { importPack, IDENTITY_DENYLIST } from './import.mjs';
+// WP-U268 · la retirada del staging sale por el índice porque su promesa —«no
+// puede cambiar el desenlace»— sólo vale si tiene prueba DIRECTA: el bloqueo
+// real (handle de otro proceso, ACL) no se inyecta desde `importPack`.
+export { limpiarStaging } from './import.mjs';
 // WP-U255 · el guardián de la fase de aplicación. Se exporta por el mismo
 // motivo que `hashUnitTree` en U259: es el cuerpo que los CUATRO drivers usan
 // para no planificar un renombrado imposible, y una segunda copia sería la
