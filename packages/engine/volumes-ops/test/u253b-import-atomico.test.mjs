@@ -48,10 +48,22 @@ const sha256 = (b) => createHash('sha256').update(b).digest('hex');
 // ── §1 · Arnés ─────────────────────────────────────────────────────────────
 
 /**
- * Huella del ÁRBOL ENTERO del root: cada entrada con su tipo y, si es fichero,
- * el sha256 de sus bytes. Es lo que exige la CA-2 («no con inspección visual»):
- * un cambio en CUALQUIER punto del root —manifiesto, estado, corpus, ledger,
- * staging residual— mueve el hash.
+ * Huella del ÁRBOL ENTERO del root: cada entrada con su tipo, su MODO, el
+ * DESTINO si es enlace, y el sha256 de sus bytes si es fichero. Es lo que exige
+ * la CA-2 («no con inspección visual»).
+ *
+ * ── LO QUE ESTA HUELLA NO VE (declarado, como U253a declara lo suyo) ───────
+ * - **Flujos de datos alternos de NTFS.** `fs.readdir` no los enumera: un
+ *   `fichero:flujo` escrito dentro de una entrada existente NO mueve el hash.
+ *   Es la misma ceguera que `ledger-cerco.mjs` declara en su cabecera, y por el
+ *   mismo motivo (el API de ficheros de Node no los expone). No es hipotético:
+ *   el cerco existe justamente porque ese canal escribe DENTRO del manifiesto.
+ * - **Metadatos de tiempo** (`mtime`/`atime`): fuera a propósito, porque los
+ *   mueve cualquier lectura y volverían la huella inútil.
+ * - **Rutas FUERA del root.** Un residuo en `os.tmpdir()` o en otro volumen no
+ *   entra. Los vectores de §2 que apuntan fuera se comprueban por separado.
+ * Lo que sí ve, y basta para la CA: altas, bajas, cambios de contenido byte a
+ * byte, cambios de tipo, de permisos y de destino de enlace.
  * @param {string} root
  */
 function huellaArbol(root) {
@@ -65,22 +77,30 @@ function huellaArbol(root) {
       const abs = path.join(dir, e.name);
       const r = rel ? `${rel}/${e.name}` : e.name;
       const st = fs.lstatSync(abs);
-      if (st.isSymbolicLink()) lineas.push(`L ${r}`);
-      else if (st.isDirectory()) {
-        lineas.push(`D ${r}`);
+      const modo = st.mode.toString(8);
+      if (st.isSymbolicLink()) {
+        let destino = '?';
+        try {
+          destino = fs.readlinkSync(abs);
+        } catch {
+          /* enlace roto o ilegible: se anota como tal, que también es un cambio */
+        }
+        lineas.push(`L ${r} ${modo} → ${destino}`);
+      } else if (st.isDirectory()) {
+        lineas.push(`D ${r} ${modo}`);
         walk(abs, r);
-      } else lineas.push(`F ${r}:${sha256(fs.readFileSync(abs))}`);
+      } else lineas.push(`F ${r} ${modo}:${sha256(fs.readFileSync(abs))}`);
     }
   };
   walk(root, '');
   return sha256(Buffer.from(lineas.join('\n'), 'utf8'));
 }
 
-function setupRoot() {
+function setupRoot(manifiesto = { root: '.', volumes: {} }) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'u253b-root-'));
   fs.writeFileSync(
     path.join(root, 'volumes.json'),
-    `${JSON.stringify({ root: '.', volumes: {} }, null, 2)}\n`,
+    `${JSON.stringify(manifiesto, null, 2)}\n`,
     'utf8'
   );
   const prev = process.env.ZEUS_VOLUMES_ROOT;
@@ -104,9 +124,9 @@ const FICHEROS_BASE = {
   'DISK_07/DEMO/curated/keep.md': '# curado\n'
 };
 
-/** @param {Record<string,string>} [ficheros] */
-function buildPack(ficheros = FICHEROS_BASE) {
-  const volumes = {
+/** @param {Record<string,string>} [ficheros] @param {object} [volumesDelPack] */
+function buildPack(ficheros = FICHEROS_BASE, volumesDelPack = null) {
+  const volumes = volumesDelPack ?? {
     demo: {
       disk: 'DISK_07',
       path: 'DISK_07/DEMO',
@@ -153,10 +173,17 @@ function hayAsientoDeImport(root) {
 // ── §2 · CA-1 y CA-2 · ninguna entrada denegada llega a mutar el root ───────
 
 /**
- * Las clases del cerco de U253a, con el código que cada una devuelve MEDIDO,
- * no supuesto. `soloWin32` marca la que no existe fuera de NTFS: en POSIX `:`
- * es un carácter legítimo de nombre y esa misma cadena nombra un fichero
- * válido, así que exigirla allí sería exigir un falso positivo.
+ * Entradas denegadas, con el código que cada una devuelve MEDIDO, no supuesto.
+ *
+ * Las seis primeras son los vectores obvios, y entre las seis sólo ejercitan
+ * CUATRO de los códigos del cerco: `es_directorio` y `flujo_alterno` no se
+ * alcanzan por ninguna de ellas (a `<root>` le gana la comprobación léxica, y a
+ * `volumes.json:x.jsonl` le gana la de artefacto vedado). Las dos últimas
+ * existen para cerrar ese hueco de EVIDENCIA — la conducta ya era correcta.
+ *
+ * `soloWin32` marca las que no existen fuera de NTFS: en POSIX `:` es un
+ * carácter legítimo de nombre y esa misma cadena nombra un fichero válido, así
+ * que exigirlas allí sería exigir un falso positivo.
  */
 const DENEGADAS = [
   {
@@ -185,10 +212,27 @@ const DENEGADAS = [
     ledger: (root) => ({ ledgerPath: root })
   },
   {
-    nombre: 'flujo de datos alterno (NTFS)',
+    nombre: 'flujo alterno sobre el artefacto sellado (NTFS)',
     code: 'ledger_path_artefacto_sellado',
     soloWin32: true,
     ledger: (root) => ({ ledgerPath: `${path.join(root, 'volumes.json')}:oculto.jsonl` })
+  },
+  {
+    // Cierra el hueco de evidencia: el código `es_directorio` NO lo emite
+    // `ledgerPath: <root>` (le gana la comprobación léxica). Hace falta un
+    // directorio EXISTENTE, dentro del root, con nombre acabado en `.jsonl`.
+    nombre: 'directorio existente con nombre .jsonl',
+    code: 'ledger_path_es_directorio',
+    prepara: (root) => fs.mkdirSync(path.join(root, 'carpeta.jsonl')),
+    ledger: (root) => ({ ledgerPath: path.join(root, 'carpeta.jsonl') })
+  },
+  {
+    // Y el código `flujo_alterno`: hace falta que el fichero BASE sea admisible
+    // (si es el manifiesto, gana `artefacto_sellado`, que es la fila de arriba).
+    nombre: 'flujo alterno sobre un fichero admisible (NTFS)',
+    code: 'ledger_path_flujo_alterno',
+    soloWin32: true,
+    ledger: (root) => ({ ledgerPath: `${path.join(root, 'inocente.jsonl')}:oculto.jsonl` })
   }
 ];
 
@@ -201,6 +245,7 @@ for (const caso of DENEGADAS) {
     const { root, restore } = setupRoot();
     const { packRoot, limpia } = buildPack();
     try {
+      caso.prepara?.(root);
       const antes = huellaArbol(root);
       let lanzo = null;
       let res = null;
@@ -356,6 +401,203 @@ test('CA-2 · ruta admisible al entrar que la PROPIA fusión sepulta: cero renam
   }
 });
 
+test('B2 · `ledgerPath` se lee UNA vez: un getter que cambia de idea no llega al asiento', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  try {
+    // El hueco que `ledger.mjs:28-31` cierra un nivel más abajo, reabierto por
+    // pasar el objeto VIVO hasta el apéndice: primera lectura inocente (pasa la
+    // precondición), segunda lectura al manifiesto sellado (deniega, ya con
+    // todo aterrizado). Sólo se cierra si la ruta que viaja al asiento es la
+    // YA RESUELTA, no la propuesta.
+    let lecturas = 0;
+    const ledger = {
+      get ledgerPath() {
+        lecturas += 1;
+        return lecturas === 1
+          ? path.join(root, 'inocente.jsonl')
+          : path.join(root, 'volumes.json');
+      }
+    };
+    let lanzo = null;
+    let res = null;
+    try {
+      res = importPack({ packRoot, role: 'operator', actorId: 'op-1', ledger });
+    } catch (err) {
+      lanzo = err;
+    }
+    assert.equal(lanzo, null, `no debe lanzar; lanzó ${lanzo && lanzo.code}`);
+    assert.equal(res.ok, true, JSON.stringify(res));
+    assert.equal(lecturas, 1, 'el campo se leyó exactamente una vez');
+    // El asiento está donde dijo la PRIMERA (y única) lectura, y el manifiesto
+    // no tiene ni una línea de JSONL encima.
+    assert.equal(fs.existsSync(path.join(root, 'inocente.jsonl')), true);
+    assert.doesNotMatch(
+      fs.readFileSync(path.join(root, 'volumes.json'), 'utf8'),
+      /"kind":"import_pack"/
+    );
+  } finally {
+    limpia();
+    restore();
+  }
+});
+
+test('B3 · un fichero que aterriza COMO ANCESTRO de la ruta del ledger: cero renames', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  // El pack trae el FICHERO `raw/a.json`; la ruta propuesta cuelga de él. La
+  // precondición la admite (no existe nada aún) y el `mkdirSync` del apéndice
+  // choca después contra un fichero. Es la tercera forma, y vive DENTRO de la
+  // zona que el control de abajo bendice como legítima.
+  const ledgerPath = path.join(root, 'DISK_07', 'DEMO', 'raw', 'a.json', 'ops.jsonl');
+  try {
+    const antes = huellaArbol(root);
+    let lanzo = null;
+    let res = null;
+    try {
+      res = importPack({ packRoot, role: 'operator', actorId: 'op-1', ledger: { ledgerPath } });
+    } catch (err) {
+      lanzo = err;
+    }
+    assert.equal(lanzo, null, `no debe lanzar; lanzó ${lanzo && lanzo.code}`);
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'ledger_en_ruta_de_fusion');
+    assert.equal(huellaArbol(root), antes);
+    assert.equal(fs.existsSync(path.join(root, 'DISK_07')), false);
+  } finally {
+    limpia();
+    restore();
+  }
+});
+
+test('B3 · la guarda mira también los movimientos `kind:"corpus"`, no sólo los de volumen', () => {
+  // Volumen YA declarado en el destino: el pack añade un corpus nuevo, así que
+  // el plan trae un movimiento `kind:'corpus'` y no uno de volumen entero.
+  const { root, restore } = setupRoot({
+    root: '.',
+    volumes: {
+      demo: {
+        disk: 'DISK_07',
+        path: 'DISK_07/DEMO',
+        readonly: true,
+        label: 'Demo',
+        corpora: [{ id: 'raw', path: 'raw', label: 'Raw' }]
+      }
+    }
+  });
+  const { packRoot, limpia } = buildPack(
+    { 'DISK_07/DEMO/curated/x.jsonl/dentro.txt': 'x\n' },
+    {
+      demo: {
+        disk: 'DISK_07',
+        path: 'DISK_07/DEMO',
+        readonly: true,
+        label: 'Demo',
+        corpora: [{ id: 'curated', path: 'curated', label: 'Curated' }]
+      }
+    }
+  );
+  const ledgerPath = path.join(root, 'DISK_07', 'DEMO', 'curated', 'x.jsonl');
+  try {
+    const antes = huellaArbol(root);
+    const res = importPack({ packRoot, role: 'operator', actorId: 'op-1', ledger: { ledgerPath } });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'fusionar');
+    assert.equal(res.error, 'ledger_en_ruta_de_fusion');
+    assert.equal(res.kind, 'corpus', 'el movimiento que choca es de corpus');
+    assert.equal(huellaArbol(root), antes);
+  } finally {
+    limpia();
+    restore();
+  }
+});
+
+test('B4 · `ledger` con campos inutilizables: `{volumesRoot: 42}` no se traga en silencio', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  try {
+    // `volumesRoot` es campo del contrato y hasta este WP ninguna prueba del
+    // repo lo tocaba. La resolución revienta con `TypeError`; tragárselo dejaba
+    // `ledgerPath` en `null` y con ello DESACTIVADA también la guarda de fusión.
+    const antes = huellaArbol(root);
+    let lanzo = null;
+    let res = null;
+    try {
+      res = importPack({ packRoot, role: 'operator', actorId: 'op-1', ledger: { volumesRoot: 42 } });
+    } catch (err) {
+      lanzo = err;
+    }
+    assert.equal(lanzo, null, `no debe lanzar; lanzó ${lanzo && lanzo.name}`);
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'precondicion-ledger');
+    assert.equal(res.error, 'ledger_opts_invalidas');
+    assert.equal(res.ledger.causa.name, 'TypeError');
+    assert.equal(huellaArbol(root), antes);
+    assert.equal(aterrizo(root), false);
+  } finally {
+    limpia();
+    restore();
+  }
+});
+
+test('B4 · un fallo del ENTORNO no cambia de paso: sin `ZEUS_VOLUMES_ROOT` sigue siendo `verificar`', () => {
+  const { packRoot, limpia } = buildPack();
+  const prev = process.env.ZEUS_VOLUMES_ROOT;
+  delete process.env.ZEUS_VOLUMES_ROOT;
+  resetZeusEnvLoader();
+  resetVolumesCache();
+  try {
+    // Es la afirmación portante de la precondición: sólo se juzga el ledger
+    // cuando el root canónico SÍ resuelve. Si esta distinción se cayera, un
+    // root sin resolver pasaría a reportarse como `precondicion-ledger` —un
+    // `step` que no le corresponde— por efecto secundario de este WP.
+    const res = importPack({
+      packRoot,
+      role: 'operator',
+      actorId: 'op-1',
+      ledger: { ledgerPath: 'cualquiera.jsonl' }
+    });
+    assert.equal(res.ok, false);
+    assert.equal(res.step, 'verificar', JSON.stringify(res));
+    assert.notEqual(res.error, 'ledger_opts_invalidas');
+  } finally {
+    if (prev == null) delete process.env.ZEUS_VOLUMES_ROOT;
+    else process.env.ZEUS_VOLUMES_ROOT = prev;
+    resetZeusEnvLoader();
+    resetVolumesCache();
+    limpia();
+  }
+});
+
+test('B4 · `ledger.volumesRoot` explícito viaja hasta el asiento (no lo mide el entorno)', () => {
+  const { root, restore } = setupRoot();
+  const { packRoot, limpia } = buildPack();
+  // Conducta YA existente en la base (`ledger.mjs:49-51` la documenta): el
+  // llamante puede anclar el cerco del ledger a un root explícito distinto del
+  // canónico. Se fija aquí porque es el único eje que hace portante el reenvío
+  // de `volumesRoot` al apéndice: si se perdiera, la RELECTURA volvería a medir
+  // contra el root canónico y denegaría por `fuera_del_cerco` — otra vez,
+  // después de mutar.
+  const otroRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'u253b-otro-'));
+  try {
+    const res = importPack({
+      packRoot,
+      role: 'operator',
+      actorId: 'op-1',
+      ledger: { volumesRoot: otroRoot, ledgerPath: 'ops.jsonl' }
+    });
+    assert.equal(res.ok, true, JSON.stringify(res));
+    assert.equal(fs.existsSync(path.join(otroRoot, 'ops.jsonl')), true);
+    assert.equal(fs.existsSync(path.join(root, '.ops-ledger.jsonl')), false);
+    assert.equal(aterrizo(root), true);
+  } finally {
+    fs.rmSync(otroRoot, { recursive: true, force: true });
+    limpia();
+    restore();
+  }
+});
+
 test('CA-2 control · un ledger DENTRO de un volumen que el pack trae sigue verde', () => {
   const { root, restore } = setupRoot();
   const { packRoot, limpia } = buildPack();
@@ -383,33 +625,54 @@ test('CA-2 control · un ledger DENTRO de un volumen que el pack trae sigue verd
 // ── §5 · CENSO DE MUTACIÓN: sin la guarda, los casos DEBEN enrojecer ────────
 
 /**
- * Construye un `import.mjs` MUTANTE: el mismo fichero, con los `return` de las
- * dos guardas de U253b amputados. La guarda sigue calculándose (así el mutante
- * no compila «por otra razón»), pero deja de detener el pipeline — que es
- * exactamente el estado de la base antes de este WP.
+ * Amputaciones que devuelven `import.mjs` a la conducta de la base, una por
+ * pieza portante. Cada entrada dice qué restaura; si alguna dejara de casar, el
+ * «mutante» sería el original y el censo pasaría en verde sin haber amputado
+ * nada — por eso se cuentan y se aseveran.
+ */
+const AMPUTACIONES = [
+  // Las tres salidas de la precondición (cerco, `ledger_opts_invalidas`,
+  // `ledger_ilegible`): la guarda sigue calculándose —el mutante no compila
+  // «por otra razón»— pero deja de detener el pipeline.
+  { re: /return (fail\('precondicion-ledger')/g, con: '$1', veces: 3 },
+  // La salida de la guarda de fusión.
+  { re: /return (fail\('fusionar', 'ledger_en_ruta_de_fusion')/g, con: '$1', veces: 1 },
+  // La tercera forma de la guarda (el fichero que aterriza como ANCESTRO).
+  { re: / \|\| cuelgaDe\(d, ledgerAbs\)/g, con: '', veces: 1 },
+  // El reenvío de la ruta YA RESUELTA al asiento: restaura la doble lectura.
+  { re: /\{ \.\.\.ledgerFijo, ledgerPath \}/g, con: 'ledgerOpts', veces: 1 }
+];
+
+/**
+ * Construye un `import.mjs` MUTANTE aplicando las cuatro amputaciones a la vez.
  *
- * El mutante se escribe DENTRO de `test/` para que sus especificadores
- * desnudos (`@zeus/…`) sigan resolviendo por la cadena del paquete; los
- * relativos se reescriben a URL absoluta de `src/`, así que el mutante usa los
- * MISMOS módulos que el original y no una copia paralela.
+ * El mutante se escribe DENTRO de `test/` para que sus especificadores desnudos
+ * (`@zeus/…`) sigan resolviendo por la cadena del paquete; los relativos se
+ * reescriben a URL absoluta de `src/`, así que usa los MISMOS módulos que el
+ * original y no una copia paralela.
+ *
+ * Lee del DISCO, no del grafo de módulos ya cargado. Consecuencia declarada: si
+ * `src/import.mjs` no contiene las guardas (p.ej. corriendo este fichero contra
+ * la base), esta prueba enrojece por no encontrar qué amputar, no por un
+ * hallazgo propio. Es lo que hace que la partición del reporte se cuente 10/6
+ * por disco y 9/7 sin este caso.
  */
 let semillaMutante = 0;
 async function cargaMutante() {
-  const fuente = fs.readFileSync(path.join(SRC, 'import.mjs'), 'utf8');
-  let amputados = 0;
-  const mutada = fuente
-    .replace(/return (fail\('precondicion-ledger')/g, (_, m) => {
-      amputados += 1;
-      return m;
-    })
-    .replace(/return (fail\('fusionar', 'ledger_en_ruta_de_fusion')/g, (_, m) => {
-      amputados += 1;
-      return m;
-    })
-    .replace(/ from '\.\/([^']+)'/g, (_, f) => ` from ${JSON.stringify(pathToFileURL(path.join(SRC, f)).href)}`);
-  // Si el regex dejara de casar, el «mutante» sería el original y el censo
-  // pasaría en verde sin haber amputado nada: eso es lo que hay que impedir.
-  assert.equal(amputados, 3, `la amputación debe tocar las 3 salidas; tocó ${amputados}`);
+  let mutada = fs.readFileSync(path.join(SRC, 'import.mjs'), 'utf8');
+  for (const { re, con, veces } of AMPUTACIONES) {
+    const casados = mutada.match(re);
+    assert.equal(
+      casados ? casados.length : 0,
+      veces,
+      `la amputación ${re} debía tocar ${veces} sitio(s)`
+    );
+    mutada = mutada.replace(re, con);
+  }
+  mutada = mutada.replace(
+    / from '\.\/([^']+)'/g,
+    (_, f) => ` from ${JSON.stringify(pathToFileURL(path.join(SRC, f)).href)}`
+  );
   const abs = path.join(AQUI, `.mutante-u253b-${process.pid}-${semillaMutante++}.mjs`);
   fs.writeFileSync(abs, mutada, 'utf8');
   try {
@@ -428,7 +691,7 @@ test('CA-5 · amputadas las guardas, TODOS los casos vuelven a lanzar tras mutar
       ...DENEGADAS.filter((c) => !c.soloWin32 || process.platform === 'win32').map((c) => ({
         nombre: c.nombre,
         ledger: c.ledger,
-        prepara: null,
+        prepara: c.prepara ?? null,
         ficheros: FICHEROS_BASE
       })),
       {
@@ -436,6 +699,26 @@ test('CA-5 · amputadas las guardas, TODOS los casos vuelven a lanzar tras mutar
         ledger: () => ({}),
         prepara: (root) =>
           fs.writeFileSync(path.join(root, '.ops-ledger.jsonl'), 'esto-no-es-json\n', 'utf8'),
+        ficheros: FICHEROS_BASE
+      },
+      {
+        nombre: '`ledger` con campos inutilizables',
+        ledger: () => ({ volumesRoot: 42 }),
+        prepara: null,
+        ficheros: FICHEROS_BASE
+      },
+      {
+        nombre: '`ledgerPath` con getter que cambia de idea',
+        ledger: (root) => {
+          let n = 0;
+          return {
+            get ledgerPath() {
+              n += 1;
+              return n === 1 ? path.join(root, 'inocente.jsonl') : path.join(root, 'volumes.json');
+            }
+          };
+        },
+        prepara: null,
         ficheros: FICHEROS_BASE
       },
       {
@@ -448,6 +731,14 @@ test('CA-5 · amputadas las guardas, TODOS los casos vuelven a lanzar tras mutar
           'DISK_07/DEMO/raw/a.jsonl/dentro.txt': 'x\n',
           'DISK_07/DEMO/curated/keep.md': '# curado\n'
         }
+      },
+      {
+        nombre: 'fichero que aterriza como ANCESTRO de la ruta del ledger',
+        ledger: (root) => ({
+          ledgerPath: path.join(root, 'DISK_07', 'DEMO', 'raw', 'a.json', 'ops.jsonl')
+        }),
+        prepara: null,
+        ficheros: FICHEROS_BASE
       }
     ];
 
