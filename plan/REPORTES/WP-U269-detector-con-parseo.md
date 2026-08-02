@@ -201,7 +201,26 @@ explícitamente en vez de exigirle un hallazgo que no existe.
   un espacio, y la alternativa `| ` del `split` era además **redundante**
   (`[^A-Za-z0-9]+` ya casa el espacio), así que se ha quitado entera. El fichero
   vuelve a ser **LF** y `file(1)` lo clasifica `JavaScript source`. Comprobado
-  que `esNombreDeIdentidad` da idéntico resultado (22 nombres, 0 diferencias).
+  que `esNombreDeIdentidad` da idéntico resultado (22 nombres, 0 diferencias), y
+  que el blob **almacenado en git** es LF y sin NUL (`git cat-file -p`), no sólo
+  la copia de trabajo.
+
+  **Los dos síntomas eran uno solo, y lo verifiqué en vez de suponerlo.** Esta
+  máquina tiene `core.autocrlf=true`, que normaliza CRLF→LF al commitear… salvo
+  que el fichero sea binario. Un NUL lo vuelve binario, la normalización se
+  desactiva y el CRLF entra tal cual. Comprobado con dos ficheros gemelos en un
+  repo de usar y tirar:
+
+  ```
+  con-nul.mjs    blob -> CRLF: 202 | NUL: 1
+  sin-nul.mjs    blob -> CRLF:   0 | NUL: 0
+  ```
+
+  O sea: **el NUL era la causa raíz de las dos cosas**, no dos descuidos. Quitarlo
+  arregla el CRLF sin tocar nada más. (Primero supuse que el NUL caía dentro de
+  la ventana de 8000 bytes con que `git diff` detecta binarios; medí y estaba en
+  el byte 11710, así que esa explicación era falsa. El experimento de arriba es
+  el que sostiene la afirmación.)
 - **m3 · §11.7 inducía a error, y en la dirección contraria a la temida.**
   Corregido con tu medición: **`main` nunca detectó el literal por defecto** —
   señalaba la *expresión*, y `cfg?.token ?? ""` y `cfg?.token` dan `main=1`
