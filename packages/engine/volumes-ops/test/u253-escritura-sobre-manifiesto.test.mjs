@@ -398,7 +398,7 @@ test('CA-2 · el resto del cerco: estado, fuera del root, otro root, extensión,
   }
 });
 
-test('CA-2 · importPack con `ledgerPath` al manifiesto: denegado, pero el manifiesto YA está resellado (→ U253b)', () => {
+test('CA-2 · importPack con `ledgerPath` al manifiesto: denegado ANTES de tocar nada (cerrado en U253b)', () => {
   const { root, restore } = setupRoot();
   const packRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'u253-pack-'));
   try {
@@ -433,41 +433,41 @@ test('CA-2 · importPack con `ledgerPath` al manifiesto: denegado, pero el manif
       'utf8'
     );
 
-    const r = vigilaManifiesto(() =>
-      importPack({
+    let salida = null;
+    const r = vigilaManifiesto(() => {
+      salida = importPack({
         packRoot,
         role: 'operator',
         actorId: 'ops',
         ledger: { ledgerPath: path.join(root, 'volumes.json') }
-      })
-    );
-    assert.ok(r.error, 'el import debe fallar CERRADO por el cerco del ledger');
-    assert.equal(r.error.code, 'ledger_path_artefacto_sellado');
+      });
+    });
+    // U253b · el cerco sigue siendo el mismo (ni un carácter de
+    // `ledger-cerco.mjs` cambió) y sigue denegando por el mismo código. Lo que
+    // cambió es CUÁNDO se le pregunta: `importPack` lo consulta como
+    // precondición, antes de VERIFICAR, así que la denegación sale por el
+    // contrato en vez de escaparse como excepción.
+    assert.equal(r.error, null, 'el import ya NO lanza: devuelve su contrato');
+    assert.equal(salida.ok, false);
+    assert.equal(salida.step, 'precondicion-ledger');
+    assert.equal(salida.error, 'ledger_path_artefacto_sellado');
     const texto = fs.readFileSync(path.join(root, 'volumes.json'), 'utf8');
     assert.doesNotMatch(texto, /"kind":"import_pack"/, 'ni una línea de JSONL en el manifiesto');
     JSON.parse(texto); // sigue siendo JSON válido
 
-    // Lo que el cerco impide es la ESCRITURA DEL LEDGER sobre el artefacto.
-    // NO impide que el import ya hubiera resellado antes de llegar ahí: la
-    // sonda tiene el dato y aquí se asevera en vez de omitirlo. El título
-    // anterior («manifiesto intacto») avalaba algo que esta misma prueba
-    // desmiente.
-    assert.equal(
-      r.mutado,
-      true,
-      'el manifiesto YA fue resellado por el paso 5 antes de que el cerco denegara el asiento'
-    );
+    // Y ahora sí: el manifiesto NO se resella. La versión anterior de esta
+    // prueba aseveraba `r.mutado === true` y lo decía con todas las letras —
+    // «el volumen quedó declarado» y «el corpus ya aterrizó»— porque la
+    // atomicidad de `importPack` estaba fuera del ALCANCE_DIFF de U253a y
+    // quedó enrutada a U253b. Cerrada allí, la asersión se invierte.
+    assert.equal(r.mutado, false, 'el manifiesto no se tocó: misma huella antes y después');
     const cfg = JSON.parse(texto);
-    assert.ok(cfg.volumes && cfg.volumes.demo, 'el volumen quedó declarado en el manifiesto');
+    assert.deepEqual(cfg.volumes, {}, 'ningún volumen quedó declarado');
     assert.equal(
       fs.existsSync(path.join(root, 'DISK_07', 'DEMO', 'raw', 'a.json')),
-      true,
-      'y el corpus ya aterrizó'
+      false,
+      'y el corpus NO aterrizó'
     );
-    // La atomicidad de `importPack` NO es de este WP: vive en `import.mjs`,
-    // fuera del ALCANCE_DIFF, y su arreglo es linaje de U255
-    // («NOTHING LANDS HALFWAY»). Enrutado a U253b. Aquí sólo queda medido y
-    // dicho, para que nadie lea este verde como «el root queda limpio».
   } finally {
     fs.rmSync(packRoot, { recursive: true, force: true });
     restore();

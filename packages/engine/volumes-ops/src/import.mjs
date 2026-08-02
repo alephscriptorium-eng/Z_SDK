@@ -55,6 +55,39 @@
  *      otro proceso, EXDEV, carrera) DESHACE los renombrados hechos y declara
  *      `fusion_interrumpida` con el inventario de lo que no pudo deshacer.
  * Todo ello en `src/fusion-guard.mjs`, con su alcance honesto escrito.
+ *
+ * ── U253b · LA MISMA FRASE SE ROMPÍA POR EL FINAL: EL ASIENTO ─────────────
+ * U255 cerró la fase de fusión. El asiento del ledger quedó fuera: la llamada
+ * a `appendOpsLedger` era la ÚLTIMA operación de la función y estaba **sin
+ * envolver**, después de FUSIONAR y de SELLAR. Como el cerco de la ruta del
+ * ledger (U253a, `ledger-cerco.mjs`) falla cerrado LANZANDO, cualquier
+ * `ledger.ledgerPath` denegada producía exactamente lo que las dos frases de
+ * arriba niegan: corpus aterrizado, manifiesto re-sellado, estado escrito,
+ * CERO asiento, y una excepción en vez de `{ok:false, step, error}`. Medido en
+ * seis clases de denegación —las seis con el árbol del root distinto antes y
+ * después— en `plan/REPORTES/WP-U253b-import-atomico.md` §2.
+ *
+ * El arreglo no es de rutas (el cerco de U253a no se toca ni un carácter): es
+ * de ORDEN. La ruta del ledger se juzga **antes de VERIFICAR**, cuando todavía
+ * no se ha tocado nada, y una propuesta denegada sale por el contrato como
+ * `precondicion-ledger`. Con eso el estrechamiento del cerco deja de necesitar
+ * ser configurable: lo que denegaba tarde, deniega temprano.
+ *
+ * Dos residuos MEDIDOS que la precondición sola no cubría, y que se cierran
+ * aquí porque son la misma clase («muta y luego lanza»), no porque suenen mal:
+ *   - un ledger existente con una línea ilegible hace reventar la RELECTURA que
+ *     `appendOpsLedger` hace para numerar el asiento — y ocurre incluso sin
+ *     proponer ruta, sobre la de por defecto. Se lee una vez en la precondición
+ *     (`ledger_ilegible`); coste: una lectura más del mismo JSONL que el apéndice
+ *     ya lee entero;
+ *   - una ruta de ledger **admisible al entrar** sobre la que la PROPIA fusión
+ *     aterriza después (un directorio del pack que ocupa ese nombre) llega al
+ *     apéndice ya convertida en directorio. Se caza sobre el plan de fusión,
+ *     antes del primer rename (`ledger_en_ruta_de_fusion`), y sólo cuando el
+ *     plan pisa la ruta o la sepulta: un ledger que viva DENTRO de un volumen
+ *     que el pack trae sigue siendo legítimo y sigue verde.
+ * Lo que sigue abierto —otros puntos que lanzan después de mutar— está
+ * censado, con línea y medida, en el §4 de ese mismo reporte.
  * Node-only.
  */
 
@@ -67,7 +100,7 @@ import {
   readFileSync,
   rmSync
 } from 'node:fs';
-import { basename, dirname, join, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { assertIntentRole, resolveIntentRole } from '@zeus/protocol';
 import { validate as validateSchema } from '@zeus/linea-kit/validate';
@@ -78,7 +111,8 @@ import { applyFusion, causaDe, inspectFusionPlan } from './fusion-guard.mjs';
 import { hashManifest, sealManifest } from './manifest.mjs';
 import { syncVolumeCounters } from './counters.mjs';
 import { measurePath } from './measure.mjs';
-import { appendOpsLedger } from './ledger.mjs';
+import { appendOpsLedger, readOpsLedger, resolveOpsLedgerPath } from './ledger.mjs';
+import { LedgerPathDenegada } from './ledger-cerco.mjs';
 
 /**
  * Identity-material denylist (contract §0.5) — basenames, case-insensitive.
@@ -189,6 +223,43 @@ export function importPack(opts) {
   );
   if (!auth.ok) {
     return fail('precondicion-rol', auth.error, { role });
+  }
+
+  // ── Precondición (WP-U253b): el ASIENTO se juzga ANTES de VERIFICAR ─────
+  // El cerco del ledger (U253a) falla cerrado LANZANDO, y hasta este WP la
+  // única llamada que lo ejercía era la última línea de la función: la
+  // denegación llegaba con el corpus ya aterrizado y el manifiesto ya
+  // re-sellado. Aquí no se ha tocado nada todavía, así que una propuesta
+  // inadmisible sale por el contrato y el root queda como estaba, byte a byte.
+  //
+  // Sólo se convierte en `{ok:false}` la denegación DEL CERCO. Un fallo de otra
+  // clase (típicamente el root canónico sin resolver, U200) no se juzga aquí:
+  // se deja pasar para que lo diagnostique VERIFICAR, que es su paso — cambiar
+  // eso movería el `step` de un fallo que ya tiene el suyo.
+  /** @type {string|null} */
+  let ledgerPath = null;
+  try {
+    ledgerPath = resolveOpsLedgerPath(ledgerOpts ?? {});
+  } catch (err) {
+    if (err instanceof LedgerPathDenegada) {
+      return fail('precondicion-ledger', err.code, {
+        ledger: { detail: err.detail ?? null, message: err.message }
+      });
+    }
+  }
+  if (ledgerPath !== null) {
+    // Un ledger existente con una línea ilegible revienta la RELECTURA con la
+    // que `appendOpsLedger` numera el asiento. Medido: ocurre también sobre la
+    // ruta POR DEFECTO, sin que nadie proponga nada, y dejaba el import a
+    // medias igual que una ruta denegada. Se lee una vez aquí; el apéndice ya
+    // lee el fichero entero, así que no se introduce un orden de magnitud nuevo.
+    try {
+      readOpsLedger({ volumesRoot: (ledgerOpts ?? {}).volumesRoot, ledgerPath });
+    } catch (err) {
+      return fail('precondicion-ledger', 'ledger_ilegible', {
+        ledger: { path: ledgerPath, causa: causaDe(err) }
+      });
+    }
   }
 
   // ── 1 · VERIFICAR ──────────────────────────────────────────────────────
@@ -567,6 +638,60 @@ export function importPack(opts) {
     const guarda = inspectFusionPlan(moves, volumesRoot);
     if (guarda.error) {
       return fail('fusionar', guarda.error.code, guarda.error.detail);
+    }
+
+    // ── U253b · LA FUSIÓN NO PUEDE SEPULTAR EL SITIO DEL ASIENTO ─────────
+    // La precondición juzga la ruta del ledger contra el root TAL COMO ESTÁ al
+    // entrar. Un pack puede traer un directorio que aterrice exactamente sobre
+    // esa ruta: entonces la propuesta era admisible al principio y el cerco la
+    // deniega al final (`ledger_path_es_directorio`), con todo ya movido —
+    // medido en §4 (vector C1) del reporte de este WP. Se decide aquí, sobre el
+    // plan completo y antes del primer rename, que es donde el dato existe.
+    //
+    // Se deniegan DOS formas y ninguna más: que un FICHERO aterrice EN la ruta
+    // del ledger (le apendaríamos JSONL a un fichero del pack), o que aterrice
+    // DEBAJO de ella (la convierte en directorio). Un ledger que viva dentro de
+    // un volumen que el pack trae —la ruta del ledger cuelga del destino, pero
+    // ningún fichero cae en ella ni debajo— no es ninguna de las dos y sigue
+    // permitido: estrechar eso sería convertir en rojo un caso que hoy es
+    // verde, que es justo lo que este WP existe para no hacer.
+    //
+    // La comparación es contra los FICHEROS que van a aterrizar, no contra los
+    // `to` del plan: un volumen nuevo viaja como UN solo movimiento de
+    // directorio, así que mirar los `to` no ve las hojas — medido, el vector C1
+    // se escapaba entero por ahí. El staging todavía está intacto y es el mismo
+    // árbol que va a aterrizar, así que enumerarlo aquí es exacto y barato.
+    if (ledgerPath !== null) {
+      const ledgerAbs = resolve(ledgerPath);
+      /** @type {{ volId: string, kind: string, destino: string }[]} */
+      const aterrizan = [];
+      for (const m of moves) {
+        if (existsSync(m.from) && lstatSync(m.from).isDirectory()) {
+          for (const rel of walkTree(m.from).files) {
+            aterrizan.push({
+              volId: m.volId,
+              kind: m.kind,
+              destino: join(m.to, rel.split('/').join(sep))
+            });
+          }
+        } else {
+          aterrizan.push({ volId: m.volId, kind: m.kind, destino: m.to });
+        }
+      }
+      const choque = aterrizan.find(({ destino }) => {
+        const d = resolve(destino);
+        if (d === ledgerAbs) return true;
+        const rel = relative(ledgerAbs, d);
+        return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel);
+      });
+      if (choque) {
+        return fail('fusionar', 'ledger_en_ruta_de_fusion', {
+          volume: choque.volId,
+          kind: choque.kind,
+          ledgerPath: ledgerAbs,
+          destino: resolve(choque.destino)
+        });
+      }
     }
 
     // Apply pass: rename-only (same device — staging lives inside the root).
