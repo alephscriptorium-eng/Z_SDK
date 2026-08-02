@@ -68,15 +68,24 @@ Las cifras por columna **no son todas de la misma fecha**, y decirlo importa má
 
 - **catálogo: 35/51 sin entrada** (16 con entrada). Re-medida el 2026-08-02 (U265) y **sostenida por
   el gate**: `node scripts/gates/matriz-51.mjs --json` la deriva en cada corrida. Antes decía
-  **44/51**, cifra de U179 que las altas de U234 (3), U180 (1) y U181 (4) dejaron rancia sin que
-  nada avisara — es el mismo defecto que U265 cierra, sólo que en la cabecera.
+  **44/51**, cifra de U179 que las altas de **U234 (4** — `launcher`, `socket-server`,
+  `cache-browser`, `firehose-browser`, commit `c109948`**), U180 (1)** y **U181 (4)** dejaron rancia
+  sin que nada avisara. **4 + 1 + 4 = 9**, y `44 − 9 = 35`: la aritmética cierra. Es el mismo defecto
+  que U265 cierra, sólo que en la cabecera.
 - **comando: 33/51 sin `"start":` propio** con el patrón declarado abajo
   (`grep -l '"start":'` sobre el `package.json` de cada una de las 51). Re-medida el 2026-08-02
-  (U265). Antes decía **20/51**, que no se reproduce con el patrón declarado; el número más cercano
-  a esa lectura es el de piezas que el gate tipa `lib` (24/51, también derivado).
-- **puerto 30/51 · peercard 38/51** (1 caso solo-fixture: `http-contract`) **· disco 24/51**:
-  medidas el **2026-07-31** (U179) y **NO re-medidas por U265** — quedan fuera de la causa de este
-  cambio y **ningún gate las sostiene**, así que léanse con su fecha, no como estado de hoy.
+  (U265). Antes decía **20/51**, que no se reproduce con el patrón declarado. Para no cambiar una
+  cifra rancia por otra mal etiquetada: el gate tipa `lib` a **27/51**, y las piezas cuya celda
+  `start` dice literalmente «no se arranca (lib)» son **24/51** — dos lecturas distintas, las dos
+  derivadas, ninguna igual al 20.
+- **puerto 30/51 · peercard 38/51** (1 caso solo-fixture: `http-contract`): medidas el
+  **2026-07-31** (U179) y **NO re-medidas por U265** — fuera de la causa de este cambio y sin gate
+  que las sostenga, así que léanse con su fecha y no como estado de hoy.
+- **disco 24/51: se sabe FALSA, no sólo vieja.** Re-medida en U265 con el patrón declarado abajo, da
+  **33, 27, 27, 16 o 28** según qué criterio se aplique del que el propio documento describe (`src`
+  vs dir completo, con o sin `readFile|readdir`). No se sustituye por ninguno de esos números
+  porque el criterio original no es recuperable: la cifra queda **retirada**, no actualizada.
+  Enrutable: o se le da un criterio único y un gate, o se borra la columna.
 
 ---
 

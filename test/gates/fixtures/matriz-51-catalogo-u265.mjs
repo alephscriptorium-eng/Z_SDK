@@ -6,7 +6,8 @@
  * Qué es. Las 16 celdas «catálogo» de `plan/MATRIZ-RUNTIME-51.md` en el commit
  * `0a441d1`, las de las 16 piezas que ESE MISMO DÍA tenían entrada en el
  * catálogo. Nueve afirmaban «no · grep → 0» o «sin entrada» —caducadas desde
- * U234 (3), U180 (1) y U181 (4), sin que nada avisara— y las siete restantes
+ * U234 (4: `launcher`, `socket-server`, `cache-browser`, `firehose-browser`,
+ * commit `c109948`), U180 (1) y U181 (4), sin que nada avisara— y las siete restantes
  * afirmaban la entrada pero sin anotar `kind` ni `health`, que es el dato del
  * que cuelga el `tipo` que la matriz publica.
  *

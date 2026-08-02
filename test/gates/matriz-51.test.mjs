@@ -31,6 +31,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   conjuntoDeLectura,
   PATHSPECS_LECTURA,
@@ -57,10 +58,18 @@ import {
   compararCatalogo,
   compararContrasteCatalogo,
   compararCeldasConKind,
-  clasificarClaimCatalogo
+  clasificarClaimCatalogo,
+  healthDe
 } from '../../scripts/gates/matriz-51.mjs';
 
 const GATE = path.join(REPO_ROOT, 'scripts', 'gates', 'matriz-51.mjs');
+
+/**
+ * `sha256` de los DATOS del vector U265 (`JSON.stringify(CELDAS_RANCIAS)`), no
+ * del fichero: así la prosa del fixture puede corregirse sin tocar esto, y las
+ * 16 celdas literales de `0a441d1` no pueden moverse en silencio.
+ */
+const HUELLA_VECTOR_U265 = 'c2123825347292ee9f3995354ac7b4c6d14eb9bab4f671615520837b07f068f1';
 
 /** @param {string[]} [args] */
 function runCli(args = []) {
@@ -663,9 +672,216 @@ function conContrasteSintetico(celdas, fn) {
   }
 }
 
+/**
+ * Entrada de catálogo sintética con la forma completa de `CatalogoEntrada`.
+ * En una sola fábrica: añadir un campo al parser no debe obligar a tocar seis
+ * tests, que es como se acaba con vectores que dejan de representar el dato.
+ * @param {Partial<import('../../scripts/gates/matriz-51.mjs').CatalogoEntrada>} over
+ */
+function entradaSintetica(over) {
+  return {
+    id: 'x',
+    workspace: '@zeus/x',
+    hasWorkspaceKey: true,
+    kind: 'mcp',
+    hasKindKey: false,
+    healthPath: null,
+    hasHealthPathKey: false,
+    fuente: 'sintetico.mjs',
+    ...over
+  };
+}
+
+/**
+ * Corre `compararContrasteCatalogo` sobre una celda de contraste REAL (escrita
+ * a fichero y leída por `parseContraste`, no un objeto a mano: así el vector
+ * ejercita también `leerCeldaCatalogo`).
+ * @param {string} celda @param {object[]} entradas
+ */
+function contrastarCelda(celda, entradas, pieza = '@zeus/x') {
+  let fallos;
+  conContrasteSintetico([{ pieza, celda }], (tmp) => {
+    const r = parseContraste({ repoRoot: tmp });
+    assert.deepEqual(r.fallos, []);
+    fallos = compararContrasteCatalogo(r.filas, entradas);
+  });
+  return fallos;
+}
+
+const CITA = '`packages/mesh/mcp-launcher/src/catalog.mjs:10-20`';
+
+// --- B1 · las ramas que ningún vector tocaba. Cuatro rojos de unidad sobre
+// --- `compararContrasteCatalogo`, que ya estaba exportada: ni una línea del
+// --- gate se mueve por ellos, así que no mueven ninguna cifra.
+
+test('U265 rojo · afirma entrada y NO hay: es la rama que sostiene «la ceguera está cerrada»', () => {
+  // Sin esta rama, mover el catálogo hacia atrás (el escenario del reporte §1.c)
+  // vuelve a pasar en verde. La suite entera pasaba con estas seis líneas
+  // borradas, así que el vector va aquí y no en la prosa.
+  const fallos = contrastarCelda(
+    `**sí**: \`x\` · kind \`mcp\` · health \`/mcp/health\` · ${CITA}`,
+    [] // catálogo sin ninguna entrada para @zeus/x
+  );
+  assert.deepEqual(
+    fallos.map((f) => f.codigo),
+    ['contraste-catalogo-caduco']
+  );
+  assert.match(fallos[0].detalle, /afirma entrada de catálogo, pero hoy 0 entradas/);
+  // control: con la entrada presente, verde
+  assert.deepEqual(
+    contrastarCelda(`**sí**: \`x\` · kind \`mcp\` · health \`/mcp/health\` · ${CITA}`, [entradaSintetica({})]),
+    []
+  );
+});
+
+test('U265 rojo · afirma entrada pero no nombra todos los ids', () => {
+  const entradas = [entradaSintetica({ id: 'uno' }), entradaSintetica({ id: 'dos' })];
+  const fallos = contrastarCelda(
+    `**sí**: \`uno\` · kind \`mcp\` · health \`/mcp/health\` · ${CITA}`,
+    entradas
+  );
+  assert.ok(
+    fallos.some((f) => f.codigo === 'contraste-catalogo-incompleto' && f.detalle.includes('`dos`')),
+    JSON.stringify(fallos)
+  );
+  // control: nombrando los dos, verde
+  assert.deepEqual(
+    contrastarCelda(`**sí**: \`uno\` + \`dos\` · kind \`mcp\` · health \`/mcp/health\` · ${CITA}`, entradas),
+    []
+  );
+});
+
+test('U265 rojo · `-mixto` SÍ se puede fabricar: dos entradas de una pieza con kind distinto', () => {
+  const entradas = [
+    entradaSintetica({ id: 'uno', kind: 'mcp' }),
+    entradaSintetica({ id: 'dos', kind: 'service', healthPath: '/health', hasKindKey: true, hasHealthPathKey: true })
+  ];
+  const fallos = contrastarCelda(
+    `**sí**: \`uno\` + \`dos\` · kind \`mcp\` · health \`/mcp/health\` · ${CITA}`,
+    entradas
+  );
+  // El orden de los kinds en el mensaje lo fija el orden por id de las
+  // entradas, no el de este vector: se asevera que los nombra a los dos.
+  assert.ok(
+    fallos.some(
+      (f) =>
+        f.codigo === 'contraste-catalogo-mixto' &&
+        f.detalle.includes('mcp') &&
+        f.detalle.includes('service') &&
+        f.detalle.includes('/health')
+    ),
+    JSON.stringify(fallos)
+  );
+  // control: dos entradas que SÍ coinciden no disparan -mixto
+  assert.deepEqual(
+    contrastarCelda(`**sí**: \`uno\` + \`dos\` · kind \`mcp\` · health \`/mcp/health\` · ${CITA}`, [
+      entradaSintetica({ id: 'uno' }),
+      entradaSintetica({ id: 'dos' })
+    ]),
+    []
+  );
+});
+
+test('U265 rojo · el kind o el health ANOTADOS ya no son los declarados', () => {
+  const servicio = [
+    entradaSintetica({ kind: 'service', hasKindKey: true, healthPath: '/health', hasHealthPathKey: true })
+  ];
+  const porKind = contrastarCelda(`**sí**: \`x\` · kind \`mcp\` · health \`/health\` · ${CITA}`, servicio);
+  assert.ok(
+    porKind.some((f) => f.codigo === 'contraste-catalogo-caduco' && /anota kind `mcp`/.test(f.detalle)),
+    JSON.stringify(porKind)
+  );
+  const porHealth = contrastarCelda(
+    `**sí**: \`x\` · kind \`service\` · health \`/mcp/health\` · ${CITA}`,
+    servicio
+  );
+  assert.ok(
+    porHealth.some((f) => f.codigo === 'contraste-catalogo-caduco' && /anota health `\/mcp\/health`/.test(f.detalle)),
+    JSON.stringify(porHealth)
+  );
+  // control: anotando lo declarado, verde
+  assert.deepEqual(
+    contrastarCelda(`**sí**: \`x\` · kind \`service\` · health \`/health\` · ${CITA}`, servicio),
+    []
+  );
+});
+
+test('U265 rojo · celda afirmativa SIN cita `ruta:línea` (la forma, no el número)', () => {
+  const fallos = contrastarCelda('**sí**: `x` · kind `mcp` · health `/mcp/health`', [entradaSintetica({})]);
+  assert.ok(
+    fallos.some((f) => f.codigo === 'contraste-catalogo-incompleto' && /sin ninguna cita/.test(f.detalle)),
+    JSON.stringify(fallos)
+  );
+  // Una cita SUELTA (`:288`, sin ruta) no basta; con ruta y línea, verde.
+  assert.ok(
+    contrastarCelda('**sí**: `x` · kind `mcp` · health `/mcp/health` · `:288`', [entradaSintetica({})]).some(
+      (f) => /sin ninguna cita/.test(f.detalle)
+    )
+  );
+  assert.deepEqual(
+    contrastarCelda(`**sí**: \`x\` · kind \`mcp\` · health \`/mcp/health\` · ${CITA}`, [entradaSintetica({})]),
+    []
+  );
+});
+
+test('U265 · pieza mixta: la celda publicada se denuncia SIEMPRE, diga lo que diga el contraste', () => {
+  const entradas = [
+    entradaSintetica({ id: 'uno', kind: 'mcp' }),
+    entradaSintetica({ id: 'dos', kind: 'service', healthPath: '/health', hasKindKey: true, hasHealthPathKey: true })
+  ];
+  const fila = {
+    pieza: '@zeus/x',
+    celdas: { tipo: { valor: 'MCP', evidencia: 'x' }, health: { valor: '/mcp/health vía catálogo', evidencia: 'x' } }
+  };
+  const fallos = compararCeldasConKind([fila], entradas);
+  assert.deepEqual(fallos.map((f) => f.codigo), ['catalogo-kind-mixto']);
+  assert.match(fallos[0].detalle, /elegida por orden/);
+});
+
+test('U265 · `healthPath: \'\'` vale el default en el VALOR y no miente en la evidencia', () => {
+  // Trampa evitada a propósito: NO se endurece el parse. El runtime hace
+  // `entry.healthPath || '/mcp/health'`, así que el valor debe ser el default;
+  // lo que no puede es decir «sin healthPath» cuando el campo está declarado.
+  const seed = [
+    'export const CATALOG_SEED = [',
+    '  {',
+    "    id: 'vacio',",
+    "    workspace: '@zeus/x',",
+    "    healthPath: ''",
+    '  }',
+    '\n];'
+  ].join('\n');
+  const { entradas, fallos } = parseSeedEntries(seed, 'CATALOG_SEED', 'sintetico.mjs');
+  assert.deepEqual(fallos, [], 'la cadena vacía es válida para el runtime: no se endurece el parse');
+  assert.equal(entradas[0].healthPath, '');
+  assert.equal(entradas[0].hasHealthPathKey, true);
+  const h = healthDe(entradas[0]);
+  assert.equal(h.path, HEALTH_PATH_DEFAULT, 'mismo valor que el runtime');
+  assert.equal(h.declarado, true, 'el campo SÍ estaba declarado');
+  assert.match(h.motivo, /declarado VACÍO/);
+  assert.doesNotMatch(h.motivo, /sin healthPath/, 'la evidencia no puede decir que el campo falta');
+  // control: campo ausente de verdad
+  const ausente = healthDe(entradaSintetica({}));
+  assert.equal(ausente.declarado, false);
+  assert.match(ausente.motivo, /sin healthPath/);
+});
+
 test('U265 CA2 · VECTOR GUARDADO: la columna «catálogo» de 0a441d1 pone el gate ROJO', () => {
   assert.equal(CELDAS_RANCIAS.length, 16, 'el vector vendorizado debe traer las 16 celdas');
   assert.equal(ORIGEN_U265.commit, '0a441d1');
+  // Suelo de los dos grupos: sin esto, un vector degradado a 0 celdas de un
+  // tipo deja su bucle corriendo cero veces con el test en verde.
+  assert.equal(CADUCAS.length, 9, 'el vector debe traer las 9 celdas que negaban tener entrada');
+  assert.equal(SIN_ANOTAR.length, 7, 'y las 7 que afirmaban sin anotar kind/health');
+  // Fidelidad del contenido vendorizado contra SÍ MISMO: con `fetch-depth: 1`
+  // no se puede contrastar con el blob de git (U260), pero una huella clavada
+  // aquí sí viaja. Si esta huella cambia, alguien editó el vector: o fue a
+  // propósito y se actualiza con el porqué, o el vector dejó de ser el de
+  // 0a441d1 y no prueba lo que dice probar.
+  assert.equal(
+    createHash('sha256').update(JSON.stringify(CELDAS_RANCIAS)).digest('hex'),
+    HUELLA_VECTOR_U265
+  );
   const porPieza = entradasPorPieza();
 
   conContrasteSintetico(CELDAS_RANCIAS, (tmp) => {

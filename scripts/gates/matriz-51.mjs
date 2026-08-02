@@ -135,7 +135,8 @@ function escapeRe(s) {
  * @typedef {{ codigo: string, detalle: string }} Fallo
  * @typedef {{
  *   id: string, workspace: string|null, hasWorkspaceKey: boolean,
- *   kind: string, hasKindKey: boolean, healthPath: string|null, fuente: string
+ *   kind: string, hasKindKey: boolean,
+ *   healthPath: string|null, hasHealthPathKey: boolean, fuente: string
  * }} CatalogoEntrada
  */
 
@@ -143,13 +144,34 @@ function escapeRe(s) {
  * `healthPath` efectivo de una entrada, con la evidencia distinguiendo
  * declaración de default. Que el default esté en UN sitio y con cita es lo que
  * impide que vuelva a colarse como literal en la celda (U265).
+ *
+ * El caso `healthPath: ''` merece su propia rama y no endurecer el parse: el
+ * runtime hace `entry.healthPath || '/mcp/health'`, así que la cadena vacía
+ * **vale el default** y el gate debe decir el mismo valor que el runtime. Lo
+ * que NO puede es decir «sin healthPath», porque el campo sí está declarado:
+ * la celda acertaría en el dato y mentiría en la evidencia, que es la clase
+ * exacta de mentira que cierra este WP. Por eso la diferencia va en el
+ * `motivo` —una cadena— y no en el `path`.
+ *
  * @param {CatalogoEntrada} entrada
- * @returns {{ path: string, declarado: boolean }}
+ * @returns {{ path: string, declarado: boolean, motivo: string }}
  */
 export function healthDe(entrada) {
-  return entrada.healthPath
-    ? { path: entrada.healthPath, declarado: true }
-    : { path: HEALTH_PATH_DEFAULT, declarado: false };
+  if (entrada.healthPath) {
+    return { path: entrada.healthPath, declarado: true, motivo: `healthPath "${entrada.healthPath}"` };
+  }
+  if (entrada.hasHealthPathKey) {
+    return {
+      path: HEALTH_PATH_DEFAULT,
+      declarado: true,
+      motivo: `healthPath declarado VACÍO → default "${HEALTH_PATH_DEFAULT}" (mismo valor que el runtime: entry.healthPath || …)`
+    };
+  }
+  return {
+    path: HEALTH_PATH_DEFAULT,
+    declarado: false,
+    motivo: `sin healthPath → default "${HEALTH_PATH_DEFAULT}" de resolveCatalog en ${CATALOG_PATH}`
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -291,6 +313,17 @@ export function enumerarPiezas(opts = {}) {
  * (`mcp`/`service`), = `catalogo-parse` ruidoso; jamás se fabrica un
  * `kind: 'mcp'` silencioso, que es precisamente el valor que mentía.
  *
+ * LÍMITE DECLARADO — clave duplicada. Este parser es de expresiones regulares
+ * y toma la PRIMERA aparición de cada campo; JavaScript se queda con la
+ * ÚLTIMA. Con `{ kind: 'service', kind: 'mcp' }` el gate lee `service` y el
+ * objeto vale `mcp`: es un fallo ABIERTO en un parser que se anuncia
+ * falla-cerrada, y por eso se escribe aquí en vez de dejarlo implícito. Lo
+ * mitiga —de hecho, no por diseño de este fichero— `no-dupe-keys`, que entra
+ * por `js.configs.recommended` en `eslint.config.mjs` y corre en CI
+ * (`.github/workflows/ci.yml`, `npm run lint`): un catálogo con la clave
+ * duplicada no llega a merge. Si algún día se relaja esa regla, esta
+ * limitación deja de estar cubierta.
+ *
  * @param {string} texto contenido del fichero
  * @param {string} marcador p. ej. 'CATALOG_SEED'
  * @param {string} fuente ruta relativa (evidencia)
@@ -373,9 +406,11 @@ export function parseSeedEntries(texto, marcador, fuente) {
       hasWorkspaceKey,
       kind,
       hasKindKey,
-      // null = campo ausente: el default lo pone quien consuma, con evidencia
-      // de que es un default y no una declaración (ver healthDe()).
+      // null = campo ausente. `''` = campo declarado vacío, que NO es lo mismo:
+      // vale el default igual que en el runtime, pero la evidencia debe decir
+      // que estaba declarado (ver healthDe()).
       healthPath: healthMatch ? (healthMatch[1] ?? healthMatch[2]) : null,
+      hasHealthPathKey: hasHealthKey,
       fuente
     });
   }
@@ -460,6 +495,15 @@ const RE_CLAIM_NO = /sin entrada|→\s*0|(?:^|[\s·])no(?:\s|$)/;
 
 export const CLAIM_SI = 'sí';
 export const CLAIM_NO = 'no';
+
+/**
+ * Forma de una cita del contraste: `<ruta con extensión>:<línea>[-<línea>]`.
+ * Se vigila la FORMA, no el número: el gate no debe convertir cada
+ * reordenación del catálogo en un rojo mecánico, pero una celda afirmativa sin
+ * cita ninguna no es una celda con evidencia. NO se comprueba que el fichero
+ * exista — límite declarado.
+ */
+const RE_CITA_RUTA_LINEA = /^[^\s`]+\.[A-Za-z0-9]+:\d+(?:-\d+)?$/;
 
 /**
  * Clasifica el texto de la celda «catálogo» de una fila del contraste.
@@ -636,6 +680,18 @@ export function compararContrasteCatalogo(filasContraste, entradas) {
       });
     }
 
+    // La frontera línea-vs-hecho, un paso más allá: el gate NO ata el número
+    // (atarlo haría que cualquier reordenación del catálogo diera un rojo
+    // mecánico), pero sí exige que la cita EXISTA y tenga forma de
+    // `ruta.ext:línea`. Sin esto una celda afirmativa sin ninguna cita pasaba
+    // verde, que es media promesa del encabezado del contraste sin cumplir.
+    if (!celda.citados.some((c) => RE_CITA_RUTA_LINEA.test(c))) {
+      fallos.push({
+        codigo: 'contraste-catalogo-incompleto',
+        detalle: `${donde}: afirma entrada sin ninguna cita con forma \`ruta.ext:línea\` — el gate no ata el número de línea, pero sí que la cita esté`
+      });
+    }
+
     const kinds = [...new Set(reales.map((e) => e.kind))];
     const healths = [...new Set(reales.map((e) => healthDe(e).path))];
     if (kinds.length > 1 || healths.length > 1) {
@@ -678,9 +734,20 @@ export function compararContrasteCatalogo(filasContraste, entradas) {
  * documentación; esto caza lo contrario: que la DERIVACIÓN se mueva bajo el
  * catálogo. Es el defecto exacto de U265 —`if (entrada) tipo = 'MCP'` y
  * `/mcp/health` literal— convertido en aserción, para que reaparecer cueste un
- * rojo y no otra ficha. La cadena de precedencia tiene ocho ramas: reordenar
- * una (p. ej. `bin` antes que catálogo) tipa mal una pieza de flota sin que
- * nada más se entere.
+ * rojo y no otra ficha.
+ *
+ * ALCANCE, medido y no prometido. Lo que caza es que el tipo publicado deje de
+ * cuadrar con el `kind` (y el health con el `healthPath`) de una pieza CON
+ * entrada. No caza toda reordenación de la cadena de precedencia: hoy ninguna
+ * pieza de catálogo declara `bin`, así que subir la rama `bin` por delante del
+ * catálogo deja el gate verde. Es cobertura real y acotada, no vigilancia de
+ * las ocho ramas.
+ *
+ * Y tiene un punto ciego propio, que es justo por lo que hacen falta DOS
+ * oráculos y no uno: comparte `healthDe()` con la derivación, así que un
+ * defecto DENTRO de `healthDe` movería las dos partes a la vez y esta
+ * comprobación no lo vería. Lo ve el contraste, que no depende de ninguna
+ * función del gate. La asimetría es la razón de tener los dos, no un adorno.
  *
  * @param {Fila[]} filas
  * @param {CatalogoEntrada[]} entradas
@@ -701,7 +768,18 @@ export function compararCeldasConKind(filas, entradas) {
     if (!reales || reales.length === 0) continue;
     const kinds = [...new Set(reales.map((e) => e.kind))];
     const healths = [...new Set(reales.map((e) => healthDe(e).path))];
-    if (kinds.length > 1 || healths.length > 1) continue; // ya lo denuncia -mixto
+    if (kinds.length > 1 || healths.length > 1) {
+      // No basta con saltar. `derivarFilas` elige la entrada con un `find()`,
+      // así que para una pieza mixta la celda PUBLICADA sale de la primera y
+      // ningún oráculo la mira: `contraste-catalogo-mixto` sólo llega si la
+      // celda del contraste dice «sí» (si dice «no» sale antes por -caduco).
+      // Aquí la denuncia es incondicional, que es donde tiene que estar.
+      fallos.push({
+        codigo: 'catalogo-kind-mixto',
+        detalle: `${fila.pieza}: sus ${reales.length} entradas de catálogo no coinciden en kind (${kinds.join('/')}) o healthPath (${healths.join('/')}); la matriz publica tipo "${fila.celdas.tipo.valor}" y health "${fila.celdas.health.valor}", que salen de UNA de ellas elegida por orden — no hay respuesta correcta que publicar`
+      });
+      continue;
+    }
     const esperaMcp = kinds[0] === 'mcp';
     const publicaMcp = fila.celdas.tipo.valor === 'MCP';
     if (esperaMcp !== publicaMcp) {
@@ -836,6 +914,11 @@ export function derivarFilas(piezas, opts = {}) {
     } else if (p.grupo === 'examples') {
       tipo = { valor: 'demo', evidencia: `${manifestRel} (examples/*; scripts raíz: ${scriptsRef.join(', ') || 'ninguno'})` };
     } else if (declaradaServicio) {
+      // Rama SIN efecto sobre ningún valor hoy, y se dice: la única pieza que
+      // cae aquí (`@zeus/socket-server`) llegaría igual a `servicio` por la
+      // rama `tieneStart` de abajo. Lo que cambia es la EVIDENCIA —cita el
+      // catálogo en vez de «arranque sin señal MCP/UI»—, y cubre el caso de
+      // una entrada `kind:'service'` sin `start`, que hoy no existe.
       tipo = {
         valor: 'servicio',
         evidencia: `${entrada.fuente} (entrada "${entrada.id}", kind "service" — sin superficie MCP) + ${manifestRel} (description sin señal UI)`
@@ -940,9 +1023,7 @@ export function derivarFilas(piezas, opts = {}) {
       const h = healthDe(entrada);
       health = {
         valor: `${h.path} vía catálogo`,
-        evidencia: h.declarado
-          ? `${entrada.fuente} (entrada "${entrada.id}", healthPath "${h.path}")`
-          : `${entrada.fuente} (entrada "${entrada.id}", sin healthPath → default "${HEALTH_PATH_DEFAULT}" de resolveCatalog en ${CATALOG_PATH})`
+        evidencia: `${entrada.fuente} (entrada "${entrada.id}", ${h.motivo})`
       };
     } else {
       health = {

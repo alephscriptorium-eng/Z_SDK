@@ -188,6 +188,13 @@ Lo consumen dos tests, uno de unidad y otro **de punta a punta** que replanta la
 
 Ninguno cubre al otro, y el censo de mutación lo demuestra midiendo, no razonando (§6).
 
+**La asimetría exacta, que en la primera versión de este reporte no estaba escrita**:
+`health-vs-healthpath` es **ciego a un defecto dentro de `healthDe()`**, porque la derivación y la
+comprobación llaman a la misma función y se moverían las dos a la vez. Ese caso lo salva el
+contraste, que no depende de ninguna función del gate. Y al revés, el contraste es ciego a que la
+derivación se desvíe con el parser intacto (M2, M3). **Ésa es la razón de tener dos y no uno**, y
+está ahora escrita también en el docblock de `compararCeldasConKind`.
+
 ---
 
 ## 5 · CA3 — `MATRIZ-RUNTIME-51.md` re-medida, no copiada
@@ -217,15 +224,25 @@ Además, en la cabecera del documento:
   (`grep -n "workspace: null"`). Anotado que las 10 las **enumera el gate** en cada corrida, así que
   la cifra no vuelve a caducar en silencio aunque las líneas se muevan.
 - **`catálogo 44/51 sin entrada` → `35/51`**, re-medida y **derivada por el gate**. El 44 era de
-  U179 y lo dejaron rancio U234 (3), U180 (1) y U181 (4): el mismo defecto de esta ficha, en la
-  cabecera.
+  U179 y lo dejaron rancio **U234 (4), U180 (1) y U181 (4)**. El desglose importa porque la
+  aritmética tiene que cerrar: `git log -S"id: 'launcher'"` → `c109948` = U234, que dio de alta
+  **cuatro** entradas (`launcher`, `socket-server`, `cache-browser`, `firehose-browser`), no tres.
+  **4 + 1 + 4 = 9**, y `44 − 9 = 35`. *(Corregido en devolución: la primera versión de este reporte
+  publicaba «U234 (3)», que sumaba 8 para explicar 9 — el `mcp-launcher` que sí aparecía enumerado
+  en §4 no llegaba al número.)*
 - **`comando 20/51 sin arranque` → `33/51`** con el patrón que el propio documento declara
-  (`"start":` en el `package.json` de cada una de las 51). El 20 **no se reproduce** con ese patrón;
-  se deja dicho, y se apunta que el número más cercano a esa lectura es el de piezas que el gate tipa
-  `lib` (24/51, también derivado).
-- **`puerto 30/51 · peercard 38/51 · disco 24/51`**: **NO re-medidas**. Quedan fuera de la causa de
-  este cambio y **ningún gate las sostiene**; se marcan con su fecha (2026-07-31) en vez de dejarlas
-  pasar por estado de hoy. Enrutables, ver §8.
+  (`"start":` en el `package.json` de cada una de las 51). El 20 **no se reproduce** con ese patrón.
+  Para no cambiar una cifra rancia por otra mal etiquetada, el documento publica ahora **las dos
+  lecturas derivadas** y su diferencia: el gate tipa `lib` a **27/51**, y las piezas con celda
+  `start` = «no se arranca (lib)» son **24/51**. *(Corregido en devolución: la primera versión
+  llamaba «`lib` 24/51» a lo segundo, en el documento cuyo asunto es exactamente esa distinción.)*
+- **`disco 24/51` se RETIRA: no es vieja, es falsa.** Re-medida con el patrón que el propio
+  documento declara, da **33, 27, 27, 16 o 28** según qué variante del criterio se aplique (`src` vs
+  dir completo, con o sin `readFile|readdir`). No se sustituye por ninguna: el criterio original no
+  es recuperable, y poner un número elegido entre cinco sería inventarlo. Enrutable.
+- **`puerto 30/51 · peercard 38/51`**: **NO re-medidas**. Fuera de la causa de este cambio y sin
+  gate que las sostenga; se marcan con su fecha (2026-07-31) en vez de dejarlas pasar por estado de
+  hoy. Enrutables, ver §8.
 - **Convenciones**: se añade el párrafo que dice qué gate sostiene la columna y con qué códigos —
   aplicando la regla viva a la propia regla: *la columna la sostiene un gate, no un grep de una vez.*
 
@@ -282,6 +299,30 @@ en pie con los tests nuevos dentro de su barrido.
 
 ---
 
+## 7-bis · Lo que cambió en la devolución
+
+Dos bloqueantes, los dos ciertos, y ninguno movió una cifra.
+
+- **B1 — la rama que sostenía §1.c no la ejercitaba ningún test.** Cierto y grave: con
+  `claim === CLAIM_SI && reales.length === 0` neutralizada, la suite entera seguía verde y el gate
+  volvía a la ceguera. Lo sostenía **una medida a mano de este reporte**, que es literalmente lo que
+  el propio contraste prohíbe tres párrafos más arriba. Cerrado con **cinco tests rojos de unidad**
+  sobre `compararContrasteCatalogo` (ya exportada; el gate no se movió por ellos): afirmar entrada
+  inexistente · no nombrar todos los ids · `-mixto` · `kind`/`health` anotados ≠ declarados · celda
+  afirmativa sin cita. Cada uno con su control verde al lado.
+- **B2 — la aritmética se autorrefutaba**: «U234 (3)» sumaba 8 para explicar 9 celdas. Medido con
+  `git log -S"id: 'launcher'"`: U234 (`c109948`) dio de alta **cuatro**. Corregido en el documento,
+  en el fixture y aquí.
+
+Y de los menores, cerrados: `-mixto` **sí** se puede fabricar (frase corregida y vector corriendo) ·
+`healthPath: ''` ya no miente en la evidencia —**sin endurecer el parse**, la diferencia va en la
+cadena `motivo` y no en el valor, que sigue siendo el del runtime— · la clave duplicada está
+declarada con su mitigación real (`no-dupe-keys` por `js.configs.recommended`, `npm run lint` en CI)
+· el ejemplo del `bin` baja de tono porque **no** lo caza · la rama muerta `declaradaServicio` está
+declarada como tal · el comentario falso sobre `-mixto` está corregido **y el agujero cerrado** con
+`catalogo-kind-mixto`, que denuncia incondicionalmente · el vector tiene **suelo (9 y 7)** y una
+**huella `sha256`** de sus datos · una celda afirmativa sin cita `ruta:línea` ya enrojece.
+
 ## 8 · Límites y enrutables (dicho, no escondido)
 
 1. **`lint` no se pudo ejecutar aquí**: este worktree no tiene `node_modules` (por eso los gates son
@@ -289,18 +330,29 @@ en pie con los tests nuevos dentro de su barrido.
    —**declarado**— y falló por `@eslint/js` ausente; no se instaló nada.
 2. **`packages/mesh/mcp-launcher/test/catalog.test.mjs` no se ejecutó** por lo mismo (`catalog.mjs`
    importa `@zeus/presets-sdk/env`). No se tocó ninguno de los dos ficheros.
-3. **Las citas `ruta:línea` de la columna siguen siendo volátiles**: el gate sostiene el *hecho*
-   (hay entrada / `kind` / `health`), no el número de línea. Un `catalog.mjs` reordenado dejará las
-   líneas rancias otra vez sin que nada enrojezca. Se aceptó a conciencia: atar líneas exactas
-   convertiría cualquier edición del catálogo en un rojo mecánico.
-4. **`puerto 30/51 · peercard 38/51 · disco 24/51`** de la cabecera del contraste siguen siendo
-   medidas del 2026-07-31 que **ningún gate sostiene**. Quedan marcadas con su fecha. Enrutable P2:
-   o se re-miden, o se les da un gate, o se retiran.
-5. **`contraste-catalogo-mixto` no tiene vector rojo propio**: hoy ninguna pieza tiene entradas que
-   discrepen en `kind`/`healthPath`, así que la rama existe y está razonada pero no ejercitada por un
-   caso real. Sí lo está la lógica de agrupación (`linea-system` con 2 entradas y `solar-system` con
-   3 pasan por ella en verde).
-6. **El censo de mutación ancla en fragmentos literales del gate commiteado.** Si alguien reescribe
+3. **Las citas `ruta:línea` siguen siendo volátiles en el NÚMERO**, a conciencia: atar líneas
+   exactas convertiría cualquier edición del catálogo en un rojo mecánico. Lo que sí se atornilló en
+   la devolución es que la cita **exista y tenga forma** (`ruta.ext:línea`): antes, una celda
+   afirmativa sin ninguna cita pasaba verde. **Lo que sigue sin comprobarse es que el fichero
+   citado exista** — se vigila la forma, no el destino.
+4. **Clave duplicada: fallo abierto declarado.** El parser es de regex y toma la PRIMERA aparición;
+   JS se queda con la ÚLTIMA. `{ kind: 'service', kind: 'mcp' }` se lee `service` y vale `mcp`. Lo
+   mitiga **de hecho, no por diseño**, `no-dupe-keys` (vía `js.configs.recommended` en
+   `eslint.config.mjs`, `npm run lint` en CI): un catálogo así no llega a merge. Escrito en el
+   docblock de `parseSeedEntries` para que se sepa de qué depende.
+5. **`compararCeldasConKind` no vigila las ocho ramas de precedencia.** Medido: subir la rama `bin`
+   por delante del catálogo deja el gate verde, porque hoy ninguna pieza de catálogo declara `bin`.
+   La frase del docblock que prometía más de eso está corregida.
+6. **`healthDe()` es punto ciego compartido**: derivación y `health-vs-healthpath` la llaman las dos,
+   así que un defecto dentro de ella no lo ve esa comprobación — lo ve el contraste. Es la asimetría
+   que justifica los dos oráculos, y ahora está escrita en los dos sitios.
+7. **Rama sin efecto hoy**: `declaradaServicio → servicio` es código muerto en el estado actual
+   (`@zeus/socket-server` llega igual por `tieneStart`); sólo cambia la EVIDENCIA, y cubre el caso de
+   una entrada `kind:'service'` sin `start`, que hoy no existe. Declarado en el propio código.
+8. **`puerto 30/51 · peercard 38/51`** siguen siendo medidas del 2026-07-31 sin gate que las
+   sostenga; **`disco 24/51` se retira por falsa** (5 lecturas distintas del criterio declarado).
+   Enrutable P2: o se les da criterio único y gate, o se retiran.
+9. **El censo de mutación ancla en fragmentos literales del gate commiteado.** Si alguien reescribe
    esas tres líneas, los tests dan un rojo que **nombra la causa** («la mutación no ancla en el gate
-   commiteado… actualiza MUTANTES»). Es ruidoso a propósito: un ancla muerta deja el censo vacuo, y
-   eso es exactamente lo que U252 aprendió a no tolerar.
+   commiteado… actualiza MUTANTES»). Ruidoso a propósito: un ancla muerta deja el censo vacuo, que es
+   lo que U252 aprendió a no tolerar. Lo mismo vale para la huella `sha256` del vector.
