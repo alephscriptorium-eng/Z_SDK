@@ -9,6 +9,11 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { EXCEPTIONS } from './exceptions.mjs';
 import { GATE_RULES } from './reglas.mjs';
+// WP-U231 — el invariante de secretos en el plano de datos. Vive en su propio
+// módulo (no barre fuentes: barre `VOLUMES/**` entero y recetas de imagen, dos
+// corpus que `SOURCE_EXT` no alcanza) y se importa en UNA dirección: aquí. No
+// importa nada de este fichero, para que no haya ciclo.
+import { scanClaveEnVolumen, scanVolumenExigeSecreto, scanContextoImagen } from './claves.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(__dirname, '../..');
@@ -887,7 +892,10 @@ export function runAllGates(opts = {}) {
     ...scanTwoGamesRule(opts),
     ...scanGoogleStun(opts),
     ...scanTrackingIds(opts),
-    ...scanLicenseCoherence(opts)
+    ...scanLicenseCoherence(opts),
+    ...scanClaveEnVolumen(opts),
+    ...scanVolumenExigeSecreto(opts),
+    ...scanContextoImagen(opts)
   ];
   // WP-U257: las claves salen de GATE_RULES, no de un literal paralelo. Antes
   // eran la CUARTA copia de la lista de reglas: dar de alta una y olvidarse de

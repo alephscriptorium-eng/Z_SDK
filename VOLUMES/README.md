@@ -65,6 +65,43 @@ meter DISK_01/02 pesados en este repo.
 - Start packs y volúmenes de ronda: **nunca en git** del monorepo
   (ARQUITECTURA §6).
 
+## Invariante de identidad (WP-U231)
+
+**Ningún volumen aloja material de identidad** —claves de pub, tokens de
+registry, credenciales de VPS—: el secreto va por env del operador, nunca en el
+árbol. Y su otra mitad: **un volumen que EXIGE un secreto para leerse está mal
+diseñado**. Es la derivada al plano de datos de `GATE-O-CLAVES` (doctrina de O,
+sólo citada aquí — `plan/GOBIERNO-EJECUCION-F2.md:478`), escrita en
+`sincronia/notas/archivo/NOTA-Z-2026-07-26-R6-matriz-volumenes.md:55-59`.
+
+Lo vigila `scripts/gates/claves.mjs`, que entra en `npm run gates`. Barre
+**todas** las extensiones de este árbol (no sólo fuentes) y **no admite
+excepciones**: una entrada en `scripts/gates/exceptions.mjs` que nombre una de
+sus reglas es ella misma una ofensa.
+
+Dos comprobaciones, y hacen cosas distintas:
+
+```
+node scripts/gates/claves.mjs --censo     # qué EXIGE cada volumen para ser leído
+node scripts/gates/claves.mjs --barrido   # si hay una identidad DENTRO de los datos
+```
+
+Sobre un root propio —que es donde viven los datos de verdad— añade `--root`;
+sin banderas hace las dos:
+
+```
+node scripts/gates/claves.mjs --root /ruta/a/tu/VOLUMES
+```
+
+Sale `0` si está limpio, `1` si hay hallazgos, `2` si te equivocaste al
+invocarlo.
+
+Lo que el gate **no** ve, dicho aquí para que nadie lo suponga: el root vivo si
+no se lo apuntas con `--root` (por defecto sólo mira este árbol del repo), el
+historial de git, un `.env` que alguien trackee a la fuerza, y cualquier secreto
+cifrado, comprimido o en UTF-16. Tres formas de valor —arrays JSON, YAML de
+bloque y `ENV CLAVE valor` sin `=`— tampoco: están abiertas como **WP-U269**.
+
 ## Read API
 
 `@zeus/presets-sdk`: `resolveVolume`, `browseVolume`, `resolveVolumesRoot`.

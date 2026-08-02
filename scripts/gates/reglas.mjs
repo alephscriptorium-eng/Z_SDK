@@ -30,7 +30,7 @@
 /**
  * Las reglas que `runAllGates` puede emitir y a las que una excepción se puede
  * acoger. Espejo declarado de `GATE_RULES` (ver límite en la cabecera).
- * @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'|'tracking-id'|'licencia'} GateRule
+ * @typedef {'ports'|'transition'|'arg-import'|'two-games'|'google-stun'|'tracking-id'|'licencia'|'clave-en-volumen'|'volumen-exige-secreto'|'contexto-imagen'} GateRule
  */
 
 /**
@@ -44,5 +44,8 @@ export const GATE_RULES = Object.freeze([
   'two-games',
   'google-stun',
   'tracking-id',
-  'licencia'
+  'licencia',
+  'clave-en-volumen',
+  'volumen-exige-secreto',
+  'contexto-imagen'
 ]);
