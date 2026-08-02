@@ -984,6 +984,15 @@ export function camposDeCodigo(texto) {
     let k = fin - 1;
     while (k >= 0 && /\s/.test(texto[k])) k -= 1;
     if (k < 0) return '';
+    // PLANTILLA ETIQUETADA (``tag`…` ``): entre el `=` y el literal hay un
+    // identificador de etiqueta. Sin saltarlo, el literal se quedaba sin nombre
+    // y la fuga se perdía —familia 3 de B9—. Una plantilla etiquetada sigue
+    // siendo un literal asignado a ese nombre.
+    if (texto[fin] === '`' && /[A-Za-z0-9_$]/.test(texto[k])) {
+      while (k >= 0 && /[A-Za-z0-9_$]/.test(texto[k])) k -= 1;
+      while (k >= 0 && /\s/.test(texto[k])) k -= 1;
+      if (k < 0) return '';
+    }
     if (texto[k] === ':') {
       k -= 1;
     } else if (texto[k] === '=') {
@@ -1075,6 +1084,25 @@ export function camposDeCodigo(texto) {
         ultimaPalabra = '';
         continue;
       }
+      // DIVISIÓN — o eso cree la heurística. Y aquí estaba la familia 1 de B9:
+      // cuando una expresión regular REAL va detrás de `)`, `]` o un
+      // identificador, `abreRegex` la toma por división, el cuerpo se lexa como
+      // identificadores sueltos y **nadie lo mira**. Es la misma rama que se
+      // arregló en B7, por el otro lado de la heurística.
+      //
+      // No se arregla afinando la heurística —`(a+b)/c` y `x /re/g` son
+      // ambiguos de verdad sin un analizador sintáctico entero— sino aplicando
+      // la doctrina del módulo: LO AMBIGUO SE BARRE. Si hay otra `/` en la misma
+      // línea, el tramo entre las dos PUEDE ser una expresión regular, así que
+      // se marca opaco. No se cambia el avance del lexer —sigue consumiendo un
+      // solo carácter— de modo que no hay riesgo de desincronizar nada: lo único
+      // que cambia es que ese texto deja de ser invisible.
+      const finLinea = texto.indexOf('\n', i + 1);
+      const hasta = finLinea < 0 ? n : finLinea;
+      const otra = texto.indexOf('/', i + 1);
+      if (otra >= 0 && otra < hasta) {
+        campos.push({ nombre: '', valor: texto.slice(i, otra + 1), line: linea, opaco: true });
+      }
       ultimo = '/';
       ultimaPalabra = '';
       i += 1;
@@ -1163,7 +1191,23 @@ export function camposDeCodigo(texto) {
     if (/[A-Za-z0-9_$]/.test(c)) {
       let k = i;
       while (k < n && /[A-Za-z0-9_$]/.test(texto[k])) k += 1;
-      ultimaPalabra = texto.slice(i, k);
+      const corrida = texto.slice(i, k);
+      // UN LITERAL NUMÉRICO ES UN VALOR, y era la familia 2 de B9. La corrida
+      // que EMPIEZA por dígito es un número —decimal, hexadecimal, con
+      // separadores `_`, BigInt con sufijo `n`—, no un identificador: puede
+      // llevar un secreto cableado y `main` sí lo cazaba.
+      //
+      // La asimetría la había creado yo: en la 3.ª vuelta arreglé exactamente
+      // esto para JSON («el número TAMBIÉN es un valor») y no para código.
+      //
+      // Lo que NO se empuja es el identificador: `{ api_key: DEV_TOKEN }` es una
+      // expresión, no un literal, y quitarla es justo la precisión que este WP
+      // compró. Esa rama consume y calla A PROPÓSITO, y va declarada.
+      if (/^[0-9]/.test(corrida)) {
+        const nombre = nombreAntesDe(i);
+        if (nombre !== '') campos.push({ nombre, valor: corrida, line: linea });
+      }
+      ultimaPalabra = corrida;
       ultimo = texto[k - 1];
       i = k;
       continue;

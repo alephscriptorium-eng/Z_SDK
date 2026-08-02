@@ -295,7 +295,12 @@ const HUECOS = [
   // --- plantillas de sustitución. La primera versión sólo conocía `${VAR}`:
   //     cerraba el CASO, no la CLASE, y seguían enrojeciendo las otras tres
   //     sintaxis corrientes. Son huecos por la misma razón exacta.
-  /^\$\{[^}]*\}$/, // ${VAR} — la forma que usa volumes.json
+  // `${VAR}` — la forma que usa volumes.json. El cuerpo tiene que PARECER una
+  // referencia (identificador, con puntos o guiones), no cualquier cosa: con
+  // `[^}]*` una plantilla anidada —`` ${`<material>`} ``— se leía como hueco y
+  // la fuga se perdía (familia 3 de WP-U269 · B9). Sigue cubriendo
+  // `${ZEUS_SSB_PUB_URL}` y `${cfg.token}`, que son los casos reales.
+  /^\$\{\s*[A-Za-z_$][A-Za-z0-9_$.[\]'"-]*\s*\}$/,
   /^\{\{[^}]*\}\}$/, // {{VAR}} — Helm, Jinja, Handlebars, GitHub Actions
   /^\$\([^)]*\)$/, // $(VAR) — Make, Azure Pipelines, sustitución de shell
   /^%[A-Za-z0-9_]+%$/, // %VAR% — cmd de Windows

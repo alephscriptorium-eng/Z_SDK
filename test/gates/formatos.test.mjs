@@ -369,7 +369,7 @@ test('LA PRECISIÓN NO SE COMPRÓ AFLOJANDO: cada hueco tiene su gemelo que SÍ 
     ['comentario de bloque en código', `/* api_key: ${MATERIAL} */`, 'x.mjs'],
     // El valor numérico se COMPONE, para no dejar escrito en este fichero un
     // par nombre/valor que el barrido crudo del `.md` y del propio test cace.
-    ['valor NUMÉRICO en JSON', `{"api_key": ${'9'.repeat(20)}}`, 'x.json'],
+    ['valor NUMÉRICO en JSON', '{"api_key": ' + '9'.repeat(20) + '}', 'x.json'],
     ['blob JSON dentro de un literal de código', `const cfg = '{"api_key":"${MATERIAL}"}';`, 'x.mjs'],
     ['blob JSON dentro de una plantilla', `const cfg = \`{"api_key":"${MATERIAL}"}\`;`, 'x.mjs'],
     ['`RUN` de Dockerfile con export', `FROM node:20\nRUN export API_KEY=${MATERIAL}`, 'Dockerfile'],
@@ -591,10 +591,30 @@ test('el analizador de YAML se retira ante lo que declaró no modelar', () => {
 // el reporte.
 // ---------------------------------------------------------------------------
 
-test('LEY DE CONSERVACIÓN: ningún token del CORPUS REAL se pierde', { timeout: 300_000 }, () => {
-  // Sobre los ficheros trackeados de verdad, no sobre vectores escogidos. Fue
-  // esta ley la que encontró que `parameters: []` y `position: { x: 4 }` dejaban
-  // la CLAVE sin contabilizar, en seis ficheros de `spec/` que nadie miraba.
+/**
+ * Recorre unas entradas y devuelve las que violan la ley.
+ *
+ * ESTÁ EXTRAÍDO A PROPÓSITO. Con el bucle dentro del test, cambiar
+ * `if (v.length > 0) malos.push(…)` por `if (false)` dejaba las 199 pruebas en
+ * verde: la LEY estaba vigilada (§B8) pero su CONSUMO no. Un control que llama
+ * a la función y no vigila la producción es la misma trampa una capa más
+ * arriba. Sacándolo, el test de abajo puede ejercitarlo con una entrada que SÍ
+ * viola y exigir que la recoja.
+ *
+ * @param {{ rel: string, texto: string, formato: string }[]} entradas
+ * @returns {string[]}
+ */
+function violacionesDe(entradas) {
+  const malos = [];
+  for (const e of entradas) {
+    const v = violacionesDeConservacion(e.texto, e.formato, e.analizar);
+    if (v.length > 0) malos.push(`${e.rel}: ${v[0]}`);
+  }
+  return malos;
+}
+
+/** Las entradas del corpus real con formato conocido. */
+function corpusConFormato() {
   const salida = spawnSync('git', ['--no-optional-locks', 'ls-files'], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
@@ -603,18 +623,13 @@ test('LEY DE CONSERVACIÓN: ningún token del CORPUS REAL se pierde', { timeout:
   assert.equal(salida.status, 0, 'no se pudo listar el corpus');
   const rutas = salida.stdout.split('\n').filter(Boolean);
   assert.ok(rutas.length > 1000, `corpus sospechosamente corto: ${rutas.length}`);
-
-  /** @type {string[]} */
-  const malos = [];
-  let mirados = 0;
+  const entradas = [];
   for (const rel of rutas) {
     const formato = formatoDe(path.basename(rel));
     if (!formato) continue;
     // Se llama `leido` y no `abs` a propósito: el guardián estático de
     // `arbol-inmutable.test.mjs` marca por NOMBRE, así que un `abs` derivado de
-    // `REPO_ROOT` contaminaría los `abs` de los helpers de arriba —que escriben
-    // en un temporal— y los denunciaría como escrituras sobre el árbol. El
-    // guardián tiene razón en ser tosco; el que se aparta soy yo.
+    // `REPO_ROOT` contaminaría los `abs` de los helpers de arriba.
     const leido = path.join(REPO_ROOT, rel);
     let st;
     try {
@@ -623,12 +638,46 @@ test('LEY DE CONSERVACIÓN: ningún token del CORPUS REAL se pierde', { timeout:
       continue;
     }
     if (!st.isFile() || st.size > 1024 * 1024) continue;
-    mirados += 1;
-    const v = violacionesDeConservacion(fs.readFileSync(leido).toString('utf8'), formato);
-    if (v.length > 0) malos.push(`${rel}: ${v[0]}`);
+    entradas.push({ rel, texto: fs.readFileSync(leido).toString('utf8'), formato });
   }
-  assert.ok(mirados > 500, `se miraron sólo ${mirados} ficheros: la ley no está midiendo nada`);
-  assert.deepEqual(malos.slice(0, 10), [], `la ley de conservación se rompe en ${malos.length} fichero(s)`);
+  return entradas;
+}
+
+test('LEY DE CONSERVACIÓN: ningún token del CORPUS REAL se pierde', { timeout: 300_000 }, () => {
+  // Sobre los ficheros trackeados de verdad, no sobre vectores escogidos. Fue
+  // esta ley la que encontró que `parameters: []` y `position: { x: 4 }` dejaban
+  // la CLAVE sin contabilizar, en seis ficheros de `spec/` que nadie miraba.
+  const entradas = corpusConFormato();
+  assert.ok(entradas.length > 500, `se miraron sólo ${entradas.length} ficheros`);
+  const malos = violacionesDe(entradas);
+  assert.deepEqual(malos.slice(0, 10), [], `la ley se rompe en ${malos.length} fichero(s)`);
+});
+
+test('EL CONSUMO de la ley está vigilado: una entrada que viola SE RECOGE', { timeout: 300_000 }, () => {
+  // m14. Que la ley detecte no basta: hay que comprobar que quien la usa ACTÚA
+  // sobre el resultado. Se mete en el mismo recorrido una entrada que viola de
+  // verdad y se exige que salga en la lista. Si alguien neutraliza el `push`,
+  // esto enrojece.
+  const sembrada = {
+    rel: 'SEMBRADA',
+    texto: `id: demo\napi_key: ${MATERIAL}\n`,
+    formato: 'yaml',
+    // Analizador MUTILADO: ve la primera linea y se traga la segunda. La
+    // violacion es real y la produce la ley de verdad; lo que se comprueba
+    // aqui es que el RECORRIDO la recoge.
+    analizar: () => [{ nombre: 'id', valor: 'demo', line: 1 }]
+  };
+  // Sin ella, el corpus sale limpio.
+  const entradas = corpusConFormato();
+  assert.deepEqual(violacionesDe(entradas), []);
+  // Con ella, tiene que salir UNA y ser la suya.
+  const conSembrada = violacionesDe([...entradas, sembrada]);
+  assert.equal(
+    conSembrada.length,
+    1,
+    `el recorrido no recogio la violacion sembrada: ${JSON.stringify(conSembrada)}`
+  );
+  assert.match(conSembrada[0], /^SEMBRADA: /);
 });
 
 test('LEY DE CONSERVACIÓN: las formas corrientes de configuración conservan', () => {
@@ -643,7 +692,7 @@ test('LEY DE CONSERVACIÓN: las formas corrientes de configuración conservan', 
     ['yaml', `# api_key: ${MATERIAL}\nid: demo\n`],
     ['yaml', `%foo: ${MATERIAL}\n`],
     ['json', `{"tokens":["${MATERIAL}"]}\n`],
-    ['json', `{"api_key":${'9'.repeat(20)}}\n`],
+    ['json', '{"api_key":' + '9'.repeat(20) + '}\n'],
     ['dockerfile', ['FROM node:20', `ENV API_KEY ${MATERIAL}`, ''].join('\n')],
     ['dockerfile', ['FROM node:20', 'ENV A=1 \\', `# api_key=${MATERIAL}`, '    B=2', ''].join('\n')],
     ['dockerfile', ['FROM node:20', `RUN export API_KEY=${MATERIAL}`, ''].join('\n')],
@@ -725,6 +774,66 @@ test('la clave de deduplicacion lleva la LINEA: dos fugas no se funden en una', 
   assert.deepEqual(new Set(h.map((x) => x.id)), new Set(['campo-identidad']));
 });
 
+test('B9: toda rama del lexer que CONSUME entrada emite, marca opaco o lanza', () => {
+  // La sexta devolucion trajo TRES FAMILIAS y DIEZ FORMAS, todas en codigo,
+  // todas en silencio y todas invisibles para la ley: la ley 1 salta el codigo
+  // y la ley 2 solo mira valores de campos. No se cierran con un cuarto
+  // canario, sino dandole al lexer la misma invariante que ya tienen los
+  // formatos de datos. Este test es el censo de esa invariante.
+  const casos = [
+    // FAMILIA 1 - regex que la heuristica toma por division. El tramo ambiguo
+    // entre dos `/` de la misma linea se marca OPACO: lo ambiguo se barre.
+    ['tras parentesis', `const s='';\nif (s) /api_key=${MATERIAL}/.test(s);\n`],
+    ['tras corchete', `const a=[1];\na[0] /api_key=${MATERIAL}/;\n`],
+    ['tras identificador', `let x=1;\nx /api_key=${MATERIAL}/g;\n`],
+    ['tras llamada', `function f(){}\nf() /api_key=${MATERIAL}/.test(y);\n`],
+    // FAMILIA 2 - literales que no son cadena. La asimetria la cree yo: en la
+    // 3a vuelta arregle esto MISMO para JSON y no para codigo.
+    ['numero decimal', `const api_key = 123456789012345678;\n`],
+    ['numero hexadecimal', `const api_key = 0xABCDEF1234567890;\n`],
+    ['numero con separador', `const api_key = 123_456_789_012_345;\n`],
+    ['BigInt', `const api_key = 123456789012345678n;\n`],
+    // FAMILIA 3 - plantillas anidada y etiquetada. Se escriben con comillas
+    // simples y concatenacion para que los acentos graves de dentro sean
+    // texto y no sintaxis de este fichero.
+    ['plantilla anidada', 'const api_key = `${`' + MATERIAL + '`}`;\n'],
+    ['plantilla etiquetada', 'const api_key = tag`' + MATERIAL + '`;\n']
+  ];
+  const perdidas = [];
+  for (const [nombre, texto] of casos) {
+    if (hallazgosDe(texto, 'x.mjs').length === 0) perdidas.push(nombre);
+  }
+  assert.deepEqual(perdidas, [], 'ramas del lexer que consumen y callan:\n' + perdidas.join('\n'));
+});
+
+test('B9: la division de verdad NO se convierte en falso positivo', () => {
+  // El precio de barrer el tramo ambiguo entre dos `/` tiene que ser cero
+  // sobre aritmetica corriente.
+  for (const l of ['const x = (a+b)/c;', 'const y = a / b / c;', 'const z = total/n;']) {
+    assert.deepEqual(hallazgosDe(l + '\n', 'x.mjs'), [], l);
+  }
+});
+
+test('la ley SIGUE ATADA a la suite: `conservacion.mjs` no casa con el glob de CI', () => {
+  // m16. `npm run test:gates` glob-ea `test/gates/*.test.mjs`, y
+  // `conservacion.mjs` NO casa: entra en CI solo porque este fichero la
+  // importa. Esta bien que sea biblioteca y no suite —por eso se saco del
+  // test, para que la demostracion externa use la MISMA ley y no una copia—
+  // pero si esa importacion desaparece, la ley deja de correr y nada lo dice.
+  // Esto lo dice.
+  const dir = path.resolve(AQUI);
+  const suites = fs.readdirSync(dir).filter((f) => f.endsWith('.test.mjs'));
+  assert.ok(suites.length >= 4, `suites sospechosamente pocas: ${suites.length}`);
+  const importan = suites.filter((f) =>
+    /from\s+['`\"]\.\/conservacion\.mjs['`\"]/.test(fs.readFileSync(path.join(dir, f), 'utf8'))
+  );
+  assert.ok(
+    importan.length >= 1,
+    'ninguna suite de `test/gates/*.test.mjs` importa `conservacion.mjs`: la ley de ' +
+      'conservacion ha dejado de correr en CI y nadie se ha enterado'
+  );
+});
+
 test('la ley NO sustituye a la vigilancia de sintaxis: las dos clases siguen contadas', () => {
   // La ley de conservación es el instrumento PRINCIPAL y es el que no se evade.
   // Esto es el cinturón además de los tirantes, y con el alcance dicho en el
@@ -739,7 +848,7 @@ test('la ley NO sustituye a la vigilancia de sintaxis: las dos clases siguen con
   assert.equal(cuenta(/^\s*(if\s*\(.*\)\s*)?return null;/), 3, 'cambió el número de `return null`');
   // `catch (e)` y `catch {`: las dos formas.
   assert.equal(cuenta(/catch\s*[({]/), 1, 'apareció un `catch` nuevo (con o sin paréntesis)');
-  assert.equal(cuenta(/opaco: true/), 9, 'cambió el número de valores marcados OPACOS');
+  assert.equal(cuenta(/opaco: true/), 10, 'cambió el número de valores marcados OPACOS');
 });
 
 test('un formato desconocido sigue el camino de siempre — no se inventa analizador', () => {
