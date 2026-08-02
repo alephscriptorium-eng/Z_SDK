@@ -66,14 +66,16 @@
  *   5. **Secreto cifrado, comprimido o en UTF-16.** El barrido decodifica UTF-8
  *      (que cubre ASCII y el castellano con tilde). Un `.tar.gz` con una clave
  *      dentro, o un fichero en UTF-16, pasan.
- *   6. **La FORMA del valor, en tres casos corrientes** — `{"tokens": ["…"]}`
- *      (la comilla corta la captura), YAML de bloque (`api_key: |` con el valor
- *      en la línea siguiente) y `ENV API_KEY valor` sin `=`. Los tres exigen
- *      parseo real de JSON/YAML/Dockerfile y no más expresiones regulares;
- *      están abiertos como **WP-U269**. El tercero cae dentro del corpus de
- *      `contexto-imagen`, o sea dentro de la mitad de imagen de CA1.
- *   7. **Un campo llamado `key` a secas.** Fuera del léxico por coste medido
- *      (+178 hallazgos sobre el árbol; ver `LEXICO_IDENTIDAD`).
+ *   6. ~~**La FORMA del valor, en tres casos corrientes.**~~ **CERRADO por
+ *      WP-U269**, y con analizadores, no con más expresiones regulares: las tres
+ *      —`{"tokens": ["…"]}`, YAML de bloque (`api_key: |` con el valor en la
+ *      línea siguiente) y `ENV API_KEY valor` sin `=`— se cazan hoy en
+ *      `formatos.mjs`. Lo que queda abierto es lo que ese fichero declara: YAML
+ *      con anclas, alias, etiquetas o claves complejas se RETIRA al barrido
+ *      crudo, y Markdown, `.env` y el texto plano nunca se analizaron.
+ *   7. **Un campo llamado `key` a secas.** Fuera del léxico por coste medido:
+ *      +132 hallazgos sobre los 1759 ficheros trackeados de hoy, frente a los
+ *      +5 de `clave` (ver `LEXICO_IDENTIDAD`).
  *   8. **Identidad sin forma ni nombre.** Una cadena de alta entropía en un
  *      campo llamado `blob` no la caza nada: es el precio de no usar entropía.
  */
@@ -82,6 +84,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EXCEPTIONS } from './exceptions.mjs';
+import { NoEntiendo, camposDe, formatoDe } from './formatos.mjs';
 
 /** WP-U257: una sola definición, en `reglas.mjs`. Aquí sólo se le da nombre local. */
 /** @typedef {import('./reglas.mjs').GateRule} GateRule */
@@ -146,18 +149,21 @@ export const TOPE_BYTES = null;
  * `secreto`). Cerrado aquí; el censo de fugas vive en el test.
  *
  * `clave` A SECAS ENTRA; `key` a secas NO, y la asimetría es MEDIDA, no de
- * gusto. Mismo detector, mismo corpus —los 1741 ficheros trackeados—, moviendo
- * sólo el léxico:
+ * gusto. Mismo detector, mismo corpus, moviendo sólo el léxico. Las cifras se
+ * RE-MIDIERON en WP-U269 —las de U231 eran de otro árbol (1741 ficheros) y de
+ * otro detector (todo barrido crudo), así que caducaron dos veces—. Hoy, sobre
+ * los **1759 ficheros trackeados** y con analizadores:
  *
- *   sin `clave` ni `key` a secas ....  104 hallazgos
- *   con `clave`  (el elegido) .......  121   (+17)
- *   con `clave` y `key` .............  300  (+196)
+ *   sin `clave` ni `key` a secas ....   47 hallazgos
+ *   con `clave`  (el elegido) .......   52   (+5)
+ *   con `clave` y `key` .............  184  (+132)
  *
- * `key` cuesta once veces más que `clave` porque en YAML/JSON `key:` es
- * vocabulario general de mapa; `clave` tiene ese uso mucho más raro. Diecisiete
- * de más sobre el árbol entero es asumible para no perder la palabra que la
- * doctrina usa literalmente; ciento noventa y seis no lo es. El comando que
- * produce las tres cifras está en el reporte del WP.
+ * `key` cuesta veintiséis veces más que `clave` porque en YAML/JSON `key:` es
+ * vocabulario general de mapa; `clave` tiene ese uso mucho más raro. Parsear
+ * bajó las tres cifras —el barrido daba 104/121/300— pero NO cambió la
+ * decisión: cinco de más es asumible para no perder la palabra que la doctrina
+ * usa literalmente; ciento treinta y dos no lo es. El comando que produce las
+ * tres cifras está en el reporte de U269.
  *
  * (Ojo: el corpus de ESTE gate no es el árbol entero sino `VOLUMES/**` y las
  * recetas de imagen, donde las tres variantes dan CERO. Las cifras de arriba
@@ -197,8 +203,23 @@ export const LEXICO_IDENTIDAD = new RegExp(
   'i'
 );
 
-/** El mismo léxico, anclado como palabra completa dentro de un nombre. */
-const LEXICO_ANCLADO = new RegExp(`(?<![A-Za-z0-9])${LEXICO_IDENTIDAD.source}(?![A-Za-z0-9])`, 'i');
+/**
+ * El mismo léxico, anclado como palabra completa dentro de un nombre.
+ *
+ * EL GRUPO `(?:…)` NO ES ADORNO, y su ausencia era un fallo real (WP-U269).
+ * `LEXICO_IDENTIDAD.source` es una alternancia de PRIMER NIVEL sin paréntesis
+ * —`pass…|pwd|secrets?|…|semillas?`—, así que interpolarla a pelo entre el
+ * lookbehind y el lookahead ataba el lookbehind SÓLO a la primera alternativa y
+ * el lookahead SÓLO a la última. Las de en medio quedaban sin anclar ninguno, o
+ * sea sin anclar. Medido: el «anclado» daba verdadero para `author` (por
+ * `auth`), `tokenizer` (por `token`), `secretaria` (por `secreta`) y `xxpwdyy`
+ * (por `pwd`). Sobre este árbol eso son once falsos positivos en `author` de
+ * ficheros SSB y de un `package.json`, donde un autor es una identidad PÚBLICA.
+ *
+ * Se cierra envolviendo. No cambia qué palabras están en el léxico —las trece
+ * que U231 midió siguen casando, y hay test— sino que el ancla ancle.
+ */
+const LEXICO_ANCLADO = new RegExp(`(?<![A-Za-z0-9])(?:${LEXICO_IDENTIDAD.source})(?![A-Za-z0-9])`, 'i');
 
 /**
  * Valores que NO son un secreto aunque estén sobre un campo de identidad. No es
@@ -283,6 +304,36 @@ export function esHueco(valor, nombre = '') {
   if (esUrlDeReferencia(v)) return true;
   if (/^[a-z][a-z0-9]*(?:[_-][a-z0-9]+)+$/.test(v) && CENTINELAS.test(v)) return true;
   if (nombre && sinTildes(v) === sinTildes(nombre)) return true;
+  return false;
+}
+
+/**
+ * Lo mismo, pero sobre un valor que viene de un ANALIZADOR y no de un barrido de
+ * línea. Es más estricto, y puede serlo porque sabe algo que el barrido no sabe:
+ * **dónde acaba el valor**.
+ *
+ * EL ESPACIO INTERIOR. Un valor entrecomillado que contiene un espacio es prosa
+ * o una frase, no material de identidad: ninguna credencial de las que este
+ * módulo caza —token de proveedor, clave de API, contraseña de una cadena de
+ * conexión— lleva un espacio dentro. El barrido de U231 no podía usar esta
+ * señal porque su clase de valor se cortaba en el primer espacio: veía
+ * `Contraseña` donde el valor real era `Contraseña olvidada, revise su correo`,
+ * y por eso necesitaba la regla «el valor ES su etiqueta» para no enrojecer.
+ * Con el valor entero delante, la regla general basta y cubre además el caso que
+ * la anterior NO cubría: el texto de i18n que NO repite su etiqueta.
+ *
+ * LÍMITE DECLARADO, y es el precio exacto de esta regla: una **frase de paso con
+ * espacios literales** dentro de un campo de identidad —`clave: correct horse
+ * battery staple`— no se caza. Con guiones —que es como se escriben cuando van
+ * en un fichero de configuración— sí, y hay contraprueba de las dos cosas.
+ *
+ * @param {string} valor valor completo, ya desentrecomillado
+ * @param {string} [nombre]
+ */
+export function esHuecoEstructural(valor, nombre = '') {
+  const v = valor.trim();
+  if (esHueco(v, nombre)) return true;
+  if (/\s/.test(v)) return true;
   return false;
 }
 
@@ -384,16 +435,117 @@ export function hallazgosEnTexto(texto, patrones = PATRONES_IDENTIDAD) {
     if (!p || typeof p.id !== 'string' || !(p.re instanceof RegExp)) {
       throw new TypeError(`hallazgosEnTexto: patrón malformado: ${JSON.stringify(p)}`);
     }
+    // La expresión se compila UNA vez por patrón, no una por línea. Estaba
+    // dentro del bucle de líneas, o sea una compilación por línea y por patrón:
+    // sobre los 1759 ficheros trackeados eso son millones de `new RegExp` que
+    // devuelven siempre lo mismo. Sin la bandera `g` el `exec` no arrastra
+    // `lastIndex`, así que izarla no cambia ni un resultado — se comprueba en la
+    // medición de densidad del reporte, que da el mismo conjunto antes y después.
+    const re = new RegExp(p.re.source, p.re.flags.replace('g', ''));
     // Multilínea: los patrones son de una línea salvo la cabecera PEM, que
     // también lo es (el bloque empieza en su propia línea).
     for (let i = 0; i < lineas.length; i += 1) {
-      const m = new RegExp(p.re.source, p.re.flags.replace('g', '')).exec(lineas[i]);
+      const m = re.exec(lineas[i]);
       if (!m) continue;
       if (typeof p.valida === 'function' && !p.valida(m)) continue;
       out.push({ id: p.id, que: p.que, line: i + 1 });
     }
   }
   return out.sort((a, b) => a.line - b.line || a.id.localeCompare(b.id));
+}
+
+/**
+ * El id del único patrón que detecta por el NOMBRE del campo y no por la forma
+ * del valor (ver cabecera).
+ *
+ * (Se llamaba `ID_POR_CLAVE`, que es el vocabulario de la cabecera, y el
+ * detector se cazaba a sí mismo: `CLAVE` es léxico de identidad y
+ * `'campo-identidad'` es un literal de quince caracteres que no es ningún
+ * hueco. Un guardián que se ensucia su propia medida con su propia obra es
+ * exactamente lo que este WP existe para no hacer, así que el nombre se cambia
+ * en vez de exceptuarse.)
+ */
+const ID_POR_NOMBRE_DE_CAMPO = 'campo-identidad';
+
+/**
+ * Los hallazgos de un texto del que SÍ se conoce el formato — WP-U269.
+ *
+ * LA DIVISIÓN ES LA TESIS DE ESTE WP, y sale de la cabecera de este mismo
+ * módulo: se detecta por FORMA o por CLAVE, y las dos vías no piden lo mismo.
+ *
+ *   - Por FORMA (PEM, JWT, `usuario:clave@`, SSB, token de proveedor): la firma
+ *     está en el TEXTO y no depende de la estructura. Sigue siendo un barrido
+ *     crudo sobre el texto entero, sin tocar. Un secreto escondido en un
+ *     comentario o en una zona que el analizador no entienda se sigue cazando.
+ *   - Por CLAVE (`campo-identidad`): hay que saber qué nombre lleva qué valor, y
+ *     eso lo dice el ANALIZADOR del formato. Aquí ya no hay expresión regular.
+ *
+ * Lanza `NoEntiendo` cuando el analizador no está seguro. Quien llama se retira
+ * al barrido crudo: parsear puede quitar falsos positivos sobre lo que se
+ * entiende, y sobre lo que no se entiende se mira como antes. Nunca silencio.
+ *
+ * @param {string} texto
+ * @param {'json'|'jsonl'|'yaml'|'dockerfile'|'codigo'} formato
+ * @param {readonly Patron[]} [patrones]
+ * @returns {{ id: string, que: string, line: number }[]}
+ */
+export function hallazgosEstructurales(texto, formato, patrones = PATRONES_IDENTIDAD) {
+  // La misma guardia ruidosa que `hallazgosEnTexto`: una lista vacía o inválida
+  // no dice «limpio», dice «no miré». No se relaja por venir por otro camino.
+  if (!Array.isArray(patrones)) {
+    throw new TypeError('hallazgosEstructurales: la lista de patrones no es una lista');
+  }
+  if (patrones.length === 0) {
+    throw new TypeError(
+      'hallazgosEstructurales: lista de patrones VACÍA. Un barrido sin patrones no dice ' +
+        '«limpio», dice «no miré». Fallo ruidoso a propósito (WP-U231 · CA3).'
+    );
+  }
+  const porForma = patrones.filter((p) => p && p.id !== ID_POR_NOMBRE_DE_CAMPO);
+  const porClave = patrones.find((p) => p && p.id === ID_POR_NOMBRE_DE_CAMPO);
+
+  /** @type {{ id: string, que: string, line: number }[]} */
+  const out = porForma.length > 0 ? hallazgosEnTexto(texto, porForma) : [];
+
+  if (porClave) {
+    // Si el analizador no entiende, la excepción sube y quien llama se retira.
+    for (const campo of camposDe(formato, texto)) {
+      if (typeof campo.nombre !== 'string' || typeof campo.valor !== 'string') continue;
+      // Valor OPACO: texto incrustado que el analizador no dice entender (hoy,
+      // el cuerpo de un escalar de bloque de YAML). Se barre en crudo ADEMÁS de
+      // juzgarlo como valor. Sin esto, un `run: |` de CI con un
+      // `export API_KEY=…` dentro quedaría tapado por el análisis, que es
+      // exactamente el modo de fallo que la retirada existe para no tener.
+      if (campo.opaco) {
+        for (const h of hallazgosEnTexto(campo.valor, patrones)) {
+          out.push({ id: h.id, que: h.que, line: campo.line + h.line - 1 });
+        }
+      }
+      if (!LEXICO_ANCLADO.test(campo.nombre)) continue;
+      const trozos = campo.valor.split('\n');
+      for (let k = 0; k < trozos.length; k += 1) {
+        const v = trozos[k].trim();
+        if (v === '') continue;
+        if (esHuecoEstructural(v, campo.nombre)) continue;
+        // Un campo, un hallazgo: el escalar de bloque con diez líneas de clave
+        // privada es UNA fuga, no diez.
+        out.push({ id: porClave.id, que: porClave.que, line: campo.line + (campo.multilinea ? k : 0) });
+        break;
+      }
+    }
+  }
+
+  // El barrido por forma y el analizador pueden señalar la misma línea con el
+  // mismo patrón; se informa una vez.
+  const vistos = new Set();
+  return out
+    .filter((h) => {
+      const llave = `${h.id}:${h.line}`;
+      if (vistos.has(llave)) return false;
+      vistos.add(llave);
+      return true;
+    })
+    .sort((a, b) => a.line - b.line || a.id.localeCompare(b.id));
 }
 
 /**
@@ -435,7 +587,22 @@ export function hallazgosEnFichero(abs, patrones = PATRONES_IDENTIDAD) {
     // No se pierde nada al cambiar: una secuencia ASCII nunca es UTF-8
     // inválido, así que PEM, JWT y los tokens de proveedor siguen casando
     // igual dentro de un binario. UTF-16 sigue siendo punto ciego declarado.
-    return hallazgosEnTexto(fs.readFileSync(abs).toString('utf8'), patrones);
+    const texto = fs.readFileSync(abs).toString('utf8');
+    // WP-U269: si el formato se conoce, se ANALIZA. Si el analizador no está
+    // seguro se RETIRA al barrido crudo de U231 — nunca a silencio. Que la
+    // retirada exista es lo que hace que añadir analizadores no pueda abrir un
+    // agujero: lo peor que puede pasar es que se vigile como antes.
+    const formato = formatoDe(path.basename(abs));
+    if (formato) {
+      try {
+        return hallazgosEstructurales(texto, formato, patrones);
+      } catch (e) {
+        // Sólo se perdona la duda del analizador. Un `TypeError` de la guardia
+        // de patrones sigue matando el gate, que es lo que tiene que hacer.
+        if (!(e instanceof NoEntiendo)) throw e;
+      }
+    }
+    return hallazgosEnTexto(texto, patrones);
   }
   const fd = fs.openSync(abs, 'r');
   try {
