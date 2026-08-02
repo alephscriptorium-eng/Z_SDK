@@ -8,7 +8,8 @@
  *   - denominador = miembros de los globs de `workspaces` del manifest raíz
  *     con package.json + manifests anidados fuera de node_modules/dist que
  *     no sean fixtures de test (hoy: 50 + 1 = 51);
- *   - por pieza: tipo (lib/MCP/UI/CLI/servicio/demo) · capacidad (1 línea del
+ *   - por pieza: tipo (lib/MCP/UI/CLI/servicio/demo) — derivado del `kind` de
+ *     la entrada de catálogo, NO de su mera presencia (U265) · capacidad (1 línea del
  *     description) · canal (npm/ninguno con evidencia de
  *     plan/PUBLISH-ALLOWLIST.md, o ⏳ hasta U236) · consumidor (deps inversas
  *     @zeus + catálogo + scripts raíz, o «ninguno detectado») · start/health
@@ -32,7 +33,26 @@
  *     bloque sin `id` literal parseable (spread → falso-positivo ruidoso,
  *     falla cerrada — ver parseSeedEntries);
  *   - cualquier celda sin evidencia ni ⏳, o con valor vacío sin ⏳
- *     (falla, no advierte).
+ *     (falla, no advierte);
+ *   - (U265) la columna «catálogo» del contraste diverge del catálogo vivo:
+ *     `contraste-catalogo-caduco` (dice «sin entrada» y hay entrada, o al
+ *     revés; o el `kind`/`health` anotado ya no es el declarado),
+ *     `-incompleto` (afirma entrada sin nombrar los ids o sin anotar
+ *     `kind`/`health`), `-ilegible` (celda sin claim reconocible — un claim
+ *     que no se entiende NO se toma por negativo), `-mixto` (entradas de una
+ *     pieza que no coinciden entre sí en `kind`/`healthPath`);
+ *   - (U265) las celdas PUBLICADAS no cuadran con el catálogo:
+ *     `tipo-vs-kind`, `health-vs-healthpath`.
+ *
+ * Por qué esos dos últimos bloques (WP-U265). El gate publicaba `tipo: MCP`
+ * para toda pieza presente en el catálogo —incluidas cuatro interfaces con
+ * `kind: 'service'`, es decir SIN superficie MCP— y `/mcp/health` literal
+ * ignorando `entry.healthPath`; y decía `OK — 51/51 · 0 fallos` igual con la
+ * mentira que sin ella. Un gate ciego a su propia salida no avisa de que dejó
+ * de vigilar. Ahora hay dos oráculos que se cubren mutuamente: el contraste
+ * (texto commiteado, independiente del parser) caza que el catálogo se mueva
+ * bajo la documentación, y `compararCeldasConKind` caza que la derivación se
+ * mueva bajo el catálogo.
  *
  * Las entradas `workspace: null` (flota declarada > materializada, U179:
  * 4 seed + 6 city) NO fallan: se listan como «⏳ declarado» — visibles.
@@ -64,6 +84,25 @@ export const CATALOG_PATH = 'packages/mesh/mcp-launcher/src/catalog.mjs';
 export const CATALOG_EXTEND_PATH =
   'packages/mesh/ciudad-lifecycle/src/catalog-extend.mjs';
 
+/**
+ * `kind` por defecto de una entrada de catálogo sin el campo. NO es una
+ * convención de este gate: es el contrato declarado del propio catálogo
+ * (`packages/mesh/mcp-launcher/src/catalog.mjs`, typedef `CatalogEntry`,
+ * «default 'mcp'; 'service' = HTTP/socket service without MCP surface»).
+ */
+export const KIND_DEFAULT = 'mcp';
+
+/** `kind` admitidos por el typedef del catálogo. Otro valor = falla cerrada. */
+export const KINDS = new Set(['mcp', 'service']);
+
+/**
+ * `healthPath` por defecto de una entrada sin el campo. Tampoco es invención:
+ * es el `entry.healthPath || '/mcp/health'` de `resolveCatalog`
+ * (`packages/mesh/mcp-launcher/src/catalog.mjs`) y su gemelo de
+ * `resolveExtendedCatalog` (`packages/mesh/ciudad-lifecycle/src/catalog-extend.mjs`).
+ */
+export const HEALTH_PATH_DEFAULT = '/mcp/health';
+
 const SKIP_DIRS = new Set([
   'node_modules',
   'dist',
@@ -94,7 +133,24 @@ function escapeRe(s) {
  *             consumidor: Celda, start: Celda, health: Celda }
  * }} Fila
  * @typedef {{ codigo: string, detalle: string }} Fallo
+ * @typedef {{
+ *   id: string, workspace: string|null, hasWorkspaceKey: boolean,
+ *   kind: string, hasKindKey: boolean, healthPath: string|null, fuente: string
+ * }} CatalogoEntrada
  */
+
+/**
+ * `healthPath` efectivo de una entrada, con la evidencia distinguiendo
+ * declaración de default. Que el default esté en UN sitio y con cita es lo que
+ * impide que vuelva a colarse como literal en la celda (U265).
+ * @param {CatalogoEntrada} entrada
+ * @returns {{ path: string, declarado: boolean }}
+ */
+export function healthDe(entrada) {
+  return entrada.healthPath
+    ? { path: entrada.healthPath, declarado: true }
+    : { path: HEALTH_PATH_DEFAULT, declarado: false };
+}
 
 // ---------------------------------------------------------------------------
 // 1 · Enumeración del denominador (árbol vivo, no transcripción)
@@ -225,15 +281,25 @@ export function enumerarPiezas(opts = {}) {
  *   (`{ ...BASE, id }`) cae aquí como falso-positivo ruidoso — falla
  *   cerrada, el gate exige entradas literales.
  *
+ * WP-U265 — además de `id`/`workspace` parsea `kind` y `healthPath`, que son
+ * los dos campos con los que el catálogo declara si una entrada TIENE
+ * superficie MCP y dónde responde su health. No parsearlos era la causa
+ * técnica de que el gate publicase `tipo: MCP` por mera presencia en el
+ * catálogo y `/mcp/health` por defecto: la mentira no estaba en la decisión,
+ * estaba en el dato que nunca se leyó. Mismo criterio de falla cerrada que
+ * `workspace`: campo presente y no parseable, o `kind` fuera del typedef
+ * (`mcp`/`service`), = `catalogo-parse` ruidoso; jamás se fabrica un
+ * `kind: 'mcp'` silencioso, que es precisamente el valor que mentía.
+ *
  * @param {string} texto contenido del fichero
  * @param {string} marcador p. ej. 'CATALOG_SEED'
  * @param {string} fuente ruta relativa (evidencia)
- * @returns {{ entradas: { id: string, workspace: string|null, hasWorkspaceKey: boolean, fuente: string }[], fallos: Fallo[] }}
+ * @returns {{ entradas: CatalogoEntrada[], fallos: Fallo[] }}
  */
 export function parseSeedEntries(texto, marcador, fuente) {
   /** @type {Fallo[]} */
   const fallos = [];
-  /** @type {{ id: string, workspace: string|null, hasWorkspaceKey: boolean, fuente: string }[]} */
+  /** @type {CatalogoEntrada[]} */
   const entradas = [];
   const inicio = texto.indexOf(`export const ${marcador} = [`);
   if (inicio === -1) {
@@ -270,10 +336,46 @@ export function parseSeedEntries(texto, marcador, fuente) {
       });
       continue;
     }
+
+    // kind — el campo que decide si hay superficie MCP (U265)
+    const hasKindKey = /(?:^|[\s{,])kind\s*:/.test(bloque);
+    const kindMatch = bloque.match(/(?:^|[\s{,])kind\s*:\s*(?:'([^']*)'|"([^"]*)")/);
+    if (hasKindKey && !kindMatch) {
+      fallos.push({
+        codigo: 'catalogo-parse',
+        detalle: `entrada "${id}" (${fuente}): campo kind presente pero no parseable (se esperaba string entre comillas simples/dobles) — no se fabrica "${KIND_DEFAULT}"`
+      });
+      continue;
+    }
+    const kind = kindMatch ? (kindMatch[1] ?? kindMatch[2]) : KIND_DEFAULT;
+    if (!KINDS.has(kind)) {
+      fallos.push({
+        codigo: 'catalogo-parse',
+        detalle: `entrada "${id}" (${fuente}): kind "${kind}" fuera del typedef del catálogo (${[...KINDS].join('|')}) — un kind desconocido NO se degrada a "${KIND_DEFAULT}"`
+      });
+      continue;
+    }
+
+    // healthPath — la ruta real de health; ausente ⇒ default del catálogo
+    const hasHealthKey = /(?:^|[\s{,])healthPath\s*:/.test(bloque);
+    const healthMatch = bloque.match(/(?:^|[\s{,])healthPath\s*:\s*(?:'([^']*)'|"([^"]*)")/);
+    if (hasHealthKey && !healthMatch) {
+      fallos.push({
+        codigo: 'catalogo-parse',
+        detalle: `entrada "${id}" (${fuente}): campo healthPath presente pero no parseable (se esperaba string entre comillas simples/dobles) — no se fabrica "${HEALTH_PATH_DEFAULT}"`
+      });
+      continue;
+    }
+
     entradas.push({
       id,
       workspace: wsMatch ? (wsMatch[1] === 'null' ? null : (wsMatch[2] ?? wsMatch[3])) : null,
       hasWorkspaceKey,
+      kind,
+      hasKindKey,
+      // null = campo ausente: el default lo pone quien consuma, con evidencia
+      // de que es un default y no una declaración (ver healthDe()).
+      healthPath: healthMatch ? (healthMatch[1] ?? healthMatch[2]) : null,
       fuente
     });
   }
@@ -348,25 +450,95 @@ export function compararCatalogo(entradas, nombresPiezas) {
 // 3 · Contraste (plan/MATRIZ-RUNTIME-51.md) y allowlist (canal)
 // ---------------------------------------------------------------------------
 
+/** Cabecera de las tablas del contraste: `| Pieza | tipo | catálogo | …`. */
+const RE_CABECERA_CONTRASTE = /^\|\s*Pieza\s*\|/i;
+
+/** Afirmación de entrada de catálogo en la celda (convención del contraste). */
+const RE_CLAIM_SI = /\*\*sí\*\*/;
+/** Negación: «no · grep … → 0», «sin entrada», «→ 0». */
+const RE_CLAIM_NO = /sin entrada|→\s*0|(?:^|[\s·])no(?:\s|$)/;
+
+export const CLAIM_SI = 'sí';
+export const CLAIM_NO = 'no';
+
+/**
+ * Clasifica el texto de la celda «catálogo» de una fila del contraste.
+ * Devuelve `null` si no es ninguna de las dos formas conocidas: un claim
+ * ilegible NO se interpreta como negativo, se denuncia (falla cerrada — la
+ * ceguera que arregla U265 nació justo de tratar un dato ausente como dato).
+ * @param {string} texto
+ * @returns {string|null}
+ */
+export function clasificarClaimCatalogo(texto) {
+  if (RE_CLAIM_SI.test(texto)) return CLAIM_SI;
+  if (RE_CLAIM_NO.test(texto)) return CLAIM_NO;
+  return null;
+}
+
+/**
+ * Lee la celda «catálogo» del contraste: claim, ids citados entre backticks y
+ * las anotaciones `kind` / `health` que U265 exige a toda fila afirmativa.
+ * @param {string} texto
+ */
+function leerCeldaCatalogo(texto) {
+  const kindM = texto.match(/kind\s*`([^`]+)`/);
+  const healthM = texto.match(/health\s*`([^`]+)`/);
+  return {
+    texto,
+    claim: clasificarClaimCatalogo(texto),
+    citados: [...texto.matchAll(/`([^`]+)`/g)].map((m) => m[1]),
+    kind: kindM ? kindM[1] : null,
+    healthPath: healthM ? healthM[1] : null
+  };
+}
+
 /**
  * @param {{ repoRoot?: string }} [opts]
- * @returns {{ nombres: string[], fallos: Fallo[] }}
+ * @returns {{ nombres: string[], unicos: string[], filas: object[], fallos: Fallo[] }}
  */
 export function parseContraste(opts = {}) {
   const root = opts.repoRoot ?? REPO_ROOT;
   const abs = path.join(root, CONTRASTE_PATH);
   if (!fs.existsSync(abs)) {
-    return { nombres: [], fallos: [{ codigo: 'contraste-ausente', detalle: `${CONTRASTE_PATH} no existe` }] };
+    return {
+      nombres: [],
+      unicos: [],
+      filas: [],
+      fallos: [{ codigo: 'contraste-ausente', detalle: `${CONTRASTE_PATH} no existe` }]
+    };
   }
   const texto = fs.readFileSync(abs, 'utf8');
   /** @type {string[]} */
   const nombres = [];
+  /** @type {{ nombre: string, linea: number, catalogo: object|null }[]} */
+  const filas = [];
   const vistos = new Set();
   const duplicados = new Set();
-  for (const m of texto.matchAll(/^\|\s*(@zeus\/[A-Za-z0-9._-]+)\s*\|/gm)) {
+  // Índice de la columna «catálogo», derivado de la cabecera de cada tabla y no
+  // fijado a mano: el contraste tiene 5 tablas y una columna que se mueva no
+  // debe leerse en silencio como otra.
+  let colCatalogo = -1;
+  const lineas = texto.split(/\r?\n/);
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i];
+    if (RE_CABECERA_CONTRASTE.test(linea)) {
+      colCatalogo = linea.split('|').findIndex((c) => c.trim().toLowerCase() === 'catálogo');
+      continue;
+    }
+    const m = linea.match(/^\|\s*(@zeus\/[A-Za-z0-9._-]+)\s*\|/);
+    if (!m) continue;
     nombres.push(m[1]);
     if (vistos.has(m[1])) duplicados.add(m[1]);
     vistos.add(m[1]);
+    const celdas = linea.split('|');
+    filas.push({
+      nombre: m[1],
+      linea: i + 1,
+      catalogo:
+        colCatalogo > 0 && colCatalogo < celdas.length
+          ? leerCeldaCatalogo(celdas[colCatalogo].trim())
+          : null
+    });
   }
   /** @type {Fallo[]} */
   const fallos = [];
@@ -379,7 +551,173 @@ export function parseContraste(opts = {}) {
       detalle: `${CONTRASTE_PATH}: fila duplicada para ${d} (${nombres.length} filas físicas / ${vistos.size} únicas)`
     });
   }
-  return { nombres, unicos: [...vistos], fallos };
+  return { nombres, unicos: [...vistos], filas, fallos };
+}
+
+/**
+ * WP-U265 · La columna «catálogo» del contraste, contra el catálogo VIVO.
+ *
+ * Por qué existe. `parseContraste` sólo extraía nombres, así que las celdas que
+ * dicen «no · grep → 0» podían llevar meses caducadas con el gate en verde: es
+ * la clase de ceguera que hace que un gate diga `51/51` mientras publica una
+ * mentira. Aquí la celda deja de ser prosa y pasa a ser una aserción que el
+ * gate sostiene.
+ *
+ * Y es el ORÁCULO INDEPENDIENTE del gate: `tipo` y `health` se derivan del
+ * `kind`/`healthPath` parseados, así que una mutación del parser (dejar de leer
+ * `kind` ⇒ default `mcp`) movería derivación y comprobación a la vez. El
+ * contraste no: es texto commiteado por una persona, no se mueve solo, y por
+ * eso enrojece contra esa mutación.
+ *
+ * Reglas por fila:
+ *   - claim ilegible o columna ausente = fallo (no se supone «negativo»);
+ *   - dice «sin entrada» y hay entrada, o afirma y no hay = `caduco`;
+ *   - afirma: debe nombrar TODOS los ids reales y anotar `kind` y `health`
+ *     (`contraste-catalogo-incompleto` si falta, `-caduco` si no coincide);
+ *   - entradas de una misma pieza con `kind`/`healthPath` distintos = `mixto`:
+ *     una pieza no puede tener y no tener superficie MCP a la vez.
+ *
+ * @param {{ nombre: string, linea: number, catalogo: object|null }[]} filasContraste
+ * @param {CatalogoEntrada[]} entradas
+ * @returns {Fallo[]}
+ */
+export function compararContrasteCatalogo(filasContraste, entradas) {
+  /** @type {Fallo[]} */
+  const fallos = [];
+  /** @type {Map<string, CatalogoEntrada[]>} */
+  const porPieza = new Map();
+  for (const e of entradas) {
+    if (!e.workspace) continue;
+    if (!porPieza.has(e.workspace)) porPieza.set(e.workspace, []);
+    porPieza.get(e.workspace).push(e);
+  }
+
+  for (const fila of filasContraste) {
+    const donde = `${CONTRASTE_PATH}:${fila.linea} (${fila.nombre})`;
+    const reales = (porPieza.get(fila.nombre) || []).slice().sort((a, b) => a.id.localeCompare(b.id));
+    const celda = fila.catalogo;
+    if (!celda) {
+      fallos.push({
+        codigo: 'contraste-catalogo-ilegible',
+        detalle: `${donde}: la tabla no declara columna «catálogo» en su cabecera — la celda no se puede contrastar`
+      });
+      continue;
+    }
+    if (celda.claim === null) {
+      fallos.push({
+        codigo: 'contraste-catalogo-ilegible',
+        detalle: `${donde}: celda «catálogo» sin claim reconocible (ni **sí** ni «no/sin entrada/→ 0»): ${JSON.stringify(celda.texto.slice(0, 90))}`
+      });
+      continue;
+    }
+    if (reales.length === 0) {
+      if (celda.claim === CLAIM_SI) {
+        fallos.push({
+          codigo: 'contraste-catalogo-caduco',
+          detalle: `${donde}: afirma entrada de catálogo, pero hoy 0 entradas con workspace ${fila.nombre} en ${CATALOG_PATH} + ${CATALOG_EXTEND_PATH}`
+        });
+      }
+      continue;
+    }
+    const ids = reales.map((e) => e.id);
+    if (celda.claim === CLAIM_NO) {
+      fallos.push({
+        codigo: 'contraste-catalogo-caduco',
+        detalle: `${donde}: dice «sin entrada de catálogo», pero hoy hay ${reales.length} (${ids.map((i) => `"${i}"`).join(', ')} en ${reales[0].fuente}) — cita caducada`
+      });
+      continue;
+    }
+
+    const sinNombrar = ids.filter((id) => !celda.citados.includes(id));
+    if (sinNombrar.length > 0) {
+      fallos.push({
+        codigo: 'contraste-catalogo-incompleto',
+        detalle: `${donde}: afirma entrada pero no nombra ${sinNombrar.map((i) => `\`${i}\``).join(', ')} (ids reales: ${ids.join(', ')})`
+      });
+    }
+
+    const kinds = [...new Set(reales.map((e) => e.kind))];
+    const healths = [...new Set(reales.map((e) => healthDe(e).path))];
+    if (kinds.length > 1 || healths.length > 1) {
+      fallos.push({
+        codigo: 'contraste-catalogo-mixto',
+        detalle: `${donde}: sus ${reales.length} entradas no coinciden en kind (${kinds.join('/')}) o healthPath (${healths.join('/')}) — una pieza no tiene y no tiene superficie MCP a la vez`
+      });
+      continue;
+    }
+    if (celda.kind === null) {
+      fallos.push({
+        codigo: 'contraste-catalogo-incompleto',
+        detalle: `${donde}: afirma entrada sin anotar el kind — se espera «kind \`${kinds[0]}\`» (el gate deriva de él el tipo publicado)`
+      });
+    } else if (celda.kind !== kinds[0]) {
+      fallos.push({
+        codigo: 'contraste-catalogo-caduco',
+        detalle: `${donde}: anota kind \`${celda.kind}\` y el catálogo declara \`${kinds[0]}\` (${reales[0].fuente})`
+      });
+    }
+    if (celda.healthPath === null) {
+      fallos.push({
+        codigo: 'contraste-catalogo-incompleto',
+        detalle: `${donde}: afirma entrada sin anotar el health — se espera «health \`${healths[0]}\`»`
+      });
+    } else if (celda.healthPath !== healths[0]) {
+      fallos.push({
+        codigo: 'contraste-catalogo-caduco',
+        detalle: `${donde}: anota health \`${celda.healthPath}\` y el catálogo declara \`${healths[0]}\` (${reales[0].fuente})`
+      });
+    }
+  }
+  return fallos;
+}
+
+/**
+ * WP-U265 · Las celdas PUBLICADAS contra el `kind`/`healthPath` del catálogo.
+ *
+ * `compararContrasteCatalogo` caza que el catálogo se mueva bajo la
+ * documentación; esto caza lo contrario: que la DERIVACIÓN se mueva bajo el
+ * catálogo. Es el defecto exacto de U265 —`if (entrada) tipo = 'MCP'` y
+ * `/mcp/health` literal— convertido en aserción, para que reaparecer cueste un
+ * rojo y no otra ficha. La cadena de precedencia tiene ocho ramas: reordenar
+ * una (p. ej. `bin` antes que catálogo) tipa mal una pieza de flota sin que
+ * nada más se entere.
+ *
+ * @param {Fila[]} filas
+ * @param {CatalogoEntrada[]} entradas
+ * @returns {Fallo[]}
+ */
+export function compararCeldasConKind(filas, entradas) {
+  /** @type {Fallo[]} */
+  const fallos = [];
+  /** @type {Map<string, CatalogoEntrada[]>} */
+  const porPieza = new Map();
+  for (const e of entradas) {
+    if (!e.workspace) continue;
+    if (!porPieza.has(e.workspace)) porPieza.set(e.workspace, []);
+    porPieza.get(e.workspace).push(e);
+  }
+  for (const fila of filas) {
+    const reales = porPieza.get(fila.pieza);
+    if (!reales || reales.length === 0) continue;
+    const kinds = [...new Set(reales.map((e) => e.kind))];
+    const healths = [...new Set(reales.map((e) => healthDe(e).path))];
+    if (kinds.length > 1 || healths.length > 1) continue; // ya lo denuncia -mixto
+    const esperaMcp = kinds[0] === 'mcp';
+    const publicaMcp = fila.celdas.tipo.valor === 'MCP';
+    if (esperaMcp !== publicaMcp) {
+      fallos.push({
+        codigo: 'tipo-vs-kind',
+        detalle: `${fila.pieza}: el catálogo declara kind "${kinds[0]}" (${reales.map((e) => `"${e.id}"`).join(', ')} en ${reales[0].fuente}) y la matriz publica tipo "${fila.celdas.tipo.valor}" — el tipo debe derivar del kind, no de la presencia en el catálogo`
+      });
+    }
+    if (!fila.celdas.health.valor.startsWith(`${healths[0]} `)) {
+      fallos.push({
+        codigo: 'health-vs-healthpath',
+        detalle: `${fila.pieza}: el catálogo declara healthPath "${healths[0]}" y la matriz publica health "${fila.celdas.health.valor}" — el health debe salir de entry.healthPath`
+      });
+    }
+  }
+  return fallos;
 }
 
 /**
@@ -466,22 +804,42 @@ export function derivarFilas(piezas, opts = {}) {
     const startRaiz = scriptsRef.filter((s) => s.startsWith('start:'));
     const tieneStart = startPropio || startRaiz.length > 0;
 
-    // tipo — precedencia: catálogo(MCP) > desc/file MCP > UI > CLI > demo > servicio > lib
+    // tipo — precedencia (U265): el catálogo decide por su `kind`, NO por la
+    // mera presencia de la entrada. `kind: 'service'` es una declaración
+    // explícita de «sin superficie MCP» y por eso gana también a las dos
+    // heurísticas MCP (description y cabecera del fichero): una declaración
+    // del catálogo pesa más que un comentario de cabecera.
+    //   kind mcp > desc/file MCP > UI > CLI > demo > kind service > servicio > lib
     /** @type {Celda} */
     let tipo;
-    const señalMcpFichero = tieneStart ? mcpFileSignal(root, p.dir) : null;
-    if (entrada) {
-      tipo = { valor: 'MCP', evidencia: `${entrada.fuente} (entrada "${entrada.id}")` };
-    } else if (tieneStart && MCP_DESC_RE.test(desc)) {
+    const declaradaServicio = Boolean(entrada) && entrada.kind === 'service';
+    const señalMcpFichero =
+      tieneStart && !declaradaServicio ? mcpFileSignal(root, p.dir) : null;
+    if (entrada && entrada.kind === 'mcp') {
+      tipo = {
+        valor: 'MCP',
+        evidencia: `${entrada.fuente} (entrada "${entrada.id}", kind ${entrada.hasKindKey ? `"${entrada.kind}"` : `ausente → "${KIND_DEFAULT}"`})`
+      };
+    } else if (!declaradaServicio && tieneStart && MCP_DESC_RE.test(desc)) {
       tipo = { valor: 'MCP', evidencia: `${manifestRel} (description "MCP …") + arranque` };
     } else if (señalMcpFichero) {
       tipo = { valor: 'MCP', evidencia: `${señalMcpFichero} (cabecera "MCP server") + arranque` };
     } else if (tieneStart && UI_RE.test(desc)) {
-      tipo = { valor: 'UI', evidencia: `${manifestRel} (description) + arranque` };
+      tipo = {
+        valor: 'UI',
+        evidencia: declaradaServicio
+          ? `${manifestRel} (description) + arranque · ${entrada.fuente} (entrada "${entrada.id}", kind "service" — sin superficie MCP)`
+          : `${manifestRel} (description) + arranque`
+      };
     } else if (p.manifest.bin) {
       tipo = { valor: 'CLI', evidencia: `${manifestRel} (bin: ${Object.keys(p.manifest.bin).join(', ')})` };
     } else if (p.grupo === 'examples') {
       tipo = { valor: 'demo', evidencia: `${manifestRel} (examples/*; scripts raíz: ${scriptsRef.join(', ') || 'ninguno'})` };
+    } else if (declaradaServicio) {
+      tipo = {
+        valor: 'servicio',
+        evidencia: `${entrada.fuente} (entrada "${entrada.id}", kind "service" — sin superficie MCP) + ${manifestRel} (description sin señal UI)`
+      };
     } else if (tieneStart) {
       tipo = { valor: 'servicio', evidencia: `${manifestRel} (arranque sin señal MCP/UI)` };
     } else {
@@ -572,11 +930,26 @@ export function derivarFilas(piezas, opts = {}) {
           };
     }
 
-    // health — entrada de catálogo
+    // health — `healthPath` REAL de la entrada, no el literal `/mcp/health`
+    // que escribía siempre esta celda (U265). Los dos catálogos se parsean, así
+    // que el negativo cita los dos: decir «grep en catalog.mjs → 0» cuando el
+    // gate también mira catalog-extend.mjs era una cita más corta que el hecho.
     /** @type {Celda} */
-    const health = entrada
-      ? { valor: '/mcp/health vía catálogo', evidencia: `${entrada.fuente} (entrada "${entrada.id}")` }
-      : { valor: 'sin entrada de catálogo', evidencia: `${CATALOG_PATH} — grep workspace ${p.name} → 0` };
+    let health;
+    if (entrada) {
+      const h = healthDe(entrada);
+      health = {
+        valor: `${h.path} vía catálogo`,
+        evidencia: h.declarado
+          ? `${entrada.fuente} (entrada "${entrada.id}", healthPath "${h.path}")`
+          : `${entrada.fuente} (entrada "${entrada.id}", sin healthPath → default "${HEALTH_PATH_DEFAULT}" de resolveCatalog en ${CATALOG_PATH})`
+      };
+    } else {
+      health = {
+        valor: 'sin entrada de catálogo',
+        evidencia: `${CATALOG_PATH} + ${CATALOG_EXTEND_PATH} — 0 entradas con workspace ${p.name}`
+      };
+    }
 
     /** @type {Fila} */
     return {
@@ -683,10 +1056,17 @@ export function runMatriz51(opts = {}) {
   const cmpCat = compararCatalogo(catalogo.entradas, nombres);
   fallos.push(...cmpCat.fallos);
 
+  // U265 · la columna «catálogo» del contraste contra el catálogo vivo:
+  // oráculo independiente de la derivación (ver compararContrasteCatalogo).
+  fallos.push(...compararContrasteCatalogo(contraste.filas, catalogo.entradas));
+
   // filas derivadas + validación de celdas
   const derivacion = derivarFilas(enumeracion.piezas, { repoRoot: root });
   fallos.push(...derivacion.fallos);
   fallos.push(...validarCeldas(derivacion.filas));
+
+  // U265 · y las celdas publicadas contra el kind/healthPath del catálogo
+  fallos.push(...compararCeldasConKind(derivacion.filas, catalogo.entradas));
 
   // dedupe (parseCatalogo corre en comparación y en derivación)
   const clavesVistas = new Set();

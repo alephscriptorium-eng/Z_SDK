@@ -37,14 +37,27 @@ import {
   DIRS_IGNORADOS
 } from './conjunto-lectura.mjs';
 import {
+  CELDAS_RANCIAS,
+  CADUCAS,
+  SIN_ANOTAR,
+  ORIGEN as ORIGEN_U265
+} from './fixtures/matriz-51-catalogo-u265.mjs';
+import {
   REPO_ROOT,
   EXPECTED_TOTAL,
+  CONTRASTE_PATH,
+  KIND_DEFAULT,
+  HEALTH_PATH_DEFAULT,
   runMatriz51,
   buildJson,
   validarCeldas,
   parseSeedEntries,
+  parseCatalogo,
   parseContraste,
-  compararCatalogo
+  compararCatalogo,
+  compararContrasteCatalogo,
+  compararCeldasConKind,
+  clasificarClaimCatalogo
 } from '../../scripts/gates/matriz-51.mjs';
 
 const GATE = path.join(REPO_ROOT, 'scripts', 'gates', 'matriz-51.mjs');
@@ -502,6 +515,317 @@ test('D1: bloque sin id literal (spread) = fallo ruidoso, falla cerrada', () => 
     fallos.some((f) => f.codigo === 'catalogo-parse' && /sin id parseable/.test(f.detalle)),
     JSON.stringify(fallos)
   );
+});
+
+// ---------------------------------------------------------------------------
+// WP-U265 · `tipo` y `health` derivados del `kind` del catálogo, no de la
+// presencia de la entrada. Y el gate deja de ser ciego a su propia salida.
+// ---------------------------------------------------------------------------
+
+/** Entradas de catálogo del árbol vivo, indexadas por workspace. */
+function entradasPorPieza() {
+  const { entradas } = parseCatalogo({ repoRoot: REPO_ROOT });
+  const m = new Map();
+  for (const e of entradas) {
+    if (!e.workspace) continue;
+    if (!m.has(e.workspace)) m.set(e.workspace, []);
+    m.get(e.workspace).push(e);
+  }
+  return m;
+}
+
+test('U265 CA1: `kind: service` NO se publica como tipo MCP, y el health sale de healthPath', { timeout: 120_000 }, () => {
+  const result = runMatriz51({ repoRoot: REPO_ROOT });
+  const porPieza = entradasPorPieza();
+  const servicios = [...porPieza].filter(([, es]) => es.every((e) => e.kind === 'service'));
+  assert.ok(
+    servicios.length > 0,
+    'el catálogo debe declarar al menos una entrada kind:service, o este CA no prueba nada'
+  );
+  for (const [pieza, es] of servicios) {
+    const fila = result.filas.find((f) => f.pieza === pieza);
+    assert.ok(fila, `${pieza} sin fila en la matriz`);
+    assert.notEqual(
+      fila.celdas.tipo.valor,
+      'MCP',
+      `${pieza} declara kind:'service' (sin superficie MCP) y la matriz la publica como MCP`
+    );
+    // el health es el declarado, no el literal /mcp/health de antes de U265
+    const esperado = es[0].healthPath ?? HEALTH_PATH_DEFAULT;
+    assert.ok(
+      fila.celdas.health.valor.startsWith(`${esperado} `),
+      `${pieza}: health "${fila.celdas.health.valor}" no arranca por el healthPath declarado "${esperado}"`
+    );
+  }
+  // Control por el otro lado: las entradas kind mcp SÍ son MCP.
+  for (const [pieza, es] of porPieza) {
+    if (!es.every((e) => e.kind === 'mcp')) continue;
+    const fila = result.filas.find((f) => f.pieza === pieza);
+    assert.equal(fila.celdas.tipo.valor, 'MCP', `${pieza} declara kind:'mcp' y no se publica como MCP`);
+  }
+  // Y el denominador no se mueve por nada de esto.
+  assert.equal(result.filas.length, EXPECTED_TOTAL);
+  assert.equal(result.ok, true, JSON.stringify(result.fallos, null, 2));
+});
+
+test('U265: parseSeedEntries lee kind y healthPath, y falla cerrada si no puede', () => {
+  const seed = [
+    'export const CATALOG_SEED = [',
+    '  {',
+    "    id: 'con-kind',",
+    "    workspace: '@zeus/x',",
+    "    kind: 'service',",
+    "    healthPath: '/health'",
+    '  },',
+    '  {',
+    "    id: 'sin-kind',",
+    "    workspace: '@zeus/y'",
+    '  }',
+    '\n];'
+  ].join('\n');
+  const { entradas, fallos } = parseSeedEntries(seed, 'CATALOG_SEED', 'sintetico.mjs');
+  assert.deepEqual(fallos, []);
+  assert.deepEqual(
+    entradas.map((e) => [e.id, e.kind, e.healthPath]),
+    [
+      ['con-kind', 'service', '/health'],
+      // ausente ⇒ default del typedef del catálogo, y `healthPath` queda en
+      // null para que quien lo use pueda decir que es default, no declaración
+      ['sin-kind', KIND_DEFAULT, null]
+    ]
+  );
+
+  // kind fuera del typedef: NO se degrada al default, que es el valor mentiroso
+  const raro = parseSeedEntries(
+    ["export const CATALOG_SEED = [", '  {', "    id: 'raro',", "    kind: 'mcpp'", '  }', '\n];'].join('\n'),
+    'CATALOG_SEED',
+    'sintetico.mjs'
+  );
+  assert.ok(
+    raro.fallos.some((f) => f.codigo === 'catalogo-parse' && /kind "mcpp"/.test(f.detalle)),
+    JSON.stringify(raro.fallos)
+  );
+  assert.deepEqual(raro.entradas, []);
+
+  // kind/healthPath presentes pero no literales: ruidoso, no fabricado
+  for (const [campo, linea] of [
+    ['kind', '    kind: ALGUNA_CONSTANTE'],
+    ['healthPath', '    healthPath: RUTA']
+  ]) {
+    const r = parseSeedEntries(
+      ['export const CATALOG_SEED = [', '  {', "    id: 'cr',", linea, '  }', '\n];'].join('\n'),
+      'CATALOG_SEED',
+      'sintetico.mjs'
+    );
+    assert.ok(
+      r.fallos.some((f) => f.codigo === 'catalogo-parse' && f.detalle.includes(campo)),
+      `${campo}: ${JSON.stringify(r.fallos)}`
+    );
+    assert.deepEqual(r.entradas, [], `${campo}: no debe emitirse entrada con dato fabricado`);
+  }
+});
+
+test('U265: un claim de catálogo ilegible NO se toma por negativo', () => {
+  assert.equal(clasificarClaimCatalogo('**sí**: entrada `x`'), 'sí');
+  assert.equal(clasificarClaimCatalogo('no · grep → 0'), 'no');
+  assert.equal(clasificarClaimCatalogo('sin entrada de catálogo'), 'no');
+  assert.equal(clasificarClaimCatalogo('pendiente de mirar'), null);
+  const fallos = compararContrasteCatalogo(
+    [{ nombre: '@zeus/x', linea: 7, catalogo: { texto: 'pendiente de mirar', claim: null, citados: [], kind: null, healthPath: null } }],
+    []
+  );
+  assert.ok(
+    fallos.some((f) => f.codigo === 'contraste-catalogo-ilegible'),
+    JSON.stringify(fallos)
+  );
+});
+
+/**
+ * Monta un contraste sintético con las celdas «catálogo» que se le den.
+ * @param {{ pieza: string, celda: string }[]} celdas
+ * @param {(dir: string) => void} fn
+ */
+function conContrasteSintetico(celdas, fn) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'u265-contraste-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'plan'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmp, ...CONTRASTE_PATH.split('/')),
+      [
+        '| Pieza | tipo | catálogo | comando |',
+        '|---|---|---|---|',
+        ...celdas.map((c) => `| ${c.pieza} | ⏳ | ${c.celda} | ⏳ |`)
+      ].join('\n')
+    );
+    fn(tmp);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+test('U265 CA2 · VECTOR GUARDADO: la columna «catálogo» de 0a441d1 pone el gate ROJO', () => {
+  assert.equal(CELDAS_RANCIAS.length, 16, 'el vector vendorizado debe traer las 16 celdas');
+  assert.equal(ORIGEN_U265.commit, '0a441d1');
+  const porPieza = entradasPorPieza();
+
+  conContrasteSintetico(CELDAS_RANCIAS, (tmp) => {
+    const { filas, fallos: fallosParse } = parseContraste({ repoRoot: tmp });
+    assert.deepEqual(fallosParse, []);
+    assert.equal(filas.length, CELDAS_RANCIAS.length);
+
+    const { entradas } = parseCatalogo({ repoRoot: REPO_ROOT });
+    const fallos = compararContrasteCatalogo(filas, entradas);
+
+    // Las que negaban tener entrada y hoy la tienen: una a una, por nombre.
+    const esperadasCaducas = CADUCAS.filter((p) => porPieza.has(p)).sort();
+    assert.ok(esperadasCaducas.length > 0, 'el vector debe seguir teniendo caducidad que denunciar');
+    const caducas = [
+      ...new Set(
+        fallos
+          .filter((f) => f.codigo === 'contraste-catalogo-caduco' && /dice «sin entrada/.test(f.detalle))
+          .map((f) => f.detalle.match(/\((@zeus\/[^)]+)\)/)[1])
+      )
+    ].sort();
+    assert.deepEqual(caducas, esperadasCaducas);
+
+    // Y las que afirmaban sin anotar kind/health: incompletas, las dos mitades.
+    for (const pieza of SIN_ANOTAR.filter((p) => porPieza.has(p))) {
+      for (const que of ['el kind', 'el health']) {
+        assert.ok(
+          fallos.some(
+            (f) =>
+              f.codigo === 'contraste-catalogo-incompleto' &&
+              f.detalle.includes(pieza) &&
+              f.detalle.includes(`sin anotar ${que}`)
+          ),
+          `${pieza}: falta el fallo por «sin anotar ${que}» — ${JSON.stringify(fallos)}`
+        );
+      }
+    }
+  });
+});
+
+test('U265 CA2 · el mismo vector, de punta a punta: el CLI sale ≠ 0', { timeout: 120_000 }, () => {
+  conArbolCommiteado((root) => {
+    // control: el árbol commiteado, intacto, está verde
+    assert.equal(runCliEn(root).status, 0, 'sin el vector el árbol debe estar verde');
+
+    // se replanta SÓLO la columna «catálogo» de las 16 filas, con el texto
+    // literal de 0a441d1: el resto de la matriz sigue siendo la de hoy.
+    const md = path.join(root, ...CONTRASTE_PATH.split('/'));
+    const rancias = new Map(CELDAS_RANCIAS.map((c) => [c.pieza, c.celda]));
+    let col = -1;
+    let replantadas = 0;
+    const lineas = fs.readFileSync(md, 'utf8').split(/\r?\n/);
+    for (let i = 0; i < lineas.length; i++) {
+      if (/^\|\s*Pieza\s*\|/i.test(lineas[i])) {
+        col = lineas[i].split('|').findIndex((c) => c.trim().toLowerCase() === 'catálogo');
+        continue;
+      }
+      const m = lineas[i].match(/^\|\s*(@zeus\/[A-Za-z0-9._-]+)\s*\|/);
+      if (!m || col < 1 || !rancias.has(m[1])) continue;
+      const celdas = lineas[i].split('|');
+      celdas[col] = ` ${rancias.get(m[1])} `;
+      lineas[i] = celdas.join('|');
+      replantadas++;
+    }
+    assert.equal(replantadas, CELDAS_RANCIAS.length, 'el vector no se replantó entero: la probe sería vacua');
+    fs.writeFileSync(md, lineas.join('\n'));
+
+    const cli = runCliEn(root);
+    assert.notEqual(cli.status, 0, 'con la columna de 0a441d1 el gate DEBE salir ≠ 0');
+    assert.match(cli.stdout, /matriz-51: FAIL/);
+    assert.match(cli.stdout, /contraste-catalogo-caduco/);
+    assert.match(cli.stdout, /contraste-catalogo-incompleto/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WP-U265 · CENSO DE MUTACIÓN. Se desactiva la derivación por `kind` en el
+// gate COPIADO al árbol temporal y se exige rojo. Sin esto, las comprobaciones
+// de arriba podrían ser tautologías que no giran nunca.
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {string} root raíz temporal con el gate copiado dentro
+ * @param {string} antes fragmento literal del gate
+ * @param {string} despues con qué se sustituye
+ */
+function mutarGate(root, antes, despues) {
+  const abs = path.join(root, 'scripts', 'gates', 'matriz-51.mjs');
+  const fuente = fs.readFileSync(abs, 'utf8');
+  const veces = fuente.split(antes).length - 1;
+  // Una mutación que no se aplica deja la probe en verde por la razón
+  // equivocada — es el «hijo vacuo» de U252, pero en el mutador. El ancla se
+  // busca en el gate COMMITEADO: si acabas de tocar la derivación y aún no has
+  // commiteado, este rojo dice eso y no otra cosa.
+  assert.equal(
+    veces,
+    1,
+    `la mutación no ancla en el gate commiteado (${veces} coincidencias de ` +
+      `${JSON.stringify(antes)}). Si acabas de reescribir esa línea, commitea ` +
+      `y actualiza MUTANTES: un ancla muerta deja el censo de mutación vacuo.`
+  );
+  fs.writeFileSync(abs, fuente.replace(antes, despues));
+}
+
+const MUTANTES = [
+  {
+    nombre: 'M1 · el parser deja de leer `kind` (todo pasa a "mcp")',
+    antes: 'const kind = kindMatch ? (kindMatch[1] ?? kindMatch[2]) : KIND_DEFAULT;',
+    despues: 'const kind = KIND_DEFAULT;',
+    codigo: 'contraste-catalogo-caduco',
+    porque:
+      'lo caza SÓLO el contraste: derivación y comprobación de celdas se mueven ' +
+      'juntas con el parser, el texto commiteado de la matriz no'
+  },
+  {
+    nombre: 'M2 · el defecto histórico literal: `if (entrada) tipo = MCP`',
+    antes: "if (entrada && entrada.kind === 'mcp') {",
+    despues: 'if (entrada) {',
+    codigo: 'tipo-vs-kind',
+    porque: 'lo caza SÓLO la comprobación de celdas: el contraste y el parser siguen sanos'
+  },
+  {
+    nombre: 'M3 · el health vuelve al literal /mcp/health',
+    antes: 'valor: `${h.path} vía catálogo`,',
+    despues: 'valor: `/mcp/health vía catálogo`,',
+    codigo: 'health-vs-healthpath',
+    porque: 'la otra mitad del mismo `if`, y también sólo la ve la comprobación de celdas'
+  }
+];
+
+for (const m of MUTANTES) {
+  test(`U265 CA5 · censo de mutación — ${m.nombre} ⇒ ROJO (${m.porque})`, { timeout: 120_000 }, () => {
+    conArbolCommiteado((root) => {
+      assert.equal(runCliEn(root).status, 0, 'control: el árbol sin mutar debe estar verde');
+      mutarGate(root, m.antes, m.despues);
+      const cli = runCliEn(root);
+      assert.notEqual(cli.status, 0, `${m.nombre}: el gate debe salir ≠ 0\n${cli.stdout}${cli.stderr}`);
+      assert.match(cli.stdout, /matriz-51: FAIL/);
+      assert.ok(
+        cli.stdout.includes(m.codigo),
+        `${m.nombre}: se esperaba el código ${m.codigo}\n${cli.stdout}`
+      );
+    });
+  });
+}
+
+test('U265: compararCeldasConKind no calla cuando la fila publicada miente', () => {
+  const entradas = [
+    { id: 'x-ui', workspace: '@zeus/x', hasWorkspaceKey: true, kind: 'service', hasKindKey: true, healthPath: '/health', fuente: 'sintetico.mjs' }
+  ];
+  const filaHonesta = {
+    pieza: '@zeus/x',
+    celdas: { tipo: { valor: 'UI', evidencia: 'x' }, health: { valor: '/health vía catálogo', evidencia: 'x' } }
+  };
+  assert.deepEqual(compararCeldasConKind([filaHonesta], entradas), []);
+
+  const filaMentirosa = structuredClone(filaHonesta);
+  filaMentirosa.celdas.tipo.valor = 'MCP';
+  filaMentirosa.celdas.health.valor = '/mcp/health vía catálogo';
+  const fallos = compararCeldasConKind([filaMentirosa], entradas);
+  assert.deepEqual(fallos.map((f) => f.codigo).sort(), ['health-vs-healthpath', 'tipo-vs-kind']);
 });
 
 test('D2: fila duplicada en la MATRIZ de contraste = fallo, no «coincide»', () => {
