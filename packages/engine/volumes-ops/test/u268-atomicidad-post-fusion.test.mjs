@@ -46,6 +46,15 @@
  *   vector se AUTOVERIFICA sobre un directorio de usar y tirar antes de que
  *   ninguna prueba se apoye en él, y si no bloquea el caso se ABSTIENE con
  *   `skip`. Un verde sin vector sería fingir.
+ * - **El errno del sistema NO se asevera**, y esto se aprendió con el CI en
+ *   rojo: había `assert.equal(causa.code, 'EPERM')` y en Linux el mismo hecho
+ *   —una escritura denegada— llega como `EACCES`. Un errno es un detalle de la
+ *   plataforma; lo que este WP defiende es que se salió por la frontera con
+ *   NUESTRO código y que el diagnóstico viaja entero. Eso es lo que se
+ *   comprueba (`causaViaja`). Los `code` fijados por valor son sólo los que
+ *   inyectamos nosotros, y ahí el valor no lo pone ningún sistema.
+ *   Consecuencia declarada: **esta suite no distingue POR QUÉ se denegó la
+ *   escritura**, sólo que se denegó y que el import lo declaró.
  */
 
 import test from 'node:test';
@@ -210,6 +219,31 @@ function setupRootConVolumen() {
   fs.mkdirSync(curated, { recursive: true });
   fs.writeFileSync(path.join(curated, 'keep.md'), '# curado\n', 'utf8');
   return s;
+}
+
+/**
+ * El diagnóstico VIAJA — que es la propiedad, no el errno.
+ *
+ * Aquí había `assert.equal(causa.code, 'EPERM')` y **puso el CI en rojo**:
+ * Windows deniega una escritura con `EPERM` y Linux con `EACCES`. El errno es un
+ * detalle de la plataforma; lo que este WP defiende es que la escritura fue
+ * denegada, que salimos por la frontera con NUESTRO código y que la causa llega
+ * entera al llamante (U255: «convertir un throw en `{ok:false}` sólo es
+ * cumplimiento del contrato si el diagnóstico viaja»). Eso es lo que se asevera:
+ * que hay `code`, `message` y `name`, no cuáles.
+ *
+ * Los `code` que SÍ se fijan por valor en este fichero son los que INYECTAMOS
+ * nosotros (`ENOSPC`, `EIO`, `ETEST`, el `EPERM` del sustituto de
+ * `deshacerFusion`): ahí el valor es nuestro y comprobarlo prueba justamente que
+ * la causa llega verbatim, sin que ningún sistema opine.
+ * @param {any} causa @param {string} donde
+ */
+function causaViaja(causa, donde) {
+  assert.ok(causa, `${donde}: la causa no viajó`);
+  assert.equal(typeof causa.code, 'string', `${donde}: sin código: ${JSON.stringify(causa)}`);
+  assert.ok(causa.code.length > 0, `${donde}: código vacío`);
+  assert.equal(typeof causa.message, 'string', `${donde}: sin mensaje`);
+  assert.ok(causa.message.length > 0, `${donde}: mensaje vacío`);
 }
 
 const rutaLedger = (root) => path.join(root, '.ops-ledger.jsonl');
@@ -383,11 +417,7 @@ test('CA-3 · un import COMPLETO cuyo staging no se puede retirar sigue siendo o
       assert.equal(res.ok, true, `el import terminó: ${JSON.stringify(res).slice(0, 300)}`);
       assert.equal(res.noop, false);
       assert.equal(res.staging.eliminado, false, 'y NO se calla que el staging quedó');
-      assert.ok(res.staging.causa, 'la causa viaja entera');
-      assert.ok(
-        ['EBUSY', 'EPERM', 'EACCES', 'ENOTEMPTY'].includes(res.staging.causa.code),
-        `causa inesperada: ${JSON.stringify(res.staging.causa)}`
-      );
+      causaViaja(res.staging.causa, 'staging no retirado');
       assert.equal(res.staging.dir, stagingDir);
       assert.equal(aterrizo(root), true, 'el corpus aterrizó');
       assert.equal(hayAsientoDeImport(root), true, 'y el asiento está escrito');
@@ -443,7 +473,7 @@ test('CA-3 · `limpiarStaging` a solas: devuelve el fallo, no lo lanza', (t) => 
     const r = limpiarStaging(base);
     assert.equal(r.eliminado, false);
     assert.equal(r.dir, base);
-    assert.ok(r.causa && r.causa.code, JSON.stringify(r.causa));
+    causaViaja(r.causa, 'limpiarStaging bloqueado');
   } finally {
     suelta();
     fs.rmSync(base, { recursive: true, force: true });
@@ -484,7 +514,7 @@ test('E1 · asiento no escribible → post-fusion/asiento_no_escribible, con el 
     assert.equal(res.sellado.before, selloAntes);
     assert.equal(res.sellado.after, selloDe(root));
     assert.notEqual(res.sellado.after, res.sellado.before);
-    assert.equal(res.causa.code, 'EPERM');
+    causaViaja(res.causa, 'E1');
     assert.equal(res.staging.eliminado, true);
     assert.notEqual(huellaArbol(root), antes, 'y el árbol del root CAMBIÓ, como dice');
     assert.equal(aterrizo(root), true);
@@ -568,8 +598,7 @@ test('E3 · árbol resultante ilegible → post-fusion/resultado_no_inspeccionab
     assert.equal(res.error, 'resultado_no_inspeccionable');
     assert.equal(res.aterrizado, true);
     assert.equal(res.asiento.kind, 'import_pack', 'el asiento va ANTES: el root arranca');
-    assert.equal(res.causa.syscall, 'scandir');
-    assert.ok(['EPERM', 'EACCES'].includes(res.causa.code), JSON.stringify(res.causa));
+    causaViaja(res.causa, 'E3');
     assert.equal(aterrizo(root), true);
     assert.equal(res.staging.eliminado, true);
     const v = verifyRootIntegrity();
@@ -656,7 +685,7 @@ test('E6 · SELLAR lanzando → se REVIERTE: el root vuelve byte a byte y el imp
     assert.deepEqual(res.revertido.sinDeshacer, []);
     assert.ok(res.revertido.renombradosHechos > 0, 'hubo fusión que deshacer');
     assert.equal(res.revertido.renombradosDeshechos, res.revertido.renombradosHechos);
-    assert.equal(res.causa.code, 'EPERM');
+    causaViaja(res.causa, 'E6');
     assert.equal(res.staging.eliminado, true);
     // CA-5 · hash del ÁRBOL ENTERO, no inspección de una ruta.
     assert.equal(huellaArbol(root), antes, 'el root volvió a lo que era');
@@ -709,6 +738,8 @@ test('B1 · escritura COMPLETA y fallo después → NO se revierte, y el corpus 
     assert.notEqual(res.sellado.after, selloAntes, 'y CAMBIÓ');
     assert.equal(res.sellado.after, selloDe(root), 'el sello declarado es el que hay en disco');
     assert.equal(res.asiento, false);
+    // Valor NUESTRO (lo lanza el sustituto de `manifest.mjs`), no del sistema:
+    // fijarlo prueba que la causa llega verbatim. Ver `causaViaja`.
     assert.equal(res.causa.code, 'EIO');
     // Recuperación EJECUTABLE, y es la misma que E1 porque el estado es el mismo.
     assert.equal(res.recuperacion.via, 'appendOpsLedger');
@@ -740,7 +771,7 @@ test('B1 · escritura TRUNCADA (disco lleno) → manifiesto_a_medias, y tampoco 
     assert.equal(aterrizo(root), true, 'el corpus sigue en destino: revertir lo habría borrado');
     assert.notEqual(res.sellado.after, selloAntes);
     assert.equal(res.asiento, false);
-    assert.equal(res.causa.code, 'ENOSPC');
+    assert.equal(res.causa.code, 'ENOSPC'); // inyectado por nosotros (ver `causaViaja`)
     assert.equal(res.recuperacion.via, 'operador');
     assert.deepEqual(res.recuperacion.volumenesEnDestino, [{ id: 'demo', path: 'DISK_07/DEMO' }]);
     // El manifiesto está roto de verdad: no se finge que se puede seguir.
@@ -843,6 +874,7 @@ test('E6b · revert que NO consigue deshacerlo todo → aterrizado:true y recupe
     // decisión: cuando el rollback no llega, se DICE que aterrizó.
     assert.equal(res.aterrizado, true);
     assert.equal(res.revertido.sinDeshacer.length, 1);
+    // Inyectado por el sustituto de `fusion-guard.mjs`, no por el sistema.
     assert.equal(res.revertido.sinDeshacer[0].causa.code, 'EPERM');
     assert.equal(res.recuperacion.via, 'operador');
     assert.deepEqual(res.recuperacion.rutas, [path.join(root, 'DISK_07', 'DEMO')]);
@@ -1159,7 +1191,7 @@ test('CENSO · sin la RED y sin el envoltorio, la excepción vuelve a ESCAPARSE 
       lanzo = err;
     }
     assert.ok(lanzo, 'sin red ni envoltorio DEBE volver a lanzar');
-    assert.equal(lanzo.code, 'EPERM');
+    causaViaja(lanzo, 'excepción escapada');
     assert.notEqual(huellaArbol(root), antes, 'y con el root ya mutado');
     assert.equal(aterrizo(root), true);
     assert.equal(hayAsientoDeImport(root), false);
@@ -1197,7 +1229,7 @@ test('B2 · un fallo en el hueco sello↔asiento sale por la RED, no como excepc
     assert.equal(res.ok, false);
     assert.equal(res.step, 'post-fusion');
     assert.equal(res.error, 'post_sello_interrumpido');
-    assert.equal(res.causa.code, 'ETEST');
+    assert.equal(res.causa.code, 'ETEST'); // inyectado por nosotros (ver `causaViaja`)
     assert.equal(res.aterrizado, true);
     // El asiento ya estaba: por eso el root sigue arrancando pese al fallo.
     assert.equal(res.asiento.kind, 'import_pack');

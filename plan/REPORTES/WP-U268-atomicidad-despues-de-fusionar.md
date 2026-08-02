@@ -545,9 +545,51 @@ CI corre `npm run lint`, no `prettier --check`.
 | campo | valor |
 | ----- | ----- |
 | branch | `wp/u268-atomicidad-despues-de-fusionar` |
-| run_id | ⏳ sin verificar |
-| workflow | CI |
-| conclusion | ⏳ sin verificar — **no se hizo `git push`** (prohibido por el brief) |
+| run_id | `30752892550` (empujado por el orquestador; el brief me prohíbe el push) |
+| workflow | CI · job `test @zeus/volumes-ops` |
+| conclusion | **`failure`** sobre `d608b3c` |
+| run_id (tras el arreglo) | ⏳ sin verificar — pendiente de que el orquestador vuelva a empujar |
+
+**El rojo, literal:**
+
+```
+not ok 231 · E1 · asiento no escribible
+   expected: 'EPERM'   actual: 'EACCES'
+not ok 235 · E6 · SELLAR lanzando → se REVIERTE
+   expected: 'EPERM'   actual: 'EACCES'
+```
+
+**Qué era, y por qué no es «un errno más».** Estaba fijando **un código del
+sistema operativo** —Windows deniega una escritura con `EPERM`, Linux con
+`EACCES`— donde la propiedad que este WP defiende es otra: **que la escritura fue
+denegada** y que por eso salí por mi frontera con mi código propio. Una constante
+donde debía haber una propiedad; la misma clase que este WP lleva corrigiendo en
+sus propias frases.
+
+**Arreglo elegido: dejar de aseverar el errno**, no ensanchar el conjunto.
+Aceptar `{EPERM, EACCES}` habría funcionado hoy y habría vuelto a romperse el día
+que un tercer sistema use un tercer código, porque el conjunto sigue siendo una
+lista de constantes. Ahora hay una sola función, `causaViaja(causa, donde)`, que
+comprueba **que el diagnóstico viaja** —`code`, `name` y `message` presentes y no
+vacíos— sin decir cuáles. Lo que se asevera por valor es el `step`, el `error`
+propio (`asiento_no_escribible`, `sellar_interrumpido`, …), el sello medido y que
+el corpus está donde el resultado dice. **El errno del sistema no es mi contrato;
+mi código de frontera sí lo es.**
+
+Barrido de los dos ficheros, con el resultado por sitio:
+
+| sitio | antes | ahora |
+| --- | --- | --- |
+| `CA-3` · `staging.causa.code` | `['EBUSY','EPERM','EACCES','ENOTEMPTY'].includes(...)` | `causaViaja` |
+| `CA-3` · `limpiarStaging` a solas | `assert.ok(r.causa && r.causa.code)` | `causaViaja` |
+| `E1` · `causa.code` | `'EPERM'` | `causaViaja` |
+| `E3` · `causa.syscall` + `causa.code` | `'scandir'` + `['EPERM','EACCES']` | `causaViaja` |
+| `E6` · `causa.code` | `'EPERM'` | `causaViaja` |
+| censo #4 · `lanzo.code` | `'EPERM'` | `causaViaja` |
+| `B1`×2, `B2`, `E6b` | `'EIO'`, `'ENOSPC'`, `'ETEST'`, `'EPERM'` | **se quedan**: son valores que **inyecto yo**, no del sistema, y fijarlos prueba que la causa llega verbatim |
+
+`test/u253b-import-atomico.test.mjs` está limpio: sus `.code` son códigos del
+cerco (contrato propio) o texto de mensajes de fallo, no errnos.
 
 ## Qué NO cubro
 
@@ -607,18 +649,31 @@ Dicho aquí y también en la cabecera del fichero de prueba.
    - el fallo del hueco de B2, porque un `.map` sobre un array construido por
      nosotros no revienta solo.
    En los tres casos el estado en disco que ve el código bajo prueba es el REAL.
-7. **El entorno superusuario.** Como root los modos POSIX no bloquean nada.
+7. **Por qué se denegó la escritura.** La suite **no asevera el errno del
+   sistema** y por tanto no lo distingue: comprueba que se salió por la frontera
+   con el código propio (`asiento_no_escribible`, `sellar_interrumpido`…), que el
+   corpus está donde el resultado dice, y que la causa **viaja** con `code`,
+   `name` y `message` — no cuáles. Lo aprendí con el CI en rojo: tenía
+   `assert.equal(causa.code, 'EPERM')` y en Linux el MISMO hecho llega como
+   `EACCES`. Los `code` que sí se fijan por valor (`ENOSPC`, `EIO`, `ETEST`, y el
+   `EPERM` del sustituto de `deshacerFusion`) son los que **inyecto yo**: ahí el
+   valor es mío y fijarlo prueba que la causa llega verbatim.
+8. **El entorno superusuario.** Como root los modos POSIX no bloquean nada.
    Cada vector se **autoverifica** sobre un directorio de usar y tirar antes de
    que ninguna prueba se apoye en él; si no bloquea, el caso se **abstiene con
    `skip`**. En un CI que corra como root, esos casos no se ejecutan y hay que
    saberlo: no serían verdes, serían omitidos. (En esta máquina, `win32`, los 24
    corren; en `ubuntu-latest` como usuario normal deberían correr todos también,
    pero **no lo he verificado** — no hice push.)
-8. **El resto del contrato de import.** Este WP no toca VERIFICAR, STAGING,
+9. **El resto del contrato de import.** Este WP no toca VERIFICAR, STAGING,
    VALIDAR, el gate NO-OP ni los cuatro drivers; su cobertura es la de sus
    propios WP.
-9. **CI.** No se hizo push, así que no hay run que enseñar. Verde local ≠ gate
-   CI, y el brief prohíbe el push.
+10. **Todo lo mío está medido en Windows**, y ahora sé de un caso en que eso no
+   basta: el CI (ubuntu) enrojeció por un errno que sólo existe en `win32`. Los
+   vectores de bloqueo tienen rama POSIX y se autoverifican, pero **no los he
+   ejecutado yo en Linux**; lo único que dice que allí funcionan es el propio
+   run de CI. Las medidas de §1, §2 y §6 son de `win32` y no las he repetido en
+   Linux — donde un errno difiera, diferirán.
 
 ## Demolición
 
