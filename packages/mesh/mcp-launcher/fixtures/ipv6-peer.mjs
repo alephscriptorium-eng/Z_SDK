@@ -18,7 +18,13 @@
 
 import http from 'node:http';
 
-const port = Number(process.argv[2] || 19861);
+// WP-U267: el default era `19861`, cabeza del bloque fijo 19861-19866. Fuera:
+// el puerto lo reserva quien spawnea (test/helpers/ports.mjs, familia '::1').
+const port = Number(process.argv[2]);
+if (!process.argv[2] || !Number.isInteger(port) || port < 1 || port > 65535) {
+  console.error('[ipv6-peer] falta <port>: node fixtures/ipv6-peer.mjs <port>. Sin default fijo.');
+  process.exit(2);
+}
 
 const server = http.createServer((req, res) => {
   if (req.url === '/mcp/health' || req.url?.startsWith('/mcp/health')) {

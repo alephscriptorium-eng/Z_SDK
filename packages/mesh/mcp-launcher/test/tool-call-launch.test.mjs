@@ -10,19 +10,22 @@ import { fileURLToPath } from 'node:url';
 import { connectMcp, toolResultJson } from '@zeus/test-utils';
 import { createServer } from '../src/launcher-server.mjs';
 import { ProcessManager } from '../src/process-manager.mjs';
+import { reservePorts } from './helpers/ports.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixture = path.join(__dirname, '../fixtures/dual-peer.mjs');
 
-const LAUNCHER_PORT = 13051;
-const PORT_A = 19121;
-const PORT_B = 19122;
+// WP-U267: aquí vivían `LAUNCHER_PORT = 13051` y `PORT_A/B = 19121/19122`.
+// Esos dos últimos eran LOS MISMOS que intentional-stops-read.test.mjs: dos
+// ficheros del mismo paquete peleándose por un puerto. El launcher, que ata en
+// proceso, se cura con `port: 0` y `handle.port` (createMcpHttpStart ya
+// resuelve address().port); la fixture, que se spawnea, con reservePorts.
 
-function fixtureCatalog() {
+function fixtureCatalog(portA, portB) {
   const host = '127.0.0.1';
   const spawn = {
     spawnCommand: process.execPath,
-    spawnArgs: [fixture, String(PORT_A), String(PORT_B)],
+    spawnArgs: [fixture, String(portA), String(portB)],
     cwd: path.dirname(fixture),
     workspace: '@zeus/mcp-launcher',
     spawnGroup: 'linea-system'
@@ -31,26 +34,26 @@ function fixtureCatalog() {
     {
       id: 'linea-espana',
       name: 'linea-espana',
-      port: PORT_A,
+      port: portA,
       ...spawn,
       capabilities: ['linea.tronco'],
       healthPath: '/mcp/health',
       mcpPath: '/mcp',
       host,
-      url: `http://${host}:${PORT_A}/mcp`,
-      healthUrl: `http://${host}:${PORT_A}/mcp/health`
+      url: `http://${host}:${portA}/mcp`,
+      healthUrl: `http://${host}:${portA}/mcp/health`
     },
     {
       id: 'linea-wp-historia',
       name: 'linea-wp-historia',
-      port: PORT_B,
+      port: portB,
       ...spawn,
       capabilities: ['linea.satelite'],
       healthPath: '/mcp/health',
       mcpPath: '/mcp',
       host,
-      url: `http://${host}:${PORT_B}/mcp`,
-      healthUrl: `http://${host}:${PORT_B}/mcp/health`
+      url: `http://${host}:${portB}/mcp`,
+      healthUrl: `http://${host}:${portB}/mcp/health`
     }
   ];
 }
@@ -59,20 +62,22 @@ test(
   'eje I: tool call launch_mcp_server starts tronco + satelite',
   { timeout: 30_000 },
   async (t) => {
-    const catalog = fixtureCatalog();
+    const [portA, portB] = await reservePorts(2);
+    const catalog = fixtureCatalog(portA, portB);
     const manager = new ProcessManager({
       catalog,
       healthTimeoutMs: 10_000,
       healthPollMs: 200
     });
     const bundle = createServer({
-      port: LAUNCHER_PORT,
+      port: 0,
       catalog,
       manager,
       refreshEditor: false
     });
     const handle = await bundle.start();
-    const client = await connectMcp(LAUNCHER_PORT);
+    assert.ok(handle.port > 0, `el launcher no reportó puerto atado: ${handle.port}`);
+    const client = await connectMcp(handle.port);
 
     t.after(async () => {
       try {
@@ -115,8 +120,8 @@ test(
     const byId = Object.fromEntries(health.fleet.map((r) => [r.id, r]));
     assert.equal(byId['linea-espana'].status, 'running');
     assert.equal(byId['linea-wp-historia'].status, 'running');
-    assert.equal(byId['linea-espana'].port, PORT_A);
-    assert.equal(byId['linea-wp-historia'].port, PORT_B);
+    assert.equal(byId['linea-espana'].port, portA);
+    assert.equal(byId['linea-wp-historia'].port, portB);
 
     const stopped = toolResultJson(
       await client.callTool({

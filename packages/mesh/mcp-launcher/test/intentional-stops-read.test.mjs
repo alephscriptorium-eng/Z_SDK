@@ -9,18 +9,22 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { ProcessManager } from '../src/process-manager.mjs';
+import { reservePorts } from './helpers/ports.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixture = path.join(__dirname, '../fixtures/dual-peer.mjs');
 
-const PORT_A = 19121;
-const PORT_B = 19122;
+// WP-U267: aquí vivían `PORT_A = 19121` / `PORT_B = 19122`. Eran el
+// intermitente de esta suite: cualquiera que tuviese 19121 —un TIME_WAIT, un
+// hijo filtrado, otro job— tumbaba las DOS pruebas del fichero con
+// `Health check failed after launch … "port":19121,"ok":false,"error":"timeout"`.
+// Ahora cada prueba pide su par al SO. Ver test/helpers/ports.mjs.
 
-function fixtureCatalog() {
+function fixtureCatalog(portA, portB) {
   const host = '127.0.0.1';
   const spawn = {
     spawnCommand: process.execPath,
-    spawnArgs: [fixture, String(PORT_A), String(PORT_B)],
+    spawnArgs: [fixture, String(portA), String(portB)],
     cwd: path.dirname(fixture),
     workspace: '@zeus/mcp-launcher',
     spawnGroup: 'fixture-intent'
@@ -29,33 +33,34 @@ function fixtureCatalog() {
     {
       id: 'intent-tronco',
       name: 'intent-tronco',
-      port: PORT_A,
+      port: portA,
       ...spawn,
       capabilities: ['linea.tronco'],
       healthPath: '/mcp/health',
       mcpPath: '/mcp',
       host,
-      url: `http://${host}:${PORT_A}/mcp`,
-      healthUrl: `http://${host}:${PORT_A}/mcp/health`
+      url: `http://${host}:${portA}/mcp`,
+      healthUrl: `http://${host}:${portA}/mcp/health`
     },
     {
       id: 'intent-satelite',
       name: 'intent-satelite',
-      port: PORT_B,
+      port: portB,
       ...spawn,
       capabilities: ['linea.satelite'],
       healthPath: '/mcp/health',
       mcpPath: '/mcp',
       host,
-      url: `http://${host}:${PORT_B}/mcp`,
-      healthUrl: `http://${host}:${PORT_B}/mcp/health`
+      url: `http://${host}:${portB}/mcp`,
+      healthUrl: `http://${host}:${portB}/mcp/health`
     }
   ];
 }
 
 test('intentionalStops: stop marks, launch clears, health tells truth', async (t) => {
+  const [portA, portB] = await reservePorts(2);
   const manager = new ProcessManager({
-    catalog: fixtureCatalog(),
+    catalog: fixtureCatalog(portA, portB),
     healthTimeoutMs: 10_000,
     healthPollMs: 200
   });
@@ -99,8 +104,9 @@ test('intentionalStops: stop marks, launch clears, health tells truth', async (t
 });
 
 test('intentionalStops: crash without stop ≠ intentional', async (t) => {
+  const [portA, portB] = await reservePorts(2);
   const manager = new ProcessManager({
-    catalog: fixtureCatalog(),
+    catalog: fixtureCatalog(portA, portB),
     healthTimeoutMs: 10_000,
     healthPollMs: 200
   });

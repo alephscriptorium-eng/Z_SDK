@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import { ProcessManager } from '../src/process-manager.mjs';
 import { resolveCatalog, FALLBACK_MCP_PORTS } from '../src/catalog.mjs';
+import { reservePorts } from './helpers/ports.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../../..');
@@ -30,7 +31,9 @@ function hasLiveLineas() {
 const SKIP =
   'No live LINEAS/espana (demo-only volume) — skip real linea-system launch; see tool-call-launch.test.mjs for eje I fixture';
 
-const TEST_PORTS = { espana: 14121, wp: 14122 };
+// WP-U267: antes `TEST_PORTS = { espana: 14121, wp: 14122 }` fijos — los MISMOS
+// que linea-system/test/resource-contract.test.mjs, es decir una colisión entre
+// paquetes garantizada si ambas suites corrían a la vez.
 const PREV = {
   e: process.env.ZEUS_MCP_LINEA_ESPAN,
   w: process.env.ZEUS_MCP_LINEA_WP
@@ -43,12 +46,13 @@ test(
     timeout: 90_000
   },
   async (t) => {
-    process.env.ZEUS_MCP_LINEA_ESPAN = String(TEST_PORTS.espana);
-    process.env.ZEUS_MCP_LINEA_WP = String(TEST_PORTS.wp);
+    const [portEspana, portWp] = await reservePorts(2);
+    process.env.ZEUS_MCP_LINEA_ESPAN = String(portEspana);
+    process.env.ZEUS_MCP_LINEA_WP = String(portWp);
 
     const mcp = {
       ...FALLBACK_MCP_PORTS,
-      lineas: { espana: TEST_PORTS.espana, wpHistoria: TEST_PORTS.wp }
+      lineas: { espana: portEspana, wpHistoria: portWp }
     };
     const live = resolveCatalog({ mcp }).filter((e) =>
       ['linea-espana', 'linea-wp-historia'].includes(e.id)
@@ -87,8 +91,8 @@ test(
     const sat = health.fleet.find((r) => r.id === 'linea-wp-historia');
     assert.equal(tronco.status, 'running');
     assert.equal(sat.status, 'running');
-    assert.equal(tronco.port, TEST_PORTS.espana);
-    assert.equal(sat.port, TEST_PORTS.wp);
+    assert.equal(tronco.port, portEspana);
+    assert.equal(sat.port, portWp);
 
     const stopped = await manager.stop('linea-espana');
     assert.equal(stopped.ok, true);

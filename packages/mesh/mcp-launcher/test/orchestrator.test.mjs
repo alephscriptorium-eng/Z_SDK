@@ -32,12 +32,15 @@ import {
   enumerationStdout
 } from '../src/orchestrator.mjs';
 import { resolveCatalog } from '../src/catalog.mjs';
+import { reservePort, reservePorts } from './helpers/ports.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixture = path.join(__dirname, '../fixtures/dual-peer.mjs');
 
-const PORT_A = 19131;
-const PORT_B = 19132;
+// WP-U267: aquí vivían `PORT_A = 19131` / `PORT_B = 19132`, y más abajo el
+// bloque 19861-19866 de U234-B1. Todos fijos, todos atados. Ahora cada prueba
+// pide los suyos al SO — y los pide EN LA FAMILIA QUE VA A ATAR, que en este
+// fichero no siempre es IPv4: hay '::1' y hay el comodín '::'.
 
 function entry(id, port, extra = {}) {
   const host = '127.0.0.1';
@@ -55,16 +58,16 @@ function entry(id, port, extra = {}) {
   };
 }
 
-function fixtureCatalog() {
+function fixtureCatalog(portA, portB) {
   const spawn = {
     spawnCommand: process.execPath,
-    spawnArgs: [fixture, String(PORT_A), String(PORT_B)],
+    spawnArgs: [fixture, String(portA), String(portB)],
     cwd: path.dirname(fixture),
     spawnGroup: 'fixture-dual'
   };
   return [
-    entry('fixture-uno', PORT_A, spawn),
-    entry('fixture-dos', PORT_B, spawn)
+    entry('fixture-uno', portA, spawn),
+    entry('fixture-dos', portB, spawn)
   ];
 }
 
@@ -104,7 +107,8 @@ test('planGroups: dep cycle is rejected', () => {
 });
 
 test('e2e: start → health → status → stop leaves ports re-bindable', async (t) => {
-  const catalog = fixtureCatalog();
+  const [PORT_A, PORT_B] = await reservePorts(2);
+  const catalog = fixtureCatalog(PORT_A, PORT_B);
   const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'orq-u234-'));
   const profiles = { fixture: ['fixture-uno'] };
   const prevProfiles = { ...PROFILES };
@@ -169,12 +173,10 @@ test('e2e: start → health → status → stop leaves ports re-bindable', async
 
 const ipv6Fixture = path.join(__dirname, '../fixtures/ipv6-peer.mjs');
 
-const PORT_V6_ENUM = 19861; // CA-1
-const PORT_V6_STATUS = 19862; // CA-2
-const PORT_V6_ORPHAN = 19863; // CA-3
-const PORT_WILDCARD = 19864; // CA-4 (a)
-const PORT_V4_PLAIN = 19865; // CA-4 (b)
-const PORT_V6_GUARD = 19866; // CA-5
+// WP-U267: el bloque 19861-19866 era fijo. Cada CA de abajo reserva ahora el
+// suyo, y lo reserva en su familia: '::1' para lo que ata ipv6-peer, '::' para
+// el comodín, '127.0.0.1' para el espejo IPv4. Reservar en la familia
+// equivocada dejaría el hueco justo que U234-B1 vino a cerrar.
 
 function v6Entry(id, port) {
   const host = 'localhost';
@@ -242,6 +244,7 @@ function listen(port, host) {
 }
 
 test('U234-B1 CA-1: listenerPids enumera un listener atado sólo a ::1', async (t) => {
+  const PORT_V6_ENUM = await reservePort('::1');
   const child = await spawnIpv6Peer(PORT_V6_ENUM);
   t.after(async () => {
     await killTree(child.pid);
@@ -252,6 +255,7 @@ test('U234-B1 CA-1: listenerPids enumera un listener atado sólo a ::1', async (
 });
 
 test('U234-B1 CA-2: status no miente sobre un listener ::1 (healthy Y listening)', async (t) => {
+  const PORT_V6_STATUS = await reservePort('::1');
   const catalog = [v6Entry('fixture-v6-status', PORT_V6_STATUS)];
   const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'orq-u234b1-st-'));
   const child = await spawnIpv6Peer(PORT_V6_STATUS);
@@ -277,6 +281,7 @@ test('U234-B1 CA-2: status no miente sobre un listener ::1 (healthy Y listening)
 });
 
 test('U234-B1 CA-3: stop mata un ::1 que el orquestador NO arrancó (sin pid en estado)', async (t) => {
+  const PORT_V6_ORPHAN = await reservePort('::1');
   const catalog = [v6Entry('fixture-v6-orphan', PORT_V6_ORPHAN)];
   const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'orq-u234b1-or-'));
   const child = await spawnIpv6Peer(PORT_V6_ORPHAN);
@@ -315,11 +320,16 @@ test('U234-B1 CA-3: stop mata un ::1 que el orquestador NO arrancó (sin pid en 
 test('U234-B1 CA-4: la sonda de ocupación ve lo que un bind de un solo host no ve', async (t) => {
   // (a) comodín '::' — la forma que ata TODO MCP de presets-sdk
   //     (create-app.mjs → stateless-route.mjs `app.listen(port)`, sin host).
+  const PORT_WILDCARD = await reservePort('::');
   const wild = await listen(PORT_WILDCARD, '::');
   t.after(() => new Promise((r) => wild.close(r)));
 
   // (b) espejo, y es el que muerde hoy: ocupante IPv4 llano con el host real
   //     del catálogo ('localhost' → ::1 primero), o sea la sonda de :509.
+  //     Se reserva DESPUÉS de atar el comodín, a propósito: el comodín es
+  //     dual-stack, así que si pidiéramos los dos números antes de atar ninguno
+  //     el SO podría darnos el mismo dos veces y este bind moriría EADDRINUSE.
+  const PORT_V4_PLAIN = await reservePort('127.0.0.1');
   const plain = await listen(PORT_V4_PLAIN, '127.0.0.1');
   t.after(() => new Promise((r) => plain.close(r)));
 
@@ -337,13 +347,18 @@ test('U234-B1 CA-4: la sonda de ocupación ve lo que un bind de un solo host no 
   assert.equal(await portReleased(PORT_V4_PLAIN, 'localhost'), false);
 
   // Y no es un «siempre falso»: un puerto de verdad libre sigue saliendo libre.
-  assert.equal(await portReleased(PORT_WILDCARD + 100, 'localhost'), true);
+  // WP-U267: antes era `PORT_WILDCARD + 100`, o sea «supongo que 19964 está
+  // libre». Ahora se pide uno al SO con los dos ocupantes ya atados, así que
+  // está libre por construcción y no por fe.
+  const PORT_LIBRE = await reservePort('::');
+  assert.equal(await portReleased(PORT_LIBRE, 'localhost'), true);
 });
 
 test('U234-B1 CA-5: la guardia puerto_ocupado_sin_health despierta ante un ocupante ::1', async (t) => {
   // Efecto colateral declarado en la cabecera, aquí con aserto: antes del
   // arreglo `occupied` salía vacío (listenerPids ciego) y start spawneaba
   // encima de un puerto ya tomado.
+  const PORT_V6_GUARD = await reservePort('::1');
   const host = 'localhost';
   const catalog = [
     {
