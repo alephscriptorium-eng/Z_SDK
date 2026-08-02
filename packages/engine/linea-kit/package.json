@@ -7,20 +7,52 @@
   "bin": {
     "zeus-linea-kit": "bin/linea-kit.mjs"
   },
+  "types": "./types/index.d.ts",
   "exports": {
-    ".": "./src/index.mjs",
-    "./curation": "./src/curation.mjs",
-    "./resolve": "./src/resolve.mjs",
-    "./force-activation": "./src/force-activation.mjs",
-    "./validate": "./src/validate.mjs",
-    "./loader": "./src/loader.mjs",
-    "./tools": "./src/tools/index.mjs",
-    "./starterkits": "./src/starterkits/index.mjs",
-    "./viaje": "./src/viaje/index.mjs",
-    "./schemas/*": "./schemas/*"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./curation": {
+      "types": "./types/curation.d.ts",
+      "default": "./src/curation.mjs"
+    },
+    "./resolve": {
+      "types": "./types/resolve.d.ts",
+      "default": "./src/resolve.mjs"
+    },
+    "./force-activation": {
+      "types": "./types/force-activation.d.ts",
+      "default": "./src/force-activation.mjs"
+    },
+    "./validate": {
+      "types": "./types/validate.d.ts",
+      "default": "./src/validate.mjs"
+    },
+    "./loader": {
+      "types": "./types/loader.d.ts",
+      "default": "./src/loader.mjs"
+    },
+    "./tools": {
+      "types": "./types/tools/index.d.ts",
+      "default": "./src/tools/index.mjs"
+    },
+    "./starterkits": {
+      "types": "./types/starterkits/index.d.ts",
+      "default": "./src/starterkits/index.mjs"
+    },
+    "./viaje": {
+      "types": "./types/viaje/index.d.ts",
+      "default": "./src/viaje/index.mjs"
+    },
+    "./schemas/*": {
+      "types": "./types/schemas/*.d.ts",
+      "default": "./schemas/*"
+    }
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "types:check": "node test/types/check.mjs"
   },
   "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
@@ -35,6 +67,7 @@
   },
   "files": [
     "src",
+    "types",
     "schemas",
     "bin",
     "docs",

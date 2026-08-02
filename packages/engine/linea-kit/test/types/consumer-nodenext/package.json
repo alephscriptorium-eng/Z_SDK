@@ -1,0 +1,7 @@
+{
+  "name": "linea-kit-consumer-nodenext",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "WP-U245 CA1: type-only consumer that imports the TEN subpaths of @zeus/linea-kit under moduleResolution NodeNext. Never installed, never published."
+}

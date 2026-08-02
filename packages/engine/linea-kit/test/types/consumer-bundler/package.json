@@ -1,0 +1,7 @@
+{
+  "name": "linea-kit-consumer-bundler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "WP-U245 CA2: second, independent consumer. Different dimension from consumer-nodenext: moduleResolution bundler plus verbatimModuleSyntax / exactOptionalPropertyTypes / noUncheckedIndexedAccess / noPropertyAccessFromIndexSignature. Never installed, never published."
+}
