@@ -20,16 +20,23 @@
  * DESVÍO DECLARADO respecto de FIREHOSE (que sí tuvo sustituto): U204 mudó su
  * marca de sync a `volumes.state.json` vía `recordVolumeSync`
  * (volumes-ops/src/state.mjs:98-116, cuyo docstring :76-78 ya nombra a «SSB
- * export»). Aquí NO se puede: `packages/mesh/ssb-system/package.json` declara
- * linea-kit, presets-sdk, MCP sdk, cors, express y zod — no `@zeus/volumes-ops`
- * — y los 48 manifests están congelados en esta ola (GOBIERNO-EJECUCION-F2 §2,
- * owner U237); importarlo sería una dep fantasma. La entrada de `volumes.json`
- * se deja caer SIN sustituto en state porque la marca de sync del volumen SSB
- * ya sobrevive donde le toca: `syncedAt` es campo REQUIRED del schema real
- * `ssb-manifest` (linea-kit/schemas/ssb-manifest.json:7,15) y vive en el
- * sidecar propio del volumen, `DISK_04/SSB/manifest.json`. Cuando volumes-ops
- * sea dependencia declarable, este exportador puede llamar a `recordVolumeSync`
- * como hace feed-kit.
+ * export»). Cuando se escribió esto, aquí no se podía: `package.json` de este
+ * paquete no declaraba `@zeus/volumes-ops` y los 48 manifests estaban
+ * congelados en aquella ola (GOBIERNO-EJECUCION-F2 §2, owner U237), así que
+ * importarlo habría sido una dep fantasma.
+ *
+ * ✎ WP-U253c · CORRECCIÓN DE HECHO: eso YA NO ES ASÍ. `package.json` de
+ * `@zeus/ssb-system` declara hoy `"@zeus/volumes-ops": ">=0.2.4 <1.0.0"`,
+ * añadida en `4494e22` (WP-U206), posterior a este párrafo. La dep existe y no
+ * es fantasma. Se corrige el HECHO y nada más: la DECISIÓN de si este
+ * exportador debe pasar a llamar a `recordVolumeSync` sigue abierta y sin
+ * dueño aquí — es de U204/U205, no de U253c, que sólo mide guardas.
+ *
+ * La entrada de `volumes.json` se deja caer SIN sustituto en state porque la
+ * marca de sync del volumen SSB ya sobrevive donde le toca: `syncedAt` es
+ * campo REQUIRED del schema real `ssb-manifest`
+ * (linea-kit/schemas/ssb-manifest.json:7,15) y vive en el sidecar propio del
+ * volumen, `DISK_04/SSB/manifest.json`.
  *
  * OJO — SON DOS MANIFIESTOS, y solo uno muere:
  * - `<root>/volumes.json` — manifiesto SELLADO del root. **Ya no se escribe.**
