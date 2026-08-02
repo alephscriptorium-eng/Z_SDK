@@ -10,8 +10,8 @@ el vector preparado (§7).
 **El hallazgo que no estaba en el encargo**: cablear `types/check.mjs` a CI tal
 y como estaba habría metido **13 negativos vacíos**. Bajo un árbol de `npm ci`
 de verdad, los 13 `must-fail` de U245 salían `PASS … rejected` **por errores de
-`@types/d3-array`**, no por las declaraciones. Medido en §4, con el guardián
-desactivado y todo.
+los 84 `@types/*` ambientales del monorepo**, no por las declaraciones. Medido
+en §4, con el guardián desactivado y todo.
 
 ---
 
@@ -147,6 +147,7 @@ se rompe.
 
 | # | qué asevera |
 | --- | --- |
+| 0 | el centinela `__sin-tipos-ambientales__` **no existe** (ver §3.6) |
 | 1 | el compilador **es el que el paquete fija** (`devDependencies.typescript`), resuelto con la resolución de Node desde el paquete. Sin compilador **no se auto-omite: enrojece** |
 | 2 | control del banco: la copia **sin mutar** compila limpia y siguen siendo **50** declaraciones |
 | 3 | vector `vacía` sobre `types/model.d.ts` → `TS2306` |
@@ -154,9 +155,21 @@ se rompe.
 | 5 | vector `rota` sobre `types/model.d.ts` → `TS1xxx` |
 | 6 | `types/check.mjs` entero: los 2 consumidores y los **13** `must-fail`, cada uno nombrado en la salida |
 
-Cada vector (3,4,5) lleva además la aserción de que **el gate viejo dice `ok`
-sobre esa misma copia corrompida**: si el `existsSync` ya la cazara, el rojo no
-sería mérito de esta comprobación.
+**Atribución del rojo** (3,4,5), anclada tras la contrarrevisión: **todos** los
+errores tienen que ser atribuibles al objetivo, y «atribuible» es que `tsc`
+sitúe el diagnóstico **en** el fichero (`<ruta>(lin,col):`, la vía de la
+declaración *rota*) **o** lo cite como **sujeto** del mensaje
+(`File '…' is not a module`, la vía de la *vacía*, que se informa en la
+posición de quien la importa). Las dos vías hacen falta; una subcadena de la
+línea entera no basta, porque admitiría un error ajeno que mencionara el
+objetivo de pasada.
+
+**Y la aserción CA5 va contra una línea base, no contra `ok === true`.** Pedir
+que el gate viejo esté limpio ataría los vectores al estado del árbol vivo: con
+una declaración de schema vacía en el paquete, los tres enrojecían **culpando a
+lo que no era**. Lo que se le pide ahora es que diga **exactamente lo mismo**
+sobre la copia corrompida que sobre una intacta — eso es «no se ha enterado», y
+se sostiene sea cual sea la línea base. Medido en §5, D8.
 
 ### 3.2 `test/types/corrupt/` (nuevo) — los vectores guardados
 
@@ -196,6 +209,16 @@ $ git diff -U0 …/gate-exports-types.mjs | grep -E "^[+-]" | grep -vE "^(\+\+\+
 (vacío)
 ```
 
+### 3.6 El centinela `__sin-tipos-ambientales__`, aseverado
+
+El mecanismo 1 del §4 es un `--typeRoots` apuntando a un directorio que **tiene
+que no existir** — es la única forma de escribir `"types": []` en la CLI. Eso
+lo hace desarmable con un `mkdir`: si alguien lo crea, vuelven los 84 `@types/*`
+y **tanto los vectores como los 13 negativos revierten al estado vacuo sin que
+nada se ponga rojo**. Un solo centinela (`test/types/__sin-tipos-ambientales__`,
+compartido por los dos ficheros) y dos guardas que exigen su ausencia:
+`assert` en `types.test.mjs` y salida 1 en `check.mjs`. Comprobado en §5, D7.
+
 ---
 
 ## 4 · El hallazgo: los 13 negativos de U245 eran **vacíos** bajo `npm ci`
@@ -205,13 +228,30 @@ Aplicando CA5 al trabajo heredado, no sólo al mío.
 `check.mjs` compilaba cada `must-fail/*.ts` con flags sueltos, **sin** el
 `"types": []` que sí tienen los dos `tsconfig.json` de los consumidores. Tras
 `npm ci` el monorepo instala **84 paquetes `@types/*`** en la raíz, y `tsc` los
-mete todos en el programa. Con `--lib ES2022` (sin DOM), `@types/d3-array`
-solo levanta **181 errores**:
+mete todos en el programa. Con `--lib ES2022` (sin DOM), la cuenta sobre
+`b2-hop.ts` es **181 líneas de error**, repartidas así:
 
 ```
 $ node …/tsc test/types/must-fail/b2-hop.ts --noEmit --module NodeNext … --lib ES2022
-exit=2  6.4s  errores=181  :: ../../../node_modules/@types/d3-array/index.d.ts(857,38): error TS2304: Cannot find name 'ImageData'.
+exit=2  6.4s   lineas con error TS = 181   ficheros distintos = 37
+  44  ../../../node_modules/@types/webxr/index.d.ts
+  17  ../../../node_modules/@types/d3-selection/index.d.ts
+  17  ../../../node_modules/@types/eslint-scope/index.d.ts
+  15  ../../../node_modules/@types/three/src/audio/Audio.d.ts
+  14  ../../../node_modules/@types/web-bluetooth/index.d.ts
+  10  ../../../node_modules/@types/eslint/index.d.ts
+  …
+   2  ../../../node_modules/@types/d3-array/index.d.ts
+   1  test/types/must-fail/b2-hop.ts          ← el único que este control mira
 ```
+
+**180 de 36 ficheros ajenos + 1 del propio fichero.** La causa es el conjunto
+de 84 paquetes ambientales bajo `--lib ES2022` sin DOM, **no** ninguno en
+concreto: el mayor es `@types/webxr` con 44 y `@types/d3-array` sólo aporta 2
+— salía impreso porque **ordena primero**, no porque pesara. *(Corregido en la
+contrarrevisión: la versión anterior de este reporte y el comentario de
+`check.mjs` atribuían los 181 a `d3-array`. El total era correcto; la
+atribución, no.)*
 
 `check.mjs` sólo miraba `run.status !== 0`. **Guardián desactivado** —
 `b2-hop.ts` reemplazado por algo que compila limpio:
@@ -257,12 +297,22 @@ Ningún negativo se da por bueno sin ver que **enrojece por lo que dice**.
 | D5a | un `must-fail` retirado de la carpeta | **6 rojo** | `'U245 dejó 13 controles negativos y quedan 12'` |
 | D5b | `b2-hop.ts` reemplazado por algo que compila | **6 rojo** | `FAIL must-fail/b2-hop.ts — COMPILED. The declaration stopped biting.` |
 | D6 | sólo `--typeRoots` fuera, atribución puesta | **6 rojo** | `FAIL must-fail/b2-hop.ts — rejected, but NOT by anything in the file` |
+| D7 | el centinela **creado** (`mkdir __sin-tipos-ambientales__`) | **rojo en los dos sitios** | `not ok 0 … EXISTE, y su único trabajo es faltar` · `check.mjs` → `FAIL … EXISTS. It is a sentinel` `EXIT=1` |
+| D8 | una declaración de schema **vacía en el árbol vivo** | rojos 2, 3, 4 y 6; la aserción CA5 dispara **0 veces** | `hay errores que no se sitúan en types/model.d.ts ni lo citan como sujeto` + `probe.ts(53,25): TS2306: File 'types/schemas/volumes.json.d.ts' is not a module.` |
 
 **D2 y D4 son los que más dicen.** D2 porque separa quién caza qué: el
 compilador equivocado lo caza la guarda 1, **no** los vectores (2-5 siguen
 verdes con 4.9.5, o sea que sin esa guarda el pin podría pudrirse en silencio).
 D4 porque aísla el `probe.ts` a **un solo** vector: si hubiera enrojecido los
 tres, el probe estaría tapando el mecanismo real de los otros dos.
+
+**D8 es el que exigió la contrarrevisión y el que más cambió el diseño.** Antes,
+la aserción CA5 pedía `gate.ok === true` sobre la copia corrompida; con una
+declaración de schema vacía en el árbol vivo, los tres vectores enrojecían
+**culpando al gate** de algo que no había hecho. Ahora el gate se compara
+contra su propia línea base, la aserción **no dispara ninguna vez**, y quien
+enrojece es la atribución — nombrando `types/schemas/volumes.json.d.ts`, que es
+el fichero que de verdad está roto.
 
 **D5b es el mismo experimento que en §4, y ahí está la diferencia**: antes del
 arreglo salía `PASS`/`EXIT=0`; ahora sale `FAIL`/`EXIT=1`.
@@ -273,19 +323,20 @@ arreglo salía `PASS`/`EXIT=0`; ahora sale `FAIL`/`EXIT=1`.
 
 ```
 $ ZEUS_VOLUMES_ROOT=$(pwd)/VOLUMES npm test -w @zeus/linea-kit
-# tests 65   # suites 19   # pass 65   # fail 0   # skipped 0
+# tests 66   # suites 19   # pass 66   # fail 0   # skipped 0
 EXIT=0
 ```
 
 Con detalle del fichero nuevo:
 
 ```
-ok 1 - el paquete FIJA su compilador y es ése el que se usa
-ok 2 - la copia SIN mutar compila limpia (el banco no es la causa del rojo)
-ok 3 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
-ok 4 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
-ok 5 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
-ok 6 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
+ok 1 - el centinela `__sin-tipos-ambientales__` NO existe
+ok 2 - el paquete FIJA su compilador y es ése el que se usa
+ok 3 - la copia SIN mutar compila limpia (el banco no es la causa del rojo)
+ok 4 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
+ok 5 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
+ok 6 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
+ok 7 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
 ```
 
 Resto:
@@ -365,33 +416,38 @@ git revert --no-edit HEAD && git push
 predicción; corrido y revertido con `git checkout -- types/model.d.ts`):
 
 ```
-ok 1 - el paquete FIJA su compilador y es ése el que se usa
-not ok 2 - la copia SIN mutar compila limpia (el banco no es la causa del rojo)
+ok 1 - el centinela `__sin-tipos-ambientales__` NO existe
+ok 2 - el paquete FIJA su compilador y es ése el que se usa
+not ok 3 - la copia SIN mutar compila limpia (el banco no es la causa del rojo)
       probe.ts(13,24): error TS2306: File '…/types/model.d.ts' is not a module.
       types/loader.d.ts(13,63): error TS2306: File '…/types/model.d.ts' is not a module.
       types/resolve.d.ts(25,8):  error TS2306: File '…/types/model.d.ts' is not a module.
       (+5 más, todas nombrando types/model.d.ts)
-ok 3 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
-ok 4 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
-ok 5 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
-not ok 6 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
+ok 4 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
+not ok 5 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
+      hay errores que no se sitúan en types/index.d.ts ni lo citan como sujeto
+ok 6 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
+not ok 7 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
 EXIT=1
 
 $ node test/gate-exports-types.mjs
 PASS gate exports↔declarations — 10 subpaths, 50 declarations
-GATE_EXIT=0                       ← el gate viejo sigue ciego. Ésa es la deuda.
+GATE_EXIT=0                       ← el gate viejo no lo nota. Ésa es la deuda.
 ```
 
-Dos cosas que conviene entender del rojo, porque no son obvias:
+Tres cosas que conviene entender del rojo, porque no son obvias:
 
-- **Enrojecen el 2 y el 6, no los vectores.** Los vectores (3,4,5) trabajan
-  sobre una **copia** del árbol vivo y le aplican SU mutación encima, así que
-  siguen viendo lo que esperan y siguen verdes. Quien caza la corrupción del
-  paquete **real** es el control (test 2, la copia sin mutar ya no compila) y
-  `check.mjs` vía los consumidores (test 6). Es el reparto correcto y es lo que
-  hay que mirar en el rojo de CI.
-- **El gate `exports-types` se queda VERDE**, con sus `50 declarations`. No es
-  un fallo: es la ceguera declarada de U245, y el test 3 la asevera a propósito.
+- **Quien caza la corrupción del paquete real es el control (test 3)**, no los
+  vectores: éstos trabajan sobre una **copia** y le aplican SU mutación encima.
+  Los que apuntan a `model.d.ts` (4 y 6) siguen verdes porque ya ven lo que
+  esperaban. Y `check.mjs` cae por los consumidores (test 7).
+- **El 5 enrojece por la aserción de atribución nueva**, no por su vector:
+  apunta a `index.d.ts` y se encuentra además los errores de `model.d.ts`, que
+  no le pertenecen. El mensaje lo dice con esas palabras en vez de fingir que
+  el vector falló.
+- **El gate `exports-types` se queda VERDE** con sus `50 declarations`. No es un
+  fallo: es la ceguera declarada de U245 sobre las 31 no-schema (§8.4), y los
+  vectores la aseveran a propósito comparándola contra su línea base.
 
 ---
 
@@ -400,11 +456,10 @@ Dos cosas que conviene entender del rojo, porque no son obvias:
 1. **CA3 en CI** (§7). Medido en local con un `npm ci` real del mismo lockfile
    que usará CI, que es lo más cerca que llego sin empujar. Queda ⏳.
 2. **Linux**. Todo está medido en Windows. Lo que puede diferir: las rutas que
-   `tsc` imprime. Las aserciones se anclan en `types/model.d.ts` /
-   `types/index.d.ts` con barras hacia delante, que es como `tsc` las emite en
-   ambas plataformas (medido en Windows: `File 'C:/Users/…/types/model.d.ts'`),
-   y la de `check.mjs` en el **basename** del caso. No lo he podido ejecutar en
-   Linux.
+   `tsc` imprime. Las aserciones parsean la posición del diagnóstico y
+   normalizan `\` a `/` antes de comparar, y comparan por sufijo de ruta
+   (`=== target` o `endsWith('/' + target)`), así que no dependen de que la
+   ruta sea relativa o absoluta. No lo he podido ejecutar en Linux.
 3. **Una declaración que compila pero MIENTE.** Estos vectores comprueban que
    la declaración **existe de verdad**; que siga **mordiendo** es el eje de
    `must-fail/`, que ahora corre en CI pero cuyos 13 casos son los de U245: no
@@ -413,6 +468,35 @@ Dos cosas que conviene entender del rojo, porque no son obvias:
    `TS1543`) sigue exactamente igual de vivo. No lo he tocado y no lo cierra
    nada de esto; lo sostienen las 19 declaraciones, la pierna J del gate y
    `test/json-import-attribute.test.mjs`.
+
+   **Y aquí va acotada la frase que este reporte decía de más.** «El gate viejo
+   es ciego a la declaración corrupta» **no vale sin cualificar**: es ciego a
+   **31 de las 50**. Las **19 de `schemas/`** las cubre su **pierna J**, que
+   lee la prosa buscando `with { type: 'json' }` — y un fichero vacío no la
+   tiene, así que la caza. Medido:
+
+   ```
+   vaciando una declaración y preguntando al gate viejo:
+     types/schemas/volumes.json.d.ts  → ok=false  ["J:attribute_contract_missing"]
+     types/model.d.ts                 → ok=true   []
+     types/index.d.ts                 → ok=true   []
+   total 50 · de schema 19 · resto 31
+   ```
+
+   Y de las 19, lo que la pierna J **no** cubre es la declaración **rota pero
+   con la nota puesta**: J sólo mira que la cadena esté, no que el fichero
+   compile. Medido, rompiendo la sintaxis y conservando la nota:
+
+   ```
+   gate viejo → ok=true  []          ← no la ve
+   ¿conserva la nota? true
+   tsc        → types/schemas/volumes.json.d.ts(16,1): error TS1010: '*/' expected.  EXIT=2
+   ```
+
+   La caza el **mecanismo** nuevo (se compilan las 50, no una selección), pero
+   **no he dejado vector guardado para ese caso**: los tres que hay apuntan a
+   `model.d.ts` y a `index.d.ts`, o sea al bloque de 31. Queda dicho, no
+   escondido.
 5. **El `typescript@4.9.5` transitivo de la raíz** sigue ahí. No lo he movido
    (habría sido un lockfile mucho más caro y fuera de alcance). Lo que hay es
    la guarda que enrojece si alguna vez es **ése** el que acaba compilando este

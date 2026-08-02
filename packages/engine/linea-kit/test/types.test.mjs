@@ -51,12 +51,16 @@ const MANIFEST = JSON.parse(fs.readFileSync(path.join(PKG_DIR, 'package.json'), 
 const PINNED = MANIFEST.devDependencies?.typescript;
 
 /**
- * El mismo eje que `test/types/consumer-nodenext/tsconfig.json`, incluido su
- * `"types": []`, que en la CLI sólo se sabe decir apuntando `typeRoots` a un
- * directorio que no existe. No es cosmético: sin él el programa arrastra los
- * `@types/*` del monorepo (84 tras `npm ci`) y cualquier rojo de ésos pasaría
- * por rojo del vector.
+ * Un directorio que TIENE QUE NO EXISTIR. Es el mismo centinela que usa
+ * `test/types/check.mjs`, a propósito: uno solo que vigilar. En la CLI no se
+ * sabe decir `"types": []` —lo que sí ponen los dos `tsconfig.json` de los
+ * consumidores— y apuntar `typeRoots` a una ruta inexistente es la forma de
+ * decirlo. Si alguien lo crea, vuelven los `@types/*` del monorepo (84 tras
+ * `npm ci`) y el mecanismo revierte EN SILENCIO. Por eso se asevera.
  */
+const NO_AMBIENT_TYPES = path.join(HERE, 'types', '__sin-tipos-ambientales__');
+
+/** El mismo eje que `test/types/consumer-nodenext/tsconfig.json`. */
 const TSC_FLAGS = [
   '--noEmit',
   '--module', 'NodeNext',
@@ -65,8 +69,41 @@ const TSC_FLAGS = [
   '--noImplicitAny',
   '--target', 'ES2022',
   '--lib', 'ES2022',
-  '--typeRoots', path.join(HERE, '__sin-tipos-ambientales__')
+  '--typeRoots', NO_AMBIENT_TYPES
 ];
+
+/**
+ * El fichero en el que `tsc` SITÚA un diagnóstico, en forma posix, o `null` si
+ * la línea no lleva posición. Formato: `<ruta>(<lin>,<col>): error TS####: …`.
+ * @param {string} line
+ * @returns {string | null}
+ */
+function errorPosition(line) {
+  const match = /^(.+?)\((\d+),(\d+)\): error TS\d+/.exec(line.trim());
+  return match ? match[1].split('\\').join('/') : null;
+}
+
+/** Las rutas que un diagnóstico cita entrecomilladas, en forma posix. */
+function quotedPaths(line) {
+  return [...line.matchAll(/'([^']+)'/g)].map((m) => m[1].split('\\').join('/'));
+}
+
+/**
+ * Un error es ATRIBUIBLE a `target` si `tsc` lo sitúa EN el fichero, o si lo
+ * cita como SUJETO del mensaje.
+ *
+ * Las dos vías hacen falta y no son laxitud: una declaración vacía se informa
+ * como `File '…/model.d.ts' is not a module` **en la posición de quien la
+ * importa** (`loader.d.ts`, o `probe.ts` para los barriles de entrada), y una
+ * rota se informa en su propia posición. Exigir sólo la posición dejaría
+ * fuera el caso vacío; aceptar cualquier subcadena de la línea admitiría un
+ * error de otro fichero que mencionara el objetivo de pasada.
+ */
+function attributable(line, target) {
+  const at = errorPosition(line);
+  if (at !== null && (at === target || at.endsWith(`/${target}`))) return true;
+  return quotedPaths(line).some((p) => p === target || p.endsWith(`/${target}`));
+}
 
 /**
  * `typescript` resuelto DESDE ESTE PAQUETE. No es un paseo por directorios
@@ -125,6 +162,24 @@ function sandbox(mutate = () => {}) {
   return dir;
 }
 
+/** @type {ReturnType<typeof gateExportsTypes> | null} */
+let baseline = null;
+
+/**
+ * Lo que el gate viejo dice sobre una copia INTACTA. Es la línea base contra
+ * la que se compara lo que dice sobre cada copia corrompida: la afirmación de
+ * los vectores no es «el gate viejo está limpio», que dependería del estado
+ * del árbol vivo, sino «el gate viejo no nota la diferencia».
+ */
+function gateBaseline() {
+  if (baseline === null) {
+    const dir = sandbox();
+    baseline = gateExportsTypes(dir);
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  return baseline;
+}
+
 /**
  * Compila las declaraciones de una copia MÁS un `probe.ts` que las importa
  * una a una.
@@ -157,6 +212,26 @@ function compile(dir) {
     declarations: decls.length
   };
 }
+
+// ---------------------------------------------------------------------------
+// 0 · el centinela que apaga los tipos ambientales sigue ausente
+// ---------------------------------------------------------------------------
+
+test('el centinela `__sin-tipos-ambientales__` NO existe', () => {
+  // Es la única aserción de este fichero sobre algo que tiene que faltar, y
+  // sin ella el mecanismo se cae solo: `typeRoots` apuntando a un directorio
+  // que SÍ existe deja de excluir los `@types/*` del monorepo, y entonces
+  // tanto estos vectores como los 13 negativos de `check.mjs` vuelven al
+  // estado vacuo SIN QUE NADA SE PONGA ROJO. Un `mkdir` de otro sería
+  // suficiente para desarmarlo en silencio.
+  assert.equal(
+    fs.existsSync(NO_AMBIENT_TYPES),
+    false,
+    `${NO_AMBIENT_TYPES} EXISTE, y su único trabajo es faltar: es lo que ` +
+      `mantiene los @types/* del monorepo fuera de estas compilaciones. ` +
+      `Bórralo.`
+  );
+});
 
 // ---------------------------------------------------------------------------
 // 1 · el compilador es el que el paquete FIJA
@@ -257,34 +332,47 @@ for (const v of VECTORS) {
       `${v.target} corrompida con ${v.vector} y tsc salió 0: la declaración ` +
         `corrupta pasó entera. Causa esperada: ${v.causa}`
     );
+    // Atribución anclada en la POSICIÓN del diagnóstico o en el SUJETO que
+    // cita, no en una subcadena de la línea entera. Y se exige de TODOS los
+    // errores, no de alguno: como el test 2 deja demostrado que la copia sin
+    // mutar compila con cero errores, cualquier error presente aquí lo causó
+    // la mutación, y si alguno no fuera atribuible al objetivo sería que el
+    // banco arrastra algo más.
     const named = result.errors.filter((line) => v.expect.test(line));
     assert.ok(
       named.length > 0,
       `enrojeció, pero por otra causa que la declarada (${v.causa}). ` +
         `Errores:\n${result.errors.join('\n')}`
     );
-    // `tsc` nombra el fichero con barras hacia delante en las dos plataformas,
-    // sea la ruta relativa a la copia o absoluta, así que `v.target` aparece
-    // literal en la línea. Sin esta aserción, el vector se conformaría con un
-    // rojo cualquiera.
+    const ajenos = result.errors.filter((line) => !attributable(line, v.target));
+    assert.deepEqual(
+      ajenos,
+      [],
+      `hay errores que no se sitúan en ${v.target} ni lo citan como sujeto, ` +
+        `así que el rojo no es todo del vector:\n${ajenos.join('\n')}`
+    );
     assert.ok(
-      named.some((line) => line.includes(v.target)),
-      `el error no nombra ${v.target}, así que el rojo puede venir de otro ` +
-        `fichero:\n${named.join('\n')}`
+      named.some((line) => attributable(line, v.target)),
+      `ningún error de la causa esperada (${v.causa}) es atribuible a ` +
+        `${v.target}:\n${named.join('\n')}`
     );
 
-    // CA5 · el guardián viejo APAGADO sobre ESTA MISMA copia: si el gate de
-    // U245 también enrojeciera, el vector no probaría que este test aporta
-    // nada. Dice `ok` — la ceguera es la deuda, y sigue exactamente donde
-    // U245 la dejó escrita.
+    // CA5 · el guardián viejo, APAGADO sobre ESTA MISMA copia.
+    //
+    // No se le pide `ok === true`: eso ataría el vector al estado del paquete
+    // real, y bastaría con que hubiera POR OTRO MOTIVO un hallazgo en el árbol
+    // vivo para que estos tres enrojecieran con un mensaje que culpa a lo que
+    // no es. Lo que se le pide es que diga EXACTAMENTE LO MISMO sobre la copia
+    // corrompida que sobre la intacta: eso es «no se ha enterado», y se
+    // sostiene sea cual sea la línea base.
     const viejo = gateExportsTypes(dir);
-    assert.equal(
-      viejo.ok,
-      true,
-      `el gate existsSync ya cazaba este vector, luego el rojo de arriba no ` +
-        `es mérito de esta comprobación: ${JSON.stringify(viejo.findings)}`
+    assert.deepEqual(
+      viejo.findings,
+      gateBaseline().findings,
+      `el gate existsSync SÍ nota este vector, luego el rojo de arriba no es ` +
+        `mérito de esta comprobación: ${JSON.stringify(viejo.findings)}`
     );
-    assert.equal(viejo.checked.declarations, 50);
+    assert.equal(viejo.checked.declarations, gateBaseline().checked.declarations);
 
     fs.rmSync(dir, { recursive: true, force: true });
   });
