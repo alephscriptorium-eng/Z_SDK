@@ -280,6 +280,66 @@ export const CATALOG_SEED = [
     mcpPath: '/',
     uiPort: 'firehose',
     notes: 'Firehose volume UI; no MCP surface. Port = ui.firehose (ZEUS_PORT_FIREHOSE). U234'
+  },
+  {
+    id: 'editor-ui',
+    name: 'editor-ui',
+    kind: 'service',
+    workspace: '@zeus/editor-ui',
+    spawnGroup: 'editor-ui',
+    deps: [],
+    capabilities: ['fleet.editorUi', 'v1.zeus'],
+    healthPath: '/health',
+    mcpPath: '/',
+    uiPort: 'editor',
+    notes:
+      'World-A editor UI (gamemaps, labelsets, cloaks); no MCP surface. ' +
+      'Port = ui.editor (ZEUS_PORT_EDITOR), appId "editor" en createAppConfig. U181'
+  },
+  {
+    id: 'player-ui',
+    name: 'player-ui',
+    kind: 'service',
+    workspace: '@zeus/player-ui',
+    spawnGroup: 'player-ui',
+    deps: [],
+    capabilities: ['fleet.playerUi', 'v1.zeus'],
+    healthPath: '/health',
+    mcpPath: '/',
+    uiPort: 'player',
+    notes:
+      'Tablero ALEPH (DJ deck, rol dj); no MCP surface. ' +
+      'Port = ui.player (ZEUS_PORT_PLAYER), appId "player" en createAppConfig. U181'
+  },
+  {
+    id: 'player-3d-ui',
+    name: 'player-3d-ui',
+    kind: 'service',
+    workspace: '@zeus/player-3d-ui',
+    spawnGroup: 'player-3d-ui',
+    deps: [],
+    capabilities: ['fleet.player3dUi', 'v1.zeus'],
+    healthPath: '/health',
+    mcpPath: '/',
+    uiPort: 'player3d',
+    notes:
+      'Visor 3D (three.js) sobre el runtime scriptorium; no MCP surface. ' +
+      'Port = ui.player3d (ZEUS_PORT_PLAYER_3D), appId "player3d" en createAppConfig. U181'
+  },
+  {
+    id: '3d-monitor',
+    name: '3d-monitor',
+    kind: 'service',
+    workspace: '@zeus/3d-monitor',
+    spawnGroup: '3d-monitor',
+    deps: [],
+    capabilities: ['fleet.monitor3d', 'v1.zeus'],
+    healthPath: '/health',
+    mcpPath: '/',
+    uiPort: 'debug3d',
+    notes:
+      'Portal de vistas 3D sobre el runtime scriptorium; no MCP surface. ' +
+      'Port = ui.debug3d (ZEUS_PORT_DEBUG_3D), appId "debug3d" en createAppConfig. U181'
   }
 ];
 
@@ -430,6 +490,13 @@ export function buildPortTable(mcp = syncEnvPorts(), ui = resolveZeusUiPorts()) 
     launcher: mcp.launcher.disk,
     firehose: mcp.firehose.disk,
     editorUi: ui.editor.port,
+    // U181 · las seis UIs del mesh, para que la tabla de colisiones cubra
+    // todo lo que el catálogo puede arrancar (editorUi ya estaba).
+    playerUi: ui.player.port,
+    player3dUi: ui.player3d.port,
+    monitor3dUi: ui.debug3d.port,
+    cacheBrowserUi: ui.view.port,
+    firehoseBrowserUi: ui.firehose.port,
     consoleMonitor: mcp.playerDebug.monitor,
     solar: [mcp.solar.sun, mcp.solar.moon, mcp.solar.earth],
     lineas: [mcp.lineas.espana, mcp.lineas.wpHistoria],
