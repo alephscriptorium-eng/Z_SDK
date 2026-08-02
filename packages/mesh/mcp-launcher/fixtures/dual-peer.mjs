@@ -5,8 +5,24 @@
 
 import http from 'node:http';
 
-const portA = Number(process.argv[2] || 19111);
-const portB = Number(process.argv[3] || 19112);
+// WP-U267: los defaults eran `19111` / `19112`. Nadie los usaba —los tests
+// siempre pasan puerto— pero eran el sitio exacto donde una invocación sin
+// argumentos vuelve a atar un puerto fijo en silencio. Ahora falta el puerto y
+// se grita, que es lo contrario de un intermitente.
+const portA = requirePort(process.argv[2], 'portA');
+const portB = requirePort(process.argv[3], 'portB');
+
+function requirePort(raw, label) {
+  const n = Number(raw);
+  if (!raw || !Number.isInteger(n) || n < 1 || n > 65535) {
+    console.error(
+      `[dual-peer] falta ${label}: usa \`node fixtures/dual-peer.mjs <portA> <portB>\` ` +
+        'con puertos efímeros (test/helpers/ports.mjs reservePorts). Sin defaults fijos.'
+    );
+    process.exit(2);
+  }
+  return n;
+}
 
 function makeServer(port, name) {
   const server = http.createServer((req, res) => {

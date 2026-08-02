@@ -5,7 +5,13 @@
 
 import http from 'node:http';
 
-const port = Number(process.argv[2] || 19050);
+// WP-U267: el default era `19050`. Esta fixture no la usa hoy ningún test, pero
+// el vicio es el mismo y el próximo que la adopte heredaría el puerto fijo.
+const port = Number(process.argv[2]);
+if (!process.argv[2] || !Number.isInteger(port) || port < 1 || port > 65535) {
+  console.error('[echo-peer] falta <port>: node fixtures/echo-peer.mjs <port> [name]. Sin default fijo.');
+  process.exit(2);
+}
 const name = process.argv[3] || 'echo-peer';
 
 const server = http.createServer((req, res) => {

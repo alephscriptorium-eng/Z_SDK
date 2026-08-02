@@ -7,18 +7,18 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ProcessManager } from '../src/process-manager.mjs';
+import { reservePorts } from './helpers/ports.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixture = path.join(__dirname, '../fixtures/dual-peer.mjs');
 
-const PORT_A = 19111;
-const PORT_B = 19112;
+// WP-U267: antes `PORT_A = 19111` / `PORT_B = 19112` fijos. Ver helpers/ports.mjs.
 
-function fixtureCatalog() {
+function fixtureCatalog(portA, portB) {
   const host = '127.0.0.1';
   const spawn = {
     spawnCommand: process.execPath,
-    spawnArgs: [fixture, String(PORT_A), String(PORT_B)],
+    spawnArgs: [fixture, String(portA), String(portB)],
     cwd: path.dirname(fixture),
     workspace: '@zeus/mcp-launcher',
     spawnGroup: 'fixture-lineas'
@@ -27,33 +27,34 @@ function fixtureCatalog() {
     {
       id: 'fixture-tronco',
       name: 'fixture-tronco',
-      port: PORT_A,
+      port: portA,
       ...spawn,
       capabilities: ['linea.tronco'],
       healthPath: '/mcp/health',
       mcpPath: '/mcp',
       host,
-      url: `http://${host}:${PORT_A}/mcp`,
-      healthUrl: `http://${host}:${PORT_A}/mcp/health`
+      url: `http://${host}:${portA}/mcp`,
+      healthUrl: `http://${host}:${portA}/mcp/health`
     },
     {
       id: 'fixture-satelite',
       name: 'fixture-satelite',
-      port: PORT_B,
+      port: portB,
       ...spawn,
       capabilities: ['linea.satelite'],
       healthPath: '/mcp/health',
       mcpPath: '/mcp',
       host,
-      url: `http://${host}:${PORT_B}/mcp`,
-      healthUrl: `http://${host}:${PORT_B}/mcp/health`
+      url: `http://${host}:${portB}/mcp`,
+      healthUrl: `http://${host}:${portB}/mcp/health`
     }
   ];
 }
 
 test('launch tronco brings satelite (shared spawnGroup)', async (t) => {
+  const [portA, portB] = await reservePorts(2);
   const manager = new ProcessManager({
-    catalog: fixtureCatalog(),
+    catalog: fixtureCatalog(portA, portB),
     healthTimeoutMs: 10_000,
     healthPollMs: 200
   });
@@ -75,8 +76,8 @@ test('launch tronco brings satelite (shared spawnGroup)', async (t) => {
   const byId = Object.fromEntries(health.fleet.map((r) => [r.id, r]));
   assert.equal(byId['fixture-tronco'].status, 'running');
   assert.equal(byId['fixture-satelite'].status, 'running');
-  assert.equal(byId['fixture-tronco'].port, PORT_A);
-  assert.equal(byId['fixture-satelite'].port, PORT_B);
+  assert.equal(byId['fixture-tronco'].port, portA);
+  assert.equal(byId['fixture-satelite'].port, portB);
 
   // adopt idempotent
   const again = await manager.launch('fixture-satelite');
@@ -92,6 +93,7 @@ test('launch tronco brings satelite (shared spawnGroup)', async (t) => {
 });
 
 test('catalog gate: unknown id', async () => {
-  const manager = new ProcessManager({ catalog: fixtureCatalog() });
+  const [portA, portB] = await reservePorts(2);
+  const manager = new ProcessManager({ catalog: fixtureCatalog(portA, portB) });
   await assert.rejects(() => manager.launch('evil-arbitrary'), /Unknown catalog id/);
 });
