@@ -18,7 +18,17 @@
  *     trips leg A; retiring a declaration that only a barrel imports trips
  *     this leg (broken specifier), and an orphan declaration trips it too.
  *
- * Also checks the root `types` field and that `files` ships the `types` dir.
+ * Also checks the root `types` field, that `files` ships the `types` dir, and
+ * (leg J) that every declaration behind a WILDCARD subpath still carries the
+ * import-attribute contract in its prose. Leg J exists because that condition
+ * switches TS1543 off — see test/json-import-attribute.test.mjs — so the note
+ * is the only warning a consumer gets, and a regeneration that dropped it
+ * would be invisible.
+ *
+ * WHAT THIS GATE DOES NOT DO: it never PARSES a declaration. `existsSync` is
+ * the whole test, so an empty or syntactically broken `.d.ts` passes here
+ * while `tsc` reports TS2306/TS1138. Giving it a parser would mean depending
+ * on `typescript`, against its zero-dependency design. Declared debt: WP-U246.
  *
  * Usage: node test/gate-exports-types.mjs [pkgDir]
  * Exit code 0 = clean, 1 = findings. Zero dependencies, no runtime import of
@@ -97,8 +107,22 @@ export function gateExportsTypes(pkgDir = DEFAULT_PKG_DIR) {
         const decl = path.join(pkgDir, typesTarget.replace('*', star));
         if (!fs.existsSync(decl)) {
           add('A', 'declaration_missing', `${subpath.replace('*', star)} → ${rel(pkgDir, decl)}`);
-        } else {
-          entryDecls.add(path.resolve(decl));
+          continue;
+        }
+        entryDecls.add(path.resolve(decl));
+
+        // Leg J — the import-attribute contract must stay written down.
+        // Only for `.json` runtime targets: those are the ones whose `types`
+        // condition switches TS1543 off.
+        if (star.endsWith('.json')) {
+          const prose = fs.readFileSync(decl, 'utf8');
+          if (!/with\s*\{\s*type:\s*'json'\s*\}/.test(prose)) {
+            add(
+              'J',
+              'attribute_contract_missing',
+              `${rel(pkgDir, decl)} does not document "with { type: 'json' }"`
+            );
+          }
         }
       }
       continue;

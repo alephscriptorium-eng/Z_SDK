@@ -26,7 +26,13 @@ export interface Registro {
   parent_oldid?: number | null;
   timestamp?: string;
   user?: string;
-  bytes?: number;
+  /**
+   * `| undefined` on purpose, not just `?`. `segmentar.mjs:74` writes the OWN
+   * key with the value `undefined` (`bytes: raw.bytes`), so under
+   * `exactOptionalPropertyTypes` a plain `bytes?: number` would forbid the
+   * very value the tool produces.
+   */
+  bytes?: number | undefined;
   byte_delta?: number;
   section?: string | null;
   summary?: string;
@@ -77,12 +83,26 @@ export interface NodoEntry extends NodoMeta {
 
 /**
  * One entry of `manifest.meta.partes`.
- * `schemas/manifest-tronco.json` declares partes as bare objects with
- * `additionalProperties: true` and NO declared properties, so nothing beyond
- * the `id` that `resolveParte` matches on is promised by the schema.
+ *
+ * `schemas/manifest-tronco.json:22` declares partes as bare objects with
+ * `additionalProperties: true` and NOT ONE declared property. So the schema
+ * promises nothing at all here — not even the `id`. Measured:
+ *
+ *     validate('manifest-tronco',
+ *       {meta:{corpus:'demo', partes:[{}, {titulo:'sin id'}]}, nodos:[{id:'N01'}]})
+ *       -> ok: true,  partes[0].id === undefined
+ *
+ * and that manifest travels inside the `LineaInstance.manifest` that
+ * `loadLineaData` hands back. `id` is therefore optional AND `unknown`: a
+ * consumer writing `partes.map(p => p.id.toUpperCase())` must be stopped by
+ * the compiler, because the runtime will not stop it.
+ *
+ * `resolveParte`'s own result is a different matter: it reaches an entry only
+ * through `find(e => e.id === parteId)` with a `string` on the right of a
+ * `===`, so `ResolvedParte.id` is soundly `string`.
  */
 export interface ParteEntry {
-  id: string;
+  id?: unknown;
   [key: string]: unknown;
 }
 

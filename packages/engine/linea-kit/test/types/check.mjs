@@ -10,6 +10,14 @@
  * through the `exports` map, not through a `paths` alias. That link is a
  * junction/symlink under an ignored `node_modules`; it never enters the diff.
  *
+ * It runs THREE things, not one:
+ *   1. `consumer-nodenext`  — the ten subpaths under NodeNext, must compile;
+ *   2. `consumer-bundler`   — the second axis, must compile;
+ *   3. `must-fail/`         — one file per negative control, each of which
+ *      must NOT compile. A declaration that stopped rejecting the code that
+ *      motivated it is a declaration that started lying again, and a checker
+ *      that only ever asserts "compiles" would never notice.
+ *
  * Usage: node test/types/check.mjs [--trace] [--keep-link] [--tsc <path to tsc>]
  *        ZEUS_TSC=<path to tsc> node test/types/check.mjs
  *
@@ -92,6 +100,18 @@ console.log(`link: ${link} -> ${PKG_DIR}${created ? '' : ' (already present)'}`)
 const trace = process.argv.includes('--trace');
 let failures = 0;
 
+/** Shared compiler flags for the single-file negative controls. */
+const MUST_FAIL_FLAGS = [
+  '--noEmit',
+  '--module', 'NodeNext',
+  '--moduleResolution', 'NodeNext',
+  '--strict',
+  '--noImplicitAny',
+  '--exactOptionalPropertyTypes',
+  '--target', 'ES2022',
+  '--lib', 'ES2022'
+];
+
 for (const consumer of CONSUMERS) {
   const cwd = path.join(HERE, consumer);
   const args = [tsc, '--noEmit', '-p', 'tsconfig.json'];
@@ -113,6 +133,33 @@ for (const consumer of CONSUMERS) {
     failures += 1;
     console.error(`FAIL ${consumer} — tsc exit ${run.status}`);
     if (!trace) console.error(output.trimEnd());
+  }
+}
+
+// ---- negative controls: these MUST NOT compile ------------------------
+const mustFailDir = path.join(HERE, 'must-fail');
+const mustFail = fs.existsSync(mustFailDir)
+  ? fs.readdirSync(mustFailDir).filter((f) => f.endsWith('.ts')).sort()
+  : [];
+
+if (mustFail.length === 0) {
+  failures += 1;
+  console.error('FAIL must-fail/ — no negative controls found; the suite would be half-blind');
+}
+
+for (const name of mustFail) {
+  const run = spawnSync(
+    process.execPath,
+    [tsc, path.join(mustFailDir, name), ...MUST_FAIL_FLAGS],
+    { cwd: HERE, encoding: 'utf8' }
+  );
+  const output = `${run.stdout ?? ''}${run.stderr ?? ''}`;
+  const firstError = output.split('\n').find((line) => line.includes('error TS'));
+  if (run.status === 0) {
+    failures += 1;
+    console.error(`FAIL must-fail/${name} — COMPILED. The declaration stopped biting.`);
+  } else {
+    console.log(`PASS must-fail/${name} — rejected :: ${(firstError ?? '').trim()}`);
   }
 }
 

@@ -16,4 +16,14 @@ export type {
   CreateForceJugueteOptions
 } from './force-30min.js';
 
-export type { KitFailure } from '../common.js';
+/**
+ * Named because they appear in the SIGNATURES above: `CreateLineaJugueteOk`
+ * carries `fetches: FetchSnapshotOk[]`, `StarterkitValidationFailure` carries
+ * `failed: ValidationResult[]`, and `CreateForceJugueteOk` carries
+ * `coverage: CoverageReport`. A consumer that cannot name them cannot type a
+ * variable holding one.
+ */
+export type { KitFailure, ValidationIssue, ValidationResult } from '../common.js';
+export type { FetchSnapshotOk } from '../tools/fetch.js';
+export type { CoverageReport } from '../tools/segmentar-force.js';
+export type { RawRegistro } from '../tools/segmentar.js';

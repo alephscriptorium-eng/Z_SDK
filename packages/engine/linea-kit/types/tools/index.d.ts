@@ -12,7 +12,8 @@ export type {
   CrearLineaOptions,
   MaterializarTroncoOk,
   MaterializarTroncoOptions,
-  NodoInput
+  NodoInput,
+  NodosDocumentInput
 } from './crear-linea.js';
 
 export { segmentar, segmentarHistorial } from './segmentar.js';
@@ -23,6 +24,8 @@ export type {
   SegmentarOk,
   SegmentarOptions
 } from './segmentar.js';
+/** `SegmentarOk.manifest` and `SegmentarHistorialOk.manifest` are of this type. */
+export type { ManifestSatelite, Registro } from '../model.js';
 
 export { conectarSatelite } from './conectar-satelite.js';
 export type {

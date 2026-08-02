@@ -18,7 +18,7 @@ export type {
 } from './graph-source.js';
 
 export { planPath, enrichPasosWithCandidates } from './plan.js';
-export type { Paso, PlanPathOk, PlanPathOptions, PlanPathRefusal } from './plan.js';
+export type { Paso, PlannedPaso, PlanPathOk, PlanPathOptions, PlanPathRefusal } from './plan.js';
 
 export {
   buildRecorrido,
@@ -49,7 +49,7 @@ export type {
 } from './run.js';
 
 export { createLineaGraphSource, nodoIdsFromTrunk } from './adapters/linea.js';
-export type { LineaGraphSourceOptions } from './adapters/linea.js';
+export type { LineaGraphSourceOptions, TrunkNodoSource } from './adapters/linea.js';
 
 export { createWikiGraphSource } from './adapters/wiki.js';
 export type {
@@ -67,6 +67,7 @@ export type {
   AcceptWalksOk,
   AcceptWalksRefusal,
   GamemapGraphSourceOptions,
+  ShapeCheckedWalk,
   WalkIntent,
   WalkIntentsOk,
   WalkIntentsOptions,

@@ -126,6 +126,36 @@ test('vector C · a wildcard runtime target without its declaration FAILS', () =
   assert.ok(detail.includes('volumes.json'), detail);
 });
 
+test('vector J · a wildcard declaration that drops the import-attribute note FAILS', () => {
+  // The `types` condition on `./schemas/*` switches TS1543 off (see
+  // test/json-import-attribute.test.mjs), so the note in the declaration is
+  // the only warning a consumer gets. A regeneration that dropped it would be
+  // invisible without this leg.
+  const dir = sandbox(({ dir: d }) => {
+    const decl = path.join(d, 'types', 'schemas', 'registro.json.d.ts');
+    fs.writeFileSync(
+      decl,
+      fs.readFileSync(decl, 'utf8').replace(/with \{ type: 'json' \}/g, '(nota borrada)'),
+      'utf8'
+    );
+  });
+  const report = gateExportsTypes(dir);
+  assert.equal(report.ok, false, 'gate accepted a declaration without the attribute contract');
+  assert.ok(
+    codes(report).includes('J:attribute_contract_missing'),
+    `expected J:attribute_contract_missing, got ${codes(report).join(', ')}`
+  );
+});
+
+test('all nineteen wildcard declarations carry the attribute contract', () => {
+  const report = gateExportsTypes(PKG_DIR);
+  assert.equal(
+    report.findings.filter((f) => f.leg === 'J').length,
+    0,
+    'a shipped schema declaration lost its import-attribute note'
+  );
+});
+
 test('the root types field and the publishable files entry are checked', () => {
   const noTypes = sandbox(({ manifest }) => {
     delete manifest.types;

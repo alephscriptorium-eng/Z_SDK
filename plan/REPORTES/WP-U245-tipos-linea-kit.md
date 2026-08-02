@@ -341,7 +341,10 @@ EXIT=1
 ```
 
 ```
-$ grep -rnE '@ts-(ignore|expect-error|nocheck)' types/ test/types/
+$ grep -rnE ':\s*(Function|object|\{\s*\})' types/
+EXIT=1
+
+$ grep -rnE '@ts-(ignore|expect-error|nocheck)' types/ test/
 EXIT=1
 ```
 
@@ -468,10 +471,11 @@ Tres árboles, tres hashes idénticos. Diff de runtime = cero.
 
 ```
  M packages/engine/linea-kit/package.json
-?? packages/engine/linea-kit/types/                (50 .d.ts)
+?? packages/engine/linea-kit/types/                       (50 .d.ts)
 ?? packages/engine/linea-kit/test/gate-exports-types.mjs
 ?? packages/engine/linea-kit/test/exports-types.test.mjs
-?? packages/engine/linea-kit/test/types/           (2 consumidores + check.mjs)
+?? packages/engine/linea-kit/test/json-import-attribute.test.mjs
+?? packages/engine/linea-kit/test/types/                  (2 consumidores + 13 must-fail + check.mjs)
 ```
 
 Más `.changeset/tipos-publicos-linea-kit.md` y este reporte.
@@ -485,15 +489,10 @@ Más `.changeset/tipos-publicos-linea-kit.md` y este reporte.
    incluido `"./schemas/*"` del comodín. `types` va primero, como exige la
    resolución por condiciones (y el gate lo comprueba: `A:types_not_first`).
 3. `+ "types"` dentro de `files`.
-4. `+ "types:check": "node test/types/check.mjs"` dentro de `scripts`.
-
-**Declaro el punto 4 como la única adición fuera de la lista enumerada en la
-FRONTERA DURA** («declaraciones, `exports.types`, `types` raíz y `files`
-publicables»). Añadí esa clave porque sin ella la comprobación de CA1/CA2 no
-tiene forma de invocarse desde el repositorio. Es cero runtime: no la ejecuta
-`npm test`, no viaja en el tarball, y no añade dependencias. Si la revisión
-prefiere el diff literal de la lista, quitarla cuesta una línea y sólo pierde el
-atajo — la orden documentada en §2 sigue funcionando tal cual.
+**Y nada más.** El diff del manifiesto cae EXACTAMENTE dentro de la lista
+enumerada en la FRONTERA DURA: declaraciones, `exports.types`, `types` raíz y
+`files` publicables. La primera vuelta añadía además
+`scripts.types:check`; **retirada** — ver §M10.
 
 **El paquete no gana dependencias.** No añadí `typescript` a `devDependencies`
 porque eso tocaría el lockfile, que está prohibido. `check.mjs` busca el
@@ -583,3 +582,277 @@ siempre.
   es tocar `schemas/` — prohibido en este WP. **Ése es el único subpath cuyo
   consumidor externo va a notar el hueco**, y el arreglo es un WP de schema, no
   de tipos.
+
+---
+
+# Segunda vuelta · devolución
+
+Cuatro bloqueantes y siete menores. Los cuatro bloqueantes se cierran **dentro
+de `types/`**; `src/` y `schemas/` siguen sin tocarse y los tres tree hashes
+siguen siendo los de `main` (§8d, re-verificado al final).
+
+Antes de arreglar nada reproduje cada vector contra el runtime. Todo lo que
+sigue está medido, no razonado.
+
+## B1 · El comodín APAGA una comprobación que el paquete sin tipos tenía
+
+**Reproducido, y es peor de lo que yo había mirado.** La matriz completa, con
+`tsc` 5.9.3 y Node 22.21.1:
+
+| | `tsc --noEmit` | Node ESM |
+| --- | --- | --- |
+| declaración PUESTA, `import x from '…/volumes.json'` | **EXIT=0** | **`ERR_IMPORT_ATTRIBUTE_MISSING`** |
+| declaración RETIRADA, misma línea | **TS1543**, exit 2 | — |
+| declaración RETIRADA, misma línea, `+ --resolveJsonModule` | **TS1543**, exit 2 | — |
+| cualquiera de las dos, con `with { type: 'json' }` | EXIT=0 | carga |
+
+Literal del control negativo:
+
+```
+sin.ts(1,27): error TS1543: Importing a JSON file into an ECMAScript module
+  requires a 'type: "json"' import attribute when 'module' is set to 'NodeNext'.
+EXIT=2
+```
+
+```
+TypeError [ERR_IMPORT_ATTRIBUTE_MISSING]: Module
+  "file:///…/schemas/volumes.json" needs an import attribute of "type: json"
+```
+
+Y mi propio consumidor de CA1 escribía la forma desnuda, con mi reporte
+firmándola como PASS. La acusación es exacta: **un tipo que promete más que el
+runtime hizo que el consumidor dejara de comprobar**, y no en abstracto — es una
+regla del compilador que se apaga.
+
+**Cómo lo cierro.** No quitando la condición `types` (eso recupera TS1543 pero
+pierde el documento tipado, y es peor), sino pagando el precio en voz alta y
+poniendo tres cosas donde estaba el hueco:
+
+1. **Las 19 declaraciones lo documentan**, con el ejemplo correcto y la frase
+   de que TypeScript NO lo caza aquí. Es lo que ve un consumidor al pasar el
+   ratón por encima.
+2. **`test/json-import-attribute.test.mjs`** lo fija EN EL RUNTIME y en CI: que
+   la forma desnuda sigue lanzando `ERR_IMPORT_ATTRIBUTE_MISSING` **en las 19**,
+   que con atributo cargan las 19, y que los cinco miembros que
+   `JsonSchemaDocument` declara están de verdad en el disco. Si Node dejara de
+   exigir el atributo, este test se pone rojo y el párrafo hay que reescribirlo.
+   Ése es el punto.
+3. **Pierna J del gate**: cada declaración detrás de un comodín con target
+   `.json` tiene que seguir documentando `with { type: 'json' }`. Una
+   regeneración que borrara la nota sería invisible sin esto.
+
+Los dos consumidores usan ya el atributo.
+
+```
+ok - there are schema documents to check at all
+ok - the BARE import of a schema target is refused by Node
+ok - with { type: 'json' } every one of the nineteen loads
+ok - the bare import is refused for every one of the nineteen, not just one
+ok - the JSON module exposes a default export only (no named members)
+```
+
+Vector J, sobre una copia con la nota borrada de UNA de las 19:
+
+```
+FAIL gate exports↔declarations · …\legJ — 1 finding(s)
+  [leg J] attribute_contract_missing: types/schemas/registro.json.d.ts does not document "with { type: 'json' }"
+EXIT=1
+```
+
+**Lo que NO he conseguido**: que TypeScript vuelva a cazarlo. No hay forma de
+tener a la vez el documento tipado y TS1543 — la condición `types` es lo que
+apaga la regla. El intercambio es deliberado y está pagado con un test de
+runtime, no escondido.
+
+## B2 · `acceptWalks` prometía más de lo que valida
+
+Medido:
+
+```
+acceptWalks([{kind:'walk',from:'A',to:'B'}])      -> ok:true, typeof accepted[0].hop === 'undefined'
+acceptWalks([{kind:'walk',from:1,to:2,hop:'x'}])  -> ok:true, typeof accepted[0].from === 'number'
+identidad accepted === entrada                    -> true
+```
+
+El acceptor comprueba tres cosas y devuelve el array de entrada tal cual. Ahora
+el tipo dice eso y nada más: nuevo `ShapeCheckedWalk` (`kind:'walk'`,
+`from: unknown`, `to: unknown`, sin `hop`), y `acceptWalks` **tipado por la
+ENTRADA** con dos firmas — quien le pasa el `WalkIntent[]` que construyó
+`viajeToWalkIntents` conserva su tipo fuerte, que ahí sí es sólido porque el
+constructor sí puso `hop`; quien le pasa otra cosa recibe `ShapeCheckedWalk[]`.
+`AcceptWalksOk.accepted` documenta además que es **el mismo objeto array**, no
+una copia.
+
+Controles negativos, ahora rechazados:
+
+```
+must-fail/b2-hop.ts     TS2339: Property 'hop' does not exist on type '{ kind: "walk"; from: string; to: string; }'.
+must-fail/b2-from.ts    TS2322: Type 'unknown' is not assignable to type 'string'.
+must-fail/b2-untyped.ts TS2571: Object is of type 'unknown'.
+```
+
+## B3 · `unknown` como dominio que el runtime no sobrevive
+
+Reproducido entero:
+
+```
+applyMilestoneRules(null)                                    -> TypeError: Cannot read properties of null (reading 'byte_delta')
+applyMilestoneRules(undefined)                               -> TypeError: … undefined …
+MILESTONE_RULES[0].test(null, ctx)                           -> TypeError: … null …
+materializarTronco(d,{nodosDoc:{partes:{}}})                 -> TypeError: object is not iterable
+materializarTronco(d,{nodosDoc:{partes:[null]}})             -> TypeError: … (reading 'nodos')
+materializarTronco(d,{nodosDoc:{partes:[{…nodos:[null]}]}})  -> TypeError: … (reading 'id')
+```
+
+Arreglado en `types/`: `applyMilestoneRules` y `MilestoneRule.test` toman
+`Record<string, unknown>`; `nodosDoc` deja de ser `unknown` y pasa a
+`NodosDocumentInput`, que exige array en `partes` y prohíbe `null` en partes y
+en refs de nodo.
+
+**Y encontré un quinto de la misma familia que la devolución no listaba.**
+`SegmentarViajeOptions.editorAllowlist` estaba declarado `Set<string> | string[]`
+— copiando el JSDoc de `src/viaje/segmentar-viaje.mjs` — y el runtime no honra
+la segunda mitad:
+
+```
+segmentarViaje(recorrido, {editorAllowlist: ['bob']})          -> TypeError: ctx.editorAllowlist.has is not a function
+segmentarViaje(recorrido, {editorAllowlist: new Set(['bob'])}) -> ok:true
+applyMilestoneRules({user:'bob'}, {editorAllowlist:['bob']})   -> TypeError: ctx.editorAllowlist.has is not a function
+```
+
+La asimetría es real: `segmentarHistorial` SÍ normaliza array→Set
+(`src/tools/segmentar.mjs:48-52`), `segmentarViaje` NO. Declarado `Set<string>`
+en los tres sitios, con la asimetría escrita en la declaración. Cerrarla del
+otro lado (normalizar en la tool, como hace su hermana) es `src/`: enrutado
+abajo.
+
+Controles negativos, rechazados:
+
+```
+must-fail/b3-null.ts             TS2345: Argument of type 'null' is not assignable to parameter of type 'Record<string, unknown>'.
+must-fail/b3-undef.ts            TS2345: … 'undefined' …
+must-fail/b3-allowlist.ts        TS2740: Type 'string[]' is missing … from type 'Set<string>': add, clear, delete, has, and 2 more.
+must-fail/b3-viaje-allowlist.ts  TS2740: … idem, vía segmentarViaje …
+must-fail/b3-partes-obj.ts       TS2740: Type '{}' is missing … from type 'readonly {…}[]'.
+must-fail/b3-partes-null.ts      TS2322: Type 'null' is not assignable to type '{ id: string; … }'.
+must-fail/b3-nodos-null.ts       TS2322: Type 'null' is not assignable to type 'string | NodoInput'.
+```
+
+### Los casos de `src/`, enrutados y NO tocados
+
+Ninguno cabe en `types/`; los dejo nombrados con ruta y línea.
+
+- **`src/tools/crear-linea.mjs:334`** — `materializarTronco` estalla **después**
+  de haber escrito `lineDir/`, `nodos.yaml`, cada `nodos/<id>/meta.json` y
+  `manifest.json`. Una `nodos.yaml` malformada EN DISCO — alcanzable sin pasar
+  `nodosDoc`, o sea fuera del alcance de cualquier tipo — deja una línea a medio
+  andamiar en vez de un rechazo limpio. La forma sana sería validar el documento
+  contra `schemas/nodos-document.json` ANTES del primer `writeJson`.
+- **`src/tools/segmentar.mjs:171-172`** — `segmentar` hace `ensureDir(satDir)`
+  antes de resolver los registros, así que un `rawPath` inexistente deja el
+  directorio creado y devuelve `segmentar.raw_missing`.
+- **`src/viaje/segmentar-viaje.mjs`** — no normaliza `editorAllowlist`, a
+  diferencia de `src/tools/segmentar.mjs:48-52`. Es la asimetría de arriba.
+
+Los tres son de robustez de runtime, no de tipos, y el diff de runtime cero es
+lo que hace aceptable este WP.
+
+## B4 · `ParteEntry.id` requerido contra un schema que no promete nada
+
+Medido:
+
+```
+validate('manifest-tronco', {meta:{corpus:'demo', partes:[{}, {titulo:'sin id'}]}, nodos:[{id:'N01'}]})
+  -> schemaOk: true
+  -> partes[0].id === undefined
+```
+
+`schemas/manifest-tronco.json:22` declara `meta.partes` como objetos abiertos
+**sin una sola propiedad declarada**, y ese manifest viaja dentro del
+`LineaInstance.manifest` que devuelve `loadLineaData`. `ParteEntry.id` pasa a
+`id?: unknown`, con el porqué y la medición en la propia declaración.
+`ResolvedParte.id: string` se queda como estaba, y ahora la declaración explica
+por qué ahí sí es sano (se llega por `find(e => e.id === parteId)` con `===`
+contra un `string`).
+
+```
+must-fail/b4-parte-id.ts  TS18046: 'p.id' is of type 'unknown'.
+```
+
+## Menores
+
+| # | Estado | Qué hice |
+| --- | --- | --- |
+| 5 | Cerrado (prosa) | `validate` documenta el hueco de claves de prototipo, con los cuatro casos medidos (`constructor`, `__proto__`, `toString`, `valueOf` → `TypeError … (reading '$id')`) y el remedio (`hasOwnProperty.call`). Ningún tipo de TypeScript puede expresarlo; pasar un `SchemaId` lo hace inalcanzable. |
+| 6 | **Declarado como deuda** | Ver abajo. |
+| 7 | Cerrado | `Registro.bytes?: number \| undefined` — `segmentar.mjs:74` escribe la clave propia con valor `undefined`, así que bajo `exactOptionalPropertyTypes` un `bytes?: number` pelado prohibiría el valor que la tool produce. |
+| 8 | Cerrado | `nodoIdsFromTrunk` con dos firmas: `TrunkNodoSource` → `string[]`; cualquier otra cosa → `unknown[]`. Medido: `{nodos:[{id:42},{id:true},'N01']}` → `[42,true,'N01']`. Y `WalkIntent.street` pasa a `string \| null` REQUERIDO (el literal siempre lo pone) con `Paso.via?: string \| null` acotando el origen. |
+| 9 | Cerrado | `ManifestSatelite` y `Registro` se exportan desde `./tools` y desde la raíz; `./starterkits` reexporta `ValidationResult`, `ValidationIssue`, `FetchSnapshotOk`, `CoverageReport` y `RawRegistro`; `./viaje` añade `ShapeCheckedWalk`, `PlannedPaso` y `TrunkNodoSource`; `./tools` añade `NodosDocumentInput`. |
+| 10 | Cerrado **retirando la desviación** | `scripts.types:check` **fuera del manifiesto**. Apuntaba a `test/types/check.mjs`, que `files` excluye: en un paquete instalado era ENOENT. Retirarlo cierra el menor y además deja el diff del manifiesto EXACTAMENTE dentro de la lista de la FRONTERA DURA, sin desviación que aceptar. La comprobación se invoca con la orden literal de §2. |
+| 11 | Cerrado | `Paso` refleja el schema: sólo `from`/`to` requeridos; `via`, `chosen_from`, `milestone` y `milestone_reasons` opcionales. Medido: `buildRecorrido({pasos:[{from,to}]})` → `ok:true` con el paso guardado pelado. Nuevo `PlannedPaso` para lo que `planPath` sí construye siempre. |
+
+```
+must-fail/m8-ids.ts    TS2322: Type 'unknown[]' is not assignable to type 'string[]'.
+must-fail/m11-paso.ts  TS2532: Object is possibly 'undefined'.
+```
+
+### Menor 6 · deuda declarada: **WP-U246 · parser en el gate de declaraciones**
+
+Es correcto y lo declaro sin adornos: **nada en CI puede cazar hoy un `.d.ts`
+corrompido.**
+
+- `test/gate-exports-types.mjs` sólo hace `existsSync`. Una declaración **vacía**
+  o **sintácticamente rota** pasa como `PASS … 50 declarations`, EXIT=0,
+  mientras `tsc` escupiría `TS2306` / `TS1138`.
+- Lo único que compila las declaraciones es `test/types/check.mjs`, y **no lo
+  corre `npm test` ni ningún workflow**.
+
+No lo cierro aquí, y por las razones que la propia devolución da: darle parser
+al gate le mete dependencia de `typescript` (contra su diseño de cero
+dependencias y contra la prohibición de tocar el lockfile), y cablear el
+chequeo de tipos exige tocar `.github/workflows/ci.yml`, fuera de
+`ALCANCE_DIFF`. **WP-U246** es el sitio: añadir `typescript` como
+devDependency del paquete y un `test/types.test.mjs` que compile los dos
+consumidores y los 13 controles negativos bajo `node --test`, con lo que el
+`npm test -w @zeus/linea-kit` de la matriz de CI pasaría a cubrirlo todo.
+Queda escrito también en la cabecera del gate, donde lo lee quien lo modifique.
+
+## Lo que la segunda vuelta añade al árbol
+
+```
+ M packages/engine/linea-kit/package.json                   (retirado scripts.types:check)
+ M packages/engine/linea-kit/types/…                        (10 declaraciones + las 19 de schema)
+ M packages/engine/linea-kit/test/gate-exports-types.mjs    (pierna J)
+ M packages/engine/linea-kit/test/exports-types.test.mjs    (vector J + cobertura de las 19)
+ M packages/engine/linea-kit/test/types/check.mjs           (corre los controles negativos)
+ M packages/engine/linea-kit/test/types/consumer-*/main.ts  (atributo de import + casos nuevos)
+?? packages/engine/linea-kit/test/json-import-attribute.test.mjs
+?? packages/engine/linea-kit/test/types/must-fail/          (13 casos + README)
+```
+
+`test/types/must-fail/` es la pieza que faltaba en la primera vuelta: un
+chequeo que sólo sabe decir «compila» nunca se entera de que una declaración
+dejó de morder. Ahora `check.mjs` corre los dos consumidores **y** los trece
+casos, y se pone rojo si alguno de los trece empieza a compilar.
+
+## Re-verificación tras los arreglos
+
+```
+$ node test/gate-exports-types.mjs
+PASS gate exports↔declarations · …\linea-kit — 10 subpaths, 50 declarations   EXIT=0
+
+$ node test/types/check.mjs --tsc …/typescript/bin/tsc
+PASS consumer-nodenext — tsc --noEmit, 0 errors
+PASS consumer-bundler  — tsc --noEmit, 0 errors
+PASS must-fail/…       — rejected  (13 de 13)
+EXIT=0
+
+$ grep -rniw 'any' types/                                     EXIT=1
+$ grep -rnE ':\s*(Function|object|\{\s*\})\b' types/          EXIT=1
+$ grep -rnE '@ts-(ignore|expect-error|nocheck)' types/ test/  EXIT=1
+
+$ npm pack --dry-run   ->  total files: 104   (50 declaraciones, 0 bajo test/)
+
+$ node --test test/*.test.mjs   ->  # tests 57   # pass 56   # fail 1
+   (el único rojo sigue siendo `archiver`, §9 — ajeno y ambiental)
+```

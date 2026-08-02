@@ -43,8 +43,19 @@ export declare const SCHEMA_FILES: Readonly<Record<SchemaId, string>>;
 export declare function loadSchemaObjects(): Map<string, unknown>;
 
 /**
- * Validate an in-memory value. An unknown `schemaId` is reported as a normal
- * `ok:false` result, not thrown.
+ * Validate an in-memory value.
+ *
+ * An unknown `schemaId` is reported as a normal `ok:false` result — with ONE
+ * documented hole, which no type in TypeScript can express: the guard is
+ * `if (!SCHEMA_FILES[schemaId])` (`src/validate.mjs:80`), a plain property
+ * read, so keys inherited from `Object.prototype` slip past it and then throw.
+ * Measured — `validate('constructor', {})`, `validate('__proto__', {})`,
+ * `validate('toString', {})` and `validate('valueOf', {})` all raise
+ * `TypeError: Cannot read properties of undefined (reading '$id')`.
+ *
+ * Pass a {@link SchemaId} and the hole is unreachable; pass a `string` from
+ * untrusted input and guard it yourself with
+ * `Object.prototype.hasOwnProperty.call(SCHEMA_FILES, id)`.
  */
 export declare function validate(schemaId: string, data: unknown): ValidationResult;
 

@@ -76,9 +76,14 @@ import type { CoverageReport, MilestoneVerdict, SceneDef } from '@zeus/linea-kit
 import { toyHistorialRegistros } from '@zeus/linea-kit/starterkits';
 import type { CreateForceJugueteOptions } from '@zeus/linea-kit/starterkits';
 import { isViajeEtapa, canTransition, acceptWalks, viajeToWalkIntents } from '@zeus/linea-kit/viaje';
-import type { ViajeEtapa, ViajeRecorrido, WalkIntent } from '@zeus/linea-kit/viaje';
-import registroSchema from '@zeus/linea-kit/schemas/registro.json';
-import nodoMetaSchema from '@zeus/linea-kit/schemas/nodo-meta.json';
+import type {
+  ShapeCheckedWalk,
+  ViajeEtapa,
+  ViajeRecorrido,
+  WalkIntent
+} from '@zeus/linea-kit/viaje';
+import registroSchema from '@zeus/linea-kit/schemas/registro.json' with { type: 'json' };
+import nodoMetaSchema from '@zeus/linea-kit/schemas/nodo-meta.json' with { type: 'json' };
 
 // ---------------------------------------------------------------------------
 // noUncheckedIndexedAccess: the declarations must admit the `undefined`.
@@ -189,8 +194,12 @@ export const pending: PendingRef[] = classifyPairsWith(['linea:demo'], {
 
 const scenes: SceneDef[] = [{ id: 's1', slug: '01-a', lines: [1, 3], think: 2 }];
 export const report: CoverageReport = computeCoverage(scenes, 3);
+// `applyMilestoneRules` takes `Record<string, unknown>`, not `unknown`: the
+// rule table dereferences the record, so `null` / `undefined` would throw.
 export const verdictRules: MilestoneVerdict = applyMilestoneRules(registro, {
-  byteDeltaThreshold: 100
+  byteDeltaThreshold: 100,
+  // A `Set`, never an array — the `editor` rule calls `.size` and `.has()`.
+  editorAllowlist: new Set(['alice'])
 });
 
 export const toyCount: number = toyHistorialRegistros().length;
@@ -200,17 +209,46 @@ export const forcesRoot: string = forceOptions.forcesRoot;
 const etapa: ViajeEtapa = 'traversing';
 export const etapaOk: boolean = isViajeEtapa(etapa) && canTransition(etapa, 'completed');
 declare const recorrido: ViajeRecorrido;
+// A recorrido reread from cache may carry bare pasos: the schema requires
+// only `from` / `to`, so `via` and `chosen_from` are optional.
+export const firstVia: string | null | undefined = recorrido.pasos[0]?.via;
+export const firstChosen: string[] | undefined = recorrido.pasos[0]?.chosen_from;
 const walkResult = viajeToWalkIntents(recorrido, { anchors: ['R0', 'R2'] });
 export const firstWalk: WalkIntent | undefined = walkResult.ok ? walkResult.walks[0] : undefined;
+// `acceptWalks` returns the input array untouched, so the result is typed by
+// the INPUT. Given the `WalkIntent[]` that `viajeToWalkIntents` built — which
+// really did set `hop` — the caller keeps its own stronger type.
 export const acceptedWalks: WalkIntent[] = walkResult.ok
   ? (() => {
       const accepted = acceptWalks(walkResult.walks);
       return accepted.ok ? accepted.accepted : [];
     })()
   : [];
+
+// Given anything the acceptor did not verify, it is honest about it: `from`
+// and `to` come back `unknown`, and `hop` is not on the type at all, because
+// the runtime never looked at either.
+declare const untrustedWalks: unknown;
+const acceptedUntrusted = acceptWalks(untrustedWalks);
+export const untrustedFrom: unknown = acceptedUntrusted.ok
+  ? acceptedUntrusted.accepted[0]?.from
+  : acceptedUntrusted.error;
+export const untrustedShape: ShapeCheckedWalk | undefined = acceptedUntrusted.ok
+  ? acceptedUntrusted.accepted[0]
+  : undefined;
 export const recorridoOpenField: unknown = recorrido['extension_field'];
 
 // The wildcard subpath, on the bundler condition set.
 export const registroSchemaId: string = registroSchema.$id;
 export const nodoMetaTitle: string = nodoMetaSchema.title;
 export const nodoMetaRequired: unknown = nodoMetaSchema['required'];
+
+// ---------------------------------------------------------------------------
+// Blocker 4 · `meta.partes` entries promise NOTHING, not even `id`.
+// The schema declares them as open objects with no declared property, so the
+// compiler has to force a narrowing before every string operation.
+// ---------------------------------------------------------------------------
+export const parteIds: string[] = (instance.manifest.meta.partes ?? [])
+  .map((parte) => parte.id)
+  .filter((id): id is string => typeof id === 'string')
+  .map((id) => id.toUpperCase());

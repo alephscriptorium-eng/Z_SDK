@@ -129,10 +129,15 @@ import {
 } from '@zeus/linea-kit/viaje';
 import type { GraphSource, ViajeEtapa, WalkIntent } from '@zeus/linea-kit/viaje';
 // 10/10 · ./schemas/* (wildcard subpath, one declaration per shipped document)
-import volumesSchema from '@zeus/linea-kit/schemas/volumes.json';
-import curationStatusSchema from '@zeus/linea-kit/schemas/curation-status.json';
-import viajeRecorridoSchema from '@zeus/linea-kit/schemas/viaje-recorrido.json';
-import forceRegistrySchema from '@zeus/linea-kit/schemas/force-registry.json';
+// `with { type: 'json' }` is MANDATORY: the runtime target is the literal
+// `.json` file and Node raises ERR_IMPORT_ATTRIBUTE_MISSING without it.
+// TypeScript does not enforce it here — resolving through the declaration
+// switches TS1543 off — so the attribute is part of the documented contract
+// and test/json-import-attribute.test.mjs pins it at runtime.
+import volumesSchema from '@zeus/linea-kit/schemas/volumes.json' with { type: 'json' };
+import curationStatusSchema from '@zeus/linea-kit/schemas/curation-status.json' with { type: 'json' };
+import viajeRecorridoSchema from '@zeus/linea-kit/schemas/viaje-recorrido.json' with { type: 'json' };
+import forceRegistrySchema from '@zeus/linea-kit/schemas/force-registry.json' with { type: 'json' };
 
 // ---------------------------------------------------------------------------
 // 1 · root barrel
@@ -263,7 +268,9 @@ export async function loaderSurface(): Promise<string[]> {
 const scaffold: NodoInput[] = defaultScaffoldNodos();
 const created = crearLinea({ id: 'demo', lineasRoot: '/tmp/LINEAS', nodos: scaffold });
 export const createdDir: string = created.ok ? created.lineDir : created.rule;
-const trunk = materializarTronco('/tmp/LINEAS/demo');
+const trunk = materializarTronco('/tmp/LINEAS/demo', {
+  nodosDoc: { corpus: 'LINEAS/demo', partes: [{ id: 'I', nodos: ['N01'] }] }
+});
 export const trunkNodos: number = trunk.ok ? trunk.nodoCount : -1;
 
 const raw: RawRegistro[] = [{ oldid: 1, summary: 'seed', byte_delta: 900 }];
@@ -311,6 +318,8 @@ export const canGo: boolean = canTransition('idle', 'planning');
 const source: GraphSource = createLineaGraphSource({ nodoIds: ['R0', 'R1', 'R2'] });
 export const sourceOk: boolean = assertGraphSource(source).ok;
 export const trunkIds: string[] = nodoIdsFromTrunk({ nodos: [{ id: 'R0' }] });
+// The loose overload: ids whose type nothing promises come back `unknown[]`.
+export const looseIds: unknown[] = nodoIdsFromTrunk({ nodos: [{ id: 42 }] });
 
 const wiki = createWikiGraphSource({ links: { A: ['B'] }, satDir: '/tmp/sat', approve: true });
 export const wikiKind: 'wiki' = wiki.kind;

@@ -41,6 +41,7 @@ export type {
   LineaData,
   LineaInstance,
   LineaRegistryEntry,
+  ManifestSatelite,
   ManifestSource,
   ManifestTronco,
   NodoEntry,
