@@ -1,0 +1,431 @@
+# WP-U264 · Nada en CI podía cazar un `.d.ts` corrompido
+
+Rama `wp/u264-ci-caza-declaracion-corrupta` · worktree `C:/S_LAB/wt/z-u264` ·
+base `c005196` · Node `v22.21.1` · npm `10.9.4` · Windows 11.
+
+**Cerrado**: CA1, CA2, CA4 (con excepción declarada y medida), CA5.
+**Abierto**: CA3 — no puedo empujar, así que la comprobación en CI queda ⏳ con
+el vector preparado (§7).
+
+**El hallazgo que no estaba en el encargo**: cablear `types/check.mjs` a CI tal
+y como estaba habría metido **13 negativos vacíos**. Bajo un árbol de `npm ci`
+de verdad, los 13 `must-fail` de U245 salían `PASS … rejected` **por errores de
+`@types/d3-array`**, no por las declaraciones. Medido en §4, con el guardián
+desactivado y todo.
+
+---
+
+## 1 · Re-medición de la deuda antes de tocar nada
+
+### 1.1 El gate es ciego (CA de partida)
+
+Copia real del paquete (manifiesto + `types/` + `schemas/`), se corrompe **un**
+fichero, se corre el gate de U245:
+
+```
+$ node scratchpad/m1-repro.mjs
+[vacia] types/model.d.ts = 0 bytes · gate.ok=true · findings=0 · declarations=50
+[rota]  types/model.d.ts = 400 bytes · gate.ok=true · findings=0 · declarations=50
+```
+
+Y `tsc` sobre esas mismas dos copias:
+
+```
+$ node .../typescript/bin/tsc --noEmit --module NodeNext --moduleResolution NodeNext \
+    --strict --target ES2022 --lib ES2022 types/*.d.ts        # copia [vacia]
+types/loader.d.ts(13,63): error TS2306: File '…/types/model.d.ts' is not a module.
+types/loader.d.ts(35,19): error TS2306: File '…/types/model.d.ts' is not a module.
+types/resolve.d.ts(25,8):  error TS2306: File '…/types/model.d.ts' is not a module.
+types/resolve.d.ts(45,8):  error TS2306: File '…/types/model.d.ts' is not a module.
+EXIT=2
+
+                                                              # copia [rota]
+types/model.d.ts(8,55): error TS1010: '*/' expected.
+EXIT=2
+```
+
+Confirmada. `EXIT=0` en el gate, `EXIT=2` en `tsc`, sobre el mismo árbol.
+(El BACKLOG citaba `TS1138`; con el corte que usé sale `TS1010` / `TS1005`.
+Es la misma familia `TS1xxx` —gramática—, y así lo asevera el test, no por
+número exacto.)
+
+### 1.2 Nadie compilaba nada
+
+`types:check` **no existe como script**: U245 lo retiró del manifiesto (su §M10).
+Lo único que compilaba era `test/types/check.mjs`, invocado a mano.
+
+```
+$ grep -rn "types:check" --include=*.json --include=*.yml .  --exclude-dir=node_modules
+(sólo prosa: BACKLOG.md y el reporte de U245; ni un script, ni un workflow)
+```
+
+`ci.yml:164-165` es `npm test -w "${{ matrix.workspace }}"`, y el `test` del
+paquete es `node --test test/*.test.mjs`. Nada llamaba a `check.mjs`.
+
+---
+
+## 2 · La vía propuesta, medida
+
+`typescript` como devDependency del paquete + `test/types.test.mjs` bajo
+`node --test`. **Funciona**, y éstas son las cuatro medidas que lo sostienen.
+
+### 2.1 El lockfile SÍ hay que tocarlo — no hay vuelta
+
+```
+$ npm ci --dry-run
+npm error code EUSAGE
+npm error `npm ci` can only install packages when your package.json and
+npm error package-lock.json … are in sync.
+npm error Missing: typescript@5.9.3 from lock file
+EXIT=1
+```
+
+### 2.2 …y el coste es 17 líneas que no mueven nada
+
+```
+$ npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+up to date in 6s
+$ git diff --stat package-lock.json
+ package-lock.json | 17 +++++++++++++++++
+```
+
+Las 17 son **puras altas**, cero bajas, cero reescrituras:
+
+```
++      "devDependencies": { "typescript": "5.9.3" }
++    "packages/engine/linea-kit/node_modules/typescript": {
++      "version": "5.9.3",  … "dev": true,  "bin": { "tsc": "bin/tsc", … }
+```
+
+Lo importante es lo que **no** cambia: `node_modules/typescript` (la raíz)
+sigue en `4.9.5` intacto y **ningún otro paquete cambia de resolución**, porque
+npm **anida** el 5.9.3 bajo el paquete en vez de re-izar nada. Verificado con
+un `npm ci` de verdad, no con el `--dry-run`:
+
+```
+$ npm ci --no-audit --no-fund
+added 2699 packages in 3m
+EXIT=0
+$ node -p "require('./node_modules/typescript/package.json').version"                        → 4.9.5
+$ node -p "require('./packages/engine/linea-kit/node_modules/typescript/package.json').version" → 5.9.3
+```
+
+### 2.3 La matriz lo cubre sin tocar el workflow
+
+`@zeus/linea-kit` ya es fila de la matriz (`ci.yml:82`, la metió U256) y su
+`test` es `node --test test/*.test.mjs`. Un fichero llamado `test/types.test.mjs`
+entra por el glob. **`.github/workflows/` no se toca** — el ALCANCE se respeta.
+
+### 2.4 Por qué el pin es EXACTO y no `^5.9.3`
+
+Porque medí lo que pasa cuando el compilador «flota». `check.mjs` buscaba `tsc`
+**andando hacia arriba**, y hacia arriba de este paquete vive un
+`typescript@4.9.5` transitivo (`node_modules/typescript`, `devOptional`, lo
+arrastran `typescript-json-schema ~4.9.5` y `@asyncapi/generator ^4.9.3`).
+Con ése:
+
+```
+$ node test/types/check.mjs --tsc <typescript@4.9.5>/bin/tsc
+FAIL consumer-nodenext — tsc exit 2
+main.ts(137,66): error TS1005: ';' expected.          ← no sabe leer `with { type: 'json' }`
+FAIL consumer-bundler — tsc exit 2
+tsconfig.json(9,5): error TS5023: Unknown compiler option 'verbatimModuleSyntax'.
+PASS must-fail/b2-from.ts — rejected …               ← y los 13 siguen diciendo PASS
+EXIT=1
+```
+
+Y encima el árbol del operador tiene `5.9.3` en la raíz, o sea que **el lock y
+el disco discrepan**: U245 midió con 5.9.3 y CI habría corrido con 4.9.5. El
+pin exacto mata la lotería; la guarda del §3.1 mata el silencio si algún día
+se rompe.
+
+---
+
+## 3 · Lo entregado
+
+### 3.1 `test/types.test.mjs` (nuevo) — seis casos
+
+| # | qué asevera |
+| --- | --- |
+| 1 | el compilador **es el que el paquete fija** (`devDependencies.typescript`), resuelto con la resolución de Node desde el paquete. Sin compilador **no se auto-omite: enrojece** |
+| 2 | control del banco: la copia **sin mutar** compila limpia y siguen siendo **50** declaraciones |
+| 3 | vector `vacía` sobre `types/model.d.ts` → `TS2306` |
+| 4 | vector `vacía` sobre `types/index.d.ts` (**barril raíz**, subpath `.`) → `TS2306` |
+| 5 | vector `rota` sobre `types/model.d.ts` → `TS1xxx` |
+| 6 | `types/check.mjs` entero: los 2 consumidores y los **13** `must-fail`, cada uno nombrado en la salida |
+
+Cada vector (3,4,5) lleva además la aserción de que **el gate viejo dice `ok`
+sobre esa misma copia corrompida**: si el `existsSync` ya la cazara, el rojo no
+sería mérito de esta comprobación.
+
+### 3.2 `test/types/corrupt/` (nuevo) — los vectores guardados
+
+`vacia.d.ts.vector` (0 bytes), `rota.d.ts.vector` (707 bytes, `model.d.ts`
+cortado a la mitad) y un `README.md`. Sufijo `.vector` a propósito: son
+**contenido**, no declaraciones vivas, y así ningún `tsc -p` ni barrido de
+`.d.ts` los carga por accidente.
+
+### 3.3 El `probe.ts`, que no es adorno
+
+Compilar las 50 declaraciones **no basta**, y está medido:
+
+```
+===== sin probe =====
+  [sin mutar]                          exit=0
+  [model.d.ts VACIA]                   exit=2 :: TS2306 …
+  [index.d.ts VACIA (barril de entrada)] exit=0     ←←← FALSO VERDE
+  [curation.d.ts VACIA]                exit=2 :: TS2306 …
+===== con probe =====
+  [index.d.ts VACIA (barril de entrada)] exit=2 :: probe.ts(1,21): error TS2306: File 'types/index.d.ts' is not a module.
+```
+
+Un fichero vacío es un **script válido**. `types/index.d.ts` es el barril raíz
+—lo apunta el subpath `.`— y **no lo importa nadie**, así que vacío compila
+limpio. Sólo enrojece si alguien lo importa. El test genera un `probe.ts` que
+importa las 50 declaraciones una a una.
+
+### 3.4 `test/types/check.mjs` (modificado) — ver §4
+
+### 3.5 `test/gate-exports-types.mjs` (modificado) — **100% prosa**
+
+Sólo la cabecera: la deuda ya no está abierta y la cita `TS1138` se corrige a
+`TS1005`. Verificado que no hay ni una línea de código en el diff:
+
+```
+$ git diff -U0 …/gate-exports-types.mjs | grep -E "^[+-]" | grep -vE "^(\+\+\+|---)|^[+-] \*"
+(vacío)
+```
+
+---
+
+## 4 · El hallazgo: los 13 negativos de U245 eran **vacíos** bajo `npm ci`
+
+Aplicando CA5 al trabajo heredado, no sólo al mío.
+
+`check.mjs` compilaba cada `must-fail/*.ts` con flags sueltos, **sin** el
+`"types": []` que sí tienen los dos `tsconfig.json` de los consumidores. Tras
+`npm ci` el monorepo instala **84 paquetes `@types/*`** en la raíz, y `tsc` los
+mete todos en el programa. Con `--lib ES2022` (sin DOM), `@types/d3-array`
+solo levanta **181 errores**:
+
+```
+$ node …/tsc test/types/must-fail/b2-hop.ts --noEmit --module NodeNext … --lib ES2022
+exit=2  6.4s  errores=181  :: ../../../node_modules/@types/d3-array/index.d.ts(857,38): error TS2304: Cannot find name 'ImageData'.
+```
+
+`check.mjs` sólo miraba `run.status !== 0`. **Guardián desactivado** —
+`b2-hop.ts` reemplazado por algo que compila limpio:
+
+```
+$ printf 'export const inocuo: string = "ya no muerde";\n' > test/types/must-fail/b2-hop.ts
+$ node test/types/check.mjs --tsc node_modules/typescript/bin/tsc
+PASS must-fail/b2-hop.ts — rejected :: ../../../../../node_modules/@types/d3-array/index.d.ts(857,38): error TS2304: Cannot find name 'ImageData'.
+EXIT=0
+```
+
+**Verde.** Un control negativo que ya no controla nada, informado como que sí.
+Sólo parecía correcto en un árbol **sin `@types` instalados** — que es
+exactamente el árbol en el que se escribió, y nunca el árbol de CI.
+
+### El arreglo, en dos mecanismos independientes
+
+1. **`--typeRoots <dir inexistente>`** en `MUST_FAIL_FLAGS`. La CLI no sabe
+   escribir `"types": []`; apuntar `typeRoots` a un directorio que no existe es
+   la forma de decirlo. `181 errores → 1`, y `6.4s → 0.9s`.
+2. **La aserción de atribución**: no basta con salir != 0, el error tiene que
+   **nombrar el fichero bajo prueba**. Si no, `FAIL … rejected, but NOT by
+   anything in the file`.
+
+Son independientes a propósito, y lo comprobé desactivando el primero y
+dejando el segundo (§5, D6).
+
+Coste medido del arreglo: `check.mjs` completo pasó de **2m18s a ~19s**, y
+`test/types.test.mjs` de **187s a 26s**.
+
+---
+
+## 5 · CA5 · cada negativo con su guardián desactivado
+
+Ningún negativo se da por bueno sin ver que **enrojece por lo que dice**.
+
+| # | guardián desactivado | resultado | prueba |
+| --- | --- | --- | --- |
+| D1 | `typescript` fuera (`mv node_modules/typescript …`) | **6/6 rojos**, ninguno omitido | `not ok 1 … 'typescript no está instalado para este paquete (… MODULE_NOT_FOUND). … Este test NO se auto-omite a propósito'` |
+| D2 | el 4.9.5 transitivo en lugar del pin | **1 y 6 rojos, 2-5 verdes** | `not ok 1 … 'typescript resuelto = 4.9.5, fijado = 5.9.3 …'` · `not ok 6 … main.ts(137,66): error TS1005` |
+| D3 | la inyección del vector (no se corrompe nada) | **3, 4 y 5 rojos**, cada uno con SU causa | `not ok 3 … 'tsc salió 0: la declaración corrupta pasó entera. Causa esperada: TS2306 …'` |
+| D4 | el `probe.ts` fuera del compilado | **sólo el 4 rojo** | `not ok 4 … types/index.d.ts corrompida … y tsc salió 0` (3 y 5 siguen verdes: los caza su importador real) |
+| D5a | un `must-fail` retirado de la carpeta | **6 rojo** | `'U245 dejó 13 controles negativos y quedan 12'` |
+| D5b | `b2-hop.ts` reemplazado por algo que compila | **6 rojo** | `FAIL must-fail/b2-hop.ts — COMPILED. The declaration stopped biting.` |
+| D6 | sólo `--typeRoots` fuera, atribución puesta | **6 rojo** | `FAIL must-fail/b2-hop.ts — rejected, but NOT by anything in the file` |
+
+**D2 y D4 son los que más dicen.** D2 porque separa quién caza qué: el
+compilador equivocado lo caza la guarda 1, **no** los vectores (2-5 siguen
+verdes con 4.9.5, o sea que sin esa guarda el pin podría pudrirse en silencio).
+D4 porque aísla el `probe.ts` a **un solo** vector: si hubiera enrojecido los
+tres, el probe estaría tapando el mecanismo real de los otros dos.
+
+**D5b es el mismo experimento que en §4, y ahí está la diferencia**: antes del
+arreglo salía `PASS`/`EXIT=0`; ahora sale `FAIL`/`EXIT=1`.
+
+---
+
+## 6 · Verde completo
+
+```
+$ ZEUS_VOLUMES_ROOT=$(pwd)/VOLUMES npm test -w @zeus/linea-kit
+# tests 65   # suites 19   # pass 65   # fail 0   # skipped 0
+EXIT=0
+```
+
+Con detalle del fichero nuevo:
+
+```
+ok 1 - el paquete FIJA su compilador y es ése el que se usa
+ok 2 - la copia SIN mutar compila limpia (el banco no es la causa del rojo)
+ok 3 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
+ok 4 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
+ok 5 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
+ok 6 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
+```
+
+Resto:
+
+| orden | salida |
+| --- | --- |
+| `node scripts/verificacion-paridad.mjs` | `paridad OK · 13 paso(s)` · `matriz OK · test: workspace×27 include×3` · `EXIT=0` |
+| `npm run lint` | `20 problems (0 errors, 20 warnings)` · `EXIT=0` · **ningún aviso en `linea-kit`** |
+| `npm run gates` | `gates: OK (0 offenders)` · `EXIT=0` |
+| `npm run test:gates` | `# tests 160 # pass 159 # fail 0` · `EXIT=0` |
+| `node test/gate-exports-types.mjs` | `PASS … 10 subpaths, 50 declarations` · `EXIT=0` |
+| `npm pack --dry-run` | `total files: 104` · **0** coincidencias de `types.test`/`corrupt`/`must-fail`/`check.mjs` |
+| `npm ci --dry-run` | `EXIT=0` (manifiesto y lock en sincronía) |
+
+**Coste en CI**: la fila `test @zeus/linea-kit` pasa de 59 a 65 tests. Medido en
+esta máquina: 9,3s → 14,6s (mejor caso) y hasta ~34s en frío. El grueso es
+`check.mjs`, 15 invocaciones de `tsc`.
+
+### Diff de runtime CERO — el invariante de U245, intacto
+
+```
+$ git rev-parse HEAD:packages/engine/linea-kit/{src,schemas,bin}
+src      b2e67b41b19d2292191977755413b89df4120ac2
+schemas  1278f99089cefae45c427818670f6fe2db1e4536
+bin      fb1f4c490f6757b57535702e5f26caea2751f6b6
+$ git diff --stat HEAD -- .../src .../schemas .../bin
+(vacío)
+```
+
+Los tres coinciden con los que el orquestador selló al aceptar U245.
+
+### El diff completo
+
+```
+ package-lock.json                                  | 17 +   (la excepción, §2.2)
+ packages/engine/linea-kit/package.json             |  3 +   (devDependencies)
+ packages/engine/linea-kit/test/gate-exports-types.mjs | 11 +/- (100% prosa)
+ packages/engine/linea-kit/test/types/check.mjs     | 38 +/-
+ packages/engine/linea-kit/test/types.test.mjs         (nuevo)
+ packages/engine/linea-kit/test/types/corrupt/         (nuevo: 2 vectores + README)
+```
+
+**Excepción declarada (CA4)**: `package-lock.json` está **fuera** del
+ALCANCE_DIFF y U245 tenía prohibido tocarlo. *Razón*: `npm ci` es EUSAGE sin él
+(§2.1) — la vía que el encargo pidió medir primero no existe sin esa línea.
+*Coste*: 17 líneas de alta pura, sin bajas, sin re-izado, sin cambio de
+resolución para ningún otro paquete (§2.2). **Cero dependencias nuevas fuera
+del paquete.**
+
+---
+
+## 7 · CA3 ⏳ · lo que NO puedo cerrar
+
+**No puedo empujar** (prohibición explícita), así que no hay `run-id` de rojo
+plantado ni de verde posterior. La rama **no está en el remoto**:
+
+```
+$ git ls-remote --heads origin wp/u264-ci-caza-declaracion-corrupta
+(vacío)
+$ gh run list --limit 1
+completed  success  aceptacion(U265)…  CI  main  push  30741103258
+```
+
+**Vector preparado** para que el orquestador lo plante en una orden:
+
+```bash
+# ROJO — corrompe una declaración de verdad y empuja
+cp packages/engine/linea-kit/test/types/corrupt/vacia.d.ts.vector \
+   packages/engine/linea-kit/types/model.d.ts
+git commit -am "vector U264: declaracion vacia" && git push
+
+# VERDE — revierte
+git revert --no-edit HEAD && git push
+```
+
+**Lo que sale, ejecutado ya en local sobre el paquete real** (no es una
+predicción; corrido y revertido con `git checkout -- types/model.d.ts`):
+
+```
+ok 1 - el paquete FIJA su compilador y es ése el que se usa
+not ok 2 - la copia SIN mutar compila limpia (el banco no es la causa del rojo)
+      probe.ts(13,24): error TS2306: File '…/types/model.d.ts' is not a module.
+      types/loader.d.ts(13,63): error TS2306: File '…/types/model.d.ts' is not a module.
+      types/resolve.d.ts(25,8):  error TS2306: File '…/types/model.d.ts' is not a module.
+      (+5 más, todas nombrando types/model.d.ts)
+ok 3 - vector vacía · declaración transitiva (types/model.d.ts) ENROJECE
+ok 4 - vector vacía · barril de entrada (types/index.d.ts, subpath ".") ENROJECE
+ok 5 - vector rota · declaración truncada (types/model.d.ts) ENROJECE
+not ok 6 - los negativos y los consumidores de U245 corren aquí, no sólo a mano
+EXIT=1
+
+$ node test/gate-exports-types.mjs
+PASS gate exports↔declarations — 10 subpaths, 50 declarations
+GATE_EXIT=0                       ← el gate viejo sigue ciego. Ésa es la deuda.
+```
+
+Dos cosas que conviene entender del rojo, porque no son obvias:
+
+- **Enrojecen el 2 y el 6, no los vectores.** Los vectores (3,4,5) trabajan
+  sobre una **copia** del árbol vivo y le aplican SU mutación encima, así que
+  siguen viendo lo que esperan y siguen verdes. Quien caza la corrupción del
+  paquete **real** es el control (test 2, la copia sin mutar ya no compila) y
+  `check.mjs` vía los consumidores (test 6). Es el reparto correcto y es lo que
+  hay que mirar en el rojo de CI.
+- **El gate `exports-types` se queda VERDE**, con sus `50 declarations`. No es
+  un fallo: es la ceguera declarada de U245, y el test 3 la asevera a propósito.
+
+---
+
+## 8 · Lo que NO cubro
+
+1. **CA3 en CI** (§7). Medido en local con un `npm ci` real del mismo lockfile
+   que usará CI, que es lo más cerca que llego sin empujar. Queda ⏳.
+2. **Linux**. Todo está medido en Windows. Lo que puede diferir: las rutas que
+   `tsc` imprime. Las aserciones se anclan en `types/model.d.ts` /
+   `types/index.d.ts` con barras hacia delante, que es como `tsc` las emite en
+   ambas plataformas (medido en Windows: `File 'C:/Users/…/types/model.d.ts'`),
+   y la de `check.mjs` en el **basename** del caso. No lo he podido ejecutar en
+   Linux.
+3. **Una declaración que compila pero MIENTE.** Estos vectores comprueban que
+   la declaración **existe de verdad**; que siga **mordiendo** es el eje de
+   `must-fail/`, que ahora corre en CI pero cuyos 13 casos son los de U245: no
+   he añadido ninguno.
+4. **El bloqueante mayor de U245** (la condición `types` de `./schemas/*` apaga
+   `TS1543`) sigue exactamente igual de vivo. No lo he tocado y no lo cierra
+   nada de esto; lo sostienen las 19 declaraciones, la pierna J del gate y
+   `test/json-import-attribute.test.mjs`.
+5. **El `typescript@4.9.5` transitivo de la raíz** sigue ahí. No lo he movido
+   (habría sido un lockfile mucho más caro y fuera de alcance). Lo que hay es
+   la guarda que enrojece si alguna vez es **ése** el que acaba compilando este
+   paquete.
+6. **Los otros 26 workspaces de la matriz** no tienen nada de esto. Sólo
+   `linea-kit` publica declaraciones hoy.
+
+---
+
+## 9 · Nota para quien corra `npm ci` en un worktree
+
+`npm ci` deja marcados como modificados tres `bin/*.mjs` de otros paquetes
+(`feed-kit`, `linea-kit`, `playbook-kit`) sin cambiar su contenido: reescribe
+los finales de línea y con `core.autocrlf` git los ve sucios. Uno de ellos está
+dentro de la zona de **diff de runtime CERO** de U245. `git checkout --` sobre
+los tres lo deshace; en este diff no viaja ninguno.

@@ -1,0 +1,26 @@
+/**
+ * Vector WP-U264 · una declaracion SINTACTICAMENTE ROTA.
+ *
+ * Es `types/model.d.ts` cortado a la mitad, que es como sale de una
+ * regeneracion interrumpida, de un merge mal resuelto o de una escritura a
+ * disco que no termino. El `existsSync` del gate de U245 la da por buena.
+ */
+
+import type { CurationStatus } from './curation.js';
+
+/** Inclusive year window. */
+export interface Coverage {
+  min: number;
+  max: number;
+}
+
+/** One historial edit registro — `schemas/registro.json`. */
+export interface Registro {
+  id: string;
+  oldid: number;
+  slug?: string;
+  parent_oldid?: number | null;
+  timestamp?: string;
+  user?: string;
+  curation?: CurationStatus;
+  nodos?: readonly (string | {
