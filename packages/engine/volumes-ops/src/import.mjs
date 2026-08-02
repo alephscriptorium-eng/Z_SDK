@@ -55,6 +55,52 @@
  *      otro proceso, EXDEV, carrera) DESHACE los renombrados hechos y declara
  *      `fusion_interrumpida` con el inventario de lo que no pudo deshacer.
  * Todo ello en `src/fusion-guard.mjs`, con su alcance honesto escrito.
+ *
+ * ── U253b · LA MISMA FRASE SE ROMPÍA POR EL FINAL: EL ASIENTO ─────────────
+ * U255 cerró la fase de fusión. El asiento del ledger quedó fuera: la llamada
+ * a `appendOpsLedger` era la ÚLTIMA operación de la función y estaba **sin
+ * envolver**, después de FUSIONAR y de SELLAR. Como el cerco de la ruta del
+ * ledger (U253a, `ledger-cerco.mjs`) falla cerrado LANZANDO, cualquier
+ * `ledger.ledgerPath` denegada producía exactamente lo que las dos frases de
+ * arriba niegan: corpus aterrizado, manifiesto re-sellado, estado escrito,
+ * CERO asiento, y una excepción en vez de `{ok:false, step, error}`. Medido en
+ * ocho entradas denegadas —las ocho con el árbol del root distinto antes y
+ * después— que entre todas ejercitan los SEIS códigos que el cerco sabe emitir,
+ * en `plan/REPORTES/WP-U253b-import-atomico.md` §2. (Las seis primeras sólo
+ * ejercitaban cuatro códigos: `es_directorio` y `flujo_alterno` no se alcanzan
+ * por los vectores obvios y necesitaron entrada propia.)
+ *
+ * El arreglo no es de rutas (el cerco de U253a no se toca ni un carácter): es
+ * de ORDEN. La ruta del ledger se juzga **antes de VERIFICAR**, cuando todavía
+ * no se ha tocado nada, y una propuesta denegada sale por el contrato como
+ * `precondicion-ledger`. Con eso el estrechamiento del cerco deja de necesitar
+ * ser configurable: lo que denegaba tarde, deniega temprano.
+ *
+ * Tres residuos MEDIDOS que la precondición de ruta sola no cubría, y que se
+ * cierran aquí por ser la misma clase («muta y luego lanza»), no por sonar mal:
+ *   - un ledger existente con una línea ilegible hace reventar la RELECTURA que
+ *     `appendOpsLedger` hace para numerar el asiento — y ocurre incluso sin
+ *     proponer ruta, sobre la de por defecto. Se lee una vez en la precondición
+ *     (`ledger_ilegible`); coste: una lectura más del mismo JSONL que el apéndice
+ *     ya lee entero;
+ *   - una ruta de ledger **admisible al entrar** sobre la que la PROPIA fusión
+ *     aterriza después. Se caza sobre el plan de fusión, antes del primer rename
+ *     (`ledger_en_ruta_de_fusion`), en sus TRES formas (ver la guarda);
+ *   - `ledger` con campos inutilizables (`{volumesRoot: 42}`) →
+ *     `ledger_opts_invalidas`, en vez de un `TypeError` tardío.
+ *
+ * ── LO QUE ESTE WP **NO** CIERRA, dicho aquí y no sólo en el reporte ───────
+ * Cierra la familia de fallos **conocibles ANTES de fusionar**. NO cierra la
+ * conocible sólo DESPUÉS: un ledger legible pero **no escribible**, `sealManifest`
+ * sobre un manifiesto no escribible, `syncVolumeCounters`, el walk de NO-LINK
+ * —que además devuelve `{ok:false}` tras haber sellado, sin excepción de por
+ * medio— y el `rmSync` del `finally`, donde un `EBUSY` SUSTITUYE al `return` de
+ * un import que sí terminó. Esas seis son **una sola decisión aplazada** —qué
+ * hacer cuando el fallo sólo es conocible después de FUSIONAR— y **no se
+ * esquivan con más precondiciones**: una sonda de escribibilidad tendría que
+ * tocar el root antes de VERIFICAR, que es justo lo que la CA de este WP
+ * prohíbe. Van a **WP-U268** con su medida; el censo, con línea y estado, en el
+ * §4 del reporte.
  * Node-only.
  */
 
@@ -67,7 +113,7 @@ import {
   readFileSync,
   rmSync
 } from 'node:fs';
-import { basename, dirname, join, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { assertIntentRole, resolveIntentRole } from '@zeus/protocol';
 import { validate as validateSchema } from '@zeus/linea-kit/validate';
@@ -78,7 +124,8 @@ import { applyFusion, causaDe, inspectFusionPlan } from './fusion-guard.mjs';
 import { hashManifest, sealManifest } from './manifest.mjs';
 import { syncVolumeCounters } from './counters.mjs';
 import { measurePath } from './measure.mjs';
-import { appendOpsLedger } from './ledger.mjs';
+import { appendOpsLedger, readOpsLedger, resolveOpsLedgerPath } from './ledger.mjs';
+import { LedgerPathDenegada } from './ledger-cerco.mjs';
 
 /**
  * Identity-material denylist (contract §0.5) — basenames, case-insensitive.
@@ -189,6 +236,76 @@ export function importPack(opts) {
   );
   if (!auth.ok) {
     return fail('precondicion-rol', auth.error, { role });
+  }
+
+  // ── Precondición (WP-U253b): el ASIENTO se juzga ANTES de VERIFICAR ─────
+  // El cerco del ledger (U253a) falla cerrado LANZANDO, y hasta este WP la
+  // única llamada que lo ejercía era la última línea de la función: la
+  // denegación llegaba con el corpus ya aterrizado y el manifiesto ya
+  // re-sellado. Aquí no se ha tocado nada todavía, así que una propuesta
+  // inadmisible sale por el contrato y el root queda como estaba, byte a byte.
+  //
+  // COPIA ÚNICA, y por el mismo motivo que `ledger.mjs:28-31`: `opts.ledger`
+  // puede traer getters, y leer un campo dos veces deja que devuelva un valor
+  // para la guarda y otro para el uso. `ledger.mjs` cierra ese hueco DENTRO de
+  // la resolución; entregar el objeto VIVO hasta el asiento lo reabría un nivel
+  // más arriba — medido: un getter de `ledgerPath` que devuelve una ruta
+  // inocente la primera vez y el manifiesto la segunda pasaba la precondición y
+  // hacía lanzar al apéndice con el corpus ya aterrizado. Un solo `spread` lee
+  // cada campo UNA vez; a partir de aquí nadie vuelve a tocar `ledgerOpts`.
+  const ledgerFijo = { ...(ledgerOpts ?? {}) };
+  /** @type {string|null} */
+  let ledgerPath = null;
+  try {
+    ledgerPath = resolveOpsLedgerPath(ledgerFijo);
+  } catch (err) {
+    // Si el ROOT CANÓNICO no resuelve (U200), ese fallo tiene su propio paso y
+    // en la base ocurría antes que nada del ledger: la precondición no juzga y
+    // deja hablar a VERIFICAR. Se le PREGUNTA al resolvedor en vez de adivinarlo
+    // por el mensaje, que es lo único que distingue «el entorno está mal» de
+    // «lo que trajo el llamante está mal».
+    let rootCanonicoResuelve = true;
+    try {
+      resolveVolumesRoot();
+    } catch {
+      rootCanonicoResuelve = false;
+    }
+    if (rootCanonicoResuelve) {
+      if (err instanceof LedgerPathDenegada) {
+        return fail('precondicion-ledger', err.code, {
+          ledger: { detail: err.detail ?? null, message: err.message }
+        });
+      }
+      // Ni cerco ni entorno: `ledger` trae algo que no es utilizable. El campo
+      // `volumesRoot` está en el contrato (@param de arriba) y hasta este WP no
+      // lo tocaba ninguna prueba del repo; con `{volumesRoot: 42}` la resolución
+      // revienta con `TypeError`, y tragárselo aquí dejaba además `ledgerPath`
+      // en `null`, lo que desactivaba de paso la guarda de fusión de abajo.
+      return fail('precondicion-ledger', 'ledger_opts_invalidas', {
+        ledger: { causa: causaDe(err) }
+      });
+    }
+  }
+  if (ledgerPath !== null) {
+    // Un ledger existente con una línea ilegible revienta la RELECTURA con la
+    // que `appendOpsLedger` numera el asiento. Medido: ocurre también sobre la
+    // ruta POR DEFECTO, sin que nadie proponga nada, y dejaba el import a
+    // medias igual que una ruta denegada. Se lee una vez aquí; el apéndice ya
+    // lee el fichero entero, así que no se introduce un orden de magnitud nuevo.
+    //
+    // Lo que esta lectura NO comprueba es que el fichero se pueda ESCRIBIR. Es
+    // deliberado y está declarado: una sonda de escribibilidad tendría que
+    // tocar el root antes de VERIFICAR, que es exactamente lo que la CA-2 de
+    // este WP prohíbe. Un ledger legible pero no escribible sigue haciendo
+    // lanzar al apéndice con todo aterrizado — es la familia «sólo conocible
+    // DESPUÉS de fusionar», enrutada a WP-U268 (ver §4 del reporte).
+    try {
+      readOpsLedger({ volumesRoot: ledgerFijo.volumesRoot, ledgerPath });
+    } catch (err) {
+      return fail('precondicion-ledger', 'ledger_ilegible', {
+        ledger: { path: ledgerPath, causa: causaDe(err) }
+      });
+    }
   }
 
   // ── 1 · VERIFICAR ──────────────────────────────────────────────────────
@@ -569,6 +686,71 @@ export function importPack(opts) {
       return fail('fusionar', guarda.error.code, guarda.error.detail);
     }
 
+    // ── U253b · LA FUSIÓN NO PUEDE SEPULTAR EL SITIO DEL ASIENTO ─────────
+    // La precondición juzga la ruta del ledger contra el root TAL COMO ESTÁ al
+    // entrar. Un pack puede traer un directorio que aterrice exactamente sobre
+    // esa ruta: entonces la propuesta era admisible al principio y el cerco la
+    // deniega al final (`ledger_path_es_directorio`), con todo ya movido —
+    // medido en §4 (vector C1) del reporte de este WP. Se decide aquí, sobre el
+    // plan completo y antes del primer rename, que es donde el dato existe.
+    //
+    // Se deniegan TRES formas: que un FICHERO aterrice EN la ruta del ledger
+    // (le apendaríamos JSONL a un fichero del pack), que aterrice DEBAJO de
+    // ella (la convierte en directorio → `ledger_path_es_directorio`), y que
+    // aterrice COMO ANCESTRO de ella (el `mkdirSync` del apéndice choca contra
+    // un fichero → `ENOTDIR`/`ENOENT`). La tercera faltaba en la primera
+    // versión de esta guarda, y el comentario declaraba cerrado el conjunto en
+    // «dos formas y ninguna más»: era una frase más ancha que el código. El
+    // vector —`<vol>/raw/a.json/ops.jsonl` cuando el pack trae el FICHERO
+    // `raw/a.json`— vive además dentro de la zona que el control de abajo
+    // bendice como legítima, así que la frase tapaba justo su propio hueco.
+    //
+    // Lo que sigue permitido, y hay control que lo vigila: un ledger que viva
+    // dentro de un volumen que el pack trae sin que ningún fichero caiga en su
+    // ruta, ni debajo, ni por encima (`<vol>/ops.jsonl`). Estrechar eso sería
+    // convertir en rojo un caso que hoy es verde.
+    //
+    // La comparación es contra los FICHEROS que van a aterrizar, no contra los
+    // `to` del plan: un volumen nuevo viaja como UN solo movimiento de
+    // directorio, así que mirar los `to` no ve las hojas — medido, el vector C1
+    // se escapaba entero por ahí. El staging todavía está intacto y es el mismo
+    // árbol que va a aterrizar, así que enumerarlo aquí es exacto y barato.
+    if (ledgerPath !== null) {
+      const ledgerAbs = resolve(ledgerPath);
+      /** ¿`abajo` cuelga estrictamente de `arriba`? Por segmentos, no por prefijo. */
+      const cuelgaDe = (arriba, abajo) => {
+        const rel = relative(arriba, abajo);
+        return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel);
+      };
+      /** @type {{ volId: string, kind: string, destino: string }[]} */
+      const aterrizan = [];
+      for (const m of moves) {
+        if (existsSync(m.from) && lstatSync(m.from).isDirectory()) {
+          for (const rel of walkTree(m.from).files) {
+            aterrizan.push({
+              volId: m.volId,
+              kind: m.kind,
+              destino: join(m.to, rel.split('/').join(sep))
+            });
+          }
+        } else {
+          aterrizan.push({ volId: m.volId, kind: m.kind, destino: m.to });
+        }
+      }
+      const choque = aterrizan.find(({ destino }) => {
+        const d = resolve(destino);
+        return d === ledgerAbs || cuelgaDe(ledgerAbs, d) || cuelgaDe(d, ledgerAbs);
+      });
+      if (choque) {
+        return fail('fusionar', 'ledger_en_ruta_de_fusion', {
+          volume: choque.volId,
+          kind: choque.kind,
+          ledgerPath: ledgerAbs,
+          destino: resolve(choque.destino)
+        });
+      }
+    }
+
     // Apply pass: rename-only (same device — staging lives inside the root).
     // Con red (U255): lo que no se puede comprobar por adelantado —permiso
     // denegado, fichero tomado por otro proceso, montaje que rinde EXDEV, una
@@ -751,7 +933,10 @@ export function importPack(opts) {
           dedup: f.dedup.length
         }))
       },
-      ledgerOpts
+      // La ruta YA RESUELTA por la precondición, no la propuesta cruda: es lo
+      // que hace que `ledgerPath` se lea una sola vez en toda la función. Ver
+      // el bloque de la precondición.
+      { ...ledgerFijo, ledgerPath }
     );
 
     return {
