@@ -52,6 +52,27 @@ export declare function createClient(
   overrides?: Partial<ScriptoriumConfig>
 ): RoomsClient;
 
+/** Zonas como ámbito (WP-U196). */
+export type ZoneInput = string | string[] | Set<string> | null | undefined;
+
+/** Separador de ámbito dentro del nombre de canal: `sala::z:<zona>`. */
+export declare const ZONE_SCOPE_SEPARATOR: string;
+
+/** Canal físico de una zona. Lanza si la zona es vacía, `'*'` o lleva el separador. */
+export declare function zoneChannel(room: string, zone: string): string;
+
+/** Lista de zonas sin blancos ni duplicados, en orden de aparición. */
+export declare function normalizeZones(zones: ZoneInput): string[];
+
+/**
+ * Canales de un (room, zones). Sin zonas → `[room]` (la sala desnuda, el
+ * ámbito SIN zona). La ausencia nunca significa «todas las zonas».
+ */
+export declare function resolveZoneChannels(
+  room: string,
+  zones: ZoneInput
+): { zones: string[]; channels: string[] };
+
 export declare function connectAndJoin(
   client: RoomsClient,
   user: string,
@@ -60,21 +81,30 @@ export declare function connectAndJoin(
     features?: string[];
     room?: string;
     connectTimeoutMs?: number;
-    zones?: string | string[];
+    zones?: ZoneInput;
     peerCard?: object;
   }
-): Promise<{ room: string; socketId: string | undefined; zones: string | string[] | null }>;
+): Promise<{
+  room: string;
+  socketId: string | undefined;
+  /** Zonas normalizadas; `[]` = ámbito sin zona (antes de U196: `null`). */
+  zones: string[];
+  /** Canales realmente suscritos: `[room]` o uno por zona. */
+  channels: string[];
+}>;
 
 export declare function makeMaster(
   client: RoomsClient,
   room: string,
-  data?: Record<string, unknown>
+  data?: Record<string, unknown>,
+  zone?: string
 ): void;
 
 export declare function setState(
   client: RoomsClient,
   room: string,
-  data: unknown
+  data: unknown,
+  zone?: string
 ): void;
 
 export declare function onState(
@@ -86,7 +116,8 @@ export declare function emitRoomEvent(
   client: RoomsClient,
   event: string,
   data: unknown,
-  room?: string
+  room?: string,
+  zone?: string
 ): void;
 
 export declare function onRoomEvent(

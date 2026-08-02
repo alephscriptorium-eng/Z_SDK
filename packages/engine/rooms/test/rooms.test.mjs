@@ -103,7 +103,10 @@ test('onState subscribes to SET_STATE', () => {
   assert.deepEqual(seen, [{ phase: 'activa' }]);
 });
 
-test('connectAndJoin emits CLIENT_SUSCRIBE with optional zones', async () => {
+// U196: este test afirmaba el contrato cosmético anterior — `zones` viajaba
+// entero dentro de UN CLIENT_SUSCRIBE a la sala, y el servidor lo ignoraba.
+// Ahora afirma el contrato de ámbito: una suscripción por canal de zona.
+test('connectAndJoin emits one CLIENT_SUSCRIBE per zone channel', async () => {
   const emitted = [];
   const mockIo = new EventEmitter();
   mockIo.id = 'sock-zones';
@@ -128,9 +131,10 @@ test('connectAndJoin emits CLIENT_SUSCRIBE with optional zones', async () => {
 
   assert.equal(joined.room, 'ROOM_Z');
   assert.deepEqual(joined.zones, ['editores']);
-  const sub = emitted.find((e) => e.event === 'CLIENT_SUSCRIBE');
-  assert.ok(sub);
-  assert.deepEqual(sub.payload, { room: 'ROOM_Z', zones: ['editores'] });
+  assert.deepEqual(joined.channels, ['ROOM_Z::z:editores']);
+  const subs = emitted.filter((e) => e.event === 'CLIENT_SUSCRIBE');
+  assert.equal(subs.length, 1);
+  assert.deepEqual(subs[0].payload, { room: 'ROOM_Z::z:editores', zone: 'editores' });
 });
 
 test('connectAndJoin forwards peerCard on CLIENT_REGISTER', async () => {
