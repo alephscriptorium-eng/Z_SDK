@@ -20,7 +20,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   resolveRoomClientConfig,
   DEFAULT_ZEUS_UI_MESH,
-  readEnvPortAlias
+  readEnvPortAlias,
+  uiPortEnvChain
 } from '@zeus/room-client-browser';
 
 /**
@@ -41,10 +42,9 @@ import {
  * divergir, y `OPERATOR_UI_PORT` mantiene la prioridad que ya tenia.
  */
 function puertoOperatorUiDeEntorno() {
-  return readEnvPortAlias(
-    ['OPERATOR_UI_PORT', 'ZEUS_PORT_OPERATOR_UI'],
-    DEFAULT_ZEUS_UI_MESH.operator.port
-  );
+  // El orden vive en la fuente única (`UI_PORT_ENV_CHAIN`), para que el
+  // catálogo y `stop:services` anuncien el mismo puerto que aquí se ata.
+  return readEnvPortAlias(uiPortEnvChain('operator'), DEFAULT_ZEUS_UI_MESH.operator.port);
 }
 
 const here = path.dirname(fileURLToPath(import.meta.url));

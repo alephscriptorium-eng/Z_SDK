@@ -26,6 +26,8 @@ import {
   resetZeusEnvLoader,
   resolveZeusUiPorts,
   resolveSpecToolPorts,
+  resolveStopServicePorts,
+  uiPortEnvChain,
   SPEC_TOOL_PORTS
 } from '../src/env/index.mjs';
 
@@ -215,6 +217,50 @@ test('U266 · readEnvPortAlias: valida SOLO el nombre que gana', () => {
     else process.env[CANON] = prev.c;
     if (prev.l === undefined) delete process.env[LEGADO];
     else process.env[LEGADO] = prev.l;
+  }
+});
+
+test('U266/M-a · el alias legado NO es invisible al lado del anuncio', () => {
+  // Antes de esta tabla, el alias sólo lo veía quien ATA. Medido:
+  //   ZEUS_SCRIPTORIUM_PORT=5555 -> socket-server escuchaba en 5555,
+  //   resolveCatalog() anunciaba 3017 y resolveStopServicePorts daba [3017],
+  //   o sea que `stop:services` no lo mataba.
+  const prev = process.env.ZEUS_SCRIPTORIUM_PORT;
+  try {
+    resetZeusEnvLoader();
+    process.env.ZEUS_SCRIPTORIUM_PORT = '5555';
+    assert.equal(resolveZeusUiPorts().scriptorium.port, 5555, 'el mesh (lo que anuncia) ve el alias');
+    assert.deepEqual(resolveStopServicePorts('socket-server'), [5555], 'stop apunta al puerto real');
+  } finally {
+    if (prev === undefined) delete process.env.ZEUS_SCRIPTORIUM_PORT;
+    else process.env.ZEUS_SCRIPTORIUM_PORT = prev;
+    resetZeusEnvLoader();
+  }
+});
+
+test('U266/M-a · el orden de cada cadena es el que ya usaban los servidores', () => {
+  // No es cosmético: invertirlo mueve el puerto a quien ya lo tenga configurado.
+  assert.deepEqual(uiPortEnvChain('scriptorium'), [
+    'ZEUS_PORT_SCRIPTORIUM',
+    'ZEUS_SCRIPTORIUM_PORT'
+  ]);
+  assert.deepEqual(uiPortEnvChain('operator'), ['OPERATOR_UI_PORT', 'ZEUS_PORT_OPERATOR_UI']);
+  assert.deepEqual(uiPortEnvChain('webrtcViewer'), [
+    'WEBRTC_VIEWER_PORT',
+    'ZEUS_PORT_WEBRTC_VIEWER'
+  ]);
+  // Un slot sin alias devuelve su clave canónica y nada más.
+  assert.deepEqual(uiPortEnvChain('editor'), ['ZEUS_PORT_EDITOR']);
+  // Y el alias que gana se valida como cualquier otro.
+  const prev = process.env.OPERATOR_UI_PORT;
+  try {
+    resetZeusEnvLoader();
+    process.env.OPERATOR_UI_PORT = '0';
+    assert.throws(() => resolveZeusUiPorts(), { code: ZEUS_PORT_ERROR_CODE });
+  } finally {
+    if (prev === undefined) delete process.env.OPERATOR_UI_PORT;
+    else process.env.OPERATOR_UI_PORT = prev;
+    resetZeusEnvLoader();
   }
 });
 

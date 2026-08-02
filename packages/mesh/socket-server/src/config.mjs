@@ -1,4 +1,4 @@
-import { DEFAULT_ZEUS_UI_MESH, readEnvPortAlias } from '@zeus/presets-sdk/env';
+import { DEFAULT_ZEUS_UI_MESH, readEnvPortAlias, uiPortEnvChain } from '@zeus/presets-sdk/env';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { RELAY_CONTRACT } from './relay-contract.mjs';
 
@@ -39,7 +39,7 @@ export function resolveConfig(options = {}) {
     port:
       options.port != null
         ? Number(options.port)
-        : readEnvPortAlias(['ZEUS_PORT_SCRIPTORIUM', 'ZEUS_SCRIPTORIUM_PORT'], mesh.port),
+        : readEnvPortAlias(uiPortEnvChain('scriptorium'), mesh.port),
     host: options.host ?? process.env.ZEUS_SCRIPTORIUM_HOST ?? mesh.host,
     bridge: options.bridge ?? process.env.ZEUS_SCRIPTORIUM_BRIDGE ?? 'local',
     secret: options.secret ?? resolveScriptoriumSecret()

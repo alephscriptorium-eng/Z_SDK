@@ -46,6 +46,7 @@ export function resolveRoomClientConfig(opts = {}) {
 export {
   DEFAULT_ZEUS_UI_MESH,
   resolveZeusUiPorts,
-  readEnvPortAlias
+  readEnvPortAlias,
+  uiPortEnvChain
 } from '@zeus/presets-sdk/env';
 export { DEV_ROOM_CLIENT_CONFIG } from '../browser/dev-room-config.mjs';

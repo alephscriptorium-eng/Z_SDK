@@ -92,13 +92,19 @@ const CUENTA_BAJADA = 8;
  *    es higiene pendiente del paquete, anotada en el reporte.
  */
 const EMISIONES_ANCLADAS = 5;
-// WP-U266 · re-anclado. Cambio: `src/config.mjs` pasa a resolver su puerto por
-// `readEnvPortAlias` de la fuente unica en vez de `Number(process.env…)`.
-// El censo lo cazo, que es su trabajo. Es legitimo y no toca la propagacion:
-// `config.mjs` sigue con `emisiones=0` y `relay.mjs` —el unico emisor— queda
-// intacto con sus 5, asi que `EMISIONES_ANCLADAS` no se mueve.
-// Sello anterior: c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0
-const SELLO_DESPACHO_ANCLADO = '9decbf22d8cad61a4f50d3ff1b719e2e984590047f728521aa516036af6d7617';
+// WP-U266 · re-anclado DOS veces, y las dos por `src/config.mjs`:
+//   1. pasa a resolver su puerto por `readEnvPortAlias` en vez de `Number(process.env…)`
+//   2. el ORDEN de sus dos claves deja de estar escrito aqui y se pide a
+//      `uiPortEnvChain('scriptorium')`, para que quien ata y quien anuncia no
+//      puedan divergir (M-a: con `ZEUS_SCRIPTORIUM_PORT=5555` el servidor
+//      escuchaba en 5555 y el catalogo anunciaba 3017).
+// El censo lo cazo las dos veces, que es su trabajo. Ninguna toca la
+// propagacion: `config.mjs` sigue con `emisiones=0` y `relay.mjs` —el unico
+// emisor— queda intacto con sus 5, asi que `EMISIONES_ANCLADAS` no se mueve.
+// Sellos anteriores:
+//   c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0  (base)
+//   9decbf22d8cad61a4f50d3ff1b719e2e984590047f728521aa516036af6d7617  (paso 1)
+const SELLO_DESPACHO_ANCLADO = 'bc27d3dedd0ae6602f8692eec771cccaa0f9db0f7f9fb9f635a39765d3d40877';
 
 /** Nombres que socket.io reserva y no se pueden emitir como evento. */
 const RESERVADOS_SOCKETIO = new Set([

@@ -129,6 +129,45 @@ export const UI_PORT_ENV = {
   solveView: 'ZEUS_PORT_SOLVE_VIEW'
 };
 
+/**
+ * Alias LEGADOS por slot de UI, en su ORDEN DE PRECEDENCIA REAL — el que ya
+ * usaban los servidores, no el que nos gustaría (WP-U266 · M-a).
+ *
+ * Sin esta tabla, el alias sólo lo veía quien ATA y no quien ANUNCIA, y eso es
+ * el defecto de la ficha por otra puerta. Medido antes de existir, con
+ * configuración enteramente válida:
+ *
+ *   ZEUS_SCRIPTORIUM_PORT=5555
+ *     socket-server ATA en     5555
+ *     resolveCatalog() ANUNCIA 3017
+ *     resolveStopServicePorts  [3017]   ← `stop:services` no lo mataba
+ *
+ * Ojo al orden, que NO es uniforme y es deliberado: `scriptorium` lee primero
+ * la canónica; `operator` y `webrtcViewer` leen primero el alias, porque es lo
+ * que hacían sus servidores desde antes de este WP y cambiarlo movería el
+ * puerto a quien ya lo tuviera configurado.
+ *
+ * Un slot sin entrada aquí usa su clave canónica y punto.
+ */
+export const UI_PORT_ENV_CHAIN = Object.freeze({
+  scriptorium: Object.freeze(['ZEUS_PORT_SCRIPTORIUM', 'ZEUS_SCRIPTORIUM_PORT']),
+  operator: Object.freeze(['OPERATOR_UI_PORT', 'ZEUS_PORT_OPERATOR_UI']),
+  webrtcViewer: Object.freeze(['WEBRTC_VIEWER_PORT', 'ZEUS_PORT_WEBRTC_VIEWER'])
+});
+
+/**
+ * Cadena de claves de entorno para un slot, de mayor a menor prioridad.
+ * Es la ÚNICA definición del orden: quien ata y quien anuncia leen de aquí.
+ * @param {string} uiId
+ * @returns {string[]}
+ */
+export function uiPortEnvChain(uiId) {
+  const cadena = UI_PORT_ENV_CHAIN[uiId];
+  if (cadena) return [...cadena];
+  const canonica = UI_PORT_ENV[uiId];
+  return canonica ? [canonica] : [];
+}
+
 /** App id → override var (UI slots plus the debug MCP HTTP port). */
 const APP_PORT_ENV = { ...UI_PORT_ENV, debug: 'ZEUS_PORT_PLAYER_DEBUG' };
 
@@ -294,16 +333,27 @@ export function readEnvPort(name, fallback) {
  * Solo el ganador se valida a proposito: que un alias que NO se usa este mal
  * escrito no debe tumbar un arranque que no lo lee.
  *
+ * `env` permite pasar un mapa distinto de `process.env` (lo necesita
+ * `webrtc-viewer/src/game-bridge.mjs`, cuya API publica lo recibe por
+ * parametro). Con `env` explicito NO se carga el `.env` de raiz: quien pasa su
+ * propio mapa esta diciendo "resuelve contra ESTO".
+ *
  * @param {string[]} names — de mayor a menor prioridad
  * @param {number} fallback
+ * @param {Record<string, string|undefined>} [env] — por defecto `process.env`
  * @returns {number}
  * @throws {ZeusPortConfigError} si el nombre que gana esta mal formado
  */
-export function readEnvPortAlias(names, fallback) {
-  loadZeusEnv();
+export function readEnvPortAlias(names, fallback, env) {
+  const delProceso = env === undefined;
+  if (delProceso) loadZeusEnv();
+  const fuente = delProceso ? process.env : env;
   for (const name of names) {
-    const raw = process.env[name];
-    if (raw != null && raw !== '') return readEnvPort(name, fallback);
+    const raw = fuente[name];
+    if (raw == null || raw === '') continue;
+    const r = validarPuerto(raw);
+    if (!r.ok) throw new ZeusPortConfigError(name, raw, r.motivo);
+    return r.value;
   }
   return fallback;
 }
@@ -340,10 +390,12 @@ export function applyEnvToMcp(mcp, host) {
 export function applyEnvToUis(uis, host) {
   const out = structuredClone(uis);
   const resolvedHost = resolveZeusHost(host || 'localhost');
-  for (const [uiId, envKey] of Object.entries(UI_PORT_ENV)) {
+  for (const uiId of Object.keys(UI_PORT_ENV)) {
     if (!out[uiId]) continue;
     out[uiId].host = resolvedHost;
-    out[uiId].port = readEnvPort(envKey, out[uiId].port);
+    // Por la CADENA, no por la clave suelta: si el servidor ata por un alias
+    // legado, el catálogo tiene que anunciar ESE puerto (WP-U266 · M-a).
+    out[uiId].port = readEnvPortAlias(uiPortEnvChain(uiId), out[uiId].port);
   }
   return out;
 }
@@ -391,6 +443,10 @@ export function resolveZeusUiPorts(baseUis = DEFAULT_ZEUS_UI_MESH) {
  * @param {number} fallback
  */
 export function resolveAppPort(appId, fallback) {
+  // Misma cadena que `applyEnvToUis`: el que ata y el que anuncia no pueden
+  // leer las claves en orden distinto (WP-U266 · M-a).
+  const cadena = UI_PORT_ENV_CHAIN[appId] ? uiPortEnvChain(appId) : null;
+  if (cadena) return readEnvPortAlias(cadena, fallback);
   const envKey = APP_PORT_ENV[appId];
   return envKey ? readEnvPort(envKey, fallback) : fallback;
 }

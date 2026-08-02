@@ -59,6 +59,8 @@ export {
   resolvePrensaBaseUrl,
   readEnvPort,
   readEnvPortAlias,
+  uiPortEnvChain,
+  UI_PORT_ENV_CHAIN,
   validarPuerto,
   ZeusPortConfigError,
   ZEUS_PORT_ERROR_CODE,

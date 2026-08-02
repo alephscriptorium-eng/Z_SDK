@@ -20,10 +20,37 @@ import {
   resolveZeusHost,
   resolveZeusUiPorts,
   resolvePlayerDebugEndpoint,
+  validarPuerto,
+  ZeusPortConfigError,
   DEFAULT_ZEUS_UI_MESH,
   DEFAULT_ZEUS_MCP
 } from '@zeus/presets-sdk/env';
+
 import { resolveScriptoriumSecret } from '@zeus/rooms';
+
+/**
+ * Puerto declarado en el `config.json` de la app, validado (WP-U266 · M-b).
+ *
+ * Un fichero de configuracion **es configuracion**, que es justo lo que la
+ * garantia de esta ficha dice cubrir; hasta ahora esta via entraba cruda y un
+ * `{"server":{"port":0}}` daba `server.port = 0` (medido, igual con `-1` y
+ * `70000`). Hoy no lo alcanza ninguna app real —ninguno de los seis
+ * `src/config.json` del repo declara `server`— pero la puerta estaba abierta.
+ *
+ * Se valida SOLO si es el valor que gana, por coherencia con la regla de los
+ * alias: lo que no se lee no tumba un arranque. El `??` de abajo hace que esta
+ * funcion ni se llame si `defaultPort` o `appBase.port` deciden antes.
+ *
+ * @param {any} fileConfig
+ * @returns {number|undefined}
+ */
+function puertoDeConfigJson(fileConfig) {
+  const raw = fileConfig?.server?.port;
+  if (raw == null || raw === '') return undefined;
+  const r = validarPuerto(String(raw));
+  if (!r.ok) throw new ZeusPortConfigError('config.json · server.port', String(raw), r.motivo);
+  return r.value;
+}
 
 const VOLATILE_CONFIG_KEYS = [
   'server',
@@ -181,7 +208,7 @@ export function resolveRuntimeConfig(fileConfig, { appId, packageDir, appBase, d
   runtime.server = {
     ...(fileConfig.server || {}),
     host,
-    port: resolveAppPort(appId, defaultPort ?? appBase.port ?? fileConfig.server?.port ?? 3000)
+    port: resolveAppPort(appId, defaultPort ?? appBase.port ?? puertoDeConfigJson(fileConfig) ?? 3000)
   };
 
   runtime.discovery = {

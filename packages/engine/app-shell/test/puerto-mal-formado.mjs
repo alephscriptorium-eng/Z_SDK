@@ -91,6 +91,59 @@ test('U266 · sin override, el bind cae en el defecto de siempre', () => {
   });
 });
 
+test('U266/M-b · un puerto mal formado en el config.json de la app tambien aborta', () => {
+  // Un fichero de configuracion ES configuracion. Esta via entraba cruda:
+  // `{"server":{"port":0}}` daba `server.port = 0` (medido; igual -1 y 70000).
+  // Hoy no la alcanza ninguna app real —ninguno de los seis src/config.json
+  // declara `server`— pero la puerta estaba abierta y la garantia la nombra.
+  for (const malo of [0, -1, 70000, 3.5]) {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'u266-cfgjson-'));
+    const srcDir = path.join(tempDir, 'src');
+    fs.mkdirSync(srcDir);
+    fs.writeFileSync(
+      path.join(srcDir, 'config.json'),
+      JSON.stringify({ server: { port: malo } }),
+      'utf8'
+    );
+    const configUrl = pathToFileURL(path.join(srcDir, 'config.mjs')).href;
+    try {
+      conPuertoEditor(undefined, () => {
+        assert.throws(
+          () =>
+            createAppConfig({
+              appId: 'sinSlotDeMesh',
+              importMetaUrl: configUrl
+            }).getConfig(),
+          { code: 'ZEUS_PUERTO_MAL_FORMADO' },
+          `config.json server.port=${malo} deberia abortar`
+        );
+      });
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+});
+
+test('U266/M-b · un config.json con puerto legitimo sigue funcionando', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'u266-cfgjson-ok-'));
+  const srcDir = path.join(tempDir, 'src');
+  fs.mkdirSync(srcDir);
+  fs.writeFileSync(
+    path.join(srcDir, 'config.json'),
+    JSON.stringify({ server: { port: 4444 } }),
+    'utf8'
+  );
+  const configUrl = pathToFileURL(path.join(srcDir, 'config.mjs')).href;
+  try {
+    conPuertoEditor(undefined, () => {
+      const cfg = createAppConfig({ appId: 'sinSlotDeMesh', importMetaUrl: configUrl }).getConfig();
+      assert.equal(cfg.server.port, 4444);
+    });
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test('U266 · el puerto de escucha resuelto nunca es 0', () => {
   // El 0 es el vector que abrio la ficha: `listen(0)` pide puerto efimero, y
   // ahi es donde el anunciado y el real se separaban.

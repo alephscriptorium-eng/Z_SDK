@@ -10,8 +10,15 @@
  *    el `Number(...)` viejo restaurado, el caso sigue abortando: **salta OTRO
  *    guardian**, no el de aqui. El test 1 pasa en la ablacion y por eso NO
  *    demuestra el cableado de este fichero.
- *  - `WEBRTC_VIEWER_PORT` (alias legado) **no la conoce nadie mas**. Ese era el
- *    hueco real, y es el unico caso que enrojece al ablacionar.
+ *  - `WEBRTC_VIEWER_PORT` (alias legado) no la conoce ningun resolver de la
+ *    fuente unica. Ese era el hueco real, y es el unico caso que enrojece al
+ *    ablacionar ESTE fichero.
+ *
+ * CORRECCION (WP-U266 · B2): una version anterior de este comentario decia que
+ * el alias «no lo conoce nadie mas». **Era falso**: `src/game-bridge.mjs` lo
+ * leia por su cuenta y anunciaba `http://localhost:0` con rc=0. Lo cubre ahora
+ * `game-bridge.test` / `puerto-anunciado.test.mjs`. La frase estaba escrita con
+ * la confianza de un censo cuyo instrumento no podia ver ese fichero.
  *
  * `resolveViewerPort` no se exporta, asi que se ejerce por el entrypoint real
  * en un proceso hijo: es ademas lo que de verdad significa "falla al arrancar".
