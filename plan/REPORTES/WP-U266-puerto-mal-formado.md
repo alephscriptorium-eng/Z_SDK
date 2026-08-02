@@ -10,38 +10,57 @@
 ## 0 · Resultado en una línea
 
 `readEnvPort` valida ahora la **cadena cruda** (entero decimal 1..65535) y
-**lanza** en vez de caer al defecto; y el catálogo **deja de tragarse** ese
-error. Hacen falta las dos cosas: con sólo la primera, medido, el catálogo
-anunciaba **4101** en verde con `ZEUS_MCP_SUN=0` — un falso verde peor que el
-defecto original.
+**lanza** en vez de caer al defecto; el catálogo **deja de tragarse** ese error;
+y los **tres servidores que resolvían su puerto a mano** pasan por la fuente
+única. Hacen falta las tres cosas: con sólo la primera, medido, el catálogo
+anunciaba **4101** en verde con `ZEUS_MCP_SUN=0`, y `socket-server` seguía
+levantando en un efímero con `ZEUS_PORT_SCRIPTORIUM=0`.
 
 ---
 
 ## 1 · La decisión de diseño, con el radio delante
 
-### 1.1 · El radio, re-medido (la cifra del brief estaba mal)
+### 1.1 · El censo, RE-HECHO por el criterio correcto (corrección de la 1ª entrega)
 
-El brief decía «11 llamadas dentro de `presets-sdk/src/env/index.mjs`». **Son
-9.** Re-medido hoy sobre el árbol:
+**Mi primera entrega midió el radio de la FUNCIÓN y lo presentó como el radio
+del DEFECTO.** Es un error de encuadre, no de aritmética, y es la raíz de B1: el
+defecto no es «quién llama a `readEnvPort`», es **«quién convierte una cadena
+`ZEUS_PORT_*` / `ZEUS_MCP_*` en un puerto de escucha»**. Ese conjunto es
+estrictamente mayor, y los que faltaban **faltaban precisamente por no llamar a
+`readEnvPort` — que es lo que los hacía vulnerables**.
+
+**Censo viejo (criterio equivocado: llamadas a `readEnvPort`)**
+
+| consumidor | cuántos |
+| --- | --- |
+| `presets-sdk/src/env/index.mjs` | 9 call sites |
+| `packages/mesh/linea-firehose/src/config.mjs:12` | 1 |
+| `presets-sdk/test/env-canonical.mjs:33,38` | 2 asertos |
+
+Y la frase que escribí: «el **único** consumidor de producción fuera de
+presets-sdk». **Es verdad de la función y falsa de la ficha.**
+
+**Censo nuevo (criterio correcto: quien convierte la cadena en puerto de escucha)**
 
 ```bash
-grep -n "readEnvPort(" packages/engine/presets-sdk/src/env/index.mjs | grep -v "export function"
-#   :301 :318 :367 :375 :393 :414 :415 :416 :417   -> 9 call sites
-grep -c "readEnvPort(" packages/engine/presets-sdk/src/env/index.mjs
-#   10  = 9 call sites + 1 línea de la definición
+grep -rnE "process\.env\.(ZEUS_PORT_[A-Z_0-9]+|ZEUS_MCP_[A-Z_0-9]+|ZEUS_[A-Z_0-9]*PORT[A-Z_0-9]*|OPERATOR_UI_PORT)" \
+  --include=*.mjs packages/ scripts/ e2e/ | grep -v node_modules | grep -v /test/
 ```
 
-(Las líneas se han desplazado respecto al brief —`:195 :212 :261 …`— porque el
-bloque de precedencia y la guarda se insertaron por encima.)
+| # | fichero | clave(s) | ¿en `.env.example`? | estado |
+| --- | --- | --- | --- | --- |
+| 1 | `presets-sdk/src/env/index.mjs` | todas, vía `readEnvPort` | — | fuente única |
+| 2 | `mesh/linea-firehose/src/config.mjs:12` | `ZEUS_MCP_FIREHOSE` | sí | ya usaba `readEnvPort` |
+| 3 | **`mesh/socket-server/src/config.mjs`** (`:29-35` antes; `:42` ahora) | `ZEUS_PORT_SCRIPTORIUM` + alias `ZEUS_SCRIPTORIUM_PORT` | **sí** (`.env.example:30`) | **B1 · era vulnerable · ARREGLADO** |
+| 4 | **`mesh/operator-ui/serve.mjs`** (`:66,163` antes; `:90,183` ahora) | `OPERATOR_UI_PORT` + `ZEUS_PORT_OPERATOR_UI` | **sí** (`:26`) | **sólo el alias · ARREGLADO** |
+| 5 | **`mesh/webrtc-viewer/serve.mjs`** (`:50-59` antes; `:75` ahora) | `WEBRTC_VIEWER_PORT` + `ZEUS_PORT_WEBRTC_VIEWER` | **sí** (`:28`) | **sólo el alias · ARREGLADO** — no lo nombraba nadie: **sale del censo** |
+| 6 | `mcp-launcher/src/launcher-server.mjs` (`:15-18` antes; `:24` ahora) | `ZEUS_MCP_LAUNCHER` | sí | M3 · antipatrón · ARREGLADO |
+| 7 | `scripts/smoke-dual-ui.mjs:21-26` | 6 claves | sí | M7 · ARREGLADO |
+| 8 | `scripts/smoke-external-consumer.mjs:30` | `ZEUS_SMOKE_SCRIPTORIUM_PORT` | **no** | M7 · declarado, **no** arreglado (§7.8) |
+| 9 | `e2e/*.mjs` (helpers, demos) | varias | — | **escriben** el entorno, no lo leen para atar |
 
-| consumidor | qué es | cuántos |
-| --- | --- | --- |
-| `presets-sdk/src/env/index.mjs` | interno del propio módulo | **9** call sites |
-| `packages/mesh/linea-firehose/src/config.mjs:12` | **único** consumidor de producción fuera de presets-sdk | 1 |
-| `presets-sdk/test/env-canonical.mjs:33,38` | test | 2 asertos |
-| `presets-sdk/src/index.mjs:60` + `src/env/index.d.ts` (`:31` en la base, `:59` ya con los tipos nuevos) | **API publicada** (valor y tipo) | — |
-
-Comprobado con `rc` aparte (`grep … > /dev/null; echo $?`), no por tubería.
+**Cifra nueva: 3 servidores de producción resolvían su puerto fuera de la fuente
+única** (más 1 servidor MCP, 2 scripts y el `e2e`), no «1 consumidor».
 
 ### 1.2 · ¿Dónde va la guarda? En las dos. Y no por gusto
 
@@ -82,6 +101,49 @@ Por eso:
 El error se discrimina por **`code`** y no por `instanceof`: con copias
 duplicadas del paquete en el monorepo `instanceof` falla entre instancias
 distintas del módulo. El `code` viaja. Está escrito en el JSDoc, no escondido.
+
+3. **Los tres servidores que resolvían a mano** (B1). La CA es una propiedad
+   **del producto**, no de una función: se cierra por arriba, haciendo que
+   pasen por la fuente única, no acotando la cabecera de `.env.example`.
+
+### 1.2.bis · B1 · el hueco que la contrarrevisión encontró, y su reparto de méritos
+
+`.env.example` prometía, **bajo la cabecera que añadí yo**, que «un valor mal
+formado aborta el arranque; NO cae al default». Para tres de sus claves era
+mentira. Documentación que miente al operador es peor que el silencio anterior.
+
+Reproducido antes de tocar nada, por el entrypoint documentado:
+
+```
+cd packages/mesh/socket-server && ZEUS_PORT_SCRIPTORIUM=0 node src/index.mjs
+→ rc=0, VERDE  ·  los siete vectores: port=0 / -1 / 65536 / 3.5 / 16 / 0 / 3012
+```
+
+**Pero el reparto de méritos NO es el que decía la devolución, y lo medí
+ablacionando en vez de suponerlo.** Con la guarda de `presets-sdk` ya puesta
+(mi primer commit) y el `Number(...)` viejo restaurado en cada servidor:
+
+| servidor | clave canónica | alias legado |
+| --- | --- | --- |
+| `socket-server` | **vulnerable de verdad** (usa `DEFAULT_ZEUS_UI_MESH.scriptorium`, una constante: nadie valida) | vulnerable |
+| `operator-ui` | **ya cubierta** por `resolveRoomClientConfig()` → `resolveZeusUiPorts()` (`room-client-browser/src/index.mjs:29`) | **vulnerable** |
+| `webrtc-viewer` | **ya cubierta** por su propio `resolveZeusUiPorts()` (lo llama para el defecto) | **vulnerable** |
+
+Medida que lo fija, con el código viejo y `OPERATOR_UI_PORT=0`:
+
+```
+Serving at http://localhost:55770 · room=CIUDAD_DEMO · game=ciudad     ← rc=124 (timeout: seguía vivo)
+```
+
+Un efímero anunciado como suyo. Con `ZEUS_PORT_OPERATOR_UI=0`, en cambio, el
+código viejo **ya abortaba** — por `resolveZeusUiPorts`, no por este fichero.
+
+**Conclusión honesta**: la devolución acierta de pleno en `socket-server`
+(medido, verde, exactamente el defecto de la ficha) y acierta en que hay que
+cerrarlo por arriba; en `operator-ui` lo que quedaba vivo era **el alias
+legado**, no la clave canónica. El arreglo sigue siendo el correcto en los tres:
+depender de que otro resolver valide «de rebote» es exactamente la fragilidad
+que esta ficha existe para quitar.
 
 ### 1.3 · El cambio de contrato, declarado
 
@@ -249,8 +311,39 @@ guardián»**. Cuatro ablaciones, y lo que vi en cada una:
 
 **La ablación B es la que justifica el diseño**: con la guarda de `readEnvPort`
 enteramente puesta, la suite de la función se queda **10/10 en verde** y sólo
-enrojece la del catálogo. Es la demostración literal de «probar la función no es
-probar el camino»: el test de función es **ciego** al `catch` mudo.
+enrojece la del catálogo.
+
+**Matización pedida (M6), y es justa**: esa ceguera es **por construcción**, no
+un casi-fallo medido. `presets-sdk/test/env-puerto-mal-formado.mjs` **no importa
+`catalog.mjs` bajo ninguna configuración**, así que no podría enterarse aunque
+quisiera. Sigue valiendo como demostración de que *ese* fichero no cubre *ese*
+camino —que es lo que se quería mostrar— pero no es «un test que estuvo a punto
+de cazarlo y no pudo». El casi-fallo real de este WP es otro y está en §4.1.
+
+### 4.bis · Ablaciones de la segunda vuelta (B1 y menores)
+
+| # | qué desactivé | qué miré | resultado | diagnóstico |
+| --- | --- | --- | --- | --- |
+| **E** | `socket-server/src/config.mjs` restaurado a `Number(process.env…)` | su suite nueva | **1 pass / 4 fail** | **nadie disparó**: `Missing expected exception: "0" deberia abortar` |
+| **F** | `webrtc-viewer/serve.mjs` restaurado | su suite nueva | **1 pass / 2 fail** | **mixto — ver abajo** |
+| **G** | `operator-ui/serve.mjs` restaurado (los dos sitios) | entrypoint real | `OPERATOR_UI_PORT=0` → **arranca y anuncia 55770**, rc=124 | **nadie disparó** |
+
+**La ablación F es la que hay que leer con cuidado, porque cazó un error mío.**
+En su primera versión, mi test de `webrtc-viewer` afirmaba que los siete
+vectores por la clave **canónica** demostraban el cableado de ese fichero. Al
+ablacionar, **ese test siguió en verde**: lo satisfacía `resolveZeusUiPorts()`,
+que `resolveViewerPort` llama para calcular su defecto. Eso es literalmente
+**«saltó OTRO guardián»** — parecía verificación y no lo era.
+
+Reescrito: el test de la canónica **dice en su nombre de quién es el mérito**
+(`guardian: resolveZeusUiPorts`) y el que sostiene este fichero es el del alias
+legado, que sí enrojece al ablacionar. Diagnóstico del rojo del alias: el hijo
+sale con **rc=-1/124 por timeout**, es decir **el servidor arrancó de verdad** y
+siguió vivo en un efímero. Nadie disparó.
+
+**Una ablación no vale sólo por enrojecer: vale por enrojecer donde dice.** Si
+me hubiera quedado con el conteo (`2 fail`) y no con el reparto, habría firmado
+una cobertura que no tenía.
 
 Las ablaciones son **dirigidas**, no destructivas: en A, B y D los tests de
 valores legítimos y de defectos siguen verdes; sólo caen los asertos del valor
@@ -273,13 +366,72 @@ el propio fichero para que nadie lo simplifique a un `rc`.
 
 ---
 
+## 4.ter · Lo que rompí sin querer, y el idioma que no había visto
+
+**Mi guarda tumbó el gate `GD`.** `e2e/local-first-ca.mjs` ponía
+`ZEUS_MCP_FORCES = '0'` **a propósito** en dos pasos, con el comentario «puerto
+0 para no chocar con nada». Medido tras mi primer commit:
+
+```
+ZEUS_GAMES_LIBRARY=C:/S_LAB/g-sdk node e2e/local-first-ca.mjs
+→ RC=1 · 2 paso(s) en rojo: 2, 6
+  error · Puerto mal formado: ZEUS_MCP_FORCES="0" — fuera de rango 1..65535
+```
+
+No es un daño colateral aceptable: `GD` es un gate abierto por decisión del
+custodio y lo citan las aceptaciones de U255, U258 y U259.
+
+**Cómo lo cerré, y por qué NO relajando la guarda.** Lo que ese arnés quiere no
+es «el puerto cero», es «un puerto que no choque». `startAll()` de
+`@zeus/force-system` no acepta puerto por argumento (`start.mjs:15`), así que el
+entorno era su único punto de inyección. Se pide un puerto libre al SO y se pasa
+como número concreto — la doctrina que **U267** ya dejó escrita para este mismo
+problema (`mcp-launcher/test/helpers/ports.mjs`). Después:
+
+```
+→ RC=0 · 7/7 pasos verdes · 14 vectores rojos comprobados
+```
+
+que es exactamente la cifra histórica de U259.
+
+**Esto refina el contrato y merece estar escrito**: `0` **explícito en código**
+es un idioma legítimo y vivo de esta casa («dame un efímero») — seis llamadas de
+la suite de `socket-server` lo usan, y U267 lo bendijo. `ZEUS_*=0` **desde el
+entorno** es configuración mal formada. Por eso la guarda va en la conversión
+**cadena-de-entorno → puerto**, y `options.port` / `{ port: 0 }` pasan intactos.
+No es una inconsistencia: es la línea exacta del defecto.
+
+### 4.quater · Un octavo vector que nadie había medido
+
+La ablación E hizo caer también el test de valores legítimos, y no por lo que yo
+esperaba. Con el código viejo de `socket-server`:
+
+```
+ZEUS_PORT_SCRIPTORIUM=  node -e "…resolveConfig().port"   →  port = 0
+```
+
+`Number('' ?? mesh.port)` = `Number('')` = **0**: el `??` no salta la cadena
+vacía. O sea que una clave **declarada y vacía** —el caso que todo el mundo
+entiende como «sin configurar»— hacía que el Scriptorium atara un puerto
+efímero. No está en los siete de la ficha y no lo había medido nadie. Con el
+arreglo da el defecto (`3017`), y hay aserto que lo fija.
+
+---
+
 ## 5 · Vectores de prueba entregados (CA-3)
 
 | fichero | qué ejerce | tests | ¿lo corre CI? |
 | --- | --- | --- | --- |
-| `packages/engine/presets-sdk/test/env-puerto-mal-formado.mjs` | la **función** + precedencia `.env`/proceso | 10 | **sí** (`@zeus/presets-sdk` está en la matriz) |
-| `packages/engine/app-shell/test/puerto-mal-formado.mjs` | el **bind** (`createAppConfig → resolveAppPort`) | 4 | **sí** (`@zeus/app-shell` está en la matriz) |
+| `packages/engine/presets-sdk/test/env-puerto-mal-formado.mjs` | la **función**, `readEnvPortAlias`, `SPEC_TOOL_PORTS` perezoso y la precedencia `.env`/proceso | 12 | **sí** |
+| `packages/engine/app-shell/test/puerto-mal-formado.mjs` | el **bind** (`createAppConfig → resolveAppPort`) | 4 | **sí** |
+| `packages/mesh/socket-server/test/puerto-mal-formado.test.mjs` | el servidor de B1, con alias y `{port:0}` | 5 | **sí** |
+| `packages/mesh/webrtc-viewer/test/puerto-mal-formado.test.mjs` | entrypoint real, alias legado | 3 | **NO** |
 | `packages/mesh/mcp-launcher/test/catalogo-puerto-mal-formado.test.mjs` | el **anuncio** (catálogo, en procesos hijo) | 5 | **NO** — ver §7 |
+
+`operator-ui` **no tiene arnés de test de Node** (su `scripts.test` es
+`ng test threejs-ui-lib`), así que su cableado no queda con gate automático:
+está medido a mano en §1.2.bis y su mecanismo compartido —`readEnvPortAlias`—
+sí está cubierto en `presets-sdk`, que sí corre CI. Declarado en §7.9.
 
 Los tres cubren los **siete valores medidos** y los legítimos
 (`1`, `80`, `3012`, `14012`, `65535`, `''`, ausente). El del catálogo además
@@ -293,30 +445,83 @@ comprueba que ningún puerto anunciado es 0 ni sale de 1..65535 (el denominador
 
 | gate | antes | después |
 | --- | --- | --- |
-| `npm test -w @zeus/presets-sdk` | 55 · 55 pass · 0 fail · RC 0 | **65 · 65 pass · 0 fail · RC 0** |
-| `npm test -w @zeus/app-shell` | 9 · 9 pass · 0 fail · RC 0 | **13 · 13 pass · 0 fail · RC 0** |
+| `npm test -w @zeus/presets-sdk` | 55 · 55 pass · RC 0 | **67 · 67 pass · 0 fail · RC 0** |
+| `npm test -w @zeus/app-shell` | 9 · 9 pass · RC 0 | **13 · 13 pass · 0 fail · RC 0** |
+| `npm test -w @zeus/socket-server` | 23 · 23 pass · RC 0 | **28 · 28 pass · 0 fail · RC 0** |
+| `npm test -w @zeus/webrtc-viewer` | 17 · 17 pass · RC 0 | **20 · 20 pass · 0 fail · RC 0** |
 | `npm test -w @zeus/mcp-launcher` | 37 · 36 pass · 1 skip · RC 0 | **42 · 41 pass · 1 skip · RC 0** |
 | `npm run gates` | — | **OK (0 offenders) · RC 0** |
-| `npm run test:gates` | — | **160 · 159 pass · 1 skip · 0 fail · RC 0** |
+| `npm run test:gates` | — | **160 · 160 pass · 0 skip · RC 0** (ver abajo) |
 | `node scripts/generar-env.mjs --check` | — | **OK · RC 0** |
-| `npx eslint` (7 ficheros tocados) | — | **RC 0** |
+| `npx eslint` (todo lo tocado) | — | **RC 0** |
+| `node e2e/local-first-ca.mjs` (gate `GD`) | 7/7 · 14 rojos | **7/7 · 14 rojos · RC 0** |
+
+**M5 · el desglose de `test:gates`, explicado en vez de re-afirmado.** La
+discrepancia (yo: 159 pass + 1 skip; la contrarrevisión: 160 pass + 0 skip) no
+era ruido: el test que se omite es
+
+```
+ok 107 - equivalencia árbol vivo ↔ árbol commiteado: mismo JSON, byte a byte
+  # SKIP conjunto de lectura del gate con cambios sin commitear (1):
+     M packages/mesh/mcp-launcher/src/catalog.mjs — el árbol commiteado no los ve, por definición
+```
+
+Se **auto-omite cuando el árbol tiene cambios sin commitear** en su conjunto de
+lectura. Yo lo medí con `catalog.mjs` sucio; la contrarrevisión, sobre árbol
+limpio. **Los dos números son correctos, en estados de árbol distintos**, y el
+gate es honesto al decir por qué se omite. Con todo commiteado da **160/160/0**,
+que es el que dejo en la tabla.
 
 **Matriz de CI completa (27 workspaces), corrida en local: 26 en verde.**
-El único rojo es **`@zeus/protocol`** (3 fallos), y es **preexistente y ajeno**:
+El único rojo es **`@zeus/protocol`** (3 fallos), **preexistente y ajeno**:
 
 - `git status -- packages/engine/protocol/` → **vacío** (no lo he tocado).
-- `grep -rn "readEnvPort" packages/engine/protocol/` → **rc=1** (ninguna
-  mención; comprobado con `rc` aparte, no por tubería).
-- El fallo es de sincronía de tipos por **fin de línea**:
-  `packages/engine/protocol/types/index.d.ts` está en disco *with CRLF line
-  terminators* y el generador emite LF. Es el artefacto de checkout en Windows;
-  en el runner Linux de CI no se da.
+- `grep -rn "readEnvPort" packages/engine/protocol/` → **rc=1**, comprobado con
+  `rc` aparte, no por tubería.
+
+**M4 · corrijo mi atribución, que era más ancha que mi evidencia.** Dije «los 3
+son CRLF». Son **dos**. El tercero,
+`Eje IV: tsc resolves peer-card-seat + roles subpath types`, falla por otra cosa:
+
+```
+tsc --noEmit failed (Eje IV):
+"C:\Program" no se reconoce como un comando interno o externo,
+```
+
+Es una ruta con espacios sin comillar al invocar `tsc`, resuelto fuera del
+worktree por el `npm install` parcial de esta máquina — no fin de línea. Y **no
+corrí `main`**: que ese tercero pase en un árbol limpio es medida de la
+contrarrevisión (`C:/S_LAB/z-sdk`), no mía, y lo cito como suya. Sigue siendo
+ajeno al WP por las dos comprobaciones de arriba.
 
 Aviso del brief comprobado: el `npm ci` de esta máquina venía **sin
 `node_modules` en absoluto** en este worktree. Se instaló con
 `npm_config_logs_dir` dentro del worktree (`npm install --prefer-offline
 --no-audit --no-fund`, 2699 paquetes, RC 0) y `dotenv`/`ajv` quedaron presentes
 antes de medir nada. El directorio de logs se borró al terminar.
+
+---
+
+## 6.bis · Los menores de la devolución, uno a uno
+
+| # | qué era | qué hice | evidencia |
+| --- | --- | --- | --- |
+| **M1** | `SPEC_TOOL_PORTS = resolveSpecToolPorts()` a nivel de módulo: 4 claves de tooling tumbaban el import de **todo** `@zeus/presets-sdk`, arrastrando a `linea-firehose` | **Perezoso.** Cada propiedad valida al leerse. Decidido con el dato de que **no tiene ni un consumidor** (`grep` repo-entero: sólo su definición y su tipo), así que hacerlo perezoso no rompe a nadie y quita el daño colateral | antes `ZEUS_PORT_DOCS=0 node -e "import('@zeus/presets-sdk/env')"` → **rc=1**; ahora importa, y `SPEC_TOOL_PORTS.docs` lanza al leerse. Test propio |
+| **M2** | Tercer `catch` mudo (`loadEnv()`, `catalog.mjs:47-51`), inalcanzable hoy pero con **mi** comentario asignándole el papel que M1 producía | Misma condición que los otros dos: repropaga si `err.code` es de configuración, y el comentario dice que hoy es inalcanzable **y por qué se le pone la guarda igual** | — |
+| **M3** | `launcher-server.mjs:15-18` conservaba `if (raw && Number.isFinite(Number(raw)))` — el antipatrón que la ficha condena por su nombre, muerto por accidente y revivible al arreglar O9 | Pasa por `readEnvPort` | entra en el censo (§1.1, fila 6) |
+| **M4** | Atribución de los 3 rojos de `@zeus/protocol` | Corregida: 2 CRLF + 1 `tsc`/ruta con espacios; y digo que no corrí `main` | §6 |
+| **M5** | Desglose de `test:gates` | Explicado: el skip depende del árbol sucio | §6 |
+| **M6** | Encuadre de la ablación B | Reescrito: ceguera **por construcción**, no casi-fallo | §4 |
+| **M7** | `smoke-dual-ui.mjs` y `smoke-external-consumer.mjs` con `Number(process.env…)` | `smoke-dual-ui.mjs` **arreglado** (sus 6 claves están en `.env.example`); `smoke-external-consumer.mjs` **declarado y no arreglado** | §1.1 filas 7-8, §7.8 |
+
+**Y una guarda ajena que me cazó, como debía.** Al tocar
+`socket-server/src/config.mjs` saltó el censo de despacho de **WP-U194**
+(`relay-contract.test.mjs`), que sella la **forma** de todos los fuentes del
+paquete para que no entre una vía de emisión nueva por la puerta de atrás. Es
+legítimo re-anclar —el propio test lo dice— y lo hice comprobando antes lo que
+importa: `config.mjs` sigue con **`emisiones=0`** y `relay.mjs`, el único
+emisor, queda intacto con sus **5**, así que `EMISIONES_ANCLADAS` no se mueve.
+El sello anterior queda escrito junto al nuevo.
 
 ---
 
@@ -352,7 +557,29 @@ antes de medir nada. El directorio de logs se borró al terminar.
 6. **`" 3012 "` (con espacios alrededor) se rechaza.** Es más estricto que
    antes. Consecuencia buscada de no hacer `trim` (§2); si alguien tenía espacios
    en su `.env` le va a saltar. Declarado, no medido en campo.
-7. **Los tres ficheros que `npm install` marca como modificados**
+8. **`scripts/smoke-external-consumer.mjs:30` sigue con `Number(process.env…)`**
+   sobre `ZEUS_SMOKE_SCRIPTORIUM_PORT`. **No** lo arreglo, y la razón es que
+   acota el daño: esa clave **no está en `.env.example`** (comprobado, `rc=1`),
+   así que la cabecera que escribí no promete nada sobre ella; es una variable
+   de arnés con defecto `13054`; y el script no importa `presets-sdk`, así que
+   arreglarlo significaría acoplarlo sólo por consistencia. Queda en el censo.
+9. **`operator-ui` no tiene arnés de test de Node.** Su `scripts.test` es
+   `ng test threejs-ui-lib`, así que el cableado de su puerto **no queda con
+   gate automático**: está medido a mano (§1.2.bis) y su mecanismo compartido
+   (`readEnvPortAlias`) sí tiene test en `presets-sdk`, que corre CI. Añadirle
+   un arnés de Node excede este WP.
+10. **`webrtc-viewer` y `mcp-launcher` no están en la matriz de CI**, así que
+    dos de mis cinco ficheros de test sólo corren en local. Es la misma deuda
+    del §7.1 y se enruta con él.
+11. **La distinción «entorno se valida / explícito no» deja una puerta abierta
+    por diseño**: quien llame `createScriptoriumServer({ port: -1 })` desde
+    código sigue pasando sin validar. Es deliberado —`{ port: 0 }` es idioma
+    vivo (§4.ter)— pero significa que la garantía es sobre **configuración**,
+    no sobre todo puerto posible. No medí qué pasa con un explícito absurdo.
+12. **`reservarPuertoLibre()` del e2e no es reserva atómica**: queda la ventana
+    entre soltar y atar. Es el mismo trato que U267 aceptó y declaró.
+
+13. **Los tres ficheros que `npm install` marca como modificados**
    (`feed-kit/bin/jetstream-sync.mjs`, `linea-kit/bin/linea-kit.mjs`,
    `playbook-kit/bin/run-playbook.mjs`) **no se commitean**: `git diff --quiet`
    sobre los tres → **rc=0**, o sea sin cambio de contenido. Es el `mtime` de
@@ -364,7 +591,11 @@ antes de medir nada. El directorio de logs se borró al terminar.
 
 | no hecho | por qué |
 | --- | --- |
-| Añadir `@zeus/mcp-launcher` a la matriz de CI | Sin dato propio de esa suite en CI; radio mayor que este WP. Enrutado (§7.1). |
+| Añadir `@zeus/mcp-launcher` / `@zeus/webrtc-viewer` a la matriz de CI | Sin dato propio de esas suites en CI; radio mayor que este WP. Enrutado (§7.1, §7.10). |
+| Acotar la cabecera de `.env.example` a las claves cubiertas | Era la salida barata de B1. Se cerró **por arriba**: los tres servidores pasan por la fuente única, así que la cabecera es verdad y no hace falta encogerla. |
+| Relajar la guarda para que `ZEUS_*=0` siga siendo «efímero» | Habría arreglado el gate `GD` en una línea y **destruido la CA**. Se arregló el arnés, no la guarda (§4.ter). |
+| Arreglar `smoke-external-consumer.mjs` | Su clave no está en `.env.example`; acoplarlo a presets-sdk sólo por simetría (§7.8). |
+| Darle arnés de test de Node a `operator-ui` | Excede el WP (§7.9). |
 | Validar `ZEUS_HOST` | Otro eje, fuera de alcance (§7.3). |
 | Arreglar la rancidez de `PORT_TABLE` (O9 de U181) | Preexistente y sin dueño; sólo se declara (§7.2). |
 | Tocar `packages/engine/volumes-ops/**`, `linea-kit/**`, `VOLUMES/**`, lockfile | Territorio prohibido. Verificado intacto. |
@@ -400,16 +631,29 @@ node -e "import('@zeus/presets-sdk/env').then(m=>console.log(m.readEnvPort('ZEUS
 ZEUS_PORT_EDITOR=15012 node -e "import('@zeus/presets-sdk/env').then(m=>console.log(m.readEnvPort('ZEUS_PORT_EDITOR',3012)))"   # 15012
 rm -f .env
 
-# 5 · suites y gates
-npm test -w @zeus/presets-sdk     # 65 · 65 pass · RC 0
+# 5 · B1 · los tres servidores, por su entrypoint documentado
+(cd packages/mesh/socket-server && ZEUS_PORT_SCRIPTORIUM=0 node src/index.mjs); echo "rc=$?"   # 1
+ZEUS_PORT_OPERATOR_UI=0    node packages/mesh/operator-ui/serve.mjs;    echo "rc=$?"           # 1
+OPERATOR_UI_PORT=0         node packages/mesh/operator-ui/serve.mjs;    echo "rc=$?"           # 1
+ZEUS_PORT_WEBRTC_VIEWER=03012 node packages/mesh/webrtc-viewer/serve.mjs; echo "rc=$?"         # 1
+#   y el idioma que NO se rompe:
+node -e "import('./packages/mesh/socket-server/src/config.mjs').then(m=>console.log(m.resolveConfig({port:0}).port))"   # 0
+
+# 6 · suites y gates
+npm test -w @zeus/presets-sdk     # 67 · 67 pass · RC 0
 npm test -w @zeus/app-shell       # 13 · 13 pass · RC 0
+npm test -w @zeus/socket-server   # 28 · 28 pass · RC 0
+npm test -w @zeus/webrtc-viewer   # 20 · 20 pass · RC 0
 npm test -w @zeus/mcp-launcher    # 42 · 41 pass · 1 skip · RC 0
 npm run gates                     # OK (0 offenders) · RC 0
-npm run test:gates                # 160 · 159 pass · 1 skip · RC 0
+npm run test:gates                # 160 · 160 pass · 0 skip · RC 0  (con el árbol limpio)
 node scripts/generar-env.mjs --check   # OK · RC 0
+ZEUS_GAMES_LIBRARY=C:/S_LAB/g-sdk node e2e/local-first-ca.mjs   # 7/7 · 14 rojos · RC 0
 
-# 6 · las ablaciones (§4): restaurar el cuerpo viejo de readEnvPort, o
-#     neutralizar el re-throw del catálogo, y ver enrojecer la suite que toca.
+# 7 · las ablaciones (§4 y §4.bis): restaurar el cuerpo viejo de readEnvPort, o
+#     neutralizar el re-throw del catálogo, o devolver cada servidor a su
+#     `Number(process.env…)`, y ver enrojecer la suite que toca — comprobando
+#     CUÁL aserto cae, no sólo que caiga (la ablación F enseña por qué).
 
 rm -rf .tmp-npm-logs
 ```

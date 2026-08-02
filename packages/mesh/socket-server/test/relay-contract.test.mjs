@@ -92,7 +92,13 @@ const CUENTA_BAJADA = 8;
  *    es higiene pendiente del paquete, anotada en el reporte.
  */
 const EMISIONES_ANCLADAS = 5;
-const SELLO_DESPACHO_ANCLADO = 'c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0';
+// WP-U266 · re-anclado. Cambio: `src/config.mjs` pasa a resolver su puerto por
+// `readEnvPortAlias` de la fuente unica en vez de `Number(process.env…)`.
+// El censo lo cazo, que es su trabajo. Es legitimo y no toca la propagacion:
+// `config.mjs` sigue con `emisiones=0` y `relay.mjs` —el unico emisor— queda
+// intacto con sus 5, asi que `EMISIONES_ANCLADAS` no se mueve.
+// Sello anterior: c842ca2fe42978bda1bda0fdd3ab8db4c86d764a5b0e259efc08cbc047ee42d0
+const SELLO_DESPACHO_ANCLADO = '9decbf22d8cad61a4f50d3ff1b719e2e984590047f728521aa516036af6d7617';
 
 /** Nombres que socket.io reserva y no se pueden emitir como evento. */
 const RESERVADOS_SOCKETIO = new Set([

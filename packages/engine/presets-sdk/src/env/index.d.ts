@@ -57,6 +57,12 @@ export function validarPuerto(
  * (cambio de contrato de WP-U266: antes devolvia siempre un numero).
  */
 export function readEnvPort(name: string, fallback: number): number;
+
+/**
+ * Como `readEnvPort` con una cadena de nombres (alias legados): gana el primero
+ * declarado y **solo se valida el que gana**.
+ */
+export function readEnvPortAlias(names: string[], fallback: number): number;
 export function resolveZeusHost(fallback?: string): string;
 export function applyEnvToMcp(
   mcp: object,

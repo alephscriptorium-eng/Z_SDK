@@ -1,4 +1,4 @@
-import { DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk/env';
+import { DEFAULT_ZEUS_UI_MESH, readEnvPortAlias } from '@zeus/presets-sdk/env';
 import { resolveScriptoriumSecret } from '@zeus/rooms';
 import { RELAY_CONTRACT } from './relay-contract.mjs';
 
@@ -27,12 +27,19 @@ export const RELAY_DOWNSTREAM_TOP = RELAY_CONTRACT.downstream;
 export function resolveConfig(options = {}) {
   const mesh = DEFAULT_ZEUS_UI_MESH.scriptorium;
   return {
-    port: Number(
-      options.port ??
-        process.env.ZEUS_PORT_SCRIPTORIUM ??
-        process.env.ZEUS_SCRIPTORIUM_PORT ??
-        mesh.port
-    ),
+    // WP-U266 · el puerto que viene del ENTORNO se valida; el que viene por
+    // `options.port` NO. No es una inconsistencia: son dos cosas distintas.
+    //   - `ZEUS_PORT_SCRIPTORIUM=0` es configuracion mal formada -> aborta.
+    //   - `{ port: 0 }` en codigo es "dame un puerto efimero", que es el patron
+    //     que usan seis llamadas de esta misma suite (y el que WP-U267 dejo
+    //     como bueno para no atar puertos a mano). Sigue funcionando igual.
+    // Hasta U266 esto era `Number(process.env.X ?? …)` y por eso el defecto de
+    // la ficha seguia vivo aqui: con `ZEUS_PORT_SCRIPTORIUM=0` el servidor
+    // levantaba en un puerto efimero y lo anunciaba como suyo, en verde.
+    port:
+      options.port != null
+        ? Number(options.port)
+        : readEnvPortAlias(['ZEUS_PORT_SCRIPTORIUM', 'ZEUS_SCRIPTORIUM_PORT'], mesh.port),
     host: options.host ?? process.env.ZEUS_SCRIPTORIUM_HOST ?? mesh.host,
     bridge: options.bridge ?? process.env.ZEUS_SCRIPTORIUM_BRIDGE ?? 'local',
     secret: options.secret ?? resolveScriptoriumSecret()

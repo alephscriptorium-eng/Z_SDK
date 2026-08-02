@@ -16,7 +16,12 @@ import {
   DEFAULT_ZEUS_UI_MESH,
   browserAssetsDir as roomClientAssetsDir
 } from '@zeus/room-client-browser';
-import { resolveIceServers, resolveZeusUiPorts, openBrowser } from '@zeus/presets-sdk/env';
+import {
+  resolveIceServers,
+  resolveZeusUiPorts,
+  readEnvPortAlias,
+  openBrowser
+} from '@zeus/presets-sdk/env';
 import { validate } from '@zeus/linea-kit/validate';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -47,16 +52,27 @@ function defaultZeusConfig() {
   };
 }
 
+/**
+ * WP-U266 · el puerto que viene del ENTORNO se valida; el explicito no.
+ *
+ * Reparto de meritos, medido por ablacion y no supuesto:
+ *  - `ZEUS_PORT_WEBRTC_VIEWER` **ya la cubre `resolveZeusUiPorts()`**, que se
+ *    llama aqui abajo para el defecto y valida todas las claves del mesh.
+ *    Restaurando el `Number(...)` de antes, ese caso SIGUE abortando.
+ *  - `WEBRTC_VIEWER_PORT`, el alias legado, **no lo conoce nadie mas**. Ese era
+ *    el hueco: con el `Number(...)` viejo, `WEBRTC_VIEWER_PORT=0` levantaba en
+ *    un puerto efimero y el proceso seguia vivo (medido: el hijo no termina,
+ *    muere por timeout del arnes).
+ *
+ * El explicito (`port`) no se valida: es codigo pidiendo un puerto, no
+ * configuracion. Misma distincion que en `socket-server/src/config.mjs`.
+ */
 function resolveViewerPort(port) {
   if (port != null) return Number(port);
   const uis = resolveZeusUiPorts();
-  return Number(
-    process.env.WEBRTC_VIEWER_PORT ??
-      process.env.ZEUS_PORT_WEBRTC_VIEWER ??
-      uis.webrtcViewer?.port ??
-      DEFAULT_ZEUS_UI_MESH.webrtcViewer?.port ??
-      3023
-  );
+  const fallback =
+    uis.webrtcViewer?.port ?? DEFAULT_ZEUS_UI_MESH.webrtcViewer?.port ?? 3023;
+  return readEnvPortAlias(['WEBRTC_VIEWER_PORT', 'ZEUS_PORT_WEBRTC_VIEWER'], fallback);
 }
 
 function buildImportMap() {

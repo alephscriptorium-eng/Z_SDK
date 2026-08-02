@@ -18,13 +18,15 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   readEnvPort,
+  readEnvPortAlias,
   validarPuerto,
   ZeusPortConfigError,
   ZEUS_PORT_ERROR_CODE,
   loadZeusEnv,
   resetZeusEnvLoader,
   resolveZeusUiPorts,
-  resolveSpecToolPorts
+  resolveSpecToolPorts,
+  SPEC_TOOL_PORTS
 } from '../src/env/index.mjs';
 
 const VAR = 'ZEUS_PORT_EDITOR';
@@ -156,6 +158,79 @@ test('U266 · los resolvers de arriba propagan, no se comen el error', () => {
   try {
     process.env.ZEUS_PORT_DOCS = '65536';
     assert.throws(() => resolveSpecToolPorts(), { code: ZEUS_PORT_ERROR_CODE });
+  } finally {
+    if (prev === undefined) delete process.env.ZEUS_PORT_DOCS;
+    else process.env.ZEUS_PORT_DOCS = prev;
+  }
+});
+
+test('U266 · readEnvPortAlias: valida SOLO el nombre que gana', () => {
+  // Es el mecanismo por el que `socket-server`, `operator-ui` y `webrtc-viewer`
+  // entran en la fuente unica: los tres arrastran un alias legado. Se prueba
+  // aqui —en un workspace que SI corre CI— porque dos de esos tres paquetes no
+  // estan en la matriz (ver el reporte de U266, limites).
+  const CANON = 'ZEUS_PORT_EDITOR';
+  const LEGADO = 'ZEUS_PORT_PLAYER';
+  const prev = { c: process.env[CANON], l: process.env[LEGADO] };
+  try {
+    // 1 · ninguno declarado -> defecto
+    delete process.env[CANON];
+    delete process.env[LEGADO];
+    assert.equal(readEnvPortAlias([CANON, LEGADO], 3012), 3012);
+
+    // 2 · gana el primero declarado
+    process.env[CANON] = '14012';
+    process.env[LEGADO] = '15013';
+    assert.equal(readEnvPortAlias([CANON, LEGADO], 3012), 14012);
+
+    // 3 · el que NO gana puede estar mal escrito sin tumbar nada
+    process.env[CANON] = '14012';
+    process.env[LEGADO] = 'basura';
+    assert.equal(readEnvPortAlias([CANON, LEGADO], 3012), 14012);
+
+    // 4 · si el que gana esta mal, NO se tapa con el siguiente
+    process.env[CANON] = '0';
+    process.env[LEGADO] = '15013';
+    assert.throws(() => readEnvPortAlias([CANON, LEGADO], 3012), {
+      code: ZEUS_PORT_ERROR_CODE
+    });
+
+    // 5 · cadena vacia = "no declarado": pasa al siguiente
+    process.env[CANON] = '';
+    process.env[LEGADO] = '15013';
+    assert.equal(readEnvPortAlias([CANON, LEGADO], 3012), 15013);
+
+    // 6 · los siete, por el nombre que gana
+    delete process.env[LEGADO];
+    for (const raw of MAL_FORMADOS) {
+      process.env[CANON] = raw.raw;
+      assert.throws(
+        () => readEnvPortAlias([CANON, LEGADO], 3012),
+        { code: ZEUS_PORT_ERROR_CODE },
+        JSON.stringify(raw.raw)
+      );
+    }
+  } finally {
+    if (prev.c === undefined) delete process.env[CANON];
+    else process.env[CANON] = prev.c;
+    if (prev.l === undefined) delete process.env[LEGADO];
+    else process.env[LEGADO] = prev.l;
+  }
+});
+
+test('U266 · SPEC_TOOL_PORTS es perezoso: no revienta el import del paquete', () => {
+  // Antes era `= resolveSpecToolPorts()` a nivel de modulo, asi que cuatro
+  // claves de tooling podian impedir importar TODO `@zeus/presets-sdk`, y se
+  // llevaban por delante a consumidores sin relacion (mesh/linea-firehose).
+  // Al leerlo si valida, que es donde debe doler.
+  const prev = process.env.ZEUS_PORT_DOCS;
+  try {
+    process.env.ZEUS_PORT_DOCS = '0';
+    assert.throws(() => SPEC_TOOL_PORTS.docs, { code: ZEUS_PORT_ERROR_CODE });
+    // Las otras tres claves siguen respondiendo: el fallo esta acotado.
+    assert.equal(typeof SPEC_TOOL_PORTS.studio, 'number');
+    process.env.ZEUS_PORT_DOCS = '13230';
+    assert.equal(SPEC_TOOL_PORTS.docs, 13230);
   } finally {
     if (prev === undefined) delete process.env.ZEUS_PORT_DOCS;
     else process.env.ZEUS_PORT_DOCS = prev;

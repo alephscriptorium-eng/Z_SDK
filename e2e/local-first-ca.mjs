@@ -59,6 +59,7 @@
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -93,6 +94,34 @@ const LINEAS_FIXTURE = path.join(
 const ARGS = new Set(process.argv.slice(2));
 const LEGADO = ARGS.has('--legado');
 const AS_JSON = ARGS.has('--json');
+
+/**
+ * Un puerto libre de verdad, pedido al SO (doctrina de WP-U267).
+ *
+ * Antes estos dos pasos hacían `ZEUS_MCP_FORCES = '0'` con el comentario
+ * «puerto 0 para no chocar con nada». Eso funcionaba por un accidente que
+ * WP-U266 cerró: `readEnvPort` aceptaba el `0` y `listen(0)` pedía un efímero.
+ * Pero `ZEUS_MCP_*=0` es justo el vector de la ficha —lo que el catálogo
+ * anuncia deja de ser donde el proceso escucha— así que ahora **aborta**, y con
+ * razón. Lo que este arnés quiere no es «el puerto cero», es «un puerto que no
+ * choque»: eso se pide al SO y se pasa como número concreto.
+ *
+ * No es reserva atómica (queda la ventana entre soltar y atar); es el mismo
+ * trato que aceptan los paquetes hermanos desde U267.
+ *
+ * @returns {Promise<number>}
+ */
+function reservarPuertoLibre(host = '127.0.0.1') {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer();
+    srv.on('error', reject);
+    srv.listen(0, host, () => {
+      const dir = srv.address();
+      const port = typeof dir === 'object' && dir ? dir.port : null;
+      srv.close(() => (port ? resolve(port) : reject(new Error('sin puerto efímero'))));
+    });
+  });
+}
 
 /** Rutas temporales creadas por el runner (se borran al final). */
 const TEMPS = [];
@@ -673,7 +702,7 @@ async function paso2() {
     // para no chocar con nada. Medido de nuevo tras arreglar la trampa: el 0
     // anterior se tomó con un instrumento que no veía tres de las vías.
     const prevPort = process.env.ZEUS_MCP_FORCES;
-    process.env.ZEUS_MCP_FORCES = '0';
+    process.env.ZEUS_MCP_FORCES = String(await reservarPuertoLibre());
     resetZeusEnvLoader();
     const trap = armNetTrap({ block: true });
     /** @type {any} */
@@ -1091,7 +1120,7 @@ async function paso6() {
     // (start.mjs:17).
     const arrancaElProducto = async () => {
       const prevPort = process.env.ZEUS_MCP_FORCES;
-      process.env.ZEUS_MCP_FORCES = '0';
+      process.env.ZEUS_MCP_FORCES = String(await reservarPuertoLibre());
       resetZeusEnvLoader();
       /** @type {any[]} */
       let handles = [];

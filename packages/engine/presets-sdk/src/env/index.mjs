@@ -280,6 +280,34 @@ export function readEnvPort(name, fallback) {
   return r.value;
 }
 
+/**
+ * Como `readEnvPort`, pero con una cadena de nombres: gana el PRIMERO que este
+ * declarado, y **solo se valida el que gana**.
+ *
+ * Existe para los servidores que arrastran un alias legado
+ * (`ZEUS_PORT_SCRIPTORIUM` con su viejo `ZEUS_SCRIPTORIUM_PORT`,
+ * `ZEUS_PORT_OPERATOR_UI` con `OPERATOR_UI_PORT`). Antes de WP-U266 esos dos
+ * resolvian con `Number(process.env.X ?? …)` a mano y por eso se quedaron fuera
+ * de la validacion: el defecto de la ficha seguia vivo en ellos aunque
+ * `readEnvPort` ya validara.
+ *
+ * Solo el ganador se valida a proposito: que un alias que NO se usa este mal
+ * escrito no debe tumbar un arranque que no lo lee.
+ *
+ * @param {string[]} names — de mayor a menor prioridad
+ * @param {number} fallback
+ * @returns {number}
+ * @throws {ZeusPortConfigError} si el nombre que gana esta mal formado
+ */
+export function readEnvPortAlias(names, fallback) {
+  loadZeusEnv();
+  for (const name of names) {
+    const raw = process.env[name];
+    if (raw != null && raw !== '') return readEnvPort(name, fallback);
+  }
+  return fallback;
+}
+
 /** Default host when ZEUS_HOST is unset. */
 export const DEFAULT_ZEUS_HOST = 'localhost';
 
@@ -418,8 +446,34 @@ export function resolveSpecToolPorts(base = DEFAULT_SPEC_TOOL_PORTS) {
   };
 }
 
-/** Resolved spec tooling ports (AsyncAPI Studio + VitePress docs + MCP Inspector). */
-export const SPEC_TOOL_PORTS = resolveSpecToolPorts();
+/**
+ * Resolved spec tooling ports (AsyncAPI Studio + VitePress docs + MCP Inspector).
+ *
+ * PEREZOSO desde WP-U266, y no por estilo. Antes esto era
+ * `= resolveSpecToolPorts()` a nivel de modulo: con la validacion de puertos,
+ * un `ZEUS_PORT_DOCS=0` hacia que **todo `@zeus/presets-sdk` dejara de
+ * importarse** (medido: rc=1), arrastrando a consumidores que no tienen nada
+ * que ver con el tooling de spec — `mesh/linea-firehose/src/config.mjs` entre
+ * ellos. Cuatro claves de herramientas de desarrollo no pueden tumbar el
+ * paquete entero.
+ *
+ * Cada propiedad valida al leerse, asi que un valor mal formado sigue fallando
+ * ruidosamente; lo que cambia es CUANDO y a quien se lleva por delante.
+ */
+export const SPEC_TOOL_PORTS = Object.freeze({
+  get studio() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.studio, DEFAULT_SPEC_TOOL_PORTS.studio);
+  },
+  get docs() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.docs, DEFAULT_SPEC_TOOL_PORTS.docs);
+  },
+  get inspector() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.inspector, DEFAULT_SPEC_TOOL_PORTS.inspector);
+  },
+  get inspectorProxy() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.inspectorProxy, DEFAULT_SPEC_TOOL_PORTS.inspectorProxy);
+  }
+});
 
 /** Default MCP Inspector auth token (override: ZEUS_INSPECTOR_TOKEN). */
 export const DEFAULT_ZEUS_INSPECTOR_TOKEN = 'zeus-dev-inspector';

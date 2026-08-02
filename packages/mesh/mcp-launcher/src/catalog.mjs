@@ -47,7 +47,14 @@ export const FALLBACK_UI_PORTS = structuredClone(DEFAULT_ZEUS_UI_MESH);
 async function loadEnv() {
   try {
     return await import('@zeus/presets-sdk/env');
-  } catch {
+  } catch (err) {
+    // Tercer `catch` mudo del fichero. Hoy es INALCANZABLE para un error de
+    // configuracion —el import estatico de arriba revienta antes—, pero se le
+    // pone la misma condicion que a los otros dos: si un dia `presets-sdk`
+    // vuelve a validar en el import, este `catch` convertiria "tu puerto esta
+    // mal" en "usa los defectos", que es exactamente el falso verde que cerro
+    // WP-U266. La guarda no cuesta nada y quita la trampa.
+    if (esErrorDeConfiguracion(err)) throw err;
     return null;
   }
 }

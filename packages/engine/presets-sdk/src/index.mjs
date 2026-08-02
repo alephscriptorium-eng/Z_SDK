@@ -58,6 +58,7 @@ export {
   resolvePlayerDebugEndpoint,
   resolvePrensaBaseUrl,
   readEnvPort,
+  readEnvPortAlias,
   validarPuerto,
   ZeusPortConfigError,
   ZEUS_PORT_ERROR_CODE,
