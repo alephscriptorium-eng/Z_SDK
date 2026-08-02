@@ -8,11 +8,16 @@ import {
   resolveCatalog,
   getCatalogEntry,
   PORT_TABLE,
+  buildPortTable,
   CATALOG_SEED,
   FALLBACK_MCP_PORTS,
   FALLBACK_UI_PORTS
 } from '../src/catalog.mjs';
-import { DEFAULT_ZEUS_MCP, DEFAULT_ZEUS_UI_MESH } from '@zeus/presets-sdk/env';
+import {
+  DEFAULT_ZEUS_MCP,
+  DEFAULT_ZEUS_UI_MESH,
+  resolveZeusUiPorts
+} from '@zeus/presets-sdk/env';
 import {
   generateVscodeMcpConfig,
   isValidVscodeMcpConfig
@@ -119,6 +124,85 @@ test('U180: mover el puerto en la fuente única mueve la entrada (cero literales
   assert.equal(ss.healthUrl, 'http://localhost:14017/health');
 });
 
+/** U181 · las seis interfaces del motor y su slot en el UI mesh. */
+const U181_UIS = [
+  ['editor-ui', 'editor', '@zeus/editor-ui'],
+  ['player-ui', 'player', '@zeus/player-ui'],
+  ['player-3d-ui', 'player3d', '@zeus/player-3d-ui'],
+  ['3d-monitor', 'debug3d', '@zeus/3d-monitor'],
+  ['cache-browser', 'view', '@zeus/cache-browser'],
+  ['firehose-browser', 'firehose', '@zeus/firehose-browser']
+];
+
+test('U181: las seis UIs arrancan desde catálogo con puerto de presets-sdk/env', () => {
+  const catalog = resolveCatalog();
+  // Contra la RESOLUCIÓN, no contra el defecto crudo: con un ZEUS_PORT_* puesto
+  // en el entorno (justo lo que pide la reproducción del reporte) el defecto ya
+  // no es el valor vigente, y comparar contra él pondría el test rojo sin que
+  // nada esté mal.
+  const ui = resolveZeusUiPorts();
+  for (const [id, uiKey, workspace] of U181_UIS) {
+    const entry = catalog.find((e) => e.id === id);
+    assert.ok(entry, `${id} debe existir en el catálogo`);
+    assert.equal(entry.workspace, workspace);
+    assert.equal(entry.kind, 'service'); // UI HTTP, sin superficie MCP
+    assert.equal(entry.uiPort, uiKey);
+    assert.equal(entry.port, ui[uiKey].port);
+    assert.equal(entry.healthUrl, `http://localhost:${entry.port}/health`);
+  }
+});
+
+test('U181: mover el puerto en la fuente única mueve las seis (cero literales)', () => {
+  // Puertos raros: si alguna entrada llevara un literal propio, no se movería.
+  const raros = {
+    editor: 14012,
+    player: 14013,
+    view: 14015,
+    firehose: 14016,
+    player3d: 14018,
+    debug3d: 14019
+  };
+  const ui = structuredClone(FALLBACK_UI_PORTS);
+  for (const [k, port] of Object.entries(raros)) ui[k] = { ...ui[k], port };
+
+  const catalog = resolveCatalog({ mcp: FALLBACK_MCP_PORTS, ui });
+  for (const [id, uiKey] of U181_UIS) {
+    const entry = catalog.find((e) => e.id === id);
+    assert.equal(entry.port, raros[uiKey], `${id} no siguió a la fuente única`);
+    assert.equal(entry.healthUrl, `http://localhost:${raros[uiKey]}/health`);
+  }
+});
+
+test('U181: las seis UIs no colisionan de puerto entre sí ni con el resto', () => {
+  const catalog = resolveCatalog();
+  const porPuerto = new Map();
+  for (const e of catalog) {
+    // spawnGroup compartido = un proceso sirve varios puertos; el choque real
+    // es entre entradas de grupos distintos.
+    const grupo = e.spawnGroup || e.id;
+    const previo = porPuerto.get(e.port);
+    assert.ok(
+      !previo || previo === grupo,
+      `puerto ${e.port} compartido por grupos distintos: ${previo} y ${grupo}`
+    );
+    porPuerto.set(e.port, grupo);
+  }
+  // buildPortTable() se recalcula aquí; PORT_TABLE es una instantánea
+  // congelada en el import (catalog.mjs, @deprecated) y no serviría.
+  const table = buildPortTable();
+  const ui = resolveZeusUiPorts();
+  assert.equal(table.playerUi, ui.player.port);
+  assert.equal(table.player3dUi, ui.player3d.port);
+  assert.equal(table.monitor3dUi, ui.debug3d.port);
+  assert.equal(table.cacheBrowserUi, ui.view.port);
+  assert.equal(table.firehoseBrowserUi, ui.firehose.port);
+  // El MCP firehose y la UI firehose son piezas distintas con puertos distintos
+  // (3008 vs 3016) y variables distintas: ZEUS_MCP_FIREHOSE mueve el MCP,
+  // ZEUS_PORT_FIREHOSE mueve la UI. Confundirlas movería otro servicio, así que
+  // este assert cierra esa confusión, no adorna.
+  assert.notEqual(table.firehose, table.firehoseBrowserUi);
+});
+
 test('U234: vscode config excludes kind:service, includes launcher MCP', () => {
   const config = generateVscodeMcpConfig(resolveCatalog());
   assert.equal(isValidVscodeMcpConfig(config), true);
@@ -127,4 +211,9 @@ test('U234: vscode config excludes kind:service, includes launcher MCP', () => {
   assert.equal(config.servers['socket-server'], undefined);
   assert.equal(config.servers['cache-browser'], undefined);
   assert.equal(config.servers['firehose-browser'], undefined);
+  // U181: las cuatro nuevas son kind:'service' — tampoco entran en mcp.json
+  assert.equal(config.servers['editor-ui'], undefined);
+  assert.equal(config.servers['player-ui'], undefined);
+  assert.equal(config.servers['player-3d-ui'], undefined);
+  assert.equal(config.servers['3d-monitor'], undefined);
 });

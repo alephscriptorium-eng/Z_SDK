@@ -60,7 +60,10 @@ function getResourceRegistry(manager) {
       uri: 'launcher://ports',
       title: 'Port collision table',
       mimeType: 'application/json',
-      description: 'Final port table including firehose 3008 and editor-ui 3012.',
+      description:
+        'Tabla de puertos derivada de presets-sdk/env: MCP de la flota más las ' +
+        'seis UIs del mesh (editor, player, player3d, debug3d, view, firehose). ' +
+        'Sin cifras aquí — el valor vigente sale de resolveZeus*Ports().',
       read: () => PORT_TABLE
     }
   ];
