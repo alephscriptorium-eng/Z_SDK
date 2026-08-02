@@ -88,6 +88,16 @@ export {
   resolveOpsLedgerPath,
   DEFAULT_LEDGER_NAME
 } from './ledger.mjs';
+// WP-U253 · el cerco de la ruta del ledger sale por el índice porque su
+// denegación es parte del contrato observable (`code` estable), no un detalle:
+// quien pasa `ledgerPath` necesita poder distinguir «denegado por el cerco» de
+// un fallo de E/S.
+export {
+  assertLedgerPathPermitida,
+  LedgerPathDenegada,
+  ARTEFACTOS_VEDADOS,
+  LEDGER_EXT
+} from './ledger-cerco.mjs';
 export { VOLUMES_OPS_ROUTES } from './contract.mjs';
 export { mountVolumesOpsRoutes } from './routes.mjs';
 export { createVolumesOpsServer } from './server.mjs';

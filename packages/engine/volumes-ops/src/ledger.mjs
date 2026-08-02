@@ -6,16 +6,25 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { resolveVolumesRoot } from '@zeus/presets-sdk/volumes';
+import { assertLedgerPathPermitida } from './ledger-cerco.mjs';
 
 export const DEFAULT_LEDGER_NAME = '.ops-ledger.jsonl';
 
 /**
+ * WP-U253 · una `ledgerPath` propuesta por el llamante pasa por el cerco
+ * (`ledger-cerco.mjs`) antes de que nadie apende sobre ella: hasta este WP se
+ * devolvía verbatim y sin validar, y bastaba proponerla apuntando a un
+ * artefacto de máquina del root para apendar JSONL encima. Falla cerrado.
+ * La AUSENCIA (omitida, undefined, null, cadena vacía) NO es una propuesta:
+ * cae en la ruta segura por defecto dentro del root.
+ *
  * @param {{ volumesRoot?: string, ledgerPath?: string }} [opts]
  * @returns {string}
+ * @throws {import('./ledger-cerco.mjs').LedgerPathDenegada} si la propuesta viola el cerco
  */
 export function resolveOpsLedgerPath(opts = {}) {
-  if (opts.ledgerPath) return opts.ledgerPath;
   const root = opts.volumesRoot || resolveVolumesRoot();
+  if (opts.ledgerPath) return assertLedgerPathPermitida(opts.ledgerPath, root);
   return join(root, DEFAULT_LEDGER_NAME);
 }
 
@@ -31,7 +40,10 @@ export function appendOpsLedger(entry, opts = {}) {
     mkdirSync(dir, { recursive: true });
   }
 
-  const prev = readOpsLedger({ ledgerPath: path });
+  // `volumesRoot` viaja también en la relectura: sin él, el cerco de la
+  // relectura mediría contra el root del entorno y denegaría una ruta legítima
+  // cuando el llamante trabaja sobre un root explícito distinto.
+  const prev = readOpsLedger({ volumesRoot: opts.volumesRoot, ledgerPath: path });
   const seq = prev.length === 0 ? 1 : (prev[prev.length - 1].seq || prev.length) + 1;
   const record = {
     v: 1,
