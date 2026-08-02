@@ -796,7 +796,7 @@ must-fail/m8-ids.ts    TS2322: Type 'unknown[]' is not assignable to type 'strin
 must-fail/m11-paso.ts  TS2532: Object is possibly 'undefined'.
 ```
 
-### Menor 6 · deuda declarada: **WP-U246 · parser en el gate de declaraciones**
+### Menor 6 · deuda declarada: **WP-U264 · parser en el gate de declaraciones**
 
 Es correcto y lo declaro sin adornos: **nada en CI puede cazar hoy un `.d.ts`
 corrompido.**
@@ -811,7 +811,7 @@ No lo cierro aquí, y por las razones que la propia devolución da: darle parser
 al gate le mete dependencia de `typescript` (contra su diseño de cero
 dependencias y contra la prohibición de tocar el lockfile), y cablear el
 chequeo de tipos exige tocar `.github/workflows/ci.yml`, fuera de
-`ALCANCE_DIFF`. **WP-U246** es el sitio: añadir `typescript` como
+`ALCANCE_DIFF`. **WP-U264** es el sitio: añadir `typescript` como
 devDependency del paquete y un `test/types.test.mjs` que compile los dos
 consumidores y los 13 controles negativos bajo `node --test`, con lo que el
 `npm test -w @zeus/linea-kit` de la matriz de CI pasaría a cubrirlo todo.

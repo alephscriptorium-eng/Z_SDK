@@ -28,7 +28,7 @@
  * WHAT THIS GATE DOES NOT DO: it never PARSES a declaration. `existsSync` is
  * the whole test, so an empty or syntactically broken `.d.ts` passes here
  * while `tsc` reports TS2306/TS1138. Giving it a parser would mean depending
- * on `typescript`, against its zero-dependency design. Declared debt: WP-U246.
+ * on `typescript`, against its zero-dependency design. Declared debt: WP-U264.
  *
  * Usage: node test/gate-exports-types.mjs [pkgDir]
  * Exit code 0 = clean, 1 = findings. Zero dependencies, no runtime import of
