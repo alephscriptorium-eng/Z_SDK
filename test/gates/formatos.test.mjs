@@ -40,6 +40,7 @@ import {
 } from '../../scripts/gates/claves.mjs';
 import {
   NoEntiendo,
+  camposDe,
   camposDeCodigo,
   camposDeJson,
   camposDeYaml,
@@ -471,6 +472,80 @@ test('TODA rotura del analizador de JSON se retira igual', () => {
   }
 });
 
+test('CADA `throw` añadido al arreglar B1/B2 tiene su guardián (m1)', () => {
+  // La contrarrevisión encontró CINCO `throw` nuevos sin un solo test: los tres
+  // de `flujoYaml` y los dos de Dockerfile. Cuatro son load-bearing —revertidos,
+  // el material pasa de rojo a SILENCIO— y por la doctrina de esta casa una
+  // regla que nadie puede matar no vigila nada. Cada uno se comprueba DOS veces:
+  // que LANZA, y que por el camino real el material se sigue cazando.
+  // `cargado` = load-bearing: revertir el `throw` convierte un hallazgo en
+  // silencio. Los que no lo son se comprueban IGUAL de que lanzan (la retirada
+  // es el contrato), pero no se les puede exigir un hallazgo: en su forma no hay
+  // ningún nombre de identidad que cazar, y `main` tampoco caza nada.
+  /** @type {[string, string, string, boolean][]} */
+  const casos = [
+    ['flujo: cola tras el cierre', `x: {"api_key":"${MATERIAL}"} cola\n`, 'x.yaml', true],
+    ['flujo: sin equilibrar', `{"api_key":"${MATERIAL}",\n`, 'x.yaml', true],
+    ['flujo: mal cerrado', `{"api_key":"${MATERIAL}"]\n`, 'x.yaml', true],
+    ['Dockerfile: línea que no es instrucción', `FROM node:20\napi_key=${MATERIAL}\n`, 'Dockerfile', true],
+    ['Dockerfile: trozo sin `=` en forma de pares', `FROM node:20\nENV A=1 ${MATERIAL}\n`, 'Dockerfile', false],
+    ['YAML: `%` que no es directiva', `%foo: ${MATERIAL}\n`, 'x.yaml', false]
+  ];
+  for (const [nombre, texto, fichero, cargado] of casos) {
+    const formato = fichero === 'Dockerfile' ? 'dockerfile' : 'yaml';
+    assert.throws(
+      () => camposDe(formato, texto),
+      NoEntiendo,
+      `no se retira ante: ${nombre} — sin excepción no hay retirada, y sin retirada hay silencio`
+    );
+    if (!cargado) continue;
+    assert.ok(
+      hallazgosDe(texto, fichero).length >= 1,
+      `tras «${nombre}» se perdió el material por el camino real: eso es silencio`
+    );
+  }
+  // Y una directiva DE VERDAD sigue saltándose sin ruido.
+  assert.doesNotThrow(() => camposDe('yaml', '%YAML 1.2\n---\nid: demo\n'));
+});
+
+test('un blob de configuración dentro de un literal de código no es un punto ciego (B3)', () => {
+  // El literal es OPACO: el lexer sabe que es una cadena, no qué hay dentro.
+  // La primera versión sólo intentaba JSON, con un `catch` que se comía la duda
+  // y un comentario que decía «el literal ya se juzgó por su propio nombre».
+  // No basta: el nombre es `cfg`. Ocho formas pasaban en silencio.
+  const blobs = [
+    ['YAML en literal', `const cfg = 'api_key: ${MATERIAL}';\n`],
+    ['JSON con coma final', `const cfg = '{"api_key":"${MATERIAL}",}';\n`],
+    ['JSON con clave sin comillas', `const cfg = '{api_key:"${MATERIAL}"}';\n`],
+    ['JSON con comentario dentro', `const cfg = '{/*x*/"api_key":"${MATERIAL}"}';\n`],
+    ['casi-válido en plantilla', `const cfg = \`{"api_key":"${MATERIAL}",}\`;\n`],
+    ['`.env` en literal', `const cfg = 'API_KEY=${MATERIAL}';\n`],
+    ['YAML en plantilla multilínea', `const cfg = \`\nid: demo\napi_key: ${MATERIAL}\n\`;\n`],
+    ['`.env` en plantilla multilínea', `const cfg = \`\nFOO=1\nAPI_KEY=${MATERIAL}\n\`;\n`]
+  ];
+  for (const [nombre, texto] of blobs) {
+    assert.ok(hallazgosDe(texto, 'x.mjs').length >= 1, `blob perdido en silencio: ${nombre}`);
+  }
+  // El extra sigue vivo: un blob JSON VÁLIDO se analiza y da UN hallazgo, no dos
+  // —el suelo opaco y el análisis no se doblan—.
+  assert.equal(hallazgosDe(`const cfg = '{"api_key":"${MATERIAL}"}';\n`, 'x.mjs').length, 1);
+});
+
+test('un blob JSON válido en un literal se ENTIENDE, no sólo cae por el suelo opaco', () => {
+  // El censo pilló que desactivar el análisis de JSON dentro del literal dejaba
+  // la suite verde: el suelo opaco lo cazaba igual. O sea, seguridad cubierta y
+  // PRECISIÓN no — sin el análisis, el hallazgo sale de un barrido a ciegas en
+  // vez de traer el nombre del campo. Es el mismo patrón que M12 en la vuelta
+  // anterior, y se vigila igual: exigiendo que se ENTIENDA.
+  const campos = camposDeCodigo(`const cfg = '{"api_key":"${MATERIAL}","otro":1}';\n`);
+  const porNombre = campos.filter((c) => c.nombre === 'api_key');
+  assert.equal(porNombre.length, 1, `el blob JSON no se analizó como JSON: ${JSON.stringify(campos)}`);
+  assert.equal(porNombre[0].valor, MATERIAL);
+  assert.equal(porNombre[0].opaco, undefined, 'el campo analizado no debe venir marcado opaco');
+  // y el suelo sigue estando debajo, marcado como tal
+  assert.equal(campos.filter((c) => c.opaco === true).length, 1, 'falta el suelo opaco del literal');
+});
+
 test('el analizador de YAML se retira ante lo que declaró no modelar', () => {
   // Anclas, alias, etiquetas, claves complejas y de fusión. Se comprueba que
   // LANZA (y no que «sale limpio»), que es la diferencia entre retirarse y
@@ -478,6 +553,69 @@ test('el analizador de YAML se retira ante lo que declaró no modelar', () => {
   for (const texto of ['a: &ancla 1\nb: *ancla\n', 'a: !!str 1\n', '? [a, b]\n: c\n', 'x:\n  <<: *base\n']) {
     assert.throws(() => camposDeYaml(texto), NoEntiendo, `no se retiró ante: ${JSON.stringify(texto)}`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// LA AUDITORÍA DE SALIDAS, MECANIZADA
+//
+// Tres vueltas, tres veces el mismo fallo: una frase absoluta sobre una
+// superficie que no había enumerado entera. «La retirada nunca a silencio» ->
+// `flujoYaml`. «La duda lanza, siempre» -> el `catch` de `camposDeCodigo`.
+// Las dos veces la frase era mía y las dos veces la rompió una salida que no
+// había contado.
+//
+// Este test sustituye la promesa por un recuento. No demuestra que las salidas
+// sean correctas —eso lo hacen los tests de arriba, uno por una— sino que son
+// LAS QUE SE HAN AUDITADO: si alguien añade un `return null` o un `catch` a un
+// analizador, esto se pone rojo y le obliga a clasificarlo aquí.
+// ---------------------------------------------------------------------------
+
+test('AUDITORÍA: las salidas silenciosas de `formatos.mjs` son exactamente las auditadas', () => {
+  const src = fs.readFileSync(path.resolve(AQUI, '../../scripts/gates/formatos.mjs'), 'utf8').split('\n');
+  const util = src.filter((l) => !/^\s*(\*|\/\/)/.test(l));
+  const cuenta = (re) => util.filter((l) => re.test(l)).length;
+
+  // Las DOS clases que han producido un agujero en este WP, con su censo.
+  //
+  //   `return null` x3, y cada uno significa información POSITIVA:
+  //     · `formatoDe`  — «no encamino este formato» (quien llama barre en crudo)
+  //     · `parYaml`    — «esto no es una pareja `clave: valor`»
+  //     · `flujoYaml`  — «esto no empieza por corchete ni llave: no es flujo»
+  //   Cualquier DUDA de esos mismos sitios lanza; hay mutante para cada uno.
+  assert.equal(
+    cuenta(/^\s*(if\s*\(.*\)\s*)?return null;/),
+    3,
+    'cambió el número de `return null` en formatos.mjs: clasifícalo aquí antes de seguir. ' +
+      '`null` sólo puede significar información POSITIVA; la duda se lanza.'
+  );
+
+  //   `catch` x1: el del análisis JSON dentro de un literal de código. Es
+  //   legítimo SÓLO porque debajo hay un suelo opaco incondicional que barre el
+  //   literal en crudo pase lo que pase. Sin ese suelo (mutante M23) vuelve a
+  //   ser un agujero, y esa fue exactamente la devolución B3.
+  assert.equal(
+    cuenta(/catch\s*\(/),
+    1,
+    'apareció un `catch` nuevo en formatos.mjs. Un `catch` convierte una duda en ' +
+      'silencio salvo que haya un suelo debajo: demuéstralo o quítalo.'
+  );
+
+  // Y el suelo que legitima ese `catch` tiene que seguir ahí. Los SIETE sitios
+  // donde este módulo admite que NO entiende lo que ve y lo manda a barrido
+  // crudo, enumerados —no «unos cuantos»—:
+  //   1 · comentario de YAML
+  //   2 · cuerpo de un escalar de bloque de YAML (`|`, `>`)
+  //   3 · comentario de Dockerfile
+  //   4 · argumento de una instrucción de Dockerfile que no declara pares (`RUN`)
+  //   5 · comentario de línea en código
+  //   6 · comentario de bloque en código
+  //   7 · contenido de un literal de cadena en código  <- el de B3
+  assert.equal(
+    cuenta(/opaco: true/),
+    7,
+    'cambió el número de valores marcados OPACOS. El suelo opaco es lo que hace ' +
+      'legítimo el `catch` y lo que cerró B3: si añades o quitas uno, enuméralo aquí.'
+  );
 });
 
 test('un formato desconocido sigue el camino de siempre — no se inventa analizador', () => {
@@ -501,8 +639,11 @@ test('el léxico anclado ANCLA: `author` no es `auth`, ni `tokenizer` es `token`
   // `LEXICO_IDENTIDAD.source` es una alternancia de primer nivel SIN paréntesis,
   // así que interpolarla a pelo entre un lookbehind y un lookahead ataba el
   // primero sólo a la primera alternativa y el segundo sólo a la última. Sobre
-  // este árbol eran once falsos positivos en campos `author`, que son identidad
-  // PÚBLICA. El arreglo es un `(?:…)`; este test lo fija.
+  // este árbol cuesta 36 falsos positivos POR EL CAMINO ESTRUCTURAL —muchos en
+  // campos `author`, que son identidad PÚBLICA—. En `main` el mismo bug no
+  // producía ninguno: su único consumidor era `censarVolumenes`. O sea que el
+  // arreglo no limpia deuda ajena, evita que la propia se dispare.
+  // El arreglo es un `(?:…)`; este test lo fija.
   const anclado = new RegExp(`(?<![A-Za-z0-9])(?:${LEXICO_IDENTIDAD.source})(?![A-Za-z0-9])`, 'i');
   for (const n of ['author', 'authors', 'tokenizer', 'secretaria', 'xxpwdyy', 'passenger', 'autoridad']) {
     assert.equal(anclado.test(n), false, `\`${n}\` no es un nombre de identidad y el léxico dice que sí`);
@@ -637,8 +778,9 @@ test('cerrar el ancla NO puede costar nombres compuestos del programador', () =>
 test('LÍMITE DECLARADO: una tirada en MAYÚSCULAS sin separador no se puede partir', () => {
   // `AUTHTOKEN` y `AUTHOR` son el mismo problema —una tirada de mayúsculas sin
   // frontera— y sólo un diccionario los distingue. Se prefiere perder el primero
-  // a recuperar el segundo: un autor es identidad PÚBLICA y sale once veces en
-  // este árbol. Con separador se caza sin problema, y eso también se fija.
+  // a recuperar el segundo: un autor es identidad PÚBLICA y recuperarlo cuesta
+  // 36 hallazgos por el camino estructural. Con separador se caza sin problema,
+  // y eso también se fija.
   assert.equal(esNombreDeIdentidad('AUTHTOKEN'), false);
   assert.equal(esNombreDeIdentidad('ZEUS_AUTHTOKEN'), false);
   assert.equal(esNombreDeIdentidad('ZEUS_AUTH_TOKEN'), true, 'con separador SÍ se tiene que cazar');

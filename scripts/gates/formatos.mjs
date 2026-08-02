@@ -44,23 +44,40 @@
  * entiende; sobre lo que no se entiende se sigue mirando como antes. Un fallo de
  * este fichero degrada a la vigilancia anterior, no a silencio.
  *
- * ⚠ ESA FRASE FUE FALSA UNA VEZ, y la lección vale más que la frase. La primera
- * versión tenía una salida que devolvía `null` al NO entender en vez de lanzar
- * —el reparto de mapas de flujo de YAML—, y `null` no es una retirada: quien
- * llamaba se quedaba sin campos **y sin excepción**, así que nunca llegaba al
- * `catch`. Resultado: `{"api_key":"…"}` dentro de un `.yaml` salía VERDE con la
- * clave dentro. Ocho formas se perdían así, y JSON es YAML. De ahí la regla que
- * gobierna este fichero:
+ * ⚠ ESA FRASE FUE FALSA DOS VECES, y la lección vale más que la frase.
  *
- *   **`null` sólo puede significar información POSITIVA** («esto no es una
- *   colección de flujo», «este formato no lo encamino»). La DUDA se lanza,
- *   siempre. Si añades una salida a un analizador, pregúntate cuál de las dos
- *   es — y si es duda, `throw new NoEntiendo`.
+ *   1. La primera versión devolvía `null` al NO entender, en el reparto de mapas
+ *      de flujo de YAML. `null` no es una retirada: quien llamaba se quedaba sin
+ *      campos **y sin excepción**, así que nunca llegaba al `catch`. Un mapa de
+ *      flujo con una clave de identidad dentro de un `.yaml` salía VERDE con la
+ *      clave dentro —y JSON es YAML—. Ocho formas se perdían así.
+ *   2. Al arreglarlo escribí «la duda se lanza, SIEMPRE»… y dejé un `catch` en
+ *      `camposDeCodigo` que se comía la duda, justificado con un comentario que
+ *      decía que el literal «ya se juzgó por su propio nombre». No bastaba: el
+ *      nombre es `cfg`. Otras ocho formas se perdían.
+ *
+ * Las dos veces el fallo NO fue de lógica: fue escribir una frase absoluta sobre
+ * una superficie que no había enumerado entera. Así que la regla de este fichero
+ * ya no es una promesa sino un RECUENTO, y vive en `test/gates/formatos.test.mjs`
+ * («AUDITORÍA: las salidas silenciosas…»):
+ *
+ *   **Hay exactamente TRES `return null` y UN `catch` en este módulo, y están
+ *   auditados uno por uno.** Los tres `null` significan información POSITIVA
+ *   —«no encamino este formato», «esto no es una pareja», «esto no es una
+ *   colección de flujo»—, nunca duda. El `catch` es legítimo SÓLO porque debajo
+ *   hay un suelo opaco incondicional. Si añades uno, ese test se pone rojo y te
+ *   obliga a clasificarlo. No añadas la frase: añade la fila.
  *
  * LO QUE NO SE ANALIZA SE MARCA `opaco` Y SE BARRE EN CRUDO. Es el segundo
- * mecanismo, y cubre lo que sí se ve pero no se entiende: comentarios (de YAML,
- * de Dockerfile y de código), el cuerpo de un escalar de bloque, y el argumento
- * de una instrucción de Dockerfile que no declara pares. Tirarlos era una
+ * mecanismo, y son SIETE sitios, contados y con test que fija el número:
+ * comentario de YAML · cuerpo de un escalar de bloque de YAML · comentario de
+ * Dockerfile · argumento de una instrucción de Dockerfile que no declara pares
+ * (`RUN`…) · comentario de línea en código · comentario de bloque en código ·
+ * **contenido de un literal de cadena en código**.
+ *
+ * El último es el que cerró B3 y merece su frase: el lexer sabe que eso ES una
+ * cadena, NO sabe qué hay dentro. Puede ser un documento de configuración
+ * entero, y el nombre que el lexer ve es el de la variable. Tirarlos era una
  * pérdida frente a U231 —«lo dejo comentado por si acaso» es donde se queda un
  * secreto— y encima una pérdida no declarada.
  *
@@ -629,10 +646,16 @@ export function camposDeYaml(texto) {
       i += 1;
       continue;
     }
+    // Directivas de documento, y SÓLO ellas. Antes se saltaba en silencio toda
+    // línea que empezara por `%`, que es más ancho de lo que se quería decir: un
+    // `%foo: <material>` se iba sin mirar. No es regresión —el barrido de U231
+    // tampoco lo cazaba— pero es una salida muda, y este fichero no las admite.
     if (recortada.startsWith('%')) {
-      // directiva (%YAML, %TAG)
-      i += 1;
-      continue;
+      if (/^%(?:YAML|TAG)\b/.test(recortada)) {
+        i += 1;
+        continue;
+      }
+      throw new NoEntiendo(`YAML: linea que empieza por \`%\` y no es una directiva (linea ${numero})`);
     }
     for (const { re, que } of YAML_NO_MODELADO) {
       if (re.test(limpia)) throw new NoEntiendo(`YAML: ${que} no modelado (linea ${numero})`);
@@ -1068,18 +1091,34 @@ export function camposDeCodigo(texto) {
       }
       if (!cerrada) throw new NoEntiendo(`codigo: literal de cadena sin cerrar (linea ${l0})`);
       if (nombre !== '') campos.push({ nombre, valor: out, line: l0 });
-      // UN LITERAL QUE ES UN DOCUMENTO JSON ES UN DOCUMENTO JSON. El caso real
-      // es `const cfg = '{"api_key":"…"}'`: el nombre que ve el lexer es `cfg`,
-      // que no es léxico de identidad, así que sin esto el blob entero pasaba
-      // —y el barrido de U231 sí lo cazaba—. Se intenta analizar; si no es JSON,
-      // no era un blob y no se pierde nada. La línea es la del literal: un
-      // documento incrustado no tiene líneas propias en este fichero.
+
+      // EL CONTENIDO DE UN LITERAL ES OPACO, Y ÉSTE ES EL SUELO.
+      //
+      // El lexer sabe que esto ES una cadena; NO sabe qué hay dentro. Puede
+      // haber un documento de configuración entero —`const cfg = 'api_key: …'`,
+      // un blob de `.env`, una plantilla multilínea con YAML— y el nombre que
+      // el lexer ve es `cfg`, que no es léxico de identidad. Sin este suelo,
+      // ocho formas medidas pasaban en SILENCIO y el barrido de U231 sí las
+      // cazaba.
+      //
+      // La primera versión ponía sólo el intento de JSON de abajo, con un
+      // `catch` que se comía la duda y un comentario que decía «el literal ya se
+      // juzgó arriba por su propio nombre». No basta, justamente porque el
+      // nombre es `cfg`. Cerré los `return null` de todo el fichero y dejé un
+      // `catch`: la misma clase de fallo, en otro sitio. De ahí que el suelo sea
+      // incondicional y el análisis, un extra.
+      campos.push({ nombre: '', valor: out, line: l0, opaco: true });
+
+      // EXTRA (no suelo): si además es un documento JSON, se analiza, y eso da
+      // nombre de campo y línea propios en vez de un barrido a ciegas. Que el
+      // `catch` de aquí sea silencioso es legítimo SÓLO porque el suelo de
+      // arriba ya cubre el caso: si no fuera JSON, el barrido crudo lo mira
+      // igual. Sin esa línea, este `catch` volvería a ser un agujero.
       if (/^\s*[{[]/.test(out)) {
         try {
           for (const c2 of camposDeJson(out)) campos.push({ ...c2, line: l0 });
         } catch (e) {
           if (!(e instanceof NoEntiendo)) throw e;
-          // No era JSON. El literal ya se juzgó arriba por su propio nombre.
         }
       }
       i = k;

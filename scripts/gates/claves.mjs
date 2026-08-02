@@ -213,11 +213,19 @@ export const LEXICO_IDENTIDAD = new RegExp(
  * el lookahead SÓLO a la última. Las de en medio quedaban sin anclar ninguno, o
  * sea sin anclar. Medido: el «anclado» daba verdadero para `author` (por
  * `auth`), `tokenizer` (por `token`), `secretaria` (por `secreta`) y `xxpwdyy`
- * (por `pwd`). Sobre este árbol eso son once falsos positivos en `author` de
- * ficheros SSB y de un `package.json`, donde un autor es una identidad PÚBLICA.
+ * (por `pwd`). CUÁNTO CUESTA, medido y no estimado: en `main` el ancla rota NO
+ * produce ni un falso positivo (su único consumidor es `censarVolumenes`, que
+ * sale idéntico con y sin arreglo), pero por el camino ESTRUCTURAL de este WP
+ * produce 36 sobre este árbol —casi todos en campos `author` de ficheros SSB y de
+ * un `package.json`, donde un autor es una identidad PÚBLICA—.
  *
- * Se cierra envolviendo. No cambia qué palabras están en el léxico —las trece
- * que U231 midió siguen casando, y hay test— sino que el ancla ancle.
+ * Se cierra envolviendo. No cambia qué PALABRAS están en el léxico —las trece
+ * que U231 midió siguen casando, y hay test— pero sí cambia qué NOMBRES casan,
+ * que no es lo mismo y hay que decirlo: `authToken`, `password2` y otros diez
+ * dejaban de casar, porque el ancla exige frontera no alfanumérica y ahí la
+ * frontera es un cambio de caja. Eso NO se resuelve aquí sino en
+ * `esNombreDeIdentidad`, que es quien debe usarse para preguntar por el nombre
+ * de un campo. Este `LEXICO_ANCLADO` es sólo la primera de sus dos preguntas.
  */
 const LEXICO_ANCLADO = new RegExp(`(?<![A-Za-z0-9])(?:${LEXICO_IDENTIDAD.source})(?![A-Za-z0-9])`, 'i');
 
@@ -234,9 +242,9 @@ const LEXICO_ENTERO = new RegExp(`^(?:${LEXICO_IDENTIDAD.source})$`, 'i');
  */
 function palabrasDeNombre(nombre) {
   return nombre
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2') // camelCase → camel·Case
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // HTTPServer → HTTP·Server
-    .split(/[^A-Za-z0-9]+| /)
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2') // camelCase → camel·Case
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // HTTPServer → HTTP·Server
+    .split(/[^A-Za-z0-9]+/)
     .flatMap((t) => t.split(/(\d+)/))
     .filter((t) => t !== '');
 }
@@ -265,8 +273,9 @@ function palabrasDeNombre(nombre) {
  * `ZEUS_AUTHTOKEN`— no se puede partir, porque no hay frontera que leer:
  * `AUTHTOKEN` y `AUTHOR` son el mismo problema y sólo un diccionario los
  * distingue. Se prefiere perder `AUTHTOKEN` a recuperar `AUTHOR`, porque un
- * autor es identidad PÚBLICA y sale once veces en este árbol. Con separador
- * (`ZEUS_AUTH_TOKEN`) se caza sin problema.
+ * autor es identidad PÚBLICA y recuperarlo cuesta 36 hallazgos por el camino
+ * estructural (ver arriba). Con separador (`ZEUS_AUTH_TOKEN`) se caza sin
+ * problema.
  *
  * @param {string} nombre
  * @returns {boolean}
