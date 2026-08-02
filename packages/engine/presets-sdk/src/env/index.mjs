@@ -15,7 +15,28 @@ export const MONOREPO_ROOT = join(__dirname, '../../../../..');
 let _loaded = false;
 
 /**
- * Load .env from the monorepo root once per process.
+ * PRECEDENCIA DE CONFIGURACION (medida, no supuesta — WP-U266)
+ * ============================================================
+ * Cuando una misma clave esta en el `.env` de raiz y ademas en el entorno del
+ * proceso, **gana la variable de proceso**. Es consecuencia directa de llamar a
+ * `dotenv.config()` SIN `override: true` (linea de abajo): dotenv solo escribe
+ * en `process.env` las claves que aun no existen.
+ *
+ *   .env: ZEUS_PORT_EDITOR=14012   +   entorno: ZEUS_PORT_EDITOR=15012
+ *   -> resuelve 15012 (gana el proceso)
+ *
+ * De mayor a menor prioridad:
+ *   1. variable de proceso (`ZEUS_PORT_EDITOR=... node ...`, launcher, CI)
+ *   2. `.env` de la raiz del monorepo
+ *   3. el defecto declarado en este fichero (DEFAULT_ZEUS_UI_MESH / DEFAULT_ZEUS_MCP)
+ *
+ * Cambiar esto a `override: true` invierte 1 y 2 y romperia todo override por
+ * linea de comandos. Si algun dia se cambia, hay que cambiar tambien este
+ * bloque y los tests que lo fijan (`test/env-puerto-mal-formado.mjs`).
+ *
+ * El `.env` se carga UNA vez por proceso (`_loaded`): editar el fichero con el
+ * proceso vivo no tiene efecto hasta reiniciar.
+ *
  * @param {string} [repoRoot] — override monorepo root (tests).
  */
 export function loadZeusEnv(repoRoot = MONOREPO_ROOT) {
@@ -162,16 +183,101 @@ export function resolveValidateMode(scope) {
   return normalizeValidateMode(scoped ?? master);
 }
 
+/** Puerto TCP anunciable: 1..65535. El 0 queda FUERA a proposito (ver abajo). */
+export const MIN_ZEUS_PORT = 1;
+export const MAX_ZEUS_PORT = 65535;
+
+/** `code` estable del error de puerto mal formado. */
+export const ZEUS_PORT_ERROR_CODE = 'ZEUS_PUERTO_MAL_FORMADO';
+
 /**
+ * Configuracion de puerto invalida. Se lanza al RESOLVER, no al escuchar, para
+ * que un puerto mal formado no llegue nunca a anunciarse en el catalogo.
+ *
+ * Discriminar por `err.code === ZEUS_PORT_ERROR_CODE`, **no** por `instanceof`:
+ * en un monorepo con copias duplicadas del paquete `instanceof` falla entre
+ * instancias distintas del modulo. El `code` viaja.
+ */
+export class ZeusPortConfigError extends Error {
+  /**
+   * @param {string} envVar
+   * @param {string} raw
+   * @param {string} motivo
+   */
+  constructor(envVar, raw, motivo) {
+    super(
+      `Puerto mal formado: ${envVar}=${JSON.stringify(raw)} — ${motivo}. ` +
+        `Se espera un entero decimal entre ${MIN_ZEUS_PORT} y ${MAX_ZEUS_PORT} ` +
+        `(sin signo, sin decimales, sin 0x, sin espacios, sin ceros a la izquierda). ` +
+        `Deja la clave vacia o sin declarar para usar el valor por defecto.`
+    );
+    this.name = 'ZeusPortConfigError';
+    this.code = ZEUS_PORT_ERROR_CODE;
+    this.envVar = envVar;
+    this.rawValue = raw;
+    this.motivo = motivo;
+  }
+}
+
+/**
+ * Valida la forma textual de un puerto SIN mirar el entorno.
+ *
+ * Deliberadamente estricta sobre la cadena cruda y no sobre `Number(raw)`,
+ * porque `Number` acepta como puerto cosas que no lo son: `Number('0x10')` es
+ * 16, `Number('  ')` es 0 y `Number('03012')` es 3012. `Number.isFinite` no es
+ * una validacion de puerto — era el defecto que cerro WP-U266.
+ *
+ * @param {string} raw
+ * @returns {{ ok: true, value: number } | { ok: false, motivo: string }}
+ */
+export function validarPuerto(raw) {
+  const s = String(raw);
+  // Sin `trim`: un valor de solo espacios es configuracion mal formada, no
+  // "sin configurar". Si se trimara, "  " caeria en el defecto en silencio,
+  // que es justo el falso verde que este WP prohibe.
+  if (!/^[0-9]+$/.test(s)) {
+    return { ok: false, motivo: 'no es un entero decimal sin signo' };
+  }
+  if (s.length > 1 && s[0] === '0') {
+    return { ok: false, motivo: 'lleva ceros a la izquierda' };
+  }
+  const n = Number(s);
+  if (n < MIN_ZEUS_PORT || n > MAX_ZEUS_PORT) {
+    // El 0 cae aqui, y es el vector que abrio la ficha: `listen(0)` pide un
+    // puerto efimero al SO, asi que el catalogo anunciaba 0 mientras el bind
+    // real caia en 56206. Un puerto anunciable no puede ser 0.
+    return { ok: false, motivo: `fuera de rango ${MIN_ZEUS_PORT}..${MAX_ZEUS_PORT}` };
+  }
+  return { ok: true, value: n };
+}
+
+/**
+ * Puerto declarado en `name`, o `fallback` si la clave no esta configurada.
+ *
+ * CONTRATO (cambiado en WP-U266 — antes devolvia siempre un numero):
+ * - clave ausente o cadena vacia -> `fallback` (el caso "sin configurar")
+ * - valor bien formado           -> el entero
+ * - valor mal formado            -> **lanza** `ZeusPortConfigError`
+ *
+ * Lanza en vez de caer al defecto a proposito: caer al defecto convierte un
+ * `ZEUS_PORT_EDITOR=abc` en un arranque verde escuchando en otro sitio, que es
+ * un falso verde. Fallar aqui —al resolver— garantiza que el valor mal formado
+ * no llegue ni al bind ni al catalogo.
+ *
+ * Precedencia `.env` vs proceso: gana el proceso. Ver `loadZeusEnv`.
+ *
  * @param {string} name
  * @param {number} fallback
+ * @returns {number}
+ * @throws {ZeusPortConfigError} si el valor esta declarado pero mal formado
  */
 export function readEnvPort(name, fallback) {
   loadZeusEnv();
   const raw = process.env[name];
   if (raw == null || raw === '') return fallback;
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : fallback;
+  const r = validarPuerto(raw);
+  if (!r.ok) throw new ZeusPortConfigError(name, raw, r.motivo);
+  return r.value;
 }
 
 /** Default host when ZEUS_HOST is unset. */

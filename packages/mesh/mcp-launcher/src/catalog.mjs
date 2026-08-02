@@ -52,10 +52,25 @@ async function loadEnv() {
   }
 }
 
+/**
+ * Una configuracion de puerto mal formada NO es un fallo recuperable: si se
+ * traga, el catalogo anuncia el puerto por defecto mientras el operador cree
+ * haber configurado otro. Medido en WP-U266: con `ZEUS_MCP_SUN=0` y el `catch`
+ * mudo de antes, `resolveCatalog()` devolvia `solar-sun -> 4101` tan campante.
+ *
+ * Estos `catch` existen para el caso "presets-sdk no importable" (arranque
+ * offline / paquete a medio instalar), no para "tu configuracion esta mal".
+ * @param {unknown} err
+ */
+function esErrorDeConfiguracion(err) {
+  return Boolean(err) && /** @type {any} */ (err).code === 'ZEUS_PUERTO_MAL_FORMADO';
+}
+
 function syncEnvPorts() {
   try {
     return resolveZeusMcpPorts();
-  } catch {
+  } catch (err) {
+    if (esErrorDeConfiguracion(err)) throw err;
     return FALLBACK_MCP_PORTS;
   }
 }
@@ -63,7 +78,8 @@ function syncEnvPorts() {
 function syncUiPorts() {
   try {
     return resolveZeusUiPorts();
-  } catch {
+  } catch (err) {
+    if (esErrorDeConfiguracion(err)) throw err;
     return FALLBACK_UI_PORTS;
   }
 }
@@ -485,7 +501,7 @@ export function buildSpawnSpec(entry, opts = {}) {
  * @param {object} [mcp]
  * @param {object} [ui]
  */
-export function buildPortTable(mcp = syncEnvPorts(), ui = resolveZeusUiPorts()) {
+export function buildPortTable(mcp = syncEnvPorts(), ui = syncUiPorts()) {
   return {
     launcher: mcp.launcher.disk,
     firehose: mcp.firehose.disk,

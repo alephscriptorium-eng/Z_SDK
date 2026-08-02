@@ -58,6 +58,11 @@ export {
   resolvePlayerDebugEndpoint,
   resolvePrensaBaseUrl,
   readEnvPort,
+  validarPuerto,
+  ZeusPortConfigError,
+  ZEUS_PORT_ERROR_CODE,
+  MIN_ZEUS_PORT,
+  MAX_ZEUS_PORT,
   resolveValidateMode,
   DEFAULT_MCP_APPROVAL_TOKEN,
   resolveMcpApprovalToken

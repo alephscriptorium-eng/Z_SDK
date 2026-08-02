@@ -36,7 +36,16 @@ test('ciudad-lifecycle slot: override por ZEUS_MCP_CIUDAD_LIFECYCLE', () => {
     process.env.ZEUS_MCP_CIUDAD_LIFECYCLE = '3099';
     assert.equal(resolveZeusMcpPorts().ciudadLifecycle.disk, 3099);
 
+    // WP-U266 cambio este contrato a proposito: hasta entonces un valor no
+    // numerico caia al defecto en silencio (aqui se afirmaba `=== 3051`), y
+    // eso es la misma clase de falso verde que el `ZEUS_PORT_EDITOR=0` de la
+    // ficha: el operador cree haber movido el puerto y el servidor levanta en
+    // otro. Ahora aborta al resolver. Ver `test/env-puerto-mal-formado.mjs`.
     process.env.ZEUS_MCP_CIUDAD_LIFECYCLE = 'no-numerico';
+    assert.throws(() => resolveZeusMcpPorts(), { code: 'ZEUS_PUERTO_MAL_FORMADO' });
+
+    // La clave vacia si sigue siendo "sin configurar" -> defecto.
+    process.env.ZEUS_MCP_CIUDAD_LIFECYCLE = '';
     assert.equal(resolveZeusMcpPorts().ciudadLifecycle.disk, 3051);
   } finally {
     if (prev == null) delete process.env.ZEUS_MCP_CIUDAD_LIFECYCLE;
