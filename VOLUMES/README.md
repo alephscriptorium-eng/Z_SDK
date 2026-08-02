@@ -65,6 +65,31 @@ meter DISK_01/02 pesados en este repo.
 - Start packs y volúmenes de ronda: **nunca en git** del monorepo
   (ARQUITECTURA §6).
 
+## Invariante de identidad (WP-U231)
+
+**Ningún volumen aloja material de identidad** —claves de pub, tokens de
+registry, credenciales de VPS—: el secreto va por env del operador, nunca en el
+árbol. Y su otra mitad: **un volumen que EXIGE un secreto para leerse está mal
+diseñado**. Es la derivada al plano de datos de `GATE-O-CLAVES` (doctrina de O,
+sólo citada aquí — `plan/GOBIERNO-EJECUCION-F2.md:478`), escrita en
+`sincronia/notas/archivo/NOTA-Z-2026-07-26-R6-matriz-volumenes.md:55-59`.
+
+Lo vigila `scripts/gates/claves.mjs`, que entra en `npm run gates`. Barre
+**todas** las extensiones de este árbol (no sólo fuentes) y **no admite
+excepciones**: una entrada en `scripts/gates/exceptions.mjs` que nombre una de
+sus reglas es ella misma una ofensa.
+
+El censo de qué exige cada volumen para ser leído:
+
+```
+node scripts/gates/claves.mjs --censo               # este árbol
+node scripts/gates/claves.mjs --censo --root <ruta> # un root de operador
+```
+
+Lo que el gate **no** ve, dicho aquí para que nadie lo suponga: el root vivo
+apuntado por `ZEUS_VOLUMES_ROOT` (fuera del monorepo — hay que pasarle
+`--root`), el historial de git, y cualquier secreto cifrado o comprimido.
+
 ## Read API
 
 `@zeus/presets-sdk`: `resolveVolume`, `browseVolume`, `resolveVolumesRoot`.
