@@ -285,17 +285,26 @@ lo cace un oráculo **distinto** es la prueba de que ninguno de los dos sobra.
 
 ```
 $ node --test test/gates/matriz-51.test.mjs
-# tests 25 · pass 25 · fail 0 · skipped 0
+# tests 32 · pass 32 · fail 0 · skipped 0        (25 antes de la devolución)
 
 $ node --test test/gates/*.test.mjs          # = npm run test:gates
-# tests 93 · pass 93 · fail 0 · skipped 0
+# tests 100 · pass 100 · fail 0 · skipped 0      (93 antes de la devolución)
 
 $ git status --porcelain | wc -l
 0
 ```
 
-`93/93` con `git status` a **0 líneas**: la suite no muta el árbol, así que el guardián de U252 sigue
-en pie con los tests nuevos dentro de su barrido.
+`100/100` con `git status` a **0 líneas**: la suite no muta el árbol, así que el guardián de U252
+sigue en pie con los siete tests nuevos dentro de su barrido.
+
+**El rojo de B1, reproducido**: neutralizando `if (celda.claim === CLAIM_SI)` → `if (false)` en el
+gate, `U265 rojo · afirma entrada y NO hay` **falla** (`# pass 0 · fail 1`). Antes de la devolución
+esa misma neutralización dejaba la suite entera en `25/25` verde. Gate restaurado con
+`git checkout --` y `git status` a 0 líneas.
+
+**Cuenta de fallos del vector guardado, re-medida tras añadir la exigencia de cita**: sigue siendo
+**23 = 9 `-caduco` + 14 `-incompleto`**. Las 7 celdas afirmativas de `0a441d1` sí traían cita con
+forma `ruta:línea`, así que la regla nueva no infla el vector.
 
 ---
 
@@ -309,7 +318,8 @@ Dos bloqueantes, los dos ciertos, y ninguno movió una cifra.
   el propio contraste prohíbe tres párrafos más arriba. Cerrado con **cinco tests rojos de unidad**
   sobre `compararContrasteCatalogo` (ya exportada; el gate no se movió por ellos): afirmar entrada
   inexistente · no nombrar todos los ids · `-mixto` · `kind`/`health` anotados ≠ declarados · celda
-  afirmativa sin cita. Cada uno con su control verde al lado.
+  afirmativa sin cita. Cada uno con su control verde al lado. Más dos sobre las ramas nuevas de esta
+  misma devolución (`catalogo-kind-mixto` y `healthPath: ''`): **7 tests, 25 → 32**.
 - **B2 — la aritmética se autorrefutaba**: «U234 (3)» sumaba 8 para explicar 9 celdas. Medido con
   `git log -S"id: 'launcher'"`: U234 (`c109948`) dio de alta **cuatro**. Corregido en el documento,
   en el fixture y aquí.
