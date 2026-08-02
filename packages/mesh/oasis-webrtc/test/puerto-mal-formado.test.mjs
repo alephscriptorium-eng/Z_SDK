@@ -80,6 +80,33 @@ test('U266/B3 · el mapa explícito manda en la CLAVE; el FALLBACK sigue saliend
   }
 });
 
+test('U266/M-1 · el mapa explícito NO aisla de un process.env mal formado', () => {
+  // El reverso del test anterior, y el que faltaba por declarar: con
+  // `process.env` mal formado, la llamada aborta **aunque el mapa explícito sea
+  // válido** — porque `resolveZeusUiPorts()` dispara antes, al calcular el
+  // fallback. El llamante muere por una variable ambiente que estaba
+  // sobreescribiendo explícitamente.
+  //
+  // Se fija como ASERTO, no como nota, porque es justo la clase de promesa que
+  // este WP existe para no volver a escribir: el docstring de
+  // `readEnvPortAlias` decía «resuelve contra ESTO» y no era verdad.
+  //
+  // La conducta se conserva a propósito (abortar ante configuración mal formada
+  // es lo que pide la CA, y falla ruidoso); lo que se corrigió fue la promesa.
+  const prev = process.env.ZEUS_PORT_OASIS_WEBRTC;
+  try {
+    process.env.ZEUS_PORT_OASIS_WEBRTC = '0x10';
+    assert.throws(
+      () => resolveOasisWebrtcListen({ ZEUS_PORT_OASIS_WEBRTC: '5555' }),
+      { code: 'ZEUS_PUERTO_MAL_FORMADO' },
+      'aborta pese al mapa explícito válido — declarado en §7, no es un descuido'
+    );
+  } finally {
+    if (prev === undefined) delete process.env.ZEUS_PORT_OASIS_WEBRTC;
+    else process.env.ZEUS_PORT_OASIS_WEBRTC = prev;
+  }
+});
+
 test('U266/B3 · legítimos, defecto y `null` (M-i)', () => {
   assert.equal(resolveOasisWebrtcListen({ ZEUS_PORT_OASIS_WEBRTC: '14022' }).port, 14022);
   assert.equal(resolveOasisWebrtcListen({ ZEUS_PORT_OASIS_WEBRTC: '' }).port, DEFECTO);

@@ -335,8 +335,29 @@ export function readEnvPort(name, fallback) {
  *
  * `env` permite pasar un mapa distinto de `process.env` (lo necesita
  * `webrtc-viewer/src/game-bridge.mjs`, cuya API publica lo recibe por
- * parametro). Con `env` explicito NO se carga el `.env` de raiz: quien pasa su
- * propio mapa esta diciendo "resuelve contra ESTO".
+ * parametro). Con `env` explicito NO se carga el `.env` de raiz.
+ *
+ * ALCANCE EXACTO DE `env`, porque una version anterior de este comentario decia
+ * «quien pasa su propio mapa esta diciendo "resuelve contra ESTO"» y **eso
+ * prometia un aislamiento que esta funcion NO da** (WP-U266 · M-1):
+ *
+ *  - `env` gobierna **de donde se leen las claves de esta llamada**, y nada mas.
+ *  - **NO aisla de `process.env`** en los dos sentidos que importan:
+ *      · el `fallback` que recibe suele venir de `resolveZeusUiPorts()`, que lee
+ *        `process.env` (asi que un valor BIEN formado del proceso se cuela como
+ *        defecto);
+ *      · y si el llamante ha invocado antes un resolver del mesh, un valor MAL
+ *        formado en `process.env` **aborta la llamada aunque el mapa explicito
+ *        sea valido**. Medido:
+ *
+ *          process.env ZEUS_PORT_OASIS_WEBRTC=0x10
+ *          + env={ ZEUS_PORT_OASIS_WEBRTC: '5555' }   ->  rc=1, ABORTA
+ *
+ * Esa conducta **se conserva a proposito**: abortar ante cualquier
+ * configuracion mal formada es lo que pide la CA de la ficha, y falla ruidoso.
+ * Lo que se corrige aqui es la promesa, no el comportamiento. Si algun dia hace
+ * falta aislamiento de verdad, hay que pasarle el mapa tambien a los resolvers
+ * del mesh, que hoy no lo aceptan.
  *
  * @param {string[]} names — de mayor a menor prioridad
  * @param {number} fallback

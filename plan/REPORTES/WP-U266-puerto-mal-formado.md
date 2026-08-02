@@ -668,8 +668,10 @@ que deberían enrojecer, restaura y anota **qué aserto** cae.
 | **K** | `oasis-webrtc` a mano | su suite | nadie disparó — **el caso de B3** |
 | **L** | `UI_PORT_ENV_CHAIN` invertida | `puerto-anunciado` (2) + `presets-sdk` | nadie disparó |
 
-**El mapa de la ablación A cambió, y lo digo porque en la 2ª vuelta afirmé otra
-cosa.** Hoy A deja **cuatro suites en VERDE** (`app-shell`, `socket-server`,
+**El mapa de la ablación A cambió dos veces, y lo digo porque en la 2ª vuelta
+afirmé otra cosa.** Tras M-2, A **sí** enrojece `app-shell` (por el aserto de
+`resolveAppPort`, que es el único con gate en CI). Antes de M-2 dejaba **cuatro
+suites en VERDE** (`app-shell`, `socket-server`,
 `oasis-webrtc`, `webrtc-viewer/puerto-anunciado`). No es un agujero: es que el
 sistema tiene ahora **dos puntos de validación independientes** —`readEnvPort` y
 `readEnvPortAlias`, que desde B3/M-i valida con `validarPuerto` **directamente**
@@ -698,9 +700,9 @@ llego a mirar por qué, habría dado tres ablaciones por imposibles.
 | fichero | qué ejerce | tests | ¿lo corre CI? | ¿muerde? |
 | --- | --- | --- | --- | --- |
 | `presets-sdk/test/env-puerto-mal-formado.mjs` | la función, `readEnvPortAlias`, cadenas de alias, `SPEC_TOOL_PORTS` perezoso, precedencia | 14 | **sí** | A · C · I · L |
-| `app-shell/test/puerto-mal-formado.mjs` | el **bind** y el `config.json` de la app | 6 | **sí** | J |
+| `app-shell/test/puerto-mal-formado.mjs` | el **bind**, `resolveAppPort` en exclusiva (M-2) y el `config.json` de la app | 8 | **sí** | **A** · J |
 | `socket-server/test/puerto-mal-formado.test.mjs` | el servidor de B1, alias y `{port:0}` | 5 | **sí** | E |
-| `oasis-webrtc/test/puerto-mal-formado.test.mjs` | B3, **por el `env` de parámetro** | 5 | **NO** | K |
+| `oasis-webrtc/test/puerto-mal-formado.test.mjs` | B3 por el `env` de parámetro, y el contrato real de `env` (M-1) | 6 | **NO** | K |
 | `webrtc-viewer/test/puerto-anunciado.test.mjs` | B2 + **B4: anunciar == ATAR con el bind real** | 9 | **NO** | F · F2 · H · L |
 | `webrtc-viewer/test/puerto-mal-formado.test.mjs` | entrypoint real por `process.env` | 3 | **NO** | **ninguna — enmascarado, y lo dice** |
 | `mcp-launcher/test/catalogo-puerto-mal-formado.test.mjs` | el **anuncio** (catálogo, procesos hijo) | 5 | **NO** | A · B |
@@ -728,10 +730,10 @@ comprueba que ningún puerto anunciado es 0 ni sale de 1..65535 (el denominador
 | gate | antes | después |
 | --- | --- | --- |
 | `npm test -w @zeus/presets-sdk` | 55 · 55 pass · RC 0 | **69 · 69 pass · 0 fail · RC 0** |
-| `npm test -w @zeus/app-shell` | 9 · 9 pass · RC 0 | **15 · 15 pass · 0 fail · RC 0** |
+| `npm test -w @zeus/app-shell` | 9 · 9 pass · RC 0 | **17 · 17 pass · 0 fail · RC 0** |
 | `npm test -w @zeus/socket-server` | 23 · 23 pass · RC 0 | **28 · 28 pass · 0 fail · RC 0** |
 | `npm test -w @zeus/webrtc-viewer` | 17 · 17 pass · RC 0 | **29 · 29 pass · 0 fail · RC 0** |
-| `npm test -w @zeus/oasis-webrtc` | 3 · 3 pass · RC 0 | **8 · 8 pass · 0 fail · RC 0** |
+| `npm test -w @zeus/oasis-webrtc` | 3 · 3 pass · RC 0 | **9 · 9 pass · 0 fail · RC 0** |
 | `npm test -w @zeus/room-client-browser` | 7 · 7 pass · RC 0 | **7 · 7 pass · 0 fail · RC 0** |
 | `npm test -w @zeus/mcp-launcher` | 37 · 36 pass · 1 skip · RC 0 | **42 · 41 pass · 1 skip · RC 0** |
 | `npm run gates` | — | **OK (0 offenders) · RC 0** |
@@ -845,6 +847,60 @@ ZEUS_PORT_OASIS_WEBRTC=14099
 Corregido el aserto para decir lo que pasa, y declarado en §7.17. Es
 preexistente y lo mismo ocurre en `game-bridge`.
 
+### 6.quinquies · Los menores de la QUINTA vuelta
+
+**M-1 · declaré la mitad del fallback y no la mitad del aborto.**
+Escribí el trasvase benigno (un valor **bien formado** de `process.env` se cuela
+como fallback) y no escribí el reverso, que es el que muerde:
+
+```
+process.env ZEUS_PORT_OASIS_WEBRTC=0x10  +  env={ ZEUS_PORT_OASIS_WEBRTC: '5555' }
+   →  rc=1, ABORTA          (y lo mismo en `game-bridge`)
+```
+
+El llamante que pasa su propio mapa **correcto** muere por una variable ambiente
+que estaba sobreescribiendo explícitamente. Y eso **contradecía el docstring que
+yo mismo escribí**: *«quien pasa su propio mapa está diciendo "resuelve contra
+ESTO"»*. Una frase que promete aislamiento y no lo da es la clase de este WP
+entero — la tercera vez que me pasa, ahora en una promesa de API.
+
+**La conducta se conserva** (abortar ante cualquier configuración mal formada es
+lo que pide la CA, y falla ruidoso y seguro). **Lo que se corrige es la
+promesa**: el JSDoc de `readEnvPortAlias` y el `.d.ts` publicado dicen ahora el
+alcance exacto —`env` gobierna de dónde se leen las claves **de esa llamada**, y
+**no aísla de `process.env`** ni en el fallback ni frente al aborto— y hay
+**aserto** que lo fija, para que la promesa no vuelva a separarse del código.
+Declarado en §7.19 con su nombre: *abortar con configuración explícita válida*.
+
+**M-2 · el único test de bind con gate en CI no fijaba el mecanismo que decía fijar.**
+Con `readEnvPort` leniente, `@zeus/app-shell` quedaba **15/15 verde**: el aborto
+venía de `readEnvPortAlias` vía `resolveZeusUiPorts()` (`create-app-config.mjs:205`),
+**no de `resolveAppPort`**. Yo había declarado el hecho («cuatro suites verdes»)
+sin ver lo que importaba: **el enmascarado era justo el único con gate en CI**, y
+`mcp-launcher`, `webrtc-viewer` y `oasis-webrtc` están fuera. O sea que **CI no
+tenía ni un test que mordiera sobre el bind**.
+
+Cerrado por la grieta que deja el propio diseño: `ZEUS_PORT_PLAYER_DEBUG` está
+en `MCP_PORT_ENV` y **no** en `UI_PORT_ENV`, así que `resolveZeusUiPorts()` no lo
+mira; y `resolvePlayerDebugEndpoint()` (`:231`) es condicional y va **después**.
+Con `appId: 'debug'` el único validador del camino es `resolveAppPort`:
+
+```
+at readEnvPort          (env/index.mjs:318)
+at resolveAppPort       (env/index.mjs:457)
+at resolveRuntimeConfig (create-app-config.mjs:211)
+```
+
+Ablación corrida **después** del cambio, como se pidió:
+
+```
+A · readEnvPort sin guarda  →  app-shell  8/7pass/1fail
+     cae: U266/M-2 · resolveAppPort valida por si mismo (sin resolveZeusUiPorts delante)
+     motivo: Missing expected exception: "0" deberia abortar por resolveAppPort
+```
+
+**CI pasa a tener un test que muerde sobre el bind**, que antes no tenía.
+
 **Y una guarda ajena que me cazó, como debía.** Al tocar
 `socket-server/src/config.mjs` saltó el censo de despacho de **WP-U194**
 (`relay-contract.test.mjs`), que sella la **forma** de todos los fuentes del
@@ -935,7 +991,15 @@ El sello anterior queda escrito junto al nuevo.
     y está aseverado tal cual (no como me habría gustado que fuese).
 17. **`@zeus/oasis-webrtc` tampoco está en la matriz de CI**, así que el test
     de B3 sólo corre en local. Se suma a §7.9.
-18. **Los tres ficheros que `npm install` marca como modificados**
+19. **Abortar con configuración explícita válida** (M-1). Con `process.env` mal
+    formado, `resolveOasisWebrtcListen` / `resolveWebRtcViewerEndpoint` abortan
+    **aunque el mapa `env` que se les pasa sea válido**, porque el resolver del
+    mesh dispara al calcular el fallback. Es **deliberado** —la CA pide abortar
+    ante configuración mal formada, y falla ruidoso— pero significa que `env`
+    **no es un mecanismo de aislamiento**. Está dicho en el JSDoc, en el `.d.ts`
+    y con aserto. Aislarlo de verdad exigiría pasar el mapa también a los
+    resolvers del mesh, que hoy no lo aceptan; excede esta ficha.
+20. **Los tres ficheros que `npm install` marca como modificados**
    (`feed-kit/bin/jetstream-sync.mjs`, `linea-kit/bin/linea-kit.mjs`,
    `playbook-kit/bin/run-playbook.mjs`) **no se commitean**: `git diff --quiet`
    sobre los tres → **rc=0**, o sea sin cambio de contenido. Es el `mtime` de

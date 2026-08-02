@@ -65,6 +65,10 @@ export function readEnvPort(name: string, fallback: number): number;
 /**
  * Como `readEnvPort` con una cadena de nombres (alias legados): gana el primero
  * declarado y **solo se valida el que gana**.
+ *
+ * `env` gobierna de donde se leen las claves de ESTA llamada; **no aisla de
+ * `process.env`** (ni en el fallback, ni frente a un aborto que dispare un
+ * resolver del mesh). Ver el JSDoc de la implementacion — WP-U266 · M-1.
  */
 export function readEnvPortAlias(
   names: string[],
