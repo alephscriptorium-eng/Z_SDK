@@ -775,6 +775,28 @@ usuario; hasta entonces los WPs que dependan de ellas no se toman.
   ✎ Regla que deja fijada, a `L-H10`: **un gate se abre por lo que midió, y su
   declaración dice lo que no midió** — o acaba dando fe de lo que no vio.
 
+- **⑫ (custodio, 2026-08-02) · la autoría `you@example.com` del historial
+  publicado SE QUEDA COMO ESTÁ. Asunto cerrado, no vuelve a la cola.**
+  **Lo que hay, re-medido hoy al registrarlo** — y la cifra que este swarm
+  venía arrastrando (**«37 commits»**) **era falsa por un orden de magnitud**:
+  `z-sdk` **305 de 1325** commits de `origin/main` · `scriptorium` **3** ·
+  `s-sdk` **3** · `v-sdk` **0**. Total **311 commits publicados**, entre
+  **2026-07-23 y 2026-08-01**. Es la huella de un git sin `user.email`
+  configurado en la máquina durante ese tramo, no de un tercero: el autor es
+  el mismo custodio bajo el correo por defecto de git.
+  **Por qué se cierra en vez de arreglarse**: reescribir autoría es reescribir
+  cada commit afectado, y publicar esa reescritura exige **`push --force`
+  sobre `main`**, que este programa tiene prohibido de forma permanente. El
+  coste no es el renombrado: es que **todo hash publicado cambia**, y este
+  backlog cita hashes de merge y de CI como prueba de aceptación en decenas de
+  actas. Forzar la reescritura **invalidaría la trazabilidad que sostiene el
+  libro entero** para corregir un campo de correo.
+  **Lo que NO significa**: no es una afirmación de que la autoría sea correcta.
+  Queda escrito aquí para que quien lea ese tramo del historial sepa **por qué**
+  dice lo que dice y no lo lea como intrusión.
+  ✎ Regla de método que deja: **una cifra heredada de otra sesión se re-mide al
+  registrarla, o se propaga.** Ésta llevaba días viajando como «37».
+
 ## Abiertas (bloquean lo indicado)
 
 - ~~**OA-2 · Vocabulario publicable antes de proyectar el backlog a un
