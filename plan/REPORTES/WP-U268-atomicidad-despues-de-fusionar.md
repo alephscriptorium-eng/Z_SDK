@@ -5,7 +5,7 @@
 | agente | worker swarm Scriptorium (worktree `C:/S_LAB/wt/z-u268`) |
 | fecha | 2026-08-02 |
 | rama | `wp/u268-atomicidad-despues-de-fusionar` |
-| commit(s) | (sin commit al cierre de este reporte; base `c005196`) |
+| commit(s) | `6c124e3` (sobre `c005196`) |
 | estado propuesto | listo para revisión |
 
 ## Qué se hizo
