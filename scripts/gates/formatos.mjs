@@ -44,6 +44,26 @@
  * entiende; sobre lo que no se entiende se sigue mirando como antes. Un fallo de
  * este fichero degrada a la vigilancia anterior, no a silencio.
  *
+ * ⚠ ESA FRASE FUE FALSA UNA VEZ, y la lección vale más que la frase. La primera
+ * versión tenía una salida que devolvía `null` al NO entender en vez de lanzar
+ * —el reparto de mapas de flujo de YAML—, y `null` no es una retirada: quien
+ * llamaba se quedaba sin campos **y sin excepción**, así que nunca llegaba al
+ * `catch`. Resultado: `{"api_key":"…"}` dentro de un `.yaml` salía VERDE con la
+ * clave dentro. Ocho formas se perdían así, y JSON es YAML. De ahí la regla que
+ * gobierna este fichero:
+ *
+ *   **`null` sólo puede significar información POSITIVA** («esto no es una
+ *   colección de flujo», «este formato no lo encamino»). La DUDA se lanza,
+ *   siempre. Si añades una salida a un analizador, pregúntate cuál de las dos
+ *   es — y si es duda, `throw new NoEntiendo`.
+ *
+ * LO QUE NO SE ANALIZA SE MARCA `opaco` Y SE BARRE EN CRUDO. Es el segundo
+ * mecanismo, y cubre lo que sí se ve pero no se entiende: comentarios (de YAML,
+ * de Dockerfile y de código), el cuerpo de un escalar de bloque, y el argumento
+ * de una instrucción de Dockerfile que no declara pares. Tirarlos era una
+ * pérdida frente a U231 —«lo dejo comentado por si acaso» es donde se queda un
+ * secreto— y encima una pérdida no declarada.
+ *
  * LÍMITES DECLARADOS, y son reales:
  *   - YAML: anclas y alias (`&a` / `*a`), etiquetas (`!!tipo`), claves complejas
  *     (`? …`), colecciones de flujo repartidas en varias líneas y claves de
@@ -51,7 +71,8 @@
  *   - Código: no es un analizador sintáctico de JavaScript, es un LEXER —
  *     distingue comentario, cadena, plantilla y expresión regular, nada más—.
  *     No entiende el significado del código, y no lo necesita: lo que busca es
- *     dónde hay un literal de cadena.
+ *     dónde hay un literal de cadena. Sus TRES roturas posibles lanzan, y las
+ *     tres tienen test: un lexer desincronizado no puede decir «limpio».
  *   - Markdown, `.env` y texto plano siguen en barrido crudo: no se han tocado.
  */
 
@@ -64,9 +85,12 @@
  *   modo que el salto de línea número `k` del valor está en `line + k`. Sólo lo
  *   pone el escalar de bloque de YAML; en los demás formatos un valor con
  *   saltos los lleva escapados y vive en una sola línea del fichero.
- * @property {boolean} [opaco] el valor es texto incrustado de un lenguaje que
- *   este módulo NO analiza (el cuerpo de un escalar de bloque de YAML). Quien
- *   llama debe barrerlo ADEMÁS en crudo: no se puede afirmar que se entendió.
+ * @property {boolean} [opaco] el valor es texto que este módulo NO analiza: el
+ *   cuerpo de un escalar de bloque de YAML, un comentario (de YAML, Dockerfile o
+ *   código) o el argumento de una instrucción de Dockerfile que no declara
+ *   pares. Quien llama debe barrerlo ADEMÁS en crudo: no se puede afirmar que se
+ *   entendió. Un campo opaco puede venir con `nombre` vacío — el barrido crudo no
+ *   necesita nombre.
  */
 
 /** Error de analizador. Quien llama lo traduce en «retírate al barrido crudo». */
@@ -273,6 +297,12 @@ export function camposDeJson(texto) {
     }
     const m = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(texto.slice(i, i + 40));
     if (m && m[0].length > 0) {
+      // EL NÚMERO TAMBIÉN ES UN VALOR. Se empujaba sólo la cadena, así que
+      // un campo de identidad con valor numérico largo no producía campo — y el
+      // U231 sí lo cazaba. Un PIN, un identificador largo o una clave numérica
+      // son material igual. El clasificador de huecos decide después (por
+      // longitud mínima), que es donde tiene que decidirse.
+      if (nombre !== null) campos.push({ nombre, valor: m[0], line: linea });
       i += m[0].length;
       return;
     }
@@ -318,14 +348,20 @@ const YAML_NO_MODELADO = [
 ];
 
 /**
- * Quita el comentario de una línea de YAML respetando las comillas. Un `#` sólo
- * abre comentario si va a principio de línea o precedido de espacio; dentro de
- * comillas nunca.
+ * Parte una línea de YAML en código y comentario, respetando las comillas. Un
+ * `#` sólo abre comentario si va a principio de línea o precedido de espacio;
+ * dentro de comillas nunca.
+ *
+ * DEVUELVE EL COMENTARIO, no lo tira. Tirarlo era una pérdida frente al barrido
+ * de U231, que sí miraba dentro: una clave de API comentada sigue siendo un
+ * secreto igual —de hecho es el sitio donde más a menudo queda uno, «lo dejo
+ * comentado por si acaso»—. El comentario sale marcado OPACO y se barre en
+ * crudo, igual que el cuerpo de un escalar de bloque.
  *
  * @param {string} s
- * @returns {string}
+ * @returns {{ codigo: string, comentario: string }}
  */
-function sinComentarioYaml(s) {
+function partirComentarioYaml(s) {
   let dentro = null;
   for (let k = 0; k < s.length; k += 1) {
     const c = s[k];
@@ -341,9 +377,11 @@ function sinComentarioYaml(s) {
       dentro = c;
       continue;
     }
-    if (c === '#' && (k === 0 || /\s/.test(s[k - 1]))) return s.slice(0, k);
+    if (c === '#' && (k === 0 || /\s/.test(s[k - 1]))) {
+      return { codigo: s.slice(0, k), comentario: s.slice(k) };
+    }
   }
-  return s;
+  return { codigo: s, comentario: '' };
 }
 
 /**
@@ -382,6 +420,8 @@ function escalarYaml(s) {
  */
 function parYaml(s) {
   let comilla = null;
+  // Índice del carácter siguiente al cierre de una clave ENTRECOMILLADA, o -1.
+  let trasComilla = -1;
   for (let k = 0; k < s.length; k += 1) {
     const c = s[k];
     if (comilla) {
@@ -389,14 +429,23 @@ function parYaml(s) {
         k += 1;
         continue;
       }
-      if (c === comilla) comilla = null;
+      if (c === comilla) {
+        comilla = null;
+        trasComilla = k + 1;
+      }
       continue;
     }
     if (k === 0 && (c === '"' || c === "'")) {
       comilla = c;
       continue;
     }
-    if (c === ':' && (k + 1 >= s.length || /\s/.test(s[k + 1]))) {
+    // Un `:` separa si le sigue espacio o fin de línea. Y TAMBIÉN si va pegado
+    // al cierre de una clave entrecomillada: `"api_key":"valor"` es YAML legal
+    // —JSON es YAML, y eso es exactamente lo que escribe `JSON.stringify`—.
+    // Faltaba esta rama, y el agujero que abrió no era un falso negativo
+    // cualquiera: `{"api_key":"…"}` en un `.yaml` no producía campo NI
+    // excepción, o sea que se perdía EN SILENCIO en vez de retirarse.
+    if (c === ':' && (k + 1 >= s.length || /\s/.test(s[k + 1]) || k === trasComilla)) {
       return { clave: escalarYaml(s.slice(0, k)), valor: s.slice(k + 1).trim() };
     }
   }
@@ -404,19 +453,32 @@ function parYaml(s) {
 }
 
 /**
- * Reparte una colección de flujo (`[a, b]` o `{k: v}`) en campos. Devuelve
- * `null` si no está equilibrada en la línea —flujo multilínea es límite
- * declarado— para que quien llama trate el resto como escalar crudo, que es la
- * lectura conservadora.
+ * Reparte una colección de flujo (`[a, b]` o `{k: v}`) en campos.
+ *
+ * EL CONTRATO DE ESTA FUNCIÓN ES LA PIEZA DE SEGURIDAD, y la primera versión lo
+ * tenía mal. Sólo hay UNA salida `null`, y significa una cosa muy concreta:
+ * **«esto no es una colección de flujo»** —no empieza por `[` ni por `{`—, que
+ * es información positiva y deja al que llama tratarlo como escalar. Cualquier
+ * otra cosa que este reparto no entienda **LANZA `NoEntiendo`**, para que
+ * `hallazgosEnFichero` se retire al barrido crudo.
+ *
+ * ANTES DEVOLVÍA `null` TAMBIÉN AL NO ENTENDER, y eso no era una retirada sino
+ * un silencio: quien llamaba se quedaba sin campos y **sin excepción**, así que
+ * nunca llegaba al `catch`. `{"api_key":"…"}` dentro de un `.yaml` —que es la
+ * salida literal de `JSON.stringify`, y JSON es YAML— salía VERDE con la clave
+ * dentro. Ocho formas se perdían así. La lección es del tipo que este programa
+ * ya ha pagado: **una retirada que no lanza no es una retirada**.
  *
  * @param {string} s
  * @param {string} nombre nombre heredado
  * @param {number} line
- * @returns {Campo[]|null}
+ * @returns {Campo[]|null} `null` SÓLO si no es una colección de flujo
+ * @throws {NoEntiendo} si lo es y no se entiende
  */
 function flujoYaml(s, nombre, line) {
   const t = s.trim();
   const abre = t[0];
+  // La ÚNICA salida `null`: no es flujo. No es una duda, es un hecho.
   if (abre !== '[' && abre !== '{') return null;
   const cierra = abre === '[' ? ']' : '}';
   let prof = 0;
@@ -438,11 +500,18 @@ function flujoYaml(s, nombre, line) {
     if (c === '[' || c === '{') prof += 1;
     else if (c === ']' || c === '}') {
       prof -= 1;
-      if (prof === 0 && k !== t.length - 1) return null; // hay cola tras el cierre
+      if (prof === 0 && k !== t.length - 1) {
+        throw new NoEntiendo(`YAML: cola tras el cierre de una coleccion de flujo (linea ${line})`);
+      }
     }
   }
-  if (prof !== 0 || comilla) return null;
-  if (t[t.length - 1] !== cierra) return null;
+  if (prof !== 0 || comilla) {
+    // Flujo multilínea, o comilla sin cerrar. Límite declarado: se RETIRA.
+    throw new NoEntiendo(`YAML: coleccion de flujo sin equilibrar en la linea (linea ${line})`);
+  }
+  if (t[t.length - 1] !== cierra) {
+    throw new NoEntiendo(`YAML: coleccion de flujo mal cerrada (linea ${line})`);
+  }
 
   // reparto por comas de primer nivel
   const dentro = t.slice(1, -1);
@@ -481,14 +550,24 @@ function flujoYaml(s, nombre, line) {
     if (t2 === '') continue;
     const par = parYaml(t2);
     // UN MAPA DE FLUJO SÓLO TIENE PAREJAS. Si un elemento de `{…}` no es
-    // `clave: valor`, en YAML de verdad eso es una CLAVE COMPLEJA, que está
-    // declarada como no modelada — pero casi siempre no es YAML en absoluto,
-    // sino una plantilla incrustada: `password: {{DB_PASSWORD}}` de Helm, Jinja
-    // o Actions. Repartirla como si fuera un mapa saca `DB_PASSWORD` de dentro
-    // y lo denuncia, que es un falso positivo sobre configuración correcta —uno
-    // de los siete que U231 censó—. Aquí se RETIRA: quien llama trata el valor
-    // como escalar crudo y el clasificador de huecos lo reconoce como plantilla.
-    if (abre === '{' && par === null) return null;
+    // `clave: valor`, esto no se entiende: puede ser una CLAVE COMPLEJA (no
+    // modelada) o, mucho más a menudo, no ser YAML en absoluto sino una
+    // plantilla incrustada —`password: {{DB_PASSWORD}}` de Helm, Jinja o
+    // Actions—. Repartirla como si fuera un mapa saca `DB_PASSWORD` de dentro y
+    // lo denuncia: falso positivo sobre configuración correcta, uno de los siete
+    // que U231 censó.
+    //
+    // SE LANZA, NO SE DEVUELVE `null`. Devolver `null` aquí era el agujero B1:
+    // el que llamaba se quedaba sin campos y sin excepción, o sea en silencio.
+    // Al lanzar, el fichero entero se retira al barrido crudo de U231 — que
+    // sobre `{{DB_PASSWORD}}` da limpio (tiene rama propia de plantilla) y sobre
+    // `{"api_key":"…"}` da el hallazgo. Las dos cosas correctas, y por el camino
+    // conservador.
+    if (abre === '{' && par === null) {
+      throw new NoEntiendo(
+        `YAML: elemento de mapa de flujo que no es \`clave: valor\` (linea ${line})`
+      );
+    }
     if (par) {
       if (par.valor !== '') {
         const anidado = flujoYaml(par.valor, par.clave, line);
@@ -537,11 +616,9 @@ export function camposDeYaml(texto) {
     if (/\t/.test(cruda.match(/^\s*/)[0])) {
       throw new NoEntiendo(`YAML: tabulador en la indentacion (linea ${numero})`);
     }
-    if (/^\s*#/.test(cruda)) {
-      i += 1;
-      continue;
-    }
-    const limpia = sinComentarioYaml(cruda);
+    const { codigo: limpia, comentario } = partirComentarioYaml(cruda);
+    // El comentario NO se tira: sale opaco y quien llama lo barre en crudo.
+    if (comentario !== '') campos.push({ nombre: '', valor: comentario, line: numero, opaco: true });
     if (/^\s*$/.test(limpia)) {
       i += 1;
       continue;
@@ -729,7 +806,14 @@ export function camposDeDockerfile(texto) {
   while (i < lineas.length) {
     const numero = i + 1;
     const l = lineas[i];
-    if (/^\s*$/.test(l) || /^\s*#/.test(l)) {
+    if (/^\s*$/.test(l)) {
+      i += 1;
+      continue;
+    }
+    // El comentario NO se tira: opaco y a barrido crudo. Un
+    // `# ENV API_KEY <material>` comentado sigue siendo un secreto en el árbol.
+    if (/^\s*#/.test(l)) {
+      campos.push({ nombre: '', valor: l, line: numero, opaco: true });
       i += 1;
       continue;
     }
@@ -749,10 +833,23 @@ export function camposDeDockerfile(texto) {
     i += 1;
 
     const m = /^\s*([A-Za-z][A-Za-z0-9_]*)\s+([\s\S]+)$/.exec(acumulado);
-    if (!m) continue;
+    if (!m) {
+      // Una línea que no es `INSTRUCCION argumentos` no es un Dockerfile que yo
+      // entienda. No se salta en silencio: se retira el fichero entero.
+      if (acumulado.trim() === '') continue;
+      throw new NoEntiendo(`Dockerfile: linea que no es una instruccion (linea ${numero})`);
+    }
     const instruccion = m[1].toUpperCase();
-    if (instruccion !== 'ENV' && instruccion !== 'ARG' && instruccion !== 'LABEL') continue;
     const args = m[2].trim();
+
+    // Instrucciones que NO declaran pares nombre/valor (`RUN`, `COPY`, `CMD`…).
+    // Su argumento es texto de otro lenguaje —`RUN export API_KEY=…` es shell—,
+    // así que se marca OPACO y se barre en crudo. Saltarlas en silencio era una
+    // pérdida frente a U231, que sí miraba dentro.
+    if (instruccion !== 'ENV' && instruccion !== 'ARG' && instruccion !== 'LABEL') {
+      campos.push({ nombre: '', valor: args, line: numero, opaco: true });
+      continue;
+    }
 
     const trozos = trozosDocker(args);
     if (trozos.length === 0) continue;
@@ -761,7 +858,11 @@ export function camposDeDockerfile(texto) {
     if (/^[^\s=]+=/.test(args)) {
       for (const t of trozos) {
         const j = t.indexOf('=');
-        if (j <= 0) continue;
+        if (j <= 0) {
+          // Un trozo sin `=` dentro de la forma de `=` es una instrucción que
+          // no sé leer. Retirada, no salto.
+          throw new NoEntiendo(`Dockerfile: argumento sin \`=\` en forma de pares (linea ${numero})`);
+        }
         campos.push({ nombre: t.slice(0, j), valor: t.slice(j + 1), line: numero });
       }
       continue;
@@ -791,8 +892,8 @@ const ANTES_DE_REGEX = new Set([
  *
  * POR QUÉ ESTO ES LO QUE MÁS FALSOS POSITIVOS QUITA. Sobre este árbol, 100 de
  * los 125 hallazgos del barrido crudo caen en `.mjs` y `.ts`, y NINGUNO es una
- * credencial: son `token: resolveScriptoriumSecret()`, `const auth =
- * assertIntentRole(`, `@typedef {(namespace: string, auth: Record<…>)}` dentro
+ * credencial: son la asignación de una llamada a una variable llamada `token`,
+ * la de `assertIntentRole(...)` a una llamada `auth`, y una anotación JSDoc de
  * de un comentario JSDoc. Todos tienen la misma forma y el mismo defecto: **el
  * valor no es un literal**, es una expresión o es prosa dentro de un
  * comentario. Un secreto escrito en el código ES un literal de cadena; una
@@ -867,14 +968,19 @@ export function camposDeCodigo(texto) {
       i += 1;
       continue;
     }
-    // comentarios
+    // Comentarios. NO se tiran: salen OPACOS y quien llama los barre en crudo.
+    // Tirarlos era una pérdida frente a U231 —«lo dejo comentado por si acaso»
+    // es justo donde se queda un secreto— y ademas era una perdida NO declarada.
     if (c === '/' && texto[i + 1] === '/') {
+      const ini = i;
       while (i < n && texto[i] !== '\n') i += 1;
+      campos.push({ nombre: '', valor: texto.slice(ini, i), line: linea, opaco: true });
       continue;
     }
     if (c === '/' && texto[i + 1] === '*') {
       const cierre = texto.indexOf('*/', i + 2);
       if (cierre < 0) throw new NoEntiendo(`codigo: comentario de bloque sin cerrar (linea ${linea})`);
+      campos.push({ nombre: '', valor: texto.slice(i, cierre + 2), line: linea, opaco: true });
       for (let k = i; k < cierre; k += 1) if (texto[k] === '\n') linea += 1;
       i = cierre + 2;
       continue;
@@ -962,6 +1068,20 @@ export function camposDeCodigo(texto) {
       }
       if (!cerrada) throw new NoEntiendo(`codigo: literal de cadena sin cerrar (linea ${l0})`);
       if (nombre !== '') campos.push({ nombre, valor: out, line: l0 });
+      // UN LITERAL QUE ES UN DOCUMENTO JSON ES UN DOCUMENTO JSON. El caso real
+      // es `const cfg = '{"api_key":"…"}'`: el nombre que ve el lexer es `cfg`,
+      // que no es léxico de identidad, así que sin esto el blob entero pasaba
+      // —y el barrido de U231 sí lo cazaba—. Se intenta analizar; si no es JSON,
+      // no era un blob y no se pierde nada. La línea es la del literal: un
+      // documento incrustado no tiene líneas propias en este fichero.
+      if (/^\s*[{[]/.test(out)) {
+        try {
+          for (const c2 of camposDeJson(out)) campos.push({ ...c2, line: l0 });
+        } catch (e) {
+          if (!(e instanceof NoEntiendo)) throw e;
+          // No era JSON. El literal ya se juzgó arriba por su propio nombre.
+        }
+      }
       i = k;
       ultimo = '"';
       ultimaPalabra = '';

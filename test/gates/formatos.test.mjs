@@ -33,11 +33,18 @@ import {
   LEXICO_IDENTIDAD,
   PATRONES_IDENTIDAD,
   esHuecoEstructural,
+  esNombreDeIdentidad,
   hallazgosEnFichero,
   hallazgosEnTexto,
   hallazgosEstructurales
 } from '../../scripts/gates/claves.mjs';
-import { NoEntiendo, camposDeYaml, formatoDe } from '../../scripts/gates/formatos.mjs';
+import {
+  NoEntiendo,
+  camposDeCodigo,
+  camposDeJson,
+  camposDeYaml,
+  formatoDe
+} from '../../scripts/gates/formatos.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(AQUI, '../../scripts/gates/claves.mjs');
@@ -201,6 +208,23 @@ test('censo de mutación: sin `campo-identidad`, las tres formas se ponen VERDES
   }
 });
 
+test('izar la compilación quita `g` Y `y`: un patrón sticky no se salta líneas', () => {
+  // `hallazgosEnTexto` documenta la lista de patrones como PARÁMETRO público, o
+  // sea que el que la pasa manda. La izada quitaba `g` pero no `y`, y `y` ancla
+  // el `exec` en `lastIndex` igual que `g`: cada línea empezaba a mirar donde
+  // acabó la anterior. Medido por la contrarrevisión: de tres coincidencias
+  // devolvía dos. Hoy ningún patrón lleva `y`; este test es para el que venga.
+  const texto = `api_key=${MATERIAL}\napi_key=${MATERIAL}\napi_key=${MATERIAL}\n`;
+  const pegajoso = [{ id: 'pegajoso', que: 'patron con bandera sticky', re: /api_key=\w+/gy }];
+  assert.equal(
+    hallazgosEnTexto(texto, pegajoso).length,
+    3,
+    'un patrón con bandera `y` se salta líneas: la izada no le quitó la bandera'
+  );
+  // y el mismo patrón sin banderas da lo mismo: la bandera no debe cambiar nada
+  assert.equal(hallazgosEnTexto(texto, [{ id: 'llano', que: 'sin banderas', re: /api_key=\w+/ }]).length, 3);
+});
+
 test('la lista de patrones VACÍA sigue siendo ruidosa también por el camino estructural', () => {
   // La guardia de U231 no se relaja por venir por otra puerta: cero patrones no
   // dice «limpio», dice «no miré».
@@ -232,14 +256,68 @@ const LOS_SIETE = [
   ['texto de i18n que repite su etiqueta', '"contraseña": "Contraseña olvidada, revise su correo"']
 ];
 
-test('los siete falsos positivos de U231 siguen limpios POR EL ANALIZADOR de YAML', () => {
+/**
+ * Hallazgos de un texto POR EL CAMINO REAL: se escribe a disco con la extensión
+ * que toca y se llama a `hallazgosEnFichero`.
+ *
+ * NO se llama a `hallazgosEstructurales` a pelo, y la diferencia es la lección
+ * de B1: **el analizador LANZA, y quien se retira al barrido crudo es
+ * `hallazgosEnFichero`**. Medir en la capa de abajo mide media cadena — y
+ * `{{DB_PASSWORD}}` es exactamente un caso en que la de abajo lanza y la de
+ * arriba responde «limpio», que es la respuesta correcta.
+ *
+ * @param {string} texto @param {string} nombreFichero
+ */
+function hallazgosDe(texto, nombreFichero) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'u269-hf-'));
+  try {
+    const abs = path.join(dir, nombreFichero);
+    fs.writeFileSync(abs, texto);
+    return hallazgosEnFichero(abs);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test('los siete falsos positivos de U231 siguen limpios POR EL CAMINO REAL en YAML', () => {
   /** @type {string[]} */
   const rojos = [];
   for (const [nombre, texto] of LOS_SIETE) {
-    const h = hallazgosEstructurales(`${texto}\n`, 'yaml');
+    const h = hallazgosDe(`${texto}\n`, 'config.yaml');
     if (h.length > 0) rojos.push(`${nombre} — [${h.map((x) => x.id).join(', ')}]: ${texto}`);
   }
   assert.deepEqual(rojos, [], 'el analizador reintrodujo falsos positivos:\n' + rojos.join('\n'));
+});
+
+test('`{"api_key":"…"}` en un `.yaml` se ENTIENDE, no sólo se caza por retirada', () => {
+  // El censo de mutación encontró que quitar la rama de clave entrecomillada de
+  // `parYaml` dejaba la suite VERDE: el hallazgo sobrevivía porque el analizador
+  // se retiraba y el barrido crudo lo cazaba igual. O sea que la seguridad
+  // estaba cubierta y la PRECISIÓN no: sin esa rama, todo `.yaml` que contenga
+  // JSON —y JSON es YAML— se retira entero al barrido crudo y vuelve a pagar su
+  // densidad de falsos positivos. Esto vigila que se ENTIENDA.
+  const texto = `{"api_key":"${MATERIAL}"}\n`;
+  const campos = camposDeYaml(texto); // si no se entiende, esto LANZA
+  assert.deepEqual(
+    campos.map((c) => c.nombre),
+    ['api_key'],
+    'el analizador no lee `{"api_key":"…"}` como el mapa de flujo que es'
+  );
+  assert.equal(campos[0].valor, MATERIAL, 'el valor sale mal desentrecomillado');
+  // Y un YAML corriente con JSON dentro NO se retira: se analiza.
+  assert.doesNotThrow(() => camposDeYaml(`cfg: {"host":"a.invalid","port":8080}\n`));
+});
+
+test('el primero de los siete llega limpio POR RETIRADA, no porque se entienda', () => {
+  // Es la comprobación que separa «salió limpio» de «salió limpio por la razón
+  // correcta». `{{DB_PASSWORD}}` NO es YAML: el analizador tiene que LANZAR, y
+  // el limpio lo produce el barrido crudo de U231 al que se retira.
+  assert.throws(
+    () => hallazgosEstructurales('password: {{DB_PASSWORD}}\n', 'yaml'),
+    NoEntiendo,
+    'el analizador dice entender `{{DB_PASSWORD}}`, y no lo entiende'
+  );
+  assert.deepEqual(hallazgosDe('password: {{DB_PASSWORD}}\n', 'config.yaml'), []);
 });
 
 test('los siete siguen limpios POR EL CLI, sembrados en un volumen como YAML', () => {
@@ -260,7 +338,7 @@ test('los siete siguen limpios TAMBIÉN como JSON, que es el otro analizador', (
     const i = texto.indexOf(': ');
     const clave = texto.slice(0, i).replace(/^"|"$/g, '');
     const valor = texto.slice(i + 2).replace(/^"|"$/g, '');
-    const h = hallazgosEstructurales(JSON.stringify({ [clave]: valor }, null, 2), 'json');
+    const h = hallazgosDe(JSON.stringify({ [clave]: valor }, null, 2), 'config.json');
     if (h.length > 0) rojos.push(`${nombre} — [${h.map((x) => x.id).join(', ')}]`);
   }
   assert.deepEqual(rojos, [], 'el analizador de JSON tiene falsos positivos:\n' + rojos.join('\n'));
@@ -269,20 +347,35 @@ test('los siete siguen limpios TAMBIÉN como JSON, que es el otro analizador', (
 test('LA PRECISIÓN NO SE COMPRÓ AFLOJANDO: cada hueco tiene su gemelo que SÍ cae', () => {
   // Mismo formato, misma clase de valor, pero material. Si alguien ensancha el
   // clasificador para quitar un falso positivo, esto se pone rojo.
-  /** @type {[string, string, 'yaml'|'json'|'dockerfile'][]} */
+  // Va POR EL CAMINO REAL: la retirada forma parte del resultado correcto, y
+  // «plantilla incompleta» es justo un caso que el analizador no entiende y que
+  // el barrido crudo sí caza.
+  /** @type {[string, string, string][]} */
   const gemelos = [
-    ['URL con un tramo de material', `secret: https://hooks.example.invalid/T00/B00/${'Xk29fJqLm4Tz8vBn1QwErT'}`, 'yaml'],
-    ['kebab sin palabra de configuración', 'password: correct-horse-battery-staple', 'yaml'],
-    ['ruta punteada sin el punto inicial', 'password: Values.global.registrySecretName', 'yaml'],
-    ['i18n que NO repite su etiqueta y no es prosa', `"contraseña": "${MATERIAL}"`, 'yaml'],
-    ['plantilla incompleta: NO es una plantilla', 'password: {{DB_PASSWORD', 'yaml'],
-    ['array JSON con material', `{"tokens":["${MATERIAL}"]}`, 'json'],
-    ['ENV de espacio con material', `FROM node:20\nENV API_KEY ${MATERIAL}`, 'dockerfile']
+    ['URL con un tramo de material', `secret: https://hooks.example.invalid/T00/B00/${'Xk29fJqLm4Tz8vBn1QwErT'}`, 'x.yaml'],
+    ['kebab sin palabra de configuración', 'password: correct-horse-battery-staple', 'x.yaml'],
+    ['ruta punteada sin el punto inicial', 'password: Values.global.registrySecretName', 'x.yaml'],
+    ['i18n que NO repite su etiqueta y no es prosa', `"contraseña": "${MATERIAL}"`, 'x.yaml'],
+    ['plantilla incompleta: NO es una plantilla', 'password: {{DB_PASSWORD', 'x.yaml'],
+    ['array JSON con material', `{"tokens":["${MATERIAL}"]}`, 'x.json'],
+    ['ENV de espacio con material', `FROM node:20\nENV API_KEY ${MATERIAL}`, 'Dockerfile'],
+    // B2: las clases que se recuperaron. Cada una es un gemelo que SÍ cae.
+    ['comentario de YAML', `# api_key: ${MATERIAL}`, 'x.yaml'],
+    ['comentario de Dockerfile', `FROM node:20\n# api_key=${MATERIAL}`, 'Dockerfile'],
+    ['comentario de línea en código', `// api_key = ${MATERIAL}`, 'x.mjs'],
+    ['comentario de bloque en código', `/* api_key: ${MATERIAL} */`, 'x.mjs'],
+    // El valor numérico se COMPONE, para no dejar escrito en este fichero un
+    // par nombre/valor que el barrido crudo del `.md` y del propio test cace.
+    ['valor NUMÉRICO en JSON', `{"api_key": ${'9'.repeat(20)}}`, 'x.json'],
+    ['blob JSON dentro de un literal de código', `const cfg = '{"api_key":"${MATERIAL}"}';`, 'x.mjs'],
+    ['blob JSON dentro de una plantilla', `const cfg = \`{"api_key":"${MATERIAL}"}\`;`, 'x.mjs'],
+    ['`RUN` de Dockerfile con export', `FROM node:20\nRUN export API_KEY=${MATERIAL}`, 'Dockerfile'],
+    ['flujo YAML tal cual lo escribe JSON.stringify', `{"api_key":"${MATERIAL}"}`, 'x.yaml']
   ];
   /** @type {string[]} */
   const tragados = [];
-  for (const [nombre, texto, formato] of gemelos) {
-    if (hallazgosEstructurales(`${texto}\n`, formato).length === 0) tragados.push(nombre);
+  for (const [nombre, texto, fichero] of gemelos) {
+    if (hallazgosDe(`${texto}\n`, fichero).length === 0) tragados.push(nombre);
   }
   assert.deepEqual(tragados, [], 'el clasificador se tragó material:\n' + tragados.join('\n'));
 });
@@ -293,7 +386,7 @@ test('LÍMITE DECLARADO: una frase de paso con espacios LITERALES no se caza', (
   // señal que distingue prosa de material, y una frase de paso escrita con
   // espacios cae del lado de la prosa. Con guiones —como se escriben en un
   // fichero de configuración— sí se caza, y está arriba entre los gemelos.
-  assert.deepEqual(hallazgosEstructurales('clave: correct horse battery staple\n', 'yaml'), []);
+  assert.deepEqual(hallazgosDe('clave: correct horse battery staple\n', 'x.yaml'), []);
   assert.ok(esHuecoEstructural('correct horse battery staple', 'clave'));
   assert.equal(esHuecoEstructural('correct-horse-battery-staple', 'clave'), false);
 });
@@ -321,6 +414,61 @@ test('la retirada NO se traga un TypeError: la guardia de patrones sigue matando
     const abs = path.join(dir, 'DISK_09', 'DEMO', 'x.json');
     assert.throws(() => hallazgosEnFichero(abs, []), TypeError);
   });
+});
+
+test('TODA rotura del lexer de código se retira: la clase, no el caso', () => {
+  // La contrarrevisión encontró un mutante VIVO: cambiar el `throw` del literal
+  // de cadena sin cerrar por «sigue como si nada» dejaba la suite entera verde.
+  // Es el modo de fallo exacto que la retirada existe para no tener —un lexer
+  // desincronizado que dice «limpio»—, y sólo estaba cubierta una de las tres
+  // ramas. Aquí se cubren las tres, y cada una se comprueba DOS veces: que
+  // LANZA (o sea que se retira, no que se lo traga) y que por el camino real el
+  // secreto que viene DESPUÉS de la rotura se sigue cazando.
+  const roturas = [
+    ['literal de cadena sin cerrar', "const a = 'sin cerrar\n"],
+    ['comentario de bloque sin cerrar', '/* sin cerrar\n'],
+    ['expresion regular sin cerrar', 'const re = /sin-cerrar\n']
+  ];
+  for (const [nombre, roto] of roturas) {
+    assert.throws(
+      () => camposDeCodigo(roto),
+      NoEntiendo,
+      `el lexer NO se retira ante: ${nombre} — un lexer desincronizado no puede decir «limpio»`
+    );
+    // Y por el camino real: se retira al barrido crudo y el material se caza.
+    const conMaterial = `${roto}api_key = ${MATERIAL}\n`;
+    assert.equal(
+      hallazgosDe(conMaterial, 'x.mjs').length,
+      1,
+      `tras «${nombre}» se perdió el material que venía después: eso es silencio`
+    );
+  }
+});
+
+test('TODA rotura del analizador de JSON se retira igual', () => {
+  // Cada caso trae su versión rota Y su versión rota CON material, escritas a
+  // mano: derivar la segunda de la primera con un `replace` es cómo se cuela un
+  // test que mide otra cosa (la primera versión de esto no sustituía nada en el
+  // caso de comilla simple y fallaba por su propio defecto, no por el detector).
+  const roturas = [
+    ['llave sin cerrar', '{"a": "b"', `{"api_key": "${MATERIAL}"`],
+    ['coma sobrante', '{"a": "b",}', `{"api_key": "${MATERIAL}",}`],
+    ['comilla simple', "{'a': 'b'}", `{'api_key': '${MATERIAL}'}`],
+    [
+      'comentario estilo tsconfig',
+      '{\n  // no es JSON\n  "a": "b"\n}',
+      `{\n  // no es JSON\n  "api_key": "${MATERIAL}"\n}`
+    ],
+    ['cola tras el valor raiz', '{"a":"b"} sobra', `{"api_key":"${MATERIAL}"} sobra`]
+  ];
+  for (const [nombre, roto, conMaterial] of roturas) {
+    assert.throws(() => camposDeJson(roto), NoEntiendo, `JSON no se retira ante: ${nombre}`);
+    assert.throws(() => camposDeJson(conMaterial), NoEntiendo, `JSON no se retira ante: ${nombre} (con material)`);
+    assert.ok(
+      hallazgosDe(conMaterial, 'x.json').length >= 1,
+      `tras «${nombre}» se perdió el material: eso es silencio, no retirada`
+    );
+  }
 });
 
 test('el analizador de YAML se retira ante lo que declaró no modelar', () => {
@@ -381,7 +529,7 @@ test('el léxico anclado ANCLA: `author` no es `auth`, ni `tokenizer` es `token`
 
 test('el escalar de bloque es UN valor, no una línea suelta por cada línea', () => {
   const texto = `api_key: |\n  ${MATERIAL}\n  ${MATERIAL}A\n`;
-  const h = hallazgosEstructurales(texto, 'yaml');
+  const h = hallazgosDe(texto, 'x.yaml');
   assert.equal(h.length, 1, `un bloque con dos líneas de material es UNA fuga: ${JSON.stringify(h)}`);
   assert.equal(h[0].id, 'campo-identidad');
   assert.equal(h[0].line, 2, 'la línea señalada no es la primera del cuerpo');
@@ -392,14 +540,14 @@ test('el cuerpo de un bloque NO se lee como pares `clave: valor`', () => {
   // dentro no es un campo. Sin análisis de bloque, `api_key` de ahí dentro se
   // leería como un campo y sería un falso positivo sobre documentación.
   const texto = 'notas: |\n  el campo api_key: se documenta en la guia de rotacion\n';
-  assert.deepEqual(hallazgosEstructurales(texto, 'yaml'), []);
+  assert.deepEqual(hallazgosDe(texto, 'x.yaml'), []);
 });
 
 test('pero el cuerpo OPACO se sigue barriendo en crudo: un `run: |` de CI no se tapa', () => {
   // El análisis no puede tapar lo que no entiende. El cuerpo de un bloque es
   // shell, no YAML, y el shell de CI es donde viven los secretos.
   const texto = `run: |\n  npm ci\n  export API_KEY=${MATERIAL}\n`;
-  const h = hallazgosEstructurales(texto, 'yaml');
+  const h = hallazgosDe(texto, 'x.yaml');
   assert.equal(h.length, 1, `el análisis se tragó un secreto dentro de un bloque: ${JSON.stringify(h)}`);
   assert.equal(h[0].line, 3, 'la línea del hallazgo dentro del bloque no se traduce bien');
 });
@@ -420,42 +568,86 @@ test('en código, un valor que NO es literal deja de ser un hallazgo', () => {
     'privateKey: KeyObject | string | Buffer,'
   ];
   for (const l of noLiterales) {
-    assert.deepEqual(hallazgosEstructurales(`${l}\n`, 'codigo'), [], l);
+    assert.deepEqual(hallazgosDe(`${l}\n`, 'x.mjs'), [], l);
   }
   // y el gemelo: el MISMO nombre con un literal de verdad SÍ cae
-  assert.equal(hallazgosEstructurales(`const token = '${MATERIAL}';\n`, 'codigo').length, 1);
-  assert.equal(hallazgosEstructurales(`  secret: '${MATERIAL}',\n`, 'codigo').length, 1);
+  assert.equal(hallazgosDe(`const token = '${MATERIAL}';\n`, 'x.mjs').length, 1);
+  assert.equal(hallazgosDe(`  secret: '${MATERIAL}',\n`, 'x.mjs').length, 1);
 });
 
 test('el lexer distingue comentario, plantilla y expresión regular', () => {
-  // Sin distinguir comentarios, el JSDoc de este mismo árbol enrojecía.
-  assert.deepEqual(hallazgosEstructurales(`// token: '${MATERIAL}'\n`, 'codigo'), []);
-  assert.deepEqual(hallazgosEstructurales(`/* api_key: '${MATERIAL}' */\n`, 'codigo'), []);
+  // El lexer SEPARA el comentario del código; lo que hace con él es otra cosa
+  // (abajo). Aquí se mide que no se desincroniza.
+  //
   // Una expresión regular con comillas dentro NO debe desincronizar el lexer:
   // si lo hiciera, el literal de después se perdería y eso sería un silencio.
   const conRegex = `const re = /['"]:/;\nconst token = '${MATERIAL}';\n`;
-  const h = hallazgosEstructurales(conRegex, 'codigo');
+  const h = hallazgosDe(conRegex, 'x.mjs');
   assert.equal(h.length, 1, `el lexer se desincronizó con la expresión regular: ${JSON.stringify(h)}`);
   assert.equal(h[0].line, 2);
   // Una división NO abre expresión regular.
-  assert.equal(hallazgosEstructurales(`const x = a / b;\nconst token = '${MATERIAL}';\n`, 'codigo').length, 1);
+  assert.equal(hallazgosDe(`const x = a / b;\nconst token = '${MATERIAL}';\n`, 'x.mjs').length, 1);
+  // Una plantilla con una comilla dentro tampoco desincroniza: el literal que
+  // viene después se sigue viendo.
+  const conPlantilla = 'const t = `no es \'un\' problema`;\n' + `const token = '${MATERIAL}';\n`;
+  const h2 = hallazgosDe(conPlantilla, 'x.mjs');
+  assert.equal(h2.length, 1, `el lexer se desincronizó con la plantilla: ${JSON.stringify(h2)}`);
+  assert.equal(h2[0].line, 2);
 });
 
-test('LÍMITE DECLARADO: un `campo-identidad` COMENTADO en código ya no se caza', () => {
-  // Es el precio de excluir los comentarios, y se escribe para que sea un
-  // límite conocido. Lo que NO se pierde: los patrones por FORMA siguen
-  // barriendo el texto entero, comentarios incluidos — un PEM, un JWT o un
-  // token de proveedor comentados se cazan igual, y eso se comprueba aquí.
-  assert.deepEqual(hallazgosEstructurales(`// api_key = ${MATERIAL}\n`, 'codigo'), []);
+test('un comentario NO es un punto ciego: se barre en crudo (era pérdida frente a U231)', () => {
+  // La primera versión de este WP tiraba los comentarios y lo declaraba como
+  // límite. Era una pérdida real —«lo dejo comentado por si acaso» es donde se
+  // queda un secreto— y además una pérdida MÁS ANCHA de lo declarado: no sólo
+  // en código, también en YAML y en Dockerfile. Ahora el comentario sale OPACO
+  // y se barre en crudo, que es la lectura conservadora.
+  assert.equal(hallazgosDe(`// api_key = ${MATERIAL}\n`, 'x.mjs').length, 1);
+  assert.equal(hallazgosDe(`/* api_key: '${MATERIAL}' */\n`, 'x.mjs').length, 1);
+  assert.equal(hallazgosDe(`# api_key: ${MATERIAL}\nid: demo\n`, 'x.yaml').length, 1);
+  assert.equal(hallazgosDe(`FROM node:20\n# api_key=${MATERIAL}\n`, 'Dockerfile').length, 1);
+  // Y los patrones por FORMA siguen barriendo el texto entero, como siempre.
   const jwt = `${'ey'}${'J'}${'NOESUNTOKENSINTETICO'}.${'ZWpwbG9zaW50ZXRpY28'}.${'firma-sintetica'}`;
-  const h = hallazgosEstructurales(`// ${jwt}\n`, 'codigo');
+  const h = hallazgosDe(`// ${jwt}\n`, 'x.mjs');
   assert.equal(h.length, 1, 'un JWT comentado SÍ se tiene que seguir cazando');
   assert.equal(h[0].id, 'jwt');
+});
+
+test('cerrar el ancla NO puede costar nombres compuestos del programador', () => {
+  // La contrarrevisión midió que el arreglo del ancla, tal cual, dejaba de casar
+  // DOCE nombres de identidad: el ancla exige frontera no alfanumérica y en
+  // `authToken` la frontera es un cambio de caja. Arreglar un fallo abriendo
+  // otro no es arreglarlo. `esNombreDeIdentidad` parte el nombre en palabras.
+  for (const n of [
+    'authToken', 'accessToken', 'userToken', 'apiSecret', 'tokenValue',
+    'secretValue', 'clave1', 'claveAdmin', 'password2', 'passwordHash'
+  ]) {
+    assert.equal(esNombreDeIdentidad(n), true, `\`${n}\` es un nombre de identidad y no se reconoce`);
+  }
+  // los COMPUESTOS DEL LÉXICO siguen dentro (partidos en palabras no casarían:
+  // ni `api` ni `key` están en el léxico por separado)
+  for (const n of ['api_key', 'secret_key', 'private_key', 'access_key', 'apiKey']) {
+    assert.equal(esNombreDeIdentidad(n), true, n);
+  }
+  // y lo que NO es identidad sigue fuera, que es el punto del arreglo
+  for (const n of ['author', 'authors', 'AUTHOR', 'tokenizer', 'secretaria', 'xxpwdyy', 'passenger']) {
+    assert.equal(esNombreDeIdentidad(n), false, `\`${n}\` NO es un nombre de identidad`);
+  }
+});
+
+test('LÍMITE DECLARADO: una tirada en MAYÚSCULAS sin separador no se puede partir', () => {
+  // `AUTHTOKEN` y `AUTHOR` son el mismo problema —una tirada de mayúsculas sin
+  // frontera— y sólo un diccionario los distingue. Se prefiere perder el primero
+  // a recuperar el segundo: un autor es identidad PÚBLICA y sale once veces en
+  // este árbol. Con separador se caza sin problema, y eso también se fija.
+  assert.equal(esNombreDeIdentidad('AUTHTOKEN'), false);
+  assert.equal(esNombreDeIdentidad('ZEUS_AUTHTOKEN'), false);
+  assert.equal(esNombreDeIdentidad('ZEUS_AUTH_TOKEN'), true, 'con separador SÍ se tiene que cazar');
+  assert.equal(esNombreDeIdentidad('ZEUS_AUTHTOKEN'.replace('AUTHTOKEN', 'AuthToken')), true);
 });
 
 test('un campo `author` con su identidad pública NO es un hallazgo', () => {
   // El caso real: `packages/mesh/ssb-system/fixtures/ssb-log.json`. Un autor de
   // SSB es una clave PÚBLICA; denunciarla es ruido sobre datos correctos.
-  assert.deepEqual(hallazgosEstructurales('{"author":"@alice.ed25519"}', 'json'), []);
-  assert.deepEqual(hallazgosEstructurales('{"author":"escrivivir-co"}', 'json'), []);
+  assert.deepEqual(hallazgosDe('{"author":"@alice.ed25519"}', 'x.json'), []);
+  assert.deepEqual(hallazgosDe('{"author":"escrivivir-co"}', 'x.json'), []);
 });

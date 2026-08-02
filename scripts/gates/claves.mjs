@@ -221,6 +221,62 @@ export const LEXICO_IDENTIDAD = new RegExp(
  */
 const LEXICO_ANCLADO = new RegExp(`(?<![A-Za-z0-9])(?:${LEXICO_IDENTIDAD.source})(?![A-Za-z0-9])`, 'i');
 
+/** El léxico como palabra ENTERA, para preguntar por un tramo ya separado. */
+const LEXICO_ENTERO = new RegExp(`^(?:${LEXICO_IDENTIDAD.source})$`, 'i');
+
+/**
+ * Parte un nombre de campo o de variable en PALABRAS, por las tres fronteras
+ * que usan de verdad los identificadores: el separador (`_`, `-`, `.`), el
+ * cambio de caja de camelCase, y el dígito.
+ *
+ * @param {string} nombre
+ * @returns {string[]}
+ */
+function palabrasDeNombre(nombre) {
+  return nombre
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2') // camelCase → camel·Case
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // HTTPServer → HTTP·Server
+    .split(/[^A-Za-z0-9]+| /)
+    .flatMap((t) => t.split(/(\d+)/))
+    .filter((t) => t !== '');
+}
+
+/**
+ * ¿El NOMBRE de un campo declara identidad?
+ *
+ * DOS PREGUNTAS, Y LAS DOS HACEN FALTA:
+ *
+ *   1. El nombre entero contra el léxico anclado. Es lo que cubre los
+ *      COMPUESTOS del léxico —`api_key`, `secret_key`, `private_key`—, que
+ *      partidos en palabras no casarían: ni `api` ni `key` están en el léxico
+ *      por separado, y `key` a secas está fuera por coste medido.
+ *   2. Cada palabra del nombre por separado. Es lo que cubre los nombres
+ *      COMPUESTOS DEL PROGRAMADOR: `authToken`, `apiSecret`, `passwordHash`,
+ *      `clave1`, `claveAdmin`.
+ *
+ * POR QUÉ LA SEGUNDA PREGUNTA EXISTE. Al cerrar el ancla rota (WP-U269) el
+ * detector dejó de casar doce nombres de esa clase, porque el ancla exige
+ * frontera no alfanumérica y en `authToken` la frontera es un cambio de caja.
+ * Sin esto, arreglar un fallo habría abierto otro: `${ZEUS_AUTHTOKEN}` pasaría
+ * de `identidad` a `localizador` en el censo de CA2. Partir por palabras es la
+ * frontera REAL de un identificador, y no ensancha el léxico.
+ *
+ * LÍMITE DECLARADO: una TIRADA ENTERA EN MAYÚSCULAS sin separador —`AUTHTOKEN`,
+ * `ZEUS_AUTHTOKEN`— no se puede partir, porque no hay frontera que leer:
+ * `AUTHTOKEN` y `AUTHOR` son el mismo problema y sólo un diccionario los
+ * distingue. Se prefiere perder `AUTHTOKEN` a recuperar `AUTHOR`, porque un
+ * autor es identidad PÚBLICA y sale once veces en este árbol. Con separador
+ * (`ZEUS_AUTH_TOKEN`) se caza sin problema.
+ *
+ * @param {string} nombre
+ * @returns {boolean}
+ */
+export function esNombreDeIdentidad(nombre) {
+  if (typeof nombre !== 'string' || nombre === '') return false;
+  if (LEXICO_ANCLADO.test(nombre)) return true;
+  return palabrasDeNombre(nombre).some((p) => LEXICO_ENTERO.test(p));
+}
+
 /**
  * Valores que NO son un secreto aunque estén sobre un campo de identidad. No es
  * una lista de excepciones —no exime un hallazgo— es precisión del detector:
@@ -441,7 +497,13 @@ export function hallazgosEnTexto(texto, patrones = PATRONES_IDENTIDAD) {
     // devuelven siempre lo mismo. Sin la bandera `g` el `exec` no arrastra
     // `lastIndex`, así que izarla no cambia ni un resultado — se comprueba en la
     // medición de densidad del reporte, que da el mismo conjunto antes y después.
-    const re = new RegExp(p.re.source, p.re.flags.replace('g', ''));
+    // Se quitan `g` E `y`. `y` (sticky) ancla el `exec` en `lastIndex` igual que
+    // `g`, así que izar la compilación con `y` puesta haría que cada línea
+    // empezara a mirar donde acabó la anterior: sobre tres coincidencias devuelve
+    // dos. Hoy ningún patrón lleva `y` —seis con banderas vacías y
+    // `campo-identidad` con `i`—, pero `hallazgosEnTexto` documenta la lista de
+    // patrones como PARÁMETRO público, así que el que la pase manda.
+    const re = new RegExp(p.re.source, p.re.flags.replace(/[gy]/g, ''));
     // Multilínea: los patrones son de una línea salvo la cabecera PEM, que
     // también lo es (el bloque empieza en su propia línea).
     for (let i = 0; i < lineas.length; i += 1) {
@@ -521,7 +583,7 @@ export function hallazgosEstructurales(texto, formato, patrones = PATRONES_IDENT
           out.push({ id: h.id, que: h.que, line: campo.line + h.line - 1 });
         }
       }
-      if (!LEXICO_ANCLADO.test(campo.nombre)) continue;
+      if (!esNombreDeIdentidad(campo.nombre)) continue;
       const trozos = campo.valor.split('\n');
       for (let k = 0; k < trozos.length; k += 1) {
         const v = trozos[k].trim();
@@ -980,7 +1042,7 @@ export function censarVolumenes(opts = {}) {
             if (typeof nodo === 'string') {
               for (const m of nodo.matchAll(/\$\{([A-Za-z0-9_]+)\}/g)) {
                 envs.add(m[1]);
-                if (LEXICO_ANCLADO.test(m[1])) identidades.add(`env:${m[1]} (en ${camino})`);
+                if (esNombreDeIdentidad(m[1])) identidades.add(`env:${m[1]} (en ${camino})`);
               }
               return;
             }
@@ -990,7 +1052,7 @@ export function censarVolumenes(opts = {}) {
             }
             if (nodo && typeof nodo === 'object') {
               for (const [k, v] of Object.entries(nodo)) {
-                if (LEXICO_ANCLADO.test(k)) identidades.add(`campo:${camino}.${k}`);
+                if (esNombreDeIdentidad(k)) identidades.add(`campo:${camino}.${k}`);
                 anda(v, `${camino}.${k}`);
               }
             }
@@ -1050,7 +1112,7 @@ export function censarVolumenes(opts = {}) {
               name,
               path: rel(base, abs),
               line: i + 1,
-              clase: LEXICO_ANCLADO.test(name) ? 'identidad' : 'localizador'
+              clase: esNombreDeIdentidad(name) ? 'identidad' : 'localizador'
             });
           }
         }

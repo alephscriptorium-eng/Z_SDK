@@ -4,404 +4,472 @@ Rama `wp/u269-detector-con-parseo`, worktree `C:/S_LAB/wt/z-u269`.
 Continúa el límite 6 que `WP-U231` dejó abierto **a propósito**, para no entrar
 en carrera armamentística de expresiones regulares.
 
+**Segunda entrega, tras devolución.** La contrarrevisión encontró un agujero que
+anulaba la tesis de seguridad del WP (B1), tres clases de pérdida no declaradas
+(B2) y seis menores. Todo está cerrado o declarado abajo; §2 y §3 son nuevas.
+
 ---
 
 ## 0 · Lo primero: el denominador cambió y las cifras del encargo caducaron
 
-El encargo cita «90 hallazgos en 1741 ficheros trackeados». **Ninguna de las dos
-cifras se sostiene sobre este árbol**, y una de ellas tampoco sobre el reporte
-del que salía:
+El encargo cita «90 hallazgos en 1741 ficheros trackeados». Ninguna de las dos
+cifras se sostiene, y una tampoco sobre el reporte del que salía:
 
 | cifra | de dónde venía | medido hoy |
 |---|---|---|
-| ficheros trackeados | 1741 (U231 §2.7) | **1759** |
-| hallazgos con el detector de U231 | «90» en el encargo; **121** en U231 §2.7 | **125** |
+| ficheros trackeados | 1741 (U231 §2.7) | **1762** (1759 antes de añadir la obra de este WP) |
+| hallazgos con el detector de U231 | «90» en el encargo; **121** en U231 §2.7 | **135** |
 
-O sea: el encargo cita un 90 que no aparece en el reporte de U231 —allí la cifra
-con el léxico elegido es 121— y el árbol ha crecido 18 ficheros desde entonces.
-Las mediciones de abajo son todas **re-medidas en este árbol**, con la orden
-exacta escrita al lado, y el denominador va en cada una.
+El 90 no aparece en el reporte de U231 —allí la cifra con el léxico elegido es
+121— y el árbol ha crecido. Todas las mediciones de abajo están **re-medidas en
+este árbol**, con la orden exacta y con el denominador al lado.
 
 ---
 
 ## 1 · El antes y el después, con denominador y con la orden exacta
 
-La orden es la misma en los dos casos y **sólo se cambia el detector**: se
-extrae el de `HEAD` a un temporal y se apunta ahí la variable `DETECTOR`.
+Misma orden, **sólo cambia el detector**: se extrae el de `main` a un temporal y
+se apunta ahí la variable `DETECTOR`.
 
 ```
 $ node <scratchpad>/densidad.mjs C:/S_LAB/wt/z-u269 --detalle
 ```
 
 `densidad.mjs` recorre `git --no-optional-locks ls-files`, llama a
-`hallazgosEnFichero` sobre cada fichero regular y cuenta. No usa `wc -l` sobre
-una tubería: cuenta en proceso y devuelve `rc` propio, que se comprueba aparte.
+`hallazgosEnFichero` sobre cada fichero regular y cuenta en proceso. No hay
+`wc -l` sobre una tubería; el `rc` se comprueba aparte.
 
 ```
-ANTES  (detector de U231, extraído de HEAD)
-  ficheros trackeados: 1759 · inspeccionados: 1759 · saltados: 0
-  HALLAZGOS: 125 en 75 ficheros
-    campo-identidad 122 · url-con-credencial 2 · pem-privada 1
+ANTES  (detector de U231, extraído de main)
+  ficheros trackeados: 1762 · inspeccionados: 1762 · saltados: 0
+  HALLAZGOS: 135 en 77 ficheros
 
 DESPUÉS (detector con analizadores)
-  ficheros trackeados: 1759 · inspeccionados: 1759 · saltados: 0
-  HALLAZGOS: 52 en 37 ficheros
-    campo-identidad 49 · url-con-credencial 2 · pem-privada 1
+  ficheros trackeados: 1762 · inspeccionados: 1762 · saltados: 0
+  HALLAZGOS: 61 en 44 ficheros
 ```
 
-**125 → 52 sobre 1759 ficheros trackeados.** Y como un total puede bajar
-tapando aciertos, va también el **diff de conjuntos**, que es lo que de verdad
-responde:
+**135 → 61 sobre 1762 ficheros trackeados.** Diff de conjuntos: **77
+desaparecen, 3 aparecen.**
 
-- **75 hallazgos desaparecen.**
-- **2 hallazgos aparecen.**
+### 1.1 · Los 77 que desaparecen
 
-### 1.1 · Los 75 que desaparecen: ninguno era material
+Agrupados por la línea que los producía: el valor no era un literal. Ocho veces
+la asignación de `resolveMcpApprovalToken()` a una constante llamada `token`;
+cuatro, una propiedad `token` cuyo valor es un acceso a miembro; dos,
+anotaciones de tipo de un parámetro `privateKey`; cinco, TÍTULOS de `test(...)`
+que contienen la palabra `clave` en castellano corriente; el resto, llamadas
+asignadas a una variable `auth` y prosa de comentarios.
 
-Agrupadas por la línea que las producía, las clases son cuatro y todas son la
-misma cosa: **el valor no era un literal**.
+**Corrección respecto a la primera entrega (M6).** Escribí «ninguna de las 75
+líneas contiene un literal de cadena con material». **Es falso, y la
+contrarrevisión lo midió.** Cuatro de las 77 llevan un literal:
 
-- **8 veces**, la asignación del resultado de `resolveMcpApprovalToken()` a una
-  constante llamada `token`; **2 más** con `resolveScriptoriumSecret()`.
-- **4 veces**, una propiedad `token` cuyo valor es el acceso a miembro
-  `cfg.token`; y variantes con `??`, con `||` y con encadenamiento opcional.
-- **2 veces**, la anotación de tipo de un parámetro `privateKey`
-  (`KeyObject`, unión con `string` y `Buffer`), y una vez la de `auth` como
-  `Record` — ésta **dentro de un comentario JSDoc**.
-- **5 veces**, el TÍTULO de un `test(...)` que contiene la palabra `clave` en
-  castellano corriente («fichero que no rinde clave»).
-- el resto, llamadas como `assertIntentRole(...)` asignadas a una variable
-  `auth`, y prosa de comentarios.
+| línea | por qué se va |
+|---|---|
+| `e2e/local-first-ca.mjs:1233` | el valor es `path.join(...)`; el literal es un ARGUMENTO (`'secret.txt'`), un nombre de fichero |
+| `packages/mesh/ssb-system/test/export.test.mjs:1390` | ídem: `tempRoot('u253c-semilla-')` |
+| `packages/mesh/operator-ui/fixtures/puerta-entry.mjs:59` | una propiedad de identidad cuyo valor es una expresión con `??`: el literal es el valor por DEFECTO, alcanzado a través de la expresión, no el valor asignado |
+| `test/gates/claves.test.mjs:210` | el FIXTURE de i18n del propio U231, material sintético dentro de un array de test |
 
-**Ninguna de las 75 líneas contiene un literal de cadena con material.** Se
-listaron todas y se leyeron todas.
+La conclusión aguanta —ninguna es una credencial de un servicio— pero la frase
+absoluta no, y era mía. Las tres primeras son el efecto buscado: el valor de un
+campo de identidad es lo que se le asigna, no lo que aparece dentro de la
+expresión que lo calcula. La cuarta es un fixture.
 
-> Estas líneas van descritas en prosa y **no citadas literalmente**, y la razón
-> es el límite 1 de §9: el barrido crudo sigue mirando el Markdown, así que un
-> reporte que cite sus propios falsos positivos **los vuelve a crear**. La
-> primera versión de este párrafo los citaba en un bloque de código y añadía
-> **7 hallazgos** al árbol — o sea, contradecía con su propia obra la tesis del
-> WP. Está medido en §10.
-
-### 1.2 · Los 2 que aparecen: los declaro, y son falsos positivos míos
+### 1.2 · Los 3 que aparecen, declarados
 
 ```
-packages/engine/embajador-kit/src/tipos.mjs:27   export const CREDENCIAL_VERSION = 'embajador/1';
-packages/mesh/linea-editor/src/editor-server.mjs:91   token_env: 'ZEUS_MCP_APPROVAL_TOKEN',
+packages/engine/embajador-kit/src/tipos.mjs:27                  export const CREDENCIAL_VERSION = 'embajador/1';
+packages/mesh/linea-editor/src/editor-server.mjs:91             token_env: 'ZEUS_MCP_APPROVAL_TOKEN',
+packages/mesh/linea-editor/test/reparto-autoria.test.mjs:262    approvalToken: 'TOKEN-INCORRECTO',
 ```
 
-Los dos son **nombres compuestos** que el barrido de línea no veía —su patrón
-exige que el léxico llegue pegado a los dos puntos, y aquí llega `CREDENCIAL_` y
-`token_`— y que el analizador sí ve, porque juzga el nombre del campo entero.
-El primero es una versión; el segundo es **el nombre de una variable de entorno**,
-no su valor. **No los he cerrado**, y no por descuido: cerrarlos pedía una lista
-de sufijos inocentes (`_VERSION`, `_env`), que es exactamente el instrumento del
-que este WP intenta salir. Quedan declarados como coste.
+Los tres son **nombres compuestos** que el barrido de línea no veía —su patrón
+exige que el léxico llegue pegado a los dos puntos— y que `esNombreDeIdentidad`
+sí ve. El primero es una versión, el segundo es **el nombre de una variable de
+entorno** (no su valor) y el tercero un fixture de test. **No los cierro**:
+cerrarlos pedía una lista de sufijos inocentes (`_VERSION`, `_env`), que es el
+instrumento del que este WP intenta salir. Quedan como coste declarado.
 
 ---
 
-## 2 · Las tres formas del enunciado, cazadas con analizador
+## 2 · B1 — la retirada tenía una puerta de servicio sin vigilar
 
-Estaban las tres abiertas. Se comprueba primero que **escapaban**:
+**El agujero.** `parYaml` sólo entraba en estado de comilla si la comilla estaba
+en `k === 0`, así que en `"api_key":"…"` no veía ningún `:` separador y devolvía
+`null`. `flujoYaml` caía entonces en la retirada puesta para `{{DB_PASSWORD}}`,
+que **devolvía `null` sin lanzar**. Sin excepción no hay retirada:
+`hallazgosEnFichero` nunca llegaba al `catch`, no se empujaba ningún campo, y el
+fichero salía **limpio con la clave dentro**.
 
 ```
-$ node --input-type=module -e "… hallazgosEnTexto(t).length …"
-1 array JSON          -> 0 hallazgos
-2 YAML block scalar   -> 0 hallazgos
-3 Dockerfile ENV sin = -> 0 hallazgos
+$ git archive HEAD | tar -x -C <tmp> && cd <tmp>
+$ printf '{"id":"demo","api_key":"…"}\n' > VOLUMES/DISK_02/LINEAS/zz-fuga.yaml
+$ node scripts/gates/run.mjs
+gates: OK (0 offenders)   rc=0        <- con la clave sembrada
 ```
 
-Y ahora se cazan **por el CLI lanzado como proceso**, no llamando a la función
-—U231 pagó caro esa diferencia: su test del detector aislado pasaba porque allí
-la cadena nunca toca el disco—. Sembradas en el árbol de volúmenes **real** y
-corriendo el gate de verdad:
+Reproducido tal cual. **JSON es YAML legal, esa forma es la salida exacta de
+`JSON.stringify`, y `VOLUMES/**` ya contiene `.yaml`.** No era laboratorio. Y
+peor: las formas que *sí* se cazaban se cazaban por accidente —con espacio tras
+los dos puntos, `camposDeYaml` devolvía un nombre truncado que conservaba por
+casualidad la subcadena que dispara—.
+
+**El arreglo, en dos piezas.**
+
+1. **Corrección**: `parYaml` acepta el separador pegado al cierre de una clave
+   entrecomillada, que es la regla del contexto de flujo de YAML. Ahora esa
+   forma se **entiende**, no se sortea.
+2. **Seguridad**: `flujoYaml` tiene ahora **una sola** salida `null`, y significa
+   información positiva —«esto no empieza por corchete ni por llave, no es
+   flujo»—. **Todo lo demás LANZA `NoEntiendo`**: cola tras el cierre, flujo sin
+   equilibrar, mal cerrado, y elemento de mapa que no es una pareja.
+
+**Las ocho formas, por el CLI como proceso, sobre el árbol de volúmenes real:**
+
+```
+                                    main   rama
+{"api_key":"…"}                     rc=0   rc=1
+cfg: {"api_key":"…"}                rc=0   rc=1
+- {"api_key":"…"}                   rc=0   rc=1
+items:\n  - {"token":"…"}           rc=0   rc=1
+[{"api_key":"…"}]                   rc=0   rc=1
+{'api_key':'…'}                     rc=0   rc=1
+{api_key:…} sin espacio             rc=0   rc=1
+{"a":{"api_key":"…"}}               rc=0   rc=1
+
+formas que se escapan: main 8 de 8 · rama 0 de 8
+control negativo (sin sembrar): rc=0 en las dos
+```
+
+Siete se **entienden**; la octava (sin espacio y sin comillas) **se retira** y la
+caza el barrido crudo. Las dos respuestas son correctas y ninguna es silencio.
+
+**La auditoría de salidas silenciosas que pidió la devolución**, sitio por sitio:
+
+| sitio | qué devuelve | veredicto |
+|---|---|---|
+| `formatoDe` | `null` = formato desconocido | **legítimo**: información positiva, quien llama barre en crudo |
+| `parYaml` | `null` = «no es una pareja» | **legítimo**: información positiva; quien llama decide |
+| `flujoYaml` | `null` = «no es una colección de flujo» | **legítimo**, y ahora es la ÚNICA; las otras cuatro salidas LANZAN |
+| JSON · fin de cada rama de `valor()` | consume o llama a `err()` | **lanza**; no hay rama muda |
+| JSON · valor NUMÉRICO | antes se consumía sin empujar campo | **cerrado** (B2): ahora empuja |
+| JSON · cadena en la RAÍZ (`nombre === null`) | no empuja | **legítimo**: sin nombre no hay `campo-identidad`; los patrones por forma siguen barriendo |
+| Dockerfile · línea que no es `INSTRUCCION args` | antes `continue` mudo | **cerrado**: ahora LANZA |
+| Dockerfile · instrucción no modelada (`RUN`, `COPY`…) | antes `continue` mudo | **cerrado** (B2): ahora OPACA y a barrido crudo |
+| Dockerfile · trozo sin `=` en forma de pares | antes `continue` mudo | **cerrado**: ahora LANZA |
+| Dockerfile · `ARG X` / `ENV X` sin valor | `continue` | **legítimo**: no hay valor que juzgar |
+| código · literal sin nombre delante | no empuja | **cerrado en parte** (B2): si el literal ES un documento JSON, se analiza |
+| código · comentario | antes se tiraba | **cerrado** (B2): OPACO y a barrido crudo |
+
+---
+
+## 3 · B2 — las clases de pérdida frente a U231: cerradas, no declaradas
+
+La devolución pedía decidir caso por caso. **Las nueve se cierran**, porque todas
+son la misma cosa —texto que el analizador no analiza y por tanto no puede dar
+por limpio— y todas con el mismo mecanismo ya presente: marcar el valor **OPACO**
+y barrerlo en crudo además de juzgarlo.
+
+```
+$ node <scratchpad>/u269-b2.mjs <claves.mjs de main>
+caso                               main rama
+comentario YAML                       1    1
+comentario Dockerfile                 1    1
+comentario de linea en codigo         1    1
+comentario de bloque en codigo        1    1
+valor NUMERICO en JSON                1    1
+blob JSON en literal de codigo        1    1
+blob JSON en plantilla                1    1
+RUN de Dockerfile con export          1    1
+flujo YAML JSON.stringify             1    1
+
+clases perdidas: 0 de 9
+```
+
+Las tres que nombraba la devolución, más seis que aparecieron al auditar. **El
+coste está medido**: cerrar los comentarios subió la densidad de 52 a 61 (+9,
+casi todo en `.mjs`), y aun así el saldo es 135 → 61.
+
+Nótese que la primera entrega declaraba la pérdida de comentarios **sólo en
+código**, y era más ancha: también YAML y Dockerfile. La evidencia estaba en mi
+propia medición y no la leí — `.github/workflows/publish-operator-bridge.yml:3`,
+uno de los hallazgos que «desaparecían», es exactamente un comentario.
+
+---
+
+## 4 · Las tres formas del enunciado
+
+Escapaban las tres (`hallazgosEnTexto` da 0 sobre las tres, y hay test que lo
+fija). Ahora se cazan **por el CLI lanzado como proceso** sobre `VOLUMES/` real:
 
 ```
 $ node scripts/gates/run.mjs
 gates: FAIL (6 offender(s))
-  [clave-en-volumen] VOLUMES/DISK_02/LINEAS/u269-ctrl.json:3       — campo-identidad
-  [clave-en-volumen] VOLUMES/DISK_02/LINEAS/u269-ctrl.yaml:3       — campo-identidad
-  [clave-en-volumen] VOLUMES/DISK_02/LINEAS/u269-ctrl.Dockerfile:2 — campo-identidad
-  [contexto-imagen]  VOLUMES/DISK_02/LINEAS/u269-ctrl.Dockerfile:2 — campo-identidad
+  [clave-en-volumen] …/u269-ctrl.json:3        - campo-identidad
+  [clave-en-volumen] …/u269-ctrl.yaml:3        - campo-identidad
+  [clave-en-volumen] …/u269-ctrl.Dockerfile:2  - campo-identidad
+  [contexto-imagen]  …/u269-ctrl.Dockerfile:2  - campo-identidad
   [contexto-imagen]  … no hay .dockerignore en un contexto plausible (x2)
 GATES rc=1
-
-$ rm VOLUMES/DISK_02/LINEAS/u269-ctrl.*   &&   node scripts/gates/run.mjs
-gates: OK (0 offenders)
-GATES rc=0
+$ rm …/u269-ctrl.*   &&   node scripts/gates/run.mjs
+gates: OK (0 offenders)   rc=0
 ```
 
-**Control positivo cumplido**: el verde de este árbol es un verde que mira. Los
-tres testigos enrojecen el gate real y su retirada lo devuelve a verde; el
-`Dockerfile` además arma `contexto-imagen`, que es la regla de U231 haciendo su
-trabajo. Los testigos eran ficheros sin trackear y se borraron
-(`git status` quedó limpio salvo la obra).
-
-Cómo se caza cada una, y por qué no es una expresión regular:
-
-1. **Array JSON.** `scripts/gates/formatos.mjs` trae un analizador descendente
-   recursivo de JSON **con posición** (no `JSON.parse`, que tira la línea). Un
-   elemento de array **hereda el nombre de la clave del array**: eso es lo que
-   pone `{"tokens": ["…"]}` bajo el nombre `tokens`.
-2. **Escalar de bloque YAML.** Analizador del subconjunto de bloque: indentación,
-   comentarios respetando comillas, `|`/`>` con sus indicadores, colecciones de
-   flujo y secuencias. El cuerpo del bloque son **las líneas siguientes**, y eso
-   ninguna expresión regular de una línea puede verlo.
-3. **`ENV API_KEY valor` sin `=`.** Analizador de instrucciones de Dockerfile
-   con continuaciones de línea y directiva `escape`. Aquí no hace falta ningún
-   separador: **lo dice la gramática de la instrucción**.
+1. **Array JSON** — analizador descendente recursivo con posición; un elemento
+   de array **hereda el nombre de la clave del array**.
+2. **Escalar de bloque YAML** — el cuerpo son las líneas SIGUIENTES; ninguna
+   expresión regular de una línea puede verlo.
+3. **`ENV API_KEY valor` sin `=`** — analizador de instrucciones: aquí no hace
+   falta separador, **lo dice la gramática**.
 
 ---
 
-## 3 · La decisión que había que escribir: NO hay dependencia nueva
+## 5 · La decisión escrita: NO hay dependencia nueva
 
-`package.json` no gana ni una línea. No hay `yaml` ni `js-yaml`, y la razón no
-es de gusto:
+`package.json` no gana ni una línea, y no es de gusto:
 
-- **El gate no debe necesitar `node_modules`.** U231 cerró un hueco exactamente
-  por ahí: su guardián de espacios irregulares se escribió sin dependencias
-  porque el agujero por el que entró un lint no pasado fue depender de que las
-  dependencias estuvieran instaladas. Ese guardián sigue vivo y ahora cubre
-  también `formatos.mjs` — comprobado, pasa.
-- **El `npm ci` de esta máquina está incompleto**, y lo verifiqué en vez de
-  suponerlo: `node_modules/.bin/eslint` **no existe**. O sea que `npm run lint`
-  no se puede correr aquí, y una dependencia de gate sería un modo de fallo que
-  no se observa donde se trabaja.
+- **El gate no debe necesitar `node_modules`.** U231 cerró un hueco justo por
+  ahí. Su guardián de espacios irregulares —que no necesita dependencias y cubre
+  todo `.mjs` de `scripts/gates` y `test/gates`, o sea también los ficheros
+  nuevos— pasa.
+- **El `npm ci` de esta máquina está incompleto**: verifiqué que
+  `node_modules/.bin/eslint` **no existe**, así que `npm run lint` no se puede
+  correr aquí. (La contrarrevisión fue más lejos y comprobó que el worktree
+  entregado **no tiene `node_modules` en absoluto** y `run.mjs` sale verde ahí.)
 
-Lo que sí escribo, porque es el precio: **aquí no se implementa YAML**, se
-implementa el subconjunto de bloque que este árbol usa. Anclas, alias,
-etiquetas, claves complejas, claves de fusión y flujo multilínea **no se
-modelan**, y cuando aparecen el analizador **lanza `NoEntiendo` y se retira al
-barrido crudo de U231**. Sobre este árbol la retirada se dispara 8 veces de 1138
-ficheros con formato conocido:
+**Aquí no se implementa YAML**: se implementa el subconjunto de bloque que este
+árbol usa, y lo que no se entiende **se retira**. Retiradas sobre este árbol:
 
 ```
-con formato conocido: 1138 · analizados OK: 1130 · retiradas: 8
-   5 x json: valor no reconocido "/* To learn "   (JSON con comentarios)
-   1 x json: valor no reconocido "// presentat"
+con formato conocido: 1141
+   de esos, >1 MiB (ni llegan al analizador): 1   <- package-lock.json
+analizados: 1140 · OK: 1132 · retiradas: 8
+   5 x JSON: valor no reconocido "/* To learn "    (JSON con comentarios)
+   1 x JSON: valor no reconocido "// presentat"
    1 x codigo: expresion regular sin cerrar
-   1 x yaml: ancla o alias no modelado
+   1 x YAML: ancla o alias no modelado
 ```
 
-**La retirada es la pieza de seguridad del diseño.** Parsear sólo puede quitar
-falsos positivos sobre lo que se entiende; sobre lo que no se entiende se sigue
-mirando como antes. Un fallo de `formatos.mjs` degrada a la vigilancia anterior,
-nunca a silencio — y eso tiene test y tiene mutante (M6, abajo).
+(M5: la primera entrega decía «8 de 1138» sin explicar el hueco. El denominador
+correcto es 1141 con formato conocido, de los que 1 es `package-lock.json`, que
+supera 1 MiB y va por el camino troceado de U231.)
 
 ---
 
-## 4 · Los siete falsos positivos de U231, y los gemelos que sí caen
+## 6 · Los siete falsos positivos de U231, y los gemelos que sí caen
 
-Los siete están en `test/gates/claves.test.mjs` (U231) y **entran otra vez** en
-`test/gates/formatos.test.mjs` por el camino NUEVO, que es distinto y puede
-romperlos de otra manera. **Y rompió uno**: el reparto de colecciones de flujo
-sacaba `DB_PASSWORD` de dentro de `{{DB_PASSWORD}}` y lo denunciaba. Un mapa de
-flujo sólo tiene parejas `clave: valor`; cuando un elemento no lo es, eso no es
-YAML sino una plantilla incrustada, y el analizador **se retira**.
+Los siete entran otra vez **por el camino real** —se escriben a disco y se llama
+a `hallazgosEnFichero`—, y no por la capa de abajo. La diferencia es la lección
+de B1: **el analizador LANZA y quien se retira es `hallazgosEnFichero`**. Medir
+abajo mide media cadena, y el primero de los siete es justo un caso en que abajo
+lanza y arriba responde «limpio», que es lo correcto. Hay test que comprueba las
+dos mitades por separado: que el analizador **lanza** y que el camino real **da
+limpio**.
 
-Los siete se comprueban tres veces: por el analizador de YAML, **por el CLI
-sembrados en un volumen**, y por el analizador de JSON.
-
-Y para que «más preciso» no signifique «más flojo», cada clase lleva su gemelo
-que **sí** cae (`LA PRECISIÓN NO SE COMPRÓ AFLOJANDO`): URL con un tramo de 24
-caracteres de material, kebab sin palabra de configuración
-(`correct-horse-battery-staple`, que es una frase de paso real), ruta punteada
-sin el punto inicial, i18n que no repite su etiqueta, plantilla **incompleta**
-(`{{DB_PASSWORD` sin cerrar no es una plantilla), array JSON con material y
-`ENV` de espacio con material.
+Los gemelos que **sí** caen son ahora **dieciséis**: los siete originales más
+las nueve clases recuperadas en §3. Si alguien ensancha el clasificador para
+quitar un falso positivo, ese test se pone rojo.
 
 ---
 
-## 5 · Un fallo real encontrado de camino: el «léxico anclado» no anclaba
+## 7 · El ancla del léxico: de quién eran los falsos positivos (M1)
 
-`LEXICO_IDENTIDAD.source` es una alternancia de **primer nivel sin paréntesis**.
-Interpolarla a pelo entre un lookbehind y un lookahead ata el lookbehind **sólo
-a la primera alternativa** y el lookahead **sólo a la última**; las de en medio
-quedan sin ancla ninguna. Medido:
+`LEXICO_IDENTIDAD.source` es una alternancia de primer nivel sin paréntesis, así
+que interpolarla entre un lookbehind y un lookahead ataba el primero sólo a la
+primera alternativa y el segundo sólo a la última. `author`, `tokenizer`,
+`secretaria` y `xxpwdyy` daban verdadero.
+
+**Corrección de la primera entrega.** Escribí que eran falsos positivos que
+venía arrastrando el árbol. **No lo eran: eran míos.** Medido:
 
 ```
-              roto    bien
-author        true    false     (por `auth`)
-tokenizer     true    false     (por `token`)
-secretaria    true    false     (por `secreta`)
-xxpwdyy       true    false     (por `pwd`)
-clave         true    true      (las trece de U231 siguen dentro)
+main (barrido crudo de U231)            135 hallazgos · en lineas con `author`:  0
+rama U269 (con el ancla cerrada)         61 hallazgos · en lineas con `author`:  0
+rama U269 con el ancla OTRA VEZ ROTA    100 hallazgos · en lineas con `author`: 36
 ```
 
-Sobre este árbol eran **once falsos positivos en campos `author`** de
-`ssb-log.json`, `ssb-feed-log.json` y un `package.json` — donde un autor de SSB
-es una identidad **pública**. Se cierra con un `(?:…)`. No cambia qué palabras
-están en el léxico: las trece que U231 midió siguen casando, y hay test que lo
-fija en las dos direcciones.
+El bug del **código fuente** sí es preexistente —está en `main`—, pero en `main`
+no producía ni un falso positivo, porque su único consumidor era
+`censarVolumenes`, que sale idéntico con y sin arreglo. Los 36 los produce **el
+camino estructural nuevo**, que pregunta por el nombre de CADA campo. O sea: el
+arreglo no limpia deuda ajena, **evita que la mía se dispare**. El arreglo se
+queda; la frase se corrige.
+
+### 7.1 · Y cerrar el ancla no puede costar nombres (M2)
+
+La contrarrevisión midió que el arreglo, tal cual, dejaba de casar doce nombres
+de identidad —`authToken`, `apiSecret`, `password2`, `claveAdmin`…— porque el
+ancla exige frontera no alfanumérica y en `authToken` la frontera es un cambio
+de caja. Latente en CA2: un `${ZEUS_AUTHTOKEN}` pasaría de `identidad` a
+`localizador`. **Arreglar un fallo abriendo otro no es arreglarlo.**
+
+Se cierra con `esNombreDeIdentidad`, que hace **dos** preguntas: el nombre
+entero contra el léxico anclado (cubre los compuestos del léxico, `api_key`), y
+cada palabra por separado tras partir por separador, camelCase y dígito (cubre
+los compuestos del programador). Recupera **10 de 12**; cuesta **+1** falso
+positivo (§1.2, `approvalToken`).
+
+**Límite declarado**: una tirada entera en mayúsculas sin separador —`AUTHTOKEN`,
+`ZEUS_AUTHTOKEN`— no se puede partir porque no hay frontera que leer.
+`AUTHTOKEN` y `AUTHOR` son el mismo problema y sólo un diccionario los
+distingue: **se prefiere perder el primero a recuperar el segundo**, porque un
+autor es identidad pública y sale once veces en este árbol. Con separador
+(`ZEUS_AUTH_TOKEN`) se caza. Tiene test en las dos direcciones.
 
 ---
 
-## 6 · Qué negativos verifiqué DESACTIVANDO su guardián, y qué vi
+## 8 · Qué negativos verifiqué DESACTIVANDO su guardián
 
-Un negativo no está verificado hasta que se desactiva su guardián y se comprueba
-que enrojece — separando **«nadie disparó»** de **«saltó OTRO guardián»**.
+**Censo de mutación, segunda vuelta: 17 mutantes, 17 rojos.** Línea base verde
+comprobada antes de empezar.
 
-### 6.1 · Censo de mutación sobre la obra de este WP
-
-Se rompe una pieza cada vez y se corre `test/gates/formatos.test.mjs` +
-`test/gates/claves.test.mjs`. Línea base verde comprobada antes de empezar.
-
-| mutante | tests rojos | qué demuestra |
+| mutante | rojos | |
 |---|---|---|
-| M1 · el ancla del léxico vuelve a estar rota | 1 | `author` vuelve a ser un hallazgo |
-| M2 · el array JSON no hereda el nombre de su clave | 3 | forma 1 |
-| M3 · el escalar de bloque no recoge el cuerpo | 2 | forma 2 |
-| M4 · Dockerfile pierde la forma de espacio | 3 | forma 3 |
-| M5 · el mapa de flujo no se retira ante `{{VAR}}` | 3 | el 1.º de los siete FP |
-| M6 · la retirada se vuelve silencio (`return []`) | 4 | la retirada |
-| M7 · el lexer no distingue comentarios | 1 | el lexer |
-| M8 · el espacio interior deja de marcar prosa | 5 | el clasificador |
+| M1 · el ancla vuelve a estar rota | 3 | |
+| M2 · el array JSON no hereda el nombre | 3 | |
+| M3 · el bloque no recoge el cuerpo | 2 | |
+| M4 · Dockerfile pierde la forma de espacio | 3 | |
+| M5 · **el mapa de flujo devuelve `null` en vez de lanzar** | 1 | **B1** |
+| M6 · la retirada se vuelve silencio | 7 | |
+| M7 · el lexer no separa comentarios | 2 | |
+| M8 · el espacio interior no marca prosa | 5 | |
+| M9 · literal de cadena sin cerrar: sigue como si nada | 1 | **vivo antes** |
+| M10 · comentario de bloque sin cerrar: se lo traga | 1 | |
+| M11 · expresión regular sin cerrar: se la traga | 1 | |
+| M12 · `parYaml` pierde la clave entrecomillada | 1 | **vivo antes** |
+| M13 · el comentario de YAML se vuelve a tirar | 2 | |
+| M14 · el número de JSON deja de ser un valor | 1 | |
+| M15 · el blob JSON en un literal no se analiza | 1 | |
+| M16 · `esNombreDeIdentidad` no parte en palabras | 2 | |
+| M17 · la izada vuelve a dejar la bandera `y` | 1 | |
 
-**Los ocho enrojecen.** Y no enrojecían al principio: **M3 y M7 salieron con
-`rc=0` en la primera pasada** —«NADIE enrojeció»—, o sea que dos piezas no las
-vigilaba nadie y dos tests estaban verdes sin medir lo que decían medir:
+**Tres mutantes salieron VIVOS y hubo que escribirles guardián:**
 
-- **M3**: el test de la forma 2 pasaba **por otro camino**. Con el cuerpo del
-  bloque de una sola línea, la herencia de nombre del escalar suelto lo caza
-  igual, sin necesidad de analizar el bloque. El test estaba verde y el bloque
-  sin vigilar. Se sustituyó por dos que **sólo** el análisis de bloque hace
-  pasar: que un cuerpo de dos líneas es **una** fuga y no dos, y que el cuerpo
-  no se lee como pares `clave: valor`.
-- **M7**: no había ningún test que exigiera distinguir comentarios.
+- **M9** (lo encontró la contrarrevisión, M4 de la devolución): cambiar el
+  `throw` del literal sin cerrar por «sigue como si nada» dejaba los 82 tests en
+  verde. Sólo estaba cubierta **una** de las tres ramas de rotura del lexer.
+  **Se cierra la clase**: las tres roturas —cadena, comentario de bloque,
+  expresión regular— tienen test, y cada una se comprueba dos veces (que LANZA, y
+  que por el camino real el material que viene DESPUÉS se sigue cazando). Lo
+  mismo para las cinco roturas del analizador de JSON.
+- **M12**: quitar la rama de clave entrecomillada de `parYaml` dejaba la suite
+  verde **porque el hallazgo sobrevivía por la retirada**. La seguridad estaba
+  cubierta y la **precisión** no: sin esa rama, todo `.yaml` con JSON dentro se
+  retira entero al barrido crudo. Guardián nuevo: se exige que el analizador lo
+  **entienda**, no que alguien lo cace.
+- **M17** (M3 de la devolución): la izada quitaba `g` pero no `y`. Arreglado
+  (`.replace(/[gy]/g,'')`) y con test que pasa un patrón `gy` y exige las tres
+  coincidencias.
 
-Perseguir M3 destapó **un agujero que iba a introducir yo**: si el cuerpo de un
-bloque es el valor de su clave, un `run: |` de CI con `export API_KEY=…` dentro
-quedaba **tapado por el análisis**, porque `run` no es un nombre de identidad. Se
-cerró marcando el cuerpo del bloque como **opaco** —texto incrustado de un
-lenguaje que este módulo no analiza— y barriéndolo **además** en crudo. Tiene
-test (`un run: | de CI no se tapa`) y es lo que hace enrojecer M3.
+En la primera entrega ya habían salido vivos **M3 y M7**, y perseguir M3 destapó
+un agujero que iba a introducir yo: un `run: |` de CI con `export API_KEY=…`
+quedaba tapado por el análisis. Cerrado con el mecanismo OPACO.
 
-### 6.2 · La ausencia sigue siendo ruidosa
-
-La guardia de U231 no se relaja por venir por otra puerta: `hallazgosEstructurales`
-con lista de patrones vacía, `null` o `Object.freeze([])` **lanza `TypeError`**, y
-la retirada **no se lo traga** (sólo perdona `NoEntiendo`). Con test.
-
----
-
-## 7 · Coste
-
-Medido en proceso, con caché de disco caliente, mismo listado de ficheros,
-mínimo de 3 corridas — porque el `npm run gates` de punta a punta en esta
-máquina es **demasiado ruidoso para afirmar nada** (rango 1,9 s – 10,5 s para
-las **dos** versiones; las medianas no se separan):
-
-```
-HEAD   min 4333 ms · 125 hallazgos
-U269   min 1783 ms ·  52 hallazgos
-```
-
-El detector **baja a menos de la mitad**. Buena parte no es del análisis sino de
-un punto caliente que estaba en `hallazgosEnTexto`: compilaba
-`new RegExp(p.re.source, …)` **una vez por línea y por patrón**. Se iza fuera del
-bucle. Sin la bandera `g` el `exec` no arrastra `lastIndex`, así que izarla no
-puede cambiar un resultado — y se comprueba, no se argumenta: la medición de
-densidad da **el mismo conjunto de 52, diff de 0 líneas**, antes y después de
-izarla.
+**La ausencia sigue siendo ruidosa**: `hallazgosEstructurales` con lista de
+patrones vacía, `null` o `Object.freeze([])` lanza `TypeError`, y la retirada
+**no se lo traga** (sólo perdona `NoEntiendo`). Con test.
 
 ---
 
-## 8 · El léxico, re-medido (las cifras de U231 caducaron dos veces)
+## 9 · El léxico, re-medido
 
-Caducaron por el árbol (1741 → 1759) y por el detector (barrido → análisis).
-Mismo detector, mismo corpus, moviendo **sólo** el léxico:
+Caducó por el árbol (1741 → 1762) y por el detector (barrido → análisis):
 
 ```
 $ node <scratchpad>/lexico.mjs
-sin `clave` ni `key` a secas   ->   47 hallazgos
-con `clave` (EL ELEGIDO)       ->   52 hallazgos      (+5)
-con `clave` y `key`            ->  184 hallazgos    (+132)
-denominador: 1759 ficheros trackeados
+sin `clave` ni `key` a secas   ->   54 hallazgos
+con `clave` (EL ELEGIDO)       ->   61 hallazgos      (+7)
+con `clave` y `key`            ->  222 hallazgos    (+161)
+denominador: 1762 ficheros trackeados
 ```
 
-**Aviso sobre esta medición, porque la primera salió mal y parecía bien:** las
-tres variantes daban 52. El temporal de cada variante se nombraba con un hash
-truncado del título, y «con `clave` (EL ELEGIDO)» y «con `clave` y `key`»
-comparten los seis primeros bytes: mismo fichero, y **la caché de módulos de ESM
-devolvía la primera variante para la tercera**. Tres cifras idénticas con pinta
-de resultado. Se detectó porque el resultado era *demasiado* limpio y se
-contrastó con una comprobación independiente (la variante con `key` encuentra 10
-hallazgos en `ssb-log.json`, donde la elegida encuentra 0).
-
-La decisión de U231 **no cambia**: `key` cuesta veintiséis veces más que `clave`
-porque en YAML/JSON `key:` es vocabulario general de mapa. Parsear bajó las tres
-cifras (eran 104 / 121 / 300) y no movió la conclusión. Las cifras del módulo y
-del test están actualizadas.
+**Aviso, porque la primera medición salió mal y parecía bien:** las tres
+variantes daban 61. El temporal de cada una se nombraba con un hash truncado del
+título, y «con `clave` (EL ELEGIDO)» y «con `clave` y `key`» comparten los seis
+primeros bytes: mismo fichero, y **la caché de módulos de ESM devolvía la primera
+variante para la tercera**. Se detectó porque el resultado era *demasiado*
+limpio y se contrastó aparte (la variante con `key` encuentra 10 hallazgos en
+`ssb-log.json`, donde la elegida encuentra 0). La decisión de U231 **no cambia**:
+`key` cuesta veintitres veces más que `clave`.
 
 ---
 
-## 9 · Qué límite queda declarado
+## 10 · Coste
 
-Escrito aquí y en la cabecera de `formatos.mjs`, porque un gate es lo más fácil
-de sobrevender.
+Medido en proceso, caché caliente, mismo listado, mínimo de 3 corridas. El
+`npm run gates` de punta a punta en esta máquina es **demasiado ruidoso para
+afirmar nada** (rango 1,9 – 10,5 s para las dos versiones; las medianas no se
+separan).
 
-1. **Markdown, `.env` y el texto plano no se analizan.** Siguen en barrido crudo,
-   intacto. **22 de los 52 hallazgos de hoy están en `.md`** y son prosa de
-   reportes. Es la bolsa de ruido que queda sin tocar.
-2. **Un `campo-identidad` COMENTADO en código ya no se caza.** Precio de excluir
-   los comentarios, que es de donde salía buena parte del ruido. Lo que **no** se
-   pierde: los patrones por FORMA (PEM, JWT, token de proveedor,
-   `usuario:clave@`, SSB) siguen barriendo el texto entero, comentarios
-   incluidos. Hay test que fija las dos mitades.
-3. **Una frase de paso con espacios LITERALES no se caza.** Con el valor entero
-   delante, «tiene un espacio dentro» es la señal que separa prosa de material.
-   Con guiones sí se caza, y es el gemelo que lo prueba. Tiene test propio.
-4. **Los dos falsos positivos de §1.2 siguen ahí**, y cerrarlos pedía una lista
-   de sufijos inocentes. No la abro.
+```
+main   min 4333 ms · 125 hallazgos     (medido antes de anadir la obra del WP)
+U269   min 1783 ms ·  52 hallazgos
+```
+
+Buena parte de la mejora no es del análisis sino de un punto caliente en
+`hallazgosEnTexto`, que compilaba `new RegExp` **una vez por línea y por
+patrón**. Izarla no cambia un resultado —se comprueba, no se argumenta: el mismo
+conjunto, diff de 0 líneas— pero hay que quitar **`g` e `y`**, no sólo `g` (M17).
+
+---
+
+## 11 · Qué límite queda declarado
+
+1. **Markdown, `.env` y el texto plano no se analizan.** Siguen en barrido crudo.
+   **22 de los 61 hallazgos están en `.md`** y son prosa de reportes.
+2. **Una frase de paso con espacios LITERALES no se caza.** Con el valor entero
+   delante, «tiene un espacio dentro» separa prosa de material. Con guiones sí se
+   caza, y es el gemelo que lo prueba.
+3. **Los 3 falsos positivos de §1.2 siguen ahí.** Cerrarlos pedía una lista de
+   sufijos inocentes.
+4. **Una tirada en mayúsculas sin separador** (`AUTHTOKEN`) no se parte en
+   palabras (§7.1), con la razón medida.
 5. **Ficheros de más de 1 MiB no se analizan**: van por el camino troceado de
-   U231, que es el conservador. Un analizador no puede trabajar sobre un tramo.
+   U231, que es el conservador. Hoy, uno: `package-lock.json`.
 6. **YAML es un subconjunto**: anclas, alias, etiquetas, claves complejas, claves
-   de fusión y flujo multilínea se retiran al barrido crudo. 8 retiradas de 1138
-   ficheros hoy.
-7. **Sigue sin haber detección por entropía**, y por la razón medida de U231: el
-   árbol está lleno de sha256 legítimos.
-8. **Sigue sin haber lista de excepciones** para estas tres reglas. No la he
-   tocado ni la he necesitado: los dos falsos positivos nuevos se declaran, no se
-   eximen. Y el detector se cazaba a sí mismo con una constante que llamé
-   `ID_POR_CLAVE`; se **renombró**, que es lo que hay que hacer, en vez de
-   exceptuarla.
-9. **Lo que este WP NO toca** y U231 ya declaraba: el historial de git, el
+   de fusión y flujo multilínea **se retiran**. 8 retiradas de 1140 hoy.
+7. **El valor de un campo es lo que se le asigna**, no lo que aparezca dentro de
+   la expresión que lo calcula: un literal por defecto alcanzado tras un `??` ya
+   no se denuncia (§1.1). Es deliberado y es una pérdida frente a `main`.
+8. **Sigue sin haber detección por entropía** ni **lista de excepciones** para
+   estas tres reglas. Los falsos positivos nuevos se declaran, no se eximen. Y
+   cuando el detector se cazó a sí mismo —una constante `ID_POR_CLAVE`, y cuatro
+   comentarios míos— se **renombró y se reescribió**, no se exceptuó.
+9. **Lo que este WP NO toca**, y U231 ya declaraba: el historial de git, el
    tarball de npm, UTF-16, y contextos de build que no sean el directorio de la
    receta ni la raíz.
 
 ---
 
-## 10 · Estado de las comprobaciones
+## 12 · Estado de las comprobaciones
 
 ```
 $ node scripts/gates/run.mjs                 ->  gates: OK (0 offenders) · rc=0
-$ node --test test/gates/*.test.mjs          ->  182 tests · 182 pass · 0 fail
-$ node --test test/gates/formatos.test.mjs   ->   22 tests ·  22 pass · 0 fail (nuevos)
+$ node --test test/gates/*.test.mjs          ->  189 tests · 189 pass · 0 fail
+$ node --test test/gates/formatos.test.mjs   ->   31 tests ·  31 pass · 0 fail (nuevos)
+$ node <scratchpad>/u269-mutar.mjs           ->  17 mutantes · 17 rojos · 0 vivos
+$ node <scratchpad>/u269-b1-cli.mjs          ->  0 de 8 formas se escapan (main: 8 de 8)
+$ node <scratchpad>/u269-b2.mjs              ->  0 de 9 clases perdidas
 ```
 
-**La medición, rehecha con la obra de este WP ya trackeada** —porque los tres
-ficheros nuevos entran en el denominador y pueden ensuciar el numerador—:
+Con la obra del WP ya trackeada: **1762 ficheros · 61 hallazgos**, de los que
+`formatos.mjs`, `formatos.test.mjs` y este reporte aportan **0**. Ese cero costó
+tres arreglos, todos por la misma regla —*no contradigas la tesis con tu propia
+obra*—: el reporte citaba sus propios falsos positivos en un bloque de código
+(+7), el detector se cazaba con una constante `ID_POR_CLAVE`, cuatro comentarios
+de `formatos.mjs` citaban las formas que el detector busca (+4), y en la segunda
+vuelta dos más —una fila de una tabla de este reporte y un vector de test— (+2).
+Cada vez lo detectó la misma medición, no una revisión.
 
-```
-ficheros trackeados: 1762 · HALLAZGOS: 52 en 37 ficheros
-aporte de `formatos.mjs`, `formatos.test.mjs` y este reporte: 0 hallazgos
-```
+`npm run lint` no se pudo correr: no hay `eslint` en esta máquina (§5).
 
-Ese cero costó dos arreglos, los dos por la misma regla —*no contradigas la
-tesis con tu propia obra*—: el reporte citaba sus propios falsos positivos en un
-bloque de código y añadía 7 (§1.1), y el detector se cazaba a sí mismo con una
-constante que llamé `ID_POR_CLAVE`, renombrada en vez de exceptuada (§9.8).
-
-`npm run lint` **no se pudo correr**: `node_modules/.bin/eslint` no existe en
-esta máquina (§3). El guardián de espacios irregulares de U231 —que no necesita
-`node_modules` y que cubre todo `.mjs` de `scripts/gates` y `test/gates`, o sea
-también los dos ficheros nuevos— **pasa**.
-
-## 11 · Ficheros
+## 13 · Ficheros
 
 | fichero | qué |
 |---|---|
-| `scripts/gates/formatos.mjs` | **nuevo** — analizadores de JSON, JSONL, YAML de bloque, Dockerfile y lexer de código; `NoEntiendo` y la retirada |
-| `scripts/gates/claves.mjs` | `hallazgosEstructurales`, encaminamiento por formato con retirada, `esHuecoEstructural`, el ancla del léxico cerrada, la compilación de expresiones izada, límites 6 y 7 de la cabecera reescritos |
-| `test/gates/formatos.test.mjs` | **nuevo** — 22 tests: las tres formas por el CLI como proceso, control negativo, censo de mutación, los siete FP por dos analizadores, los gemelos, la retirada, los límites declarados |
+| `scripts/gates/formatos.mjs` | **nuevo** — analizadores de JSON, JSONL, YAML de bloque, Dockerfile y lexer de código; `NoEntiendo`, la retirada y el marcado OPACO |
+| `scripts/gates/claves.mjs` | `hallazgosEstructurales`, encaminamiento con retirada, `esHuecoEstructural`, `esNombreDeIdentidad`, ancla cerrada, compilación izada sin `g` ni `y`, límites 6 y 7 de la cabecera reescritos |
+| `test/gates/formatos.test.mjs` | **nuevo** — 31 tests |
 | `test/gates/claves.test.mjs` | cifras del léxico actualizadas |
