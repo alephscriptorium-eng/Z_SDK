@@ -20,16 +20,34 @@
  * y `fs/promises` quedan cubiertos por igual.
  *
  * ALCANCE DECLARADO — lo que estos hooks NO cubren:
+ *
+ * - LA LISTA. `PRIMITIVAS` es una ENUMERACIÓN CERRADA, y por tanto incompleta.
+ *   Ésta es la ceguera de fondo y no se cierra ensanchándola:
+ *
+ *       Mientras el instrumento sea una lista de nombres, el mutante que
+ *       evade la lista existirá.
+ *
+ *   Medido: `openSync`+`writeSync(fd)`, `writevSync`, `ftruncateSync` y
+ *   `filehandle.write()` reescriben el manifiesto y NO pasan por aquí. La
+ *   lista se declara y se mantiene SINCRONIZADA con la del censo estático
+ *   (`export.test.mjs`, invariante medida en `U253c-3e`); no se pretende
+ *   completa. Un `WriteStream` ya abierto tampoco: se envuelve
+ *   `createWriteStream`, no el `.write()` del stream que devuelve.
+ *
  * - `createRequire(...)('fs')`. Los hooks del cargador ESM no gobiernan la
  *   resolución CJS. Ese vector lo cubre el parche del objeto CJS que aplica
- *   `correr.mjs` ANTES de importar el objetivo; los dos juntos cierran las
- *   cinco notaciones, y ninguno de los dos lo hace solo.
- * - Escritura desde un proceso hijo, un worker, un addon nativo o un `fs`
- *   alcanzado por índice computado (`fs[nombre]` con `nombre` calculado). Un
- *   índice computado SÍ cae si se hace sobre el default/CJS envuelto; NO cae
- *   si se hace sobre el namespace, porque ahí el envoltorio ya es el valor.
- * - Sólo se envuelven las primitivas de `PRIMITIVAS`. `filehandle.write()` y
- *   los métodos de un `WriteStream` ya abierto no pasan por aquí.
+ *   `correr.mjs` ANTES de importar el objetivo; los dos juntos cubren las
+ *   cinco notaciones de import, y ninguno de los dos lo hace solo.
+ *
+ * - Escritura desde un proceso hijo, un worker o un addon nativo. Nada de eso
+ *   pasa por el cargador de este proceso.
+ *
+ * - MEDIDO, y al revés de lo que decía la primera versión de esta cabecera:
+ *   el ÍNDICE COMPUTADO (`fs[nombre]` con `nombre` calculado) SÍ cae, y cae
+ *   por las tres vías —default, namespace y CJS— precisamente porque lo que
+ *   el importador recibe ya es el envoltorio. Aquella frase afirmaba que el
+ *   namespace se libraba, y además se contradecía a sí misma. Era falsa.
+ *
  * - Mide la LLAMADA, no la TERMINACIÓN. Registra el destino en el momento en
  *   que se invoca la primitiva; una escritura asíncrona queda anotada aunque
  *   aún no haya llegado al disco. Para «no escribe contra X» eso basta y
@@ -55,11 +73,14 @@ const DESVIADOS = {
 };
 
 /**
- * Las primitivas que se envuelven. Es la MISMA lista que ancla el censo
- * estático (`export.test.mjs`), incluida la cara `fs/promises`: si una entra
- * en el censo y no aquí, el censo promete una vigilancia que la sonda no da.
+ * Las primitivas que se envuelven. FUENTE ÚNICA: `correr.mjs` importa ESTA
+ * lista para parchear el objeto CJS, en vez de mantener una copia propia —que
+ * es exactamente lo que había y lo que hacía divergir las dos mitades (8
+ * frente a 15). La invariante «censo ⊆ sonda» se mide en `U253c-3e`: si una
+ * primitiva entra en el censo y no aquí, el censo promete una vigilancia que
+ * la sonda no da.
  */
-const PRIMITIVAS = [
+export const PRIMITIVAS = [
   'writeFileSync',
   'appendFileSync',
   'createWriteStream',
@@ -98,6 +119,13 @@ export async function load(url, contexto, siguiente) {
     (k) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(k) && k !== 'default'
   );
   const envueltos = nombres.filter((n) => PRIMITIVAS.includes(n) && typeof mod[n] === 'function');
+  // `fs.promises` es OTRO objeto: `Object.assign` copiaba el real y lo dejaba
+  // pasar intacto. Medido antes de arreglarlo: `fs.promises.writeFile` escribía
+  // por las CUATRO notaciones sin que la sonda anotase nada. Se envuelve aparte.
+  const enPromises =
+    mod.promises && typeof mod.promises === 'object'
+      ? PRIMITIVAS.filter((n) => typeof mod.promises[n] === 'function')
+      : [];
 
   const lineas = [
     "import { createRequire } from 'node:module';",
@@ -107,22 +135,38 @@ export async function load(url, contexto, siguiente) {
     // El canal de salida vive en `globalThis` y lo instala `correr.mjs` ANTES
     // de registrar los hooks. No se escribe a disco desde aquí: hacerlo con un
     // `fs` ya envuelto se anotaría a sí mismo.
-    'const anota = (prim, args) => { const c = globalThis.__ZEUS_SONDA_FS; if (c) c.anota(ORIGEN, prim, args[0]); };',
+    'const canal = () => globalThis.__ZEUS_SONDA_FS;',
+    'const anota = (prim, args) => { const c = canal(); if (c) c.anota(ORIGEN, prim, args[0]); };',
     'const envuelve = (prim, fn) => function (...args) { anota(prim, args); return fn.apply(this, args); };'
   ];
   for (const n of nombres) {
+    if (n === 'promises' && enPromises.length) continue; // se construye abajo
     lineas.push(
       envueltos.includes(n)
         ? `const $${n} = envuelve(${JSON.stringify(n)}, real[${JSON.stringify(n)}]);`
         : `const $${n} = real[${JSON.stringify(n)}];`
     );
   }
+  if (enPromises.length) {
+    lineas.push(
+      `const $promises = Object.assign({}, real.promises, { ${enPromises
+        .map((n) => `${n}: envuelve(${JSON.stringify(`promises.${n}`)}, real.promises[${JSON.stringify(n)}])`)
+        .join(', ')} });`
+    );
+  }
   lineas.push(`export { ${nombres.map((n) => `$${n} as ${n}`).join(', ')} };`);
   // El default de un builtin CJS es su `module.exports`. Se replica como objeto
   // plano con las primitivas sustituidas: `import fs from 'node:fs'` y
-  // `fs.promises` siguen respondiendo, pero `fs.writeFileSync` ya está envuelta.
+  // `fs.promises` siguen respondiendo, pero ya envueltas las dos caras.
+  const extras = envueltos.map((n) => `${n}: $${n}`);
+  if (enPromises.length) extras.push('promises: $promises');
+  lineas.push(`export default Object.assign({}, real, { ${extras.join(', ')} });`);
+  // Declara lo que REALMENTE envolvió, para que `U253c-3e` pueda exigir que las
+  // dos mitades de la sonda envuelvan lo mismo sin leerse el código fuente.
   lineas.push(
-    `export default Object.assign({}, real, { ${envueltos.map((n) => `${n}: $${n}`).join(', ')} });`
+    `{ const c = canal(); if (c && c.declara) c.declara(ORIGEN, ${JSON.stringify(
+      envueltos
+    )}, ${JSON.stringify(enPromises)}); }`
   );
 
   return { format: 'module', shortCircuit: true, source: lineas.join(NL) };

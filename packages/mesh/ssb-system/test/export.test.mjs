@@ -436,8 +436,30 @@ test('CA-5b · el probe HEREDADO era CIEGO a este escritor; el endurecido lo caz
  * (§WP-U253c-4) puede amputar una y exigir que el ofensor que la usaba quede
  * ciego. Con una sola regex monolítica eso no se puede medir.
  */
-const PRIMITIVAS_DE_ESCRITURA =
-  /\b(writeFileSync|appendFileSync|createWriteStream|rmSync|unlinkSync|renameSync|copyFileSync|truncateSync|writeFile|appendFile|rm|unlink|rename|copyFile|truncate)\b/;
+/**
+ * (3) LA LISTA ES CERRADA, Y ESO NO SE ARREGLA ALARGÁNDOLA. Se enumera como
+ *     array —no como regex a pelo— para que la invariante «censo ⊆ sonda»
+ *     pueda MEDIRSE (`U253c-3e`) en vez de prometerse en un comentario. Lo que
+ *     falta está enumerado y medido en `PRIMITIVAS_QUE_FALTAN` (§U253c-5f).
+ */
+const NOMBRES_DE_PRIMITIVA = [
+  'writeFileSync',
+  'appendFileSync',
+  'createWriteStream',
+  'rmSync',
+  'unlinkSync',
+  'renameSync',
+  'copyFileSync',
+  'truncateSync',
+  'writeFile',
+  'appendFile',
+  'rm',
+  'unlink',
+  'rename',
+  'copyFile',
+  'truncate'
+];
+const PRIMITIVAS_DE_ESCRITURA = new RegExp(`\\b(${NOMBRES_DE_PRIMITIVA.join('|')})\\b`);
 /** @type {{ id: string, re: RegExp, porque: string }[]} */
 const ANCLAS_DE_MANIFIESTO = [
   { id: 'literal', re: /(['"`])volumes\.json\1/, porque: 'el nombre, entrecomillado' },
@@ -472,6 +494,13 @@ const SALTAR_POR_DEFECTO = new Set([
 ]);
 /** Extensiones que el censo mira. Todo lo demás le es invisible. */
 const EXTENSIONES_CENSADAS = /\.(mjs|js|cjs)$/;
+/**
+ * Raíces del repo por las que baja el censo. Compartida a propósito entre
+ * CA-5c (que la usa para censar) y `U253c-5c/5d` (que miden su complemento):
+ * si estuviese duplicada, cambiar las raíces dejaría a la declaración de
+ * ceguera verde y mintiendo.
+ */
+const RAICES_CENSADAS = ['packages', 'scripts', 'e2e'];
 
 /**
  * Recorre un árbol y devuelve las rutas RELATIVAS marcadas por el censo.
@@ -544,8 +573,13 @@ test('CA-5c · repo entero: cada fichero marcado está en la ALLOWLIST, razonado
     // U205: menciona `volumes.json` SOLO para NEGARSE a operar sin él; sus
     // escrituras van a <corpus>/<key>.json y al sidecar del volumen. Descargado
     // por el probe dinámico de CA-5a, que mide la ruta resuelta.
+    // La razón cita `U253c-3c`, NO `CA-5a`: este mismo WP demuestra que CA-5a
+    // pasa VERDE con el manifiesto reescrito (censo de mutación M3), así que
+    // apoyar una entrada de allowlist en ella sería apoyarla en el instrumento
+    // que aquí se prueba falible. `U253c-3c` mide lo mismo sin depender de la
+    // notación de import — y tiene sus propios límites, declarados en §5f.
     'packages/mesh/ssb-system/src/export.mjs':
-      'solo lo nombra para abortar; probe dinámico CA-5a demuestra 0 escrituras contra él',
+      'solo lo nombra para abortar; la sonda por hooks U253c-3c mide 0 escrituras contra él',
     // U206: arnés del CA local-first. SÍ escribe manifiestos, y a propósito:
     // siembra roots TEMPORALES (`mkdtempSync`) y, en sus vectores rojos, edita
     // a mano el `volumes.json` de un root temporal para demostrar que el
@@ -577,10 +611,7 @@ test('CA-5c · repo entero: cada fichero marcado está en la ALLOWLIST, razonado
       'escribe volumes.state.json; el `volumes` literal está en un ejemplo JSON del docstring'
   };
   const marcados = censaArbol({
-    raices: ['packages', 'scripts', 'e2e'].map((dir) => ({
-      abs: path.join(MONOREPO_ROOT, dir),
-      rel: dir
-    }))
+    raices: RAICES_CENSADAS.map((dir) => ({ abs: path.join(MONOREPO_ROOT, dir), rel: dir }))
   });
   assert.deepEqual(marcados.sort(), Object.keys(ALLOWLIST).sort());
 });
@@ -767,9 +798,14 @@ test('U253c-2 · `fs/promises`: el ofensor D escribía el TOKEN y el censo no lo
   // Con la cara `fs/promises` en las primitivas, entra.
   assert.equal(PRIMITIVAS_DE_ESCRITURA.test(D), true);
   assert.equal(marcaEscritorDeManifiesto(D), true);
-  // Y `\bwriteFile\b` no es `writeFileSync` disfrazado: son dos anclas distintas.
-  assert.equal(/\bwriteFileSync\b/.test('await writeFile(p, x);'), false);
-  assert.equal(/\bwriteFile\b/.test('writeFileSync(p, x);'), false);
+  // Y quien lo caza es la cara NUEVA, no un nombre viejo que casara de rebote:
+  // sobre el fuente REAL del ofensor, el nombre que dispara es `writeFile`.
+  assert.equal(D.match(PRIMITIVAS_DE_ESCRITURA)[0], 'writeFile');
+  // Prueba de que no es un solapamiento: quitar SÓLO la cara asíncrona de la
+  // lista vuelve a cegar a D, con el resto de la lista intacta.
+  const soloSincronas = NOMBRES_DE_PRIMITIVA.filter((n) => /Sync$|Stream$/.test(n));
+  assert.ok(soloSincronas.length > 0 && soloSincronas.length < NOMBRES_DE_PRIMITIVA.length);
+  assert.equal(new RegExp(`\\b(${soloSincronas.join('|')})\\b`).test(D), false);
 });
 
 // ── §3 · LA SONDA DINÁMICA Y LA NOTACIÓN DE IMPORT ─────────────────────────
@@ -831,18 +867,33 @@ test('U253c-3a · el monkey-patch de CA-5a sólo ve DOS de las cinco notaciones 
   }
 });
 
-/** Lanza la sonda por hooks en un proceso hijo y devuelve su parte. */
+/**
+ * Lanza la sonda por hooks en un proceso hijo y devuelve su parte.
+ *
+ * El `finally` no es adorno: sin él, un objetivo que llame a `process.exit(0)`
+ * salía con status 0, sin parte, y este arnés reventaba con un `ENOENT` crudo
+ * dejando además el temporal huérfano. Se reprodujo. Ahora el hijo vuelca
+ * siempre (`correr.mjs`, hook de `exit`) y aquí la ausencia de parte se dice
+ * con su nombre y el temporal se borra pase lo que pase.
+ */
 function correSonda(modo, ...args) {
   const dirParte = fs.mkdtempSync(path.join(os.tmpdir(), 'u253c-parte-'));
   const parte = path.join(dirParte, 'parte.json');
-  const r = spawnSync(process.execPath, [CORRER_SONDA, modo, parte, ...args], {
-    encoding: 'utf8'
-  });
-  assert.equal(r.status, 0, `la sonda salió ${r.status}: ${r.stderr || r.stdout}`);
-  const leido = JSON.parse(fs.readFileSync(parte, 'utf8'));
-  fs.rmSync(dirParte, { recursive: true, force: true });
-  assert.equal(leido.ok, true, `la sonda reportó error: ${leido.error}`);
-  return leido;
+  try {
+    const r = spawnSync(process.execPath, [CORRER_SONDA, modo, parte, ...args], {
+      encoding: 'utf8'
+    });
+    assert.equal(r.status, 0, `la sonda salió ${r.status}: ${r.stderr || r.stdout}`);
+    assert.ok(
+      fs.existsSync(parte),
+      `la sonda salió 0 pero NO dejó parte — el objetivo terminó el proceso antes de tiempo. stdout: ${r.stdout}`
+    );
+    const leido = JSON.parse(fs.readFileSync(parte, 'utf8'));
+    assert.equal(leido.ok, true, `la sonda reportó error: ${leido.error}`);
+    return leido;
+  } finally {
+    fs.rmSync(dirParte, { recursive: true, force: true });
+  }
 }
 
 test('U253c-3b · la sonda por HOOKS ve las CINCO notaciones · no depende de ninguna', () => {
@@ -895,9 +946,16 @@ test('U253c-3c · export completo bajo la sonda por HOOKS: 0 escrituras contra e
     // Esta es la afirmación que CA-5a NO podía hacer: el resultado no depende
     // de con qué notación `src/export.mjs` importe `node:fs`. Hoy usa el
     // default; con named, namespace o fs/promises esta sonda mediría igual.
-    // Lo que esta sonda NO promete: mide la LLAMADA, no la TERMINACIÓN.
+    //
+    // Y con mordida: se exige que las DOS mitades hayan estado vivas DURANTE
+    // EL EXPORT REAL, no sólo en la matriz sintética de §3b. Si una se cayera,
+    // el «0 escrituras» de arriba podría ser un cero por ceguera y no por
+    // inocencia — que es exactamente el accidente que este WP demuestra.
     const origenes = new Set(parte.destinos.map((d) => d.origen));
-    assert.ok(origenes.size > 0);
+    assert.ok(origenes.has('fs'), `los hooks ESM no anotaron nada en el export real: ${[...origenes]}`);
+    assert.ok(origenes.has('cjs'), `el parche CJS no anotó nada en el export real: ${[...origenes]}`);
+    // Lo que esta sonda NO promete: mide la LLAMADA, no la TERMINACIÓN, y su
+    // lista de primitivas es cerrada (§5f-5g).
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -906,6 +964,18 @@ test('U253c-3c · export completo bajo la sonda por HOOKS: 0 escrituras contra e
 /**
  * Clasifica cómo un fuente llega a `node:fs`. Es la pregunta que decide si el
  * monkey-patch en proceso de CA-5a puede verlo o no.
+ *
+ * Las cuatro primeras van ANCLADAS a una sentencia `import` a principio de
+ * línea. La versión anterior no anclaba `promises` ni `require`: bastaba un
+ * COMENTARIO que nombrase `'node:fs/promises'` para enrojecer la guarda, o
+ * `createRequire` en cualquier parte del fichero. Se reprodujo y se cerró.
+ *
+ * CEGUERAS DECLARADAS de este clasificador —medidas en `U253c-3f`—: devuelve
+ * `[]` ante `await import('node:fs')` y ante un `createRequire` guardado en un
+ * alias que luego se llame con `'fs'`. La guarda es de NOTACIÓN ESTÁTICA, no
+ * un analizador; con `[]` el fichero desaparece de la tabla declarada y eso
+ * también enrojece `U253c-3d`, que es el comportamiento que se quiere.
+ *
  * @param {string} fuente
  * @returns {string[]} notaciones halladas, ordenadas
  */
@@ -916,8 +986,13 @@ function clasificaNotacionFs(fuente) {
   if (/^\s*import\s*\{[^}]*\}\s*from\s*['"](?:node:)?fs['"]/m.test(fuente)) halladas.add('named');
   if (/^\s*import\s*\*\s*as\s+[A-Za-z_$][\w$]*\s*from\s*['"](?:node:)?fs['"]/m.test(fuente))
     halladas.add('namespace');
-  if (/['"](?:node:)?fs\/promises['"]/.test(fuente)) halladas.add('promises');
-  if (/createRequire\s*\(/.test(fuente) && /['"](?:node:)?fs['"]/.test(fuente))
+  if (/^\s*import\s[^;]*from\s*['"](?:node:)?fs\/promises['"]/m.test(fuente)) halladas.add('promises');
+  // `require` pide las DOS cosas y la llamada con `'fs'` literal como argumento,
+  // no la mera aparición de la cadena en cualquier sitio.
+  if (
+    /^\s*import\s*\{[^}]*\bcreateRequire\b[^}]*\}\s*from\s*['"]node:module['"]/m.test(fuente) &&
+    /\(\s*['"](?:node:)?fs['"]\s*\)/.test(fuente)
+  )
     halladas.add('require');
   return [...halladas].sort();
 }
@@ -957,6 +1032,82 @@ test('U253c-3d · GUARDA: la dependencia de CA-5a sobre la notación queda DECLA
       );
     }
   }
+});
+
+test('U253c-3e · las DOS mitades de la sonda envuelven LA MISMA lista, y contiene al censo', () => {
+  // Medido EN EJECUCIÓN, no leyendo el código: cada mitad declara lo que
+  // realmente envolvió. La divergencia que esto cierra era real —el parche CJS
+  // llevaba 8 nombres y los hooks 15, así que las siete asíncronas estaban
+  // vigiladas por una mitad y no por la otra.
+  const parte = correSonda('listas');
+  const { esm, cjs } = parte.envueltos;
+  const orden = (a) => [...a].sort();
+
+  assert.deepEqual(orden(cjs.fs), orden(esm.fs), 'las dos mitades vigilan `fs` distinto');
+  assert.deepEqual(
+    orden(cjs['fs.promises']),
+    orden(esm['fs.promises']),
+    'las dos mitades vigilan `fs.promises` distinto'
+  );
+  // Y el módulo `node:fs/promises` recibe el mismo trato que la propiedad.
+  assert.deepEqual(orden(esm['fs/promises']), orden(esm['fs.promises']));
+
+  // INVARIANTE «censo ⊆ sonda»: si el censo marca por una primitiva que la
+  // sonda no envuelve, el censo promete una vigilancia que la sonda no da.
+  const sonda = new Set([...esm.fs, ...esm['fs.promises']]);
+  const huerfanas = NOMBRES_DE_PRIMITIVA.filter((n) => !sonda.has(n));
+  assert.deepEqual(huerfanas, [], `el censo ancla primitivas que la sonda no envuelve: ${huerfanas}`);
+});
+
+test('U253c-3f · `fs.promises` (la PROPIEDAD) queda cubierta por las cuatro notaciones', () => {
+  // B2: `Object.assign({}, real, …)` copiaba `promises` intacto, así que
+  // `fs.promises.writeFile` escribía y la sonda no anotaba nada — por las
+  // cuatro notaciones. Es otra puerta que la de `node:fs/promises` (el módulo).
+  const V = {
+    default: "import fs from 'node:fs';\nexport async function escribe(p){ await fs.promises.writeFile(p,'x'); }\n",
+    named:
+      "import { promises } from 'node:fs';\nexport async function escribe(p){ await promises.writeFile(p,'x'); }\n",
+    namespace:
+      "import * as fs from 'node:fs';\nexport async function escribe(p){ await fs.promises.writeFile(p,'x'); }\n",
+    require:
+      "import { createRequire } from 'node:module';\nconst r = createRequire(import.meta.url);\nexport async function escribe(p){ await r('fs').promises.writeFile(p,'x'); }\n"
+  };
+  const dirVictimas = fs.mkdtempSync(path.join(os.tmpdir(), 'u253c-prom-'));
+  const dirDestino = fs.mkdtempSync(path.join(os.tmpdir(), 'u253c-prom-dst-'));
+  try {
+    for (const [n, s] of Object.entries(V)) {
+      fs.writeFileSync(path.join(dirVictimas, `victima-${n}.mjs`), s, 'utf8');
+    }
+    const parte = correSonda('notaciones', dirVictimas, dirDestino);
+    const medido = {};
+    for (const n of Object.keys(V)) {
+      const objetivo = path.resolve(path.join(dirDestino, `victima-${n}.txt`));
+      assert.ok(fs.existsSync(objetivo), `control: ${n} debe haber escrito de verdad`);
+      medido[n] = parte.destinos.some((d) => d.destino === objetivo);
+    }
+    assert.deepEqual(medido, { default: true, named: true, namespace: true, require: true });
+  } finally {
+    fs.rmSync(dirVictimas, { recursive: true, force: true });
+    fs.rmSync(dirDestino, { recursive: true, force: true });
+  }
+});
+
+test('U253c-3g · lo que `clasificaNotacionFs` NO sabe leer, declarado y medido', () => {
+  // (a) Ya NO enrojece por prosa: un comentario que nombre fs/promises o
+  //     createRequire no es una notación de import.
+  const CON_COMENTARIO = [
+    "import fs from 'node:fs';",
+    "// ojo: aquí NO se usa 'node:fs/promises' ni createRequire('fs')",
+    '/* tampoco en un bloque: node:fs/promises */'
+  ].join('\n');
+  assert.deepEqual(clasificaNotacionFs(CON_COMENTARIO), ['default']);
+  // (b) Y lo que sigue sin saber leer: import dinámico y createRequire aliasado.
+  //     Devuelve `[]`, que en `U253c-3d` significa «este fichero desaparece de
+  //     la tabla declarada» — y eso también enrojece. Ciego, pero no en silencio.
+  const DINAMICO = "const fs = await import('node:fs');\nfs.writeFileSync(p, x);";
+  const ALIASADO = "import * as M from 'node:module';\nconst req = M.createRequire(import.meta.url);\nconst fs = req('fs');";
+  assert.deepEqual(clasificaNotacionFs(DINAMICO), []);
+  assert.deepEqual(clasificaNotacionFs(ALIASADO), []);
 });
 
 test('U253c-4a · censo de mutación · cambiar la notación de import pone ROJA la guarda', () => {
@@ -1030,7 +1181,7 @@ import { join } from 'node:path';
 const N = ['v', 'o', 'l', 'u', 'm', 'e', 's'].join('') + String.fromCharCode(46) + 'js' + 'on';
 export function ataca(root, payload) { writeFileSync(join(root, N), payload, 'utf8'); }
 `,
-  'primitiva alcanzada por índice COMPUTADO (su nombre nunca se escribe)': `
+  'el NOMBRE de la primitiva, montado (una de las formas de esquivar la lista)': `
 import fs from 'node:fs';
 import { join } from 'node:path';
 const K = 'write' + 'File' + 'Sync';
@@ -1146,16 +1297,171 @@ if (false) { writeFileSync(join(root, 'volumes.json'), x); }
   // es un defecto del censo: es que no es su pregunta. La pregunta «¿escribió?»
   // la responde la sonda dinámica (§3c); la pregunta «¿ya terminó?» no la
   // responde ninguna de las dos, y no se afirma que la respondan.
-  const raices = ['packages', 'scripts', 'e2e'];
-  const NO_BARRIDAS = fs
+  // Y la ceguera por RAÍZ, medida contra el censo REAL —no contra un listado
+  // de directorios. Se usa `RAICES_CENSADAS`, la misma constante que consume
+  // CA-5c: si mañana alguien le añade una raíz, esta cuenta cambia sola en vez
+  // de quedarse verde declarando una ceguera que ya no existe.
+  const TODAS = fs
     .readdirSync(MONOREPO_ROOT, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && !e.name.startsWith('.') && !raices.includes(e.name))
+    .filter((e) => e.isDirectory() && e.name !== 'node_modules')
     .map((e) => e.name)
     .sort();
-  // Se afirma sólo esto: hay raíces del repo que el censo NO baja, y son estas.
-  assert.ok(NO_BARRIDAS.includes('examples'), 'examples/ no está censado');
-  assert.ok(NO_BARRIDAS.includes('test'), 'test/ del repo no está censado');
-  assert.ok(NO_BARRIDAS.length > 0);
+  const NO_BARRIDAS = TODAS.filter((n) => !RAICES_CENSADAS.includes(n));
+  assert.ok(NO_BARRIDAS.length > 0, 'si no queda ninguna raíz fuera, esta ceguera ya no existe');
+  // Ocultas, no ausentes: hoy ninguna de ellas marca nada, así que la ceguera
+  // está LATENTE. Eso es distinto de «no hay escritores ahí», y la diferencia
+  // se mide: se censan las raíces no barridas y se exige que estén a cero. El
+  // día que una marque, este test lo dice y la declaración deja de ser teórica.
+  const enLoNoBarrido = censaArbol({
+    raices: NO_BARRIDAS.map((n) => ({ abs: path.join(MONOREPO_ROOT, n), rel: n }))
+  });
+  assert.deepEqual(
+    enLoNoBarrido,
+    [],
+    `hay escritores marcables en raíces que el censo NO baja: ${enLoNoBarrido}`
+  );
+  // Control de que la medición tiene mordida: el MISMO recorrido, sobre una
+  // raíz censada, sí encuentra cosas.
+  assert.ok(
+    censaArbol({ raices: [{ abs: path.join(MONOREPO_ROOT, 'packages'), rel: 'packages' }] }).length > 0
+  );
+});
+
+/**
+ * ── LA CEGUERA DE FONDO, con su nombre ────────────────────────────────────
+ *
+ * No es «un índice computado». Es esto:
+ *
+ *     `PRIMITIVAS_DE_ESCRITURA` es una ENUMERACIÓN CERRADA, y está INCOMPLETA.
+ *
+ * `node:fs` tiene más maneras de escribir que nombres hay en esa lista. Cada
+ * una que falta es una puerta con el token del manifiesto A LA VISTA: no hace
+ * falta ninguna astucia de notación, basta usar una primitiva que no esté.
+ *
+ *     Mientras el instrumento sea una lista de nombres, el mutante que evade
+ *     la lista existirá.
+ *
+ * Estas cinco están MEDIDAS: escriben el manifiesto de verdad y ni el censo ni
+ * la sonda las ven. NO se añaden a `NOMBRES_DE_PRIMITIVA`, y es una decisión
+ * razonada: `openSync` aparece por todo el repo y la ALLOWLIST —que es el
+ * mecanismo que hace legible al censo— explotaría. Se declaran en su lugar.
+ */
+const PRIMITIVAS_QUE_FALTAN = {
+  'openSync + writeSync(fd) — reescribe por descriptor': `
+import { openSync, writeSync, closeSync } from 'node:fs';
+import { join } from 'node:path';
+export function ataca(root, payload) {
+  const fd = openSync(join(root, 'volumes.json'), 'w');
+  writeSync(fd, payload); closeSync(fd);
+}
+`,
+  'writevSync(fd, [buf]) — la misma puerta, otro nombre': `
+import { openSync, writevSync, closeSync } from 'node:fs';
+import { join } from 'node:path';
+export function ataca(root, payload) {
+  const fd = openSync(join(root, 'volumes.json'), 'w');
+  writevSync(fd, [Buffer.from(payload)]); closeSync(fd);
+}
+`,
+  'ftruncateSync(fd, 3) — no escribe: DESTRUYE el sello': `
+import { openSync, ftruncateSync, closeSync } from 'node:fs';
+import { join } from 'node:path';
+export function ataca(root) {
+  const fd = openSync(join(root, 'volumes.json'), 'r+');
+  ftruncateSync(fd, 3); closeSync(fd);
+}
+`,
+  'cpSync(origen, manifiesto) — copia encima': `
+import { cpSync } from 'node:fs';
+import { join } from 'node:path';
+export function ataca(root, origen) { cpSync(origen, join(root, 'volumes.json')); }
+`,
+  'filehandle.write() — se envuelve `open`, no el handle': `
+import { open } from 'node:fs/promises';
+import { join } from 'node:path';
+export async function ataca(root, payload) {
+  const fh = await open(join(root, 'volumes.json'), 'w');
+  await fh.write(payload); await fh.close();
+}
+`
+};
+
+test('U253c-5f · la lista de primitivas es CERRADA e INCOMPLETA · cinco puertas medidas', async () => {
+  const semilla = tempRoot('u253c-semilla-');
+  const origen = path.join(semilla, 'origen.json');
+  fs.writeFileSync(origen, '{"copiado":true}\n', 'utf8');
+  try {
+    for (const [nombre, fuente] of Object.entries(PRIMITIVAS_QUE_FALTAN)) {
+      // (a) El TOKEN está a la vista: no es una evasión por nombre de ruta.
+      assert.equal(
+        ANCLAS_DE_MANIFIESTO.some((a) => a.re.test(fuente)),
+        true,
+        `${nombre}: el token debe estar a la vista, si no prueba otra cosa`
+      );
+      // (b) Y aun así el censo no lo marca, porque la primitiva no está en la lista.
+      assert.equal(PRIMITIVAS_DE_ESCRITURA.test(fuente), false, `${nombre}: la primitiva SÍ estaba en la lista`);
+      assert.equal(marcaEscritorDeManifiesto(fuente), false, `${nombre}: ya NO es ceguera — actualiza la lista`);
+      // (c) Y es un escritor vivo: toca el manifiesto de verdad.
+      const root = tempRoot('u253c-falta-');
+      const { mod, limpia } = await cargaModulo(fuente, 'u253c-falta-mod-');
+      try {
+        seedManifest(root);
+        const manifiesto = path.join(root, 'volumes.json');
+        const antes = fs.readFileSync(manifiesto);
+        await mod.ataca(root, nombre.startsWith('cpSync') ? origen : `{"por":"lista"}\n`);
+        assert.notDeepEqual(fs.readFileSync(manifiesto), antes, `${nombre}: no tocó el manifiesto`);
+      } finally {
+        limpia();
+        fs.rmSync(root, { recursive: true, force: true });
+      }
+    }
+  } finally {
+    fs.rmSync(semilla, { recursive: true, force: true });
+  }
+});
+
+test('U253c-5g · y la SONDA está igual de ciega a esas primitivas · medido, no supuesto', () => {
+  // La sonda no tiene coste de falso positivo, pero sigue siendo una LISTA.
+  // Envolver `openSync` pediría además mirar los flags para no anotar lecturas,
+  // y aun así quedarían `writevSync`, el handle y lo que Node añada mañana.
+  // Se mide la ceguera en vez de insinuar que no existe.
+  const VICTIMAS = {
+    'writeSync-fd': `
+import { openSync, writeSync, closeSync } from 'node:fs';
+export function escribe(p) { const fd = openSync(p, 'w'); writeSync(fd, 'x'); closeSync(fd); }
+`,
+    'handle-write': `
+import { open } from 'node:fs/promises';
+export async function escribe(p) { const fh = await open(p, 'w'); await fh.write('x'); await fh.close(); }
+`,
+    // Control positivo: una primitiva que SÍ está en la lista tiene que caer.
+    'control-writeFileSync': `
+import { writeFileSync } from 'node:fs';
+export function escribe(p) { writeFileSync(p, 'x'); }
+`
+  };
+  const dirVictimas = fs.mkdtempSync(path.join(os.tmpdir(), 'u253c-falta-v-'));
+  const dirDestino = fs.mkdtempSync(path.join(os.tmpdir(), 'u253c-falta-d-'));
+  try {
+    for (const [n, s] of Object.entries(VICTIMAS)) {
+      fs.writeFileSync(path.join(dirVictimas, `victima-${n}.mjs`), s, 'utf8');
+    }
+    const parte = correSonda('notaciones', dirVictimas, dirDestino);
+    const medido = {};
+    for (const n of Object.keys(VICTIMAS)) {
+      const objetivo = path.resolve(path.join(dirDestino, `victima-${n}.txt`));
+      assert.ok(fs.existsSync(objetivo), `control: ${n} debe haber escrito de verdad`);
+      medido[n] = parte.destinos.some((d) => d.destino === objetivo);
+    }
+    assert.deepEqual(medido, {
+      'writeSync-fd': false,
+      'handle-write': false,
+      'control-writeFileSync': true
+    });
+  } finally {
+    fs.rmSync(dirVictimas, { recursive: true, force: true });
+    fs.rmSync(dirDestino, { recursive: true, force: true });
+  }
 });
 
 test('U253c-5e · el CRUCE DE PROCESO ciega también a la sonda dinámica, a las dos mitades', () => {

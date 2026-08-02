@@ -8,21 +8,42 @@ el lockfile (verificado por hash, §8).
 
 ---
 
-## 0 · Resumen en cuatro líneas
+## 0 · Resumen, con la tesis corregida
 
 1. El censo estático veía **1 de 5** notaciones de escritura contra el
    manifiesto. La propuesta que estaba escrita (`|resolveManifestPath` en
-   `:397`) subía a **3 de 5**. Ahora ve **5 de 5**.
+   `:397`) subía a **3 de 5**. Ahora ve **5 de 5** de esos vectores.
 2. `PRIMITIVAS_DE_ESCRITURA` era sólo la cara síncrona de `node:fs`. Un
    `writeFile` de `fs/promises` **con el token a la vista** era invisible.
 3. El probe CA-5a de U205 **pasa por accidente**. Se demuestra con un mutante
    que lo deja **VERDE mientras `src/export.mjs` escribe el manifiesto en cada
-   export** (§5, M3). Se cierra por los dos lados: sonda que no depende de la
-   notación **y** guarda que enrojece si la notación cambia.
-4. Lo que el censo sigue sin ver está **enumerado y medido**, no prometido: 6
-   clases de ceguera, cada una con un escritor vivo que la demuestra (§6).
+   export** (§5, M3). Esa es la joya del WP y se sostiene entera.
+4. **Lo que NO se sostiene, y era mío: «se cierra por los dos lados».** La
+   contrarrevisión inyectó un mutante con `openSync`/`writeSync(fd)` que
+   reescribe el manifiesto y **pasa las tres guardas a la vez** —CA-5a, mi
+   sonda por hooks y mi guarda de notación—. Lo reproduje: **47 pass / 0 fail**
+   con el manifiesto reescrito en cada export (§5, M4). La tesis se retira.
+5. La clase real de la ceguera no es «un índice computado». Es ésta:
 
-Suite: **42 pass / 0 fail** (antes de este WP: 27/27). Lint limpio.
+   > **Mientras el instrumento sea una lista de nombres, el mutante que evade
+   > la lista existirá.**
+
+   Lo que sí se puede afirmar tras esta vuelta es que la lista está
+   **declarada, medida y sincronizada** entre censo y sonda (§4.3, §6).
+6. Lo que los instrumentos siguen sin ver está **enumerado y medido**, no
+   prometido: **7** clases de ceguera, cada una con un escritor vivo (§6).
+
+Suite: **47 pass / 0 fail** (antes de este WP: 27/27). Lint limpio.
+
+### Lo que cambió tras la devolución
+
+| # | qué | dónde |
+|---|---|---|
+| B1 | tesis «se cierra por los dos lados» **retirada**; mutante `openSync`/`writeSync` reproducido y declarado | §0.4, §5 M4, §6 |
+| B2 | `fs.promises` (la **propiedad**) ahora envuelta — escribía por las 4 notaciones sin anotarse | `hooks-fs.mjs`, `U253c-3f` |
+| B3 | las dos mitades de la sonda **comparten la lista** (eran 8 vs 15), medido en ejecución | `correr.mjs`, `U253c-3e` |
+| B4 | la ceguera renombrada a **«la lista es cerrada»**, con 5 primitivas ausentes medidas | `U253c-5f`, `U253c-5g` |
+| (c) | la razón de ALLOWLIST de `export.mjs` cita `U253c-3c`, no CA-5a | `export.test.mjs` |
 
 ---
 
@@ -224,6 +245,49 @@ escrituras contra `<root>/volumes.json`, control de que el export **sí** escrib
 conteo es deliberado, silenciar una mitad para evitarlo silenciaría una clase
 entera de notación).
 
+### 4.1.bis · Dos agujeros de la sonda que la contrarrevisión encontró · CERRADOS
+
+**B2 · `fs.promises` no estaba envuelto.** El default se replicaba con
+`Object.assign({}, real, {…envueltos})`, y `promises` no estaba entre los
+envueltos: pasaba el objeto real intacto. Medido con mi propio `correr.mjs`,
+antes del arreglo:
+
+```
+  b2-default   escribio=true  anotado=false
+  b2-named     escribio=true  anotado=false
+  b2-star      escribio=true  anotado=false
+  b2-require   escribio=true  anotado=false
+  b2-modulo    escribio=true  anotado=true      ← sólo el MÓDULO fs/promises
+```
+
+Después (mismo comando, `U253c-3f` lo fija en la suite):
+
+```
+  b2-default   escribio=true  anotado=true
+  b2-named     escribio=true  anotado=true
+  b2-star      escribio=true  anotado=true
+  b2-require   escribio=true  anotado=true
+  b2-modulo    escribio=true  anotado=true
+```
+
+Mi §4.1 decía «da igual con qué notación lo importe». Era falso para la
+**propiedad** `fs.promises`, que es otra puerta distinta del módulo
+`node:fs/promises`. Ahora es cierto para las dos.
+
+**B3 · Las dos mitades vigilaban listas distintas** — 8 nombres en el parche
+CJS frente a 15 en los hooks, con las siete asíncronas cubiertas por una mitad
+y no por la otra. Y mi propio docstring advertía contra exactamente eso. Cerrado
+por construcción: `correr.mjs` **importa** `PRIMITIVAS` de `hooks-fs.mjs` en vez
+de mantener copia. Y no se deja a la buena fe: el modo `listas` hace que cada
+mitad **declare en ejecución** lo que realmente envolvió, y `U253c-3e` exige que
+coincidan y que contengan al censo:
+
+```
+esm.fs            15 nombres  ═  cjs.fs            15 nombres
+esm['fs.promises'] 7 nombres  ═  cjs['fs.promises'] 7 nombres
+invariante «censo ⊆ sonda»: 0 primitivas huérfanas
+```
+
 ### 4.2 · Salida 2 — la dependencia, declarada y guardada
 
 CA-5a se queda **en la suite** (es rápida y en proceso), pero su dependencia deja
@@ -246,19 +310,52 @@ Se declaran los **tres** importadores de `node:fs`, no sólo el que hoy escribe:
 un fichero sin escrituras hoy puede ganar una mañana, y la guarda debe cazar la
 deriva de notación antes que la deriva de comportamiento.
 
+**Y el clasificador tenía dos defectos, corregidos.** `promises` y `require` no
+estaban anclados a una sentencia `import`, así que **un comentario** que
+nombrase `'node:fs/promises'` enrojecía la guarda. Ahora las cinco notaciones se
+anclan a `import` a principio de línea, y `require` exige además una llamada con
+`'fs'` literal como argumento. Sus dos cegueras restantes —`await
+import('node:fs')` y un `createRequire` aliasado— se **declaran y se miden**
+(`U253c-3g`): devuelven `[]`, con lo que el fichero desaparece de la tabla
+declarada y `U253c-3d` enrojece igual. Ciego, pero **no en silencio**.
+
+### 4.3 · Lo que la sonda sigue sin cerrar, y por qué no se cierra alargando la lista
+
+El mutante B1 de la contrarrevisión pasa **las tres** guardas:
+
+```js
+{ const __p = path.join(volumesRoot,'volumes.json'); const __b = fs.readFileSync(__p);
+  const __fd = fs.openSync(__p,'w'); fs.writeSync(__fd,__b); fs.closeSync(__fd); }
+```
+
+Ni `openSync` ni `writeSync` están en las 6 primitivas de CA-5a, ni en las 15 de
+la sonda, ni en el censo; y **no añade ninguna sentencia `import`**, así que la
+guarda de notación sigue leyendo `['default']` y verde.
+
+**No se cierra ensanchando la lista del censo**, y es una decisión razonada:
+`openSync` aparece por todo el repo y la ALLOWLIST —que es el mecanismo que hace
+legible al censo— explotaría. Tampoco basta ensanchar sólo la sonda: envolver
+`openSync` exigiría además mirar los flags para no anotar **lecturas** (el
+export lee el manifiesto legítimamente, y anotarlo volvería `U253c-3c` rojo en
+falso), y aun así quedarían `writevSync`, el `FileHandle` y lo que Node añada
+mañana. Lo que se hace en su lugar es **declararlo y medirlo** (§6, `U253c-5f`
+y `5g`).
+
 ---
 
 ## 5 · CA-4 · Censo de mutación sobre lo entregado
 
 ### 5.1 · Sobre la notación, en el fichero vigilado de verdad
 
-Se muta `src/export.mjs` **en disco**, se corre la suite entera, se restaura.
-Orden (bucle sobre `M1 M2 M3`):
+Se muta `src/export.mjs` **en disco**, se corre la suite entera, se restaura
+desde una copia de respaldo (no con `git checkout`, que se llevaría por delante
+la corrección de §7). Orden (bucle sobre `M0 M1 M2 M3 M4`):
 
 ```
+$ cp $SRC $S/base.mjs
 $ node mutar.mjs $M
 $ npm test -w @zeus/ssb-system 2>&1 | grep -E "^(ok|not ok) (12|22|23) |^# (pass|fail) "
-$ git checkout -- packages/mesh/ssb-system/src/export.mjs
+$ cp $S/base.mjs $SRC
 ```
 
 - `12` = **CA-5a** (la sonda heredada, en proceso)
@@ -271,7 +368,7 @@ $ git checkout -- packages/mesh/ssb-system/src/export.mjs
     ok 12 - CA-5a · POR RUTA DERIVADA: un export completo no escribe NI UNA VEZ en <root>/volumes.json
     ok 22 - U253c-3c · export completo bajo la sonda por HOOKS: 0 escrituras contra el manifiesto
     ok 23 - U253c-3d · GUARDA: la dependencia de CA-5a sobre la notación queda DECLARADA
-    # pass 42
+    # pass 47
     # fail 0
 ```
 
@@ -281,7 +378,7 @@ $ git checkout -- packages/mesh/ssb-system/src/export.mjs
     not ok 12 - CA-5a · POR RUTA DERIVADA: un export completo no escribe NI UNA VEZ en <root>/volumes.json
     ok 22 - U253c-3c · export completo bajo la sonda por HOOKS: 0 escrituras contra el manifiesto
     not ok 23 - U253c-3d · GUARDA: la dependencia de CA-5a sobre la notación queda DECLARADA
-    # pass 39
+    # pass 44
     # fail 3
 ```
 
@@ -297,7 +394,7 @@ manifiesto** — salida literal:
     not ok 12 - CA-5a · POR RUTA DERIVADA: un export completo no escribe NI UNA VEZ en <root>/volumes.json
     not ok 22 - U253c-3c · export completo bajo la sonda por HOOKS: 0 escrituras contra el manifiesto
     not ok 23 - U253c-3d · GUARDA: la dependencia de CA-5a sobre la notación queda DECLARADA
-    # pass 29
+    # pass 34
     # fail 13
 ```
 
@@ -320,7 +417,7 @@ no es la sonda. Distinción que hay que sostener, porque lleva directamente a:
     ok 12 - CA-5a · POR RUTA DERIVADA: un export completo no escribe NI UNA VEZ en <root>/volumes.json
     not ok 22 - U253c-3c · export completo bajo la sonda por HOOKS: 0 escrituras contra el manifiesto
     not ok 23 - U253c-3d · GUARDA: la dependencia de CA-5a sobre la notación queda DECLARADA
-    # pass 39
+    # pass 44
     # fail 3
 ```
 
@@ -332,9 +429,39 @@ no es la sonda. Distinción que hay que sostener, porque lleva directamente a:
 >
 > «Funciona por accidente» no es una sospecha: es un mutante ejecutable.
 
+**M4 · el mutante de la contrarrevisión (B1): `openSync`/`writeSync(fd)`, bytes
+idénticos, sin una sola sentencia `import` nueva** — salida literal:
+
+```
+    ok 12 - CA-5a · POR RUTA DERIVADA: un export completo no escribe NI UNA VEZ en <root>/volumes.json
+    ok 22 - U253c-3c · export completo bajo la sonda por HOOKS: 0 escrituras contra el manifiesto
+    ok 23 - U253c-3d · GUARDA: la dependencia de CA-5a sobre la notación queda DECLARADA
+    # pass 47
+    # fail 0
+```
+
+Testigo **independiente de los tres instrumentos** (`statSync` + sha256), mismo
+export, con y sin M4:
+
+```
+=== SIN MUTAR ===
+mtime movido = false      sha igual = true
+=== CON M4 ===
+mtime movido = true       sha igual = true      ← el manifiesto SE REESCRIBE
+```
+
+> **Y esto tumba mi tesis, no la del encargo.** Escribí «se cierra por los dos
+> lados». **No se cierra.** M4 es M3 un nivel más abajo: la misma clase de
+> accidente, evadiendo ahora también los instrumentos que yo traía. Lo he
+> reproducido en mi propio árbol y lo dejo escrito aquí arriba, no en una nota
+> al pie. Lo que sí queda cerrado es M1-M3; lo que queda **declarado y medido**
+> es M4 (§4.3 y §6, `U253c-5f`/`5g`).
+
 Restauración verificada tras cada vuelta:
-`sha256(src/export.mjs) = 608f9f45358125cc497c4d4dd51a161466a2321ac2f900f351fc535f508cfc44`,
-igual que antes de empezar, y `git status` limpio para `src/`.
+`sha256(src/export.mjs) = 2a3846657f06e5a7ad06a20c7abdbe5a7079a19c73856280e3a1787481f1723e`,
+igual que antes de empezar. (El hash difiere del de la primera vuelta porque §7
+corrige ahora una frase de la cabecera; por eso el bucle restaura desde copia y
+no con `git checkout`.)
 
 ### 5.2 · Sobre el censo mismo, dentro de la suite
 
@@ -359,25 +486,68 @@ Enumerado **y medido**. Cada ceguera es un escritor real del manifiesto que el
 censo vigente no marca; el test exige que **siga siendo invisible**, de modo que
 si un día deja de serlo, la lista se entera.
 
-| # | ceguera | medida en | escritor vivo |
+| # | ceguera | medida en | ciega también a la sonda |
 |---|---|---|:--:|
-| 1 | nombre montado **sin ningún literal** (`['v','o',…].join('')`) | `U253c-5a` | sí |
-| 2 | primitiva por **índice computado** (`fs['write'+'File'+'Sync']`) | `U253c-5a` | sí |
+| **0** | **la LISTA DE PRIMITIVAS es una enumeración CERRADA e INCOMPLETA** | `U253c-5f`, `5g` | **sí** |
+| 1 | el **nombre de la ruta** montado sin ningún literal (`['v','o',…].join('')`) | `U253c-5a` | no |
+| 2 | el **nombre de la primitiva** montado (`fs['write'+'File'+'Sync']`) — una de las formas de esquivar la lista | `U253c-5a` | no |
 | 3 | **cruce de proceso** (`execFileSync(node, ['-e', …])`) | `U253c-5a`, `5e` | sí |
-| 4 | **reparto entre ficheros**: uno tiene el nombre, otro la primitiva | `U253c-5b` | sí |
-| 5 | **alcance**: `test/ tests/ __tests__/ fixtures/ dist/ node_modules/` y `.ts .mts .cts .jsx .tsx` | `U253c-5c` | sí |
+| 4 | **reparto entre ficheros**: uno tiene el nombre, otro la primitiva | `U253c-5b` | n/a |
+| 5 | **alcance**: dirs saltados, extensiones y raíces no barridas | `U253c-5c`, `5d` | n/a |
 | 6 | **naturaleza estática**: no sabe si la línea corre, ni cuándo termina | `U253c-5d` | n/a |
 
-Detalles que no conviene suavizar:
+**(0) es la de fondo, y es nueva en esta vuelta.** No es «un índice computado»:
+es que `node:fs` tiene más maneras de escribir que nombres hay en la lista, y
+cada una que falta es una puerta **con el token del manifiesto a la vista**.
+Cinco medidas en `U253c-5f`, todas escritoras vivas del manifiesto y todas
+invisibles al censo:
 
-- **(4) es la más grande.** El censo es co-ocurrencia **por fichero**. Partir el
-  ofensor en dos módulos —uno que sabe el nombre y no escribe, otro que escribe y
-  no sabe el nombre— lo hace invisible **sin ninguna astucia de notación**.
-  Cerrarlo pide análisis de flujo de datos, que este censo no hace y no promete.
+| primitiva ausente | qué hace |
+|---|---|
+| `openSync` + `writeSync(fd)` | reescribe por descriptor — **es el mutante B1** |
+| `writevSync(fd, [buf])` | la misma puerta, otro nombre |
+| `ftruncateSync(fd, 3)` | no escribe: **destruye el sello** |
+| `cpSync(origen, manifiesto)` | copia encima |
+| `filehandle.write()` | se envuelve `open`, no el handle que devuelve |
+
+Y `U253c-5g` mide que **la sonda está igual de ciega** a ellas, con control
+positivo (una primitiva que sí está en la lista tiene que caer):
+
+```
+  writeSync-fd           escribio=true   anotado=false
+  handle-write           escribio=true   anotado=false
+  control-writeFileSync  escribio=true   anotado=true
+```
+
+> **Mientras el instrumento sea una lista de nombres, el mutante que evade la
+> lista existirá.**
+
+No se cierra alargando la lista del censo (§4.3): `openSync` está por todo el
+repo y la ALLOWLIST explotaría. Lo que sí se puede afirmar es que la lista está
+**declarada, medida y sincronizada** entre censo y sonda (`U253c-3e`).
+
+Los demás detalles, que tampoco conviene suavizar:
+
+- **(4) es la más grande de las clásicas.** El censo es co-ocurrencia **por
+  fichero**. Partir el ofensor en dos módulos —uno que sabe el nombre y no
+  escribe, otro que escribe y no sabe el nombre— lo hace invisible **sin ninguna
+  astucia de notación**, y sigue invisible aunque el escritor **importe
+  explícitamente** al módulo que sabe el nombre. Cerrarlo pide análisis de flujo
+  de datos, que este censo no hace y no promete.
 - **(5)** se mide sobre un árbol **sintético** con el mismo recorrido que usa
-  CA-5c, con control positivo: el mismo fichero, en un sitio censado, sí sale.
-  Y el censo sólo baja por `packages/`, `scripts/` y `e2e/`: `examples/`,
-  `test/` del repo, `data/` y `sincronia/` no están censados.
+  CA-5c, con control positivo. Las raíces no barridas ya no se declaran a ojo:
+  `U253c-5d` comparte con CA-5c la constante `RAICES_CENSADAS` y **censa el
+  complemento entero**, exigiendo que esté a cero. Hoy lo está, así que la
+  ceguera es **latente**, no activa. Lista completa medida:
+
+  ```
+  raices censadas   : packages scripts e2e
+  raices NO barridas: .changeset .github .vscode VOLUMES data docs examples plan sincronia test
+  ```
+
+  (Mi versión anterior nombraba cuatro y omitía seis; y el test medía el
+  **listado de directorios**, no el censo — habría seguido verde mintiendo si
+  CA-5c cambiase sus raíces.)
 - **(6)** un fichero marcado puede no escribir **nunca** — por eso la ALLOWLIST
   existe y tres de sus nueve entradas son falsos positivos razonados.
 - **(3) ciega también a la sonda dinámica** (`U253c-5e`): ni los hooks ESM ni el
@@ -388,7 +558,8 @@ Detalles que no conviene suavizar:
 la **llamada**, no la **terminación**. Anota el destino en el momento de invocar
 la primitiva. Para «no escribe contra X» eso basta y sobra —anotar de más nunca
 pierde un ofensor—; para «ya terminó de escribir» **no sirve, y no se afirma**.
-Tampoco cubre `filehandle.write()` ni los métodos de un `WriteStream` ya abierto.
+Tampoco cubre `filehandle.write()` ni el `.write()` de un `WriteStream` ya
+abierto (se envuelve `createWriteStream`, no el stream que devuelve).
 
 ---
 
@@ -405,11 +576,19 @@ Tampoco cubre `filehandle.write()` ni los métodos de un `WriteStream` ya abiert
 posterior a esa prosa. Es la razón por la que los ofensores A y B pueden importar
 `resolveManifestPath` sin ninguna ruta relativa ni dep fantasma.
 
-**No lo he tocado**, y a propósito: corregir esa frase obliga a decidir si este
-exportador debe pasar a llamar `recordVolumeSync` como hace feed-kit —que es
-justamente lo que el párrafo dejaba pendiente para «cuando volumes-ops sea
-dependencia declarable»—, y eso es una decisión de diseño de U205/U204, no una
-errata. Queda **declarado aquí** para quien decida.
+**CORREGIDO en esta vuelta, y la frontera se estrecha a lo que de verdad es una
+decisión.** En la primera entrega no lo toqué alegando que corregirlo obligaba a
+decidir sobre `recordVolumeSync`. La contrarrevisión tiene razón: **no obligaba**.
+Sólo la última frase del párrafo («cuando volumes-ops sea dependencia declarable,
+este exportador puede llamar a `recordVolumeSync`») toca la decisión; el resto es
+un **hecho** que había caducado y que vivía a cinco líneas del código cuyo propio
+test lo desmiente. Ensanché la frontera para no tocar nada, y eso es dejar prosa
+falsa en pie con una excusa.
+
+Lo entregado: la cabecera dice ahora que aquello era cierto **cuando se escribió**
+y marca con `✎ WP-U253c` que ya no lo es, citando el commit. La **decisión** queda
+explícitamente abierta y sin dueño aquí: «es de U204/U205, no de U253c, que sólo
+mide guardas». Es el único cambio en `src/`, y es un comentario.
 
 ---
 
@@ -432,29 +611,43 @@ Suite y lint:
 
 ```
 $ npm test -w @zeus/ssb-system
-# tests 42
-# pass 42
+# tests 47
+# pass 47
 # fail 0
 
-$ npx --no-install eslint packages/mesh/ssb-system/test/
-(sin salida — 0 errores, 0 avisos en los tres ficheros)
+$ npx --no-install eslint packages/mesh/ssb-system/
+(sin salida — 0 errores, 0 avisos)
 ```
 
-> **`npx` declarado**, como pide el encargo: una sola invocación,
-> `npx --no-install eslint …`, con `--no-install` para que no pueda descargar
-> nada. Es el mismo binario que usa `npm run lint` de la raíz (`"lint": "eslint ."`).
+> **`npx` declarado**, como pide el encargo: `npx --no-install eslint …`, con
+> `--no-install` para que no pueda descargar nada. Es el mismo binario que usa
+> `npm run lint` de la raíz (`"lint": "eslint ."`).
+
+**Residuo cerrado (menor de la devolución).** `correSonda` creaba su temporal
+sin `finally` y `correr.mjs` volcaba sin `try/finally`: una víctima que llamase
+`process.exit(0)` dejaba status 0, `ENOENT parte.json` crudo y temporal
+huérfano. Reproducido y cerrado por los dos lados —hook de `exit` en el hijo,
+`finally` en el arnés—. Comprobación:
+
+```
+status hijo = 0
+parte SI existe · ok=false · error="el objetivo terminó el proceso antes de que
+la sonda volcara su parte" · destinos=2
+```
 
 Diff final:
 
 ```
- M packages/mesh/ssb-system/test/export.test.mjs   (+737 / -19)
-?? packages/mesh/ssb-system/test/probe/            (2 ficheros nuevos)
+ packages/mesh/ssb-system/src/export.mjs           |  27 +-   (sólo cabecera, §7)
+ packages/mesh/ssb-system/test/export.test.mjs     | 368 +-
+ packages/mesh/ssb-system/test/probe/correr.mjs    |  84 +-
+ packages/mesh/ssb-system/test/probe/hooks-fs.mjs  |  74 +-
 ```
 
-Los dos ficheros nuevos viven en `test/probe/`, un subdirectorio: el script de
-test es `node --test test/*.mjs`, que **no** baja a subdirectorios, así que no
-se ejecutan como suites sueltas — se invocan como proceso hijo desde
-`export.test.mjs`. Verificado: 42 tests, ninguno huérfano.
+Los dos ficheros de `test/probe/` viven en un subdirectorio: el script de test
+es `node --test test/*.mjs`, que **no** baja a subdirectorios, así que no se
+ejecutan como suites sueltas — se invocan como proceso hijo desde
+`export.test.mjs`. Verificado: 47 tests, ninguno huérfano.
 
 Nada fuera del worktree. Sin `git push`, sin `git stash`, sin tocar
 `plan/BACKLOG.md`, `VOLUMES/**`, `package.json` raíz, el lockfile ni
@@ -464,16 +657,42 @@ Nada fuera del worktree. Sin `git push`, sin `git stash`, sin tocar
 
 ## 9 · Frases que NO se pueden sostener, y por eso no están
 
+- ❌ **«se cierra por los dos lados».** Era mía y **se retira**: el mutante M4
+  (`openSync`/`writeSync(fd)`, bytes idénticos, sin `import` nuevo) pasa las
+  tres guardas y deja la suite en 47/47 con el manifiesto reescrito. Lo que se
+  cierra son M1-M3 y las cinco notaciones de import; M4 queda **declarado y
+  medido**, no cerrado.
+- ❌ **«da igual con qué notación lo importe» (sonda)**. Era falso para la
+  propiedad `fs.promises`, que escribía por las cuatro notaciones sin anotarse
+  (B2). Ahora es cierto para el módulo `node:fs/promises` **y** para la
+  propiedad — dentro de la lista de primitivas, que es cerrada.
 - ❌ «al censo la notación le es indiferente». Le es indiferente **cómo se
   nombre** la ruta sólo dentro de las cuatro anclas declaradas; fuera de ellas
-  (cegueras 1 y 4) no ve nada. Y la **primitiva** también tiene que aparecer con
-  su nombre: ceguera 2.
-- ❌ «la sonda por hooks ve todas las escrituras». Ve las de **su proceso** y las
-  de las **primitivas envueltas**. Ceguera 3 y `filehandle.write()`.
+  (cegueras 1 y 4) no ve nada.
+- ❌ **«la primitiva tiene que aparecer con su nombre: es la ceguera del índice
+  computado».** Esa era la descripción pequeña de un problema grande. La clase
+  real es que **la lista de primitivas es una enumeración cerrada e incompleta**
+  (ceguera 0), y el índice computado es sólo una de las formas de esquivarla.
+- ❌ «la sonda por hooks ve todas las escrituras». Ve las de **su proceso** y
+  sólo las de las **primitivas de su lista**. Cegueras 0 y 3.
 - ❌ «CA-5a estaba mal». Estaba **bien y era insuficiente**: mide por ruta
   resuelta, que es lo correcto; lo que no podía era alcanzar tres de las cinco
   notaciones, y eso no estaba dicho en ninguna parte.
 - ❌ «ahora el manifiesto está protegido». Lo que hay es un censo con **cinco
-  vectores cazados y seis cegueras declaradas**, y una sonda que ya no depende de
-  cómo importe un tercero. La protección real sigue siendo que
-  `sealManifest` sea el único escritor; esto sólo mide si esa afirmación aguanta.
+  vectores cazados y siete cegueras declaradas**, y una sonda que ya no depende
+  de cómo importe un tercero pero sigue siendo una lista de nombres. La
+  protección real sigue siendo que `sealManifest` sea el único escritor; esto
+  sólo mide si esa afirmación aguanta, y ahora se sabe **hasta dónde** mide.
+
+---
+
+## 10 · La frase que se lleva este WP
+
+> **Mientras el instrumento sea una lista de nombres, el mutante que evade la
+> lista existirá.**
+
+Es de la contrarrevisión y es la mejor del bloque. Está escrita en tres sitios
+además de aquí: la cabecera de `hooks-fs.mjs`, el bloque
+`PRIMITIVAS_QUE_FALTAN` de `export.test.mjs` y §0.5 — porque el sitio donde hace
+falta leerla es justo antes de que alguien ensanche una lista creyendo que con
+eso cierra algo.
