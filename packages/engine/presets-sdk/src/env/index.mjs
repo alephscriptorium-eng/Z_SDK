@@ -171,10 +171,11 @@ export function uiPortEnvChain(uiId) {
 /** App id → override var (UI slots plus the debug MCP HTTP port). */
 const APP_PORT_ENV = { ...UI_PORT_ENV, debug: 'ZEUS_PORT_PLAYER_DEBUG' };
 
-/** Spec tooling defaults (AsyncAPI Studio + VitePress docs + MCP Inspector). */
+/** Spec tooling defaults (AsyncAPI Studio + VitePress docs + MCP Inspector + package map). */
 export const DEFAULT_SPEC_TOOL_PORTS = {
   studio: 3210,
   docs: 3230,
+  packageMap: 3240,
   inspector: 6274,
   inspectorProxy: 6277
 };
@@ -182,6 +183,7 @@ export const DEFAULT_SPEC_TOOL_PORTS = {
 export const SPEC_TOOL_PORT_ENV = {
   studio: 'ZEUS_PORT_SPEC_STUDIO',
   docs: 'ZEUS_PORT_DOCS',
+  packageMap: 'ZEUS_PORT_PACKAGE_MAP',
   inspector: 'ZEUS_PORT_INSPECTOR',
   inspectorProxy: 'ZEUS_PORT_INSPECTOR_PROXY'
 };
@@ -524,6 +526,7 @@ export function resolveSpecToolPorts(base = DEFAULT_SPEC_TOOL_PORTS) {
   return {
     studio: readEnvPort(SPEC_TOOL_PORT_ENV.studio, base.studio),
     docs: readEnvPort(SPEC_TOOL_PORT_ENV.docs, base.docs),
+    packageMap: readEnvPort(SPEC_TOOL_PORT_ENV.packageMap, base.packageMap),
     inspector: readEnvPort(SPEC_TOOL_PORT_ENV.inspector, base.inspector),
     inspectorProxy: readEnvPort(SPEC_TOOL_PORT_ENV.inspectorProxy, base.inspectorProxy)
   };
@@ -549,6 +552,9 @@ export const SPEC_TOOL_PORTS = Object.freeze({
   },
   get docs() {
     return readEnvPort(SPEC_TOOL_PORT_ENV.docs, DEFAULT_SPEC_TOOL_PORTS.docs);
+  },
+  get packageMap() {
+    return readEnvPort(SPEC_TOOL_PORT_ENV.packageMap, DEFAULT_SPEC_TOOL_PORTS.packageMap);
   },
   get inspector() {
     return readEnvPort(SPEC_TOOL_PORT_ENV.inspector, DEFAULT_SPEC_TOOL_PORTS.inspector);

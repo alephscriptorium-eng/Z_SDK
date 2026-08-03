@@ -3,6 +3,7 @@
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import express from 'express';
+import { resolveSpecToolPorts, resolveZeusHost } from '@zeus/presets-sdk/env';
 import { buildPackageCatalog } from './catalog.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -10,8 +11,8 @@ const publicDir = path.join(packageDir, 'public');
 const packagesRoot = path.resolve(packageDir, '../..');
 
 export async function createPackageMapServer(options = {}) {
-  const port = options.port ?? Number(process.env.ZEUS_PORT_PACKAGE_MAP || 3021);
-  const host = options.host ?? process.env.ZEUS_HOST ?? 'localhost';
+  const port = options.port ?? resolveSpecToolPorts().packageMap;
+  const host = options.host ?? resolveZeusHost();
   const app = express();
   const catalog = await buildPackageCatalog(packagesRoot);
 

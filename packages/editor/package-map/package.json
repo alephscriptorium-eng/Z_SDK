@@ -13,6 +13,7 @@
     "ui": "package-map"
   },
   "dependencies": {
+    "@zeus/presets-sdk": "*",
     "express": "^5.2.1"
   },
   "private": true

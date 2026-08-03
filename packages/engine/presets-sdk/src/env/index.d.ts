@@ -112,12 +112,14 @@ export function resolvePrensaBaseUrl(fallback?: string): string;
 export function resolveSpecToolPorts(base?: typeof DEFAULT_SPEC_TOOL_PORTS): {
   studio: number;
   docs: number;
+  packageMap: number;
   inspector: number;
   inspectorProxy: number;
 };
 export const SPEC_TOOL_PORTS: {
   studio: number;
   docs: number;
+  packageMap: number;
   inspector: number;
   inspectorProxy: number;
 };
