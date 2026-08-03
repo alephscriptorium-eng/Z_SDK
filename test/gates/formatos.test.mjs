@@ -884,7 +884,7 @@ test('la ley SIGUE ATADA a la suite: `conservacion.mjs` no casa con el glob de C
   const suites = fs.readdirSync(dir).filter((f) => f.endsWith('.test.mjs'));
   assert.ok(suites.length >= 4, `suites sospechosamente pocas: ${suites.length}`);
   const importan = suites.filter((f) =>
-    /from\s+['`\"]\.\/conservacion\.mjs['`\"]/.test(fs.readFileSync(path.join(dir, f), 'utf8'))
+    /from\s+['`"]\.\/conservacion\.mjs['`"]/.test(fs.readFileSync(path.join(dir, f), 'utf8'))
   );
   assert.ok(
     importan.length >= 1,

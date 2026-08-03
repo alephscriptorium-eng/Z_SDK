@@ -205,6 +205,38 @@ $ node <scratchpad>/u269-b3.mjs            ->  0 de 10 pierde vs main
 $ node <scratchpad>/u269-b5.mjs            ->  0 de 4 pierde vs main
 $ node <scratchpad>/u269-w-b7.mjs          ->  0 de 6 pierde vs main
 $ node <scratchpad>/u269-w-b9.mjs          ->  0 de 12 pierde vs main
+$ node <scratchpad>/u269-w-c1.mjs         ->  0 de 6 pierde vs main (1 limite declarado)
+```
+
+### Sobre el LINT, que es donde me equivoque
+
+`npm run lint` **no se puede correr en esta maquina**: no hay `node_modules` y
+`eslint` no existe. La orden sale con **RC=1** y «eslint no se reconoce» — no es un
+verde, es una orden que no se ejecuto. En la entrega anterior lo di por
+comprobado, y CI encontro dos errores mios de `no-useless-escape`.
+
+Lo que SI pude medir, y COMO SE que se midio de verdad:
+
+```
+$ ESLINT_USE_FLAT_CONFIG=true node <v-sdk>/node_modules/eslint/bin/eslint.js \
+    --config <scratchpad>/u269-w-eslint.config.mjs <mis ficheros>
+RC=0   (salida vacia)
+
+CONTROL POSITIVO - con el bug reintroducido a proposito:
+RC=1
+  887:16  error  Unnecessary escape character  no-useless-escape
+  887:43  error  Unnecessary escape character  no-useless-escape
+```
+
+El control positivo reproduce **las dos mismas posiciones que reporto CI**, asi
+que la regla corrio de verdad. Barrido de todo el arbol `.mjs`: **cero**
+`no-useless-escape`.
+
+**Lo que esto NO es: el lint del repo.** Se toma prestado `eslint` **8.57.1** de
+otro arbol —el repo declara `^9.39.1`— y con una config minima de UNA regla, no
+con `eslint.config.mjs` (que necesita `@eslint/js`, ausente). Un fichero del arbol
+ni siquiera parsea con la version 8 (`import … with`), y no es mio. **Cubre la
+clase de error que CI marco, no el lint entero.**
 ```
 
 ---
