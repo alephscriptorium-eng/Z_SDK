@@ -4,14 +4,36 @@
   "description": "Barrio acta kit: ActaDeBarrio v1 emit/adopt via plaza ledger. Pure; no LLM; no new channel.",
   "type": "module",
   "main": "src/index.mjs",
+  "types": "./types/index.d.ts",
   "exports": {
-    ".": "./src/index.mjs",
-    "./tipos": "./src/tipos.mjs",
-    "./emitir": "./src/emitir.mjs",
-    "./validar": "./src/validar.mjs",
-    "./publicar": "./src/publicar.mjs",
-    "./adoptar": "./src/adoptar.mjs",
-    "./huella": "./src/huella.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./tipos": {
+      "types": "./types/tipos.d.ts",
+      "default": "./src/tipos.mjs"
+    },
+    "./emitir": {
+      "types": "./types/emitir.d.ts",
+      "default": "./src/emitir.mjs"
+    },
+    "./validar": {
+      "types": "./types/validar.d.ts",
+      "default": "./src/validar.mjs"
+    },
+    "./publicar": {
+      "types": "./types/publicar.d.ts",
+      "default": "./src/publicar.mjs"
+    },
+    "./adoptar": {
+      "types": "./types/adoptar.d.ts",
+      "default": "./src/adoptar.mjs"
+    },
+    "./huella": {
+      "types": "./types/huella.d.ts",
+      "default": "./src/huella.mjs"
+    }
   },
   "scripts": {
     "test": "node --test test/*.test.mjs"
@@ -28,6 +50,7 @@
   },
   "files": [
     "src",
+    "types",
     "README.md"
   ],
   "private": false

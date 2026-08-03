@@ -4,20 +4,38 @@
   "description": "Unified feed families (static / stream / gossip) for games: synthetic + MCP real + jetstream→DISK_01 sync",
   "type": "module",
   "main": "src/index.mjs",
+  "types": "./types/index.d.ts",
   "exports": {
-    ".": "./src/index.mjs",
-    "./families": "./src/families.mjs",
-    "./synthetic": "./src/synthetic.mjs",
-    "./resolve": "./src/resolve.mjs",
-    "./mcp": "./src/mcp-client.mjs",
-    "./jetstream": "./src/jetstream-sync.mjs"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./families": {
+      "types": "./types/families.d.ts",
+      "default": "./src/families.mjs"
+    },
+    "./synthetic": {
+      "types": "./types/synthetic.d.ts",
+      "default": "./src/synthetic.mjs"
+    },
+    "./resolve": {
+      "types": "./types/resolve.d.ts",
+      "default": "./src/resolve.mjs"
+    },
+    "./mcp": {
+      "types": "./types/mcp.d.ts",
+      "default": "./src/mcp-client.mjs"
+    },
+    "./jetstream": {
+      "types": "./types/jetstream.d.ts",
+      "default": "./src/jetstream-sync.mjs"
+    }
   },
   "bin": {
     "zeus-feed-jetstream-sync": "./bin/jetstream-sync.mjs"
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs",
-    "sync:jetstream": "node bin/jetstream-sync.mjs"
+    "test": "node --test test/*.test.mjs"
   },
   "license": "SEE LICENSE IN LICENSE.md",
   "zeus": {
@@ -34,6 +52,7 @@
   },
   "files": [
     "src",
+    "types",
     "bin",
     "README.md"
   ]
