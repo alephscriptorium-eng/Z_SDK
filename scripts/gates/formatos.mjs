@@ -984,6 +984,26 @@ export function camposDeCodigo(texto) {
     let k = fin - 1;
     while (k >= 0 && /\s/.test(texto[k])) k -= 1;
     if (k < 0) return '';
+    // LIGA A TRAVÉS DE UN SIGNO UNARIO. Sin esto, `api_key = -123…` y
+    // `= +123…` consumían el literal sin ligarlo a ningún nombre, así que la
+    // rama del número emitía CONDICIONALMENTE (WP-U269 · C1).
+    //
+    // Un `-` BINARIO no cuela por esto: en `x = a - 123…` se salta el `-` y lo
+    // que aparece detrás es el operando `a`, que no es `:` ni `=`, así que no
+    // liga. Lo que se salta es sintaxis que precede al literal, no un operando.
+    //
+    // EL `[` DE APERTURA NO SE SALTA, y la decisión está MEDIDA, no supuesta:
+    // saltarlo recupera una cuarta forma (`api_key = [123…]`) pero cuesta un
+    // falso positivo real sobre este árbol —`const SEMILLAS = ['REPO_ROOT', …]`
+    // en `test/gates/arbol-inmutable.test.mjs`, donde `SEMILLAS` es léxico de
+    // identidad en castellano y el primer elemento del array pasa a colgar de
+    // él—. El signo sale gratis; el corchete no. Se cierra lo gratis y se
+    // declara lo demás (§C1 del reporte).
+    while (k >= 0 && (texto[k] === '-' || texto[k] === '+')) {
+      k -= 1;
+      while (k >= 0 && /\s/.test(texto[k])) k -= 1;
+    }
+    if (k < 0) return '';
     // PLANTILLA ETIQUETADA (``tag`…` ``): entre el `=` y el literal hay un
     // identificador de etiqueta. Sin saltarlo, el literal se quedaba sin nombre
     // y la fuga se perdía —familia 3 de B9—. Una plantilla etiquetada sigue

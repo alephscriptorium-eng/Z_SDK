@@ -28,18 +28,17 @@ lista de formas.
 ```
 $ node <scratchpad>/densidad.mjs C:/S_LAB/wt/z-u269 --detalle
 
-ANTES  (detector de U231, de main)   1763 trackeados · HALLAZGOS: 140 en 77 ficheros
-DESPUÉS (con analizadores)           1763 trackeados · HALLAZGOS:  93 en 51 ficheros
+ANTES  (detector de U231, de main)   1763 trackeados · HALLAZGOS: 145 en 77 ficheros
+DESPUÉS (con analizadores)           1763 trackeados · HALLAZGOS:  98 en 51 ficheros
 ```
 
-**140 → 93.** Bruto: **50 se van, 3 llegan** — y los 3 son exactamente los tres
+**145 → 98.** Bruto: **50 se van, 3 llegan** — y los 3 son exactamente los tres
 declarados desde la 2.ª vuelta (una constante de VERSIÓN con `CREDENCIAL` en el
 nombre, un `token_env` cuyo valor es el NOMBRE de una variable de entorno, un
 `approvalToken` de fixture).
 
-`main` sube de 135 a 140 y no es que `main` cambie: **son cinco líneas de mi
-propio fichero de test**, que crece con los vectores de B9. Los ficheros del WP
-aportan 17 hallazgos al recuento de `main` y 15 al mío.
+`main` sube de 135 a 145 y no es que `main` cambie: **son líneas de mi propio
+fichero de test**, que crece con los vectores de B9. Los ficheros del WP aportan **22** hallazgos al recuento de `main` y **20** al mío.
 
 *(Corrección de la vuelta anterior: dije «+5 y las cinco las señala main». El
 bruto real que mediste era 12 nuevas y 7 que se iban, con 12 de 12 en líneas que
@@ -69,7 +68,12 @@ PIERDE vs main: 0 de 12
 > lanza. Ninguna consume y calla** — salvo las que declaran, con su nombre y su
 > motivo, que lo que consumen no es dato.
 
-Las **nueve** ramas del bucle de `camposDeCodigo`, con su desenlace:
+**OCHO ramas** de primer nivel —siete `if` mas la caida final— con **DIEZ
+desenlaces**, porque dos se bifurcan: la `/` en expresion regular o division, y
+la corrida alfanumerica en numero o identificador. *(La quinta version de esta
+tabla decia «nueve ramas» y listaba diez filas; en un documento cuya tesis es
+«enumere la superficie entera», el numero y la lista tienen que cuadrar. El
+recuento lo fija ahora un test sobre el fuente, no mi cuenta — m17.)*
 
 | rama | consume | desenlace |
 |---|---|---|
@@ -80,7 +84,7 @@ Las **nueve** ramas del bucle de `camposDeCodigo`, con su desenlace:
 | `/` expresión regular (heurística dice sí) | el literal | **OPACO**, o **LANZA** si no cierra |
 | `/` división (heurística dice no) | 1 carácter | **OPACO** el tramo hasta la siguiente `/` de la línea ← **familia 1** |
 | `"` `'` `` ` `` literal | el literal | **CAMPO** + **OPACO** + análisis JSON extra, o **LANZA** |
-| corrida que empieza por DÍGITO | el número | **CAMPO** ← **familia 2** |
+| corrida que empieza por DÍGITO | el número | **CAMPO si liga un nombre** (ver C1); si no liga, consume y no emite ← **familia 2 + C1** |
 | corrida que empieza por letra (identificador) | el identificador | no es dato — **declarada**: un campo de identidad cuyo valor es un IDENTIFICADOR es una expresión, y quitarla es la precisión que este WP compró |
 | puntuación | 1 carácter | no es dato (declarada) |
 
@@ -105,6 +109,50 @@ nombre porque `nombreAntesDe` no saltaba la etiqueta, y la plantilla
 
 ---
 
+## 2.2 · C1 — la celda decía más de lo que hacía el código, y qué se cerró
+
+La fila «dígito → CAMPO» emitía **condicionalmente**: cuando `nombreAntesDe` no
+ligaba, la rama consumía el número y no emitía nada —justo lo que la invariante
+prohíbe, dentro de la fila que la tabla declaraba cumplidora—. Cuatro formas
+perdían frente a `main`, todas `lanza=no`.
+
+**Medido antes de decidir, y la medición parte la decisión en dos:**
+
+| extensión de la ligadura | formas que recupera | coste medido |
+|---|---|---|
+| saltar el **signo unario** (`-`, `+`) | 3 de 4 | **cero falsos positivos** |
+| saltar además el **`[` de apertura** | la 4.ª | **+1 falso positivo real** |
+
+El falso positivo del corchete no es hipotético: `const SEMILLAS = ['REPO_ROOT',
+…]` en `test/gates/arbol-inmutable.test.mjs`. `SEMILLAS` **es léxico de identidad
+en castellano** (`semillas?`, que U231 metió a propósito) y el primer elemento
+del array pasa a colgar de él.
+
+**Decisión: se cierra el signo, que sale gratis; NO se cierra el corchete.** Tres
+formas recuperadas por dos caracteres y cero coste; la cuarta queda declarada en
+§C2 con las demás de su clase. Y un `-` **binario** no cuela por esto: en
+`x = a - 123…` detrás del signo hay un operando, no un `=`.
+
+*(El arreglo obvio —añadir el suelo opaco al número— ya lo habías descartado con
+medición, y lo confirmo: la causa no es la invariante sino la ligadura.)*
+
+## 2.3 · C2 — la regla de ligadura, entera
+
+La 3.ª vuelta declaró «el valor de un campo es lo que se le asigna, no lo que
+aparezca en la expresión que lo calcula» y lo ejemplificó con `??`. La regla
+completa, que es lo que evita que esto vuelva:
+
+> **`nombreAntesDe` liga sólo a través de un `:` o un `=` inmediatamente
+> anterior** (saltando blancos, un signo unario y la etiqueta de una plantilla).
+> Un literal alcanzado **dentro de un array**, **tras `??`**, **tras `||`** o
+> **en un ternario** NO queda ligado, y por tanto la vía de detección **por
+> NOMBRE** no lo mira.
+
+Las cuatro formas están fijadas en un test de límite declarado, para que sean
+conocidas y no un descubrimiento. **Lo que NO se pierde**: el mismo valor como
+CADENA sigue cayendo por el suelo opaco, que no depende de la ligadura — la
+pérdida es de la vía por nombre, no del fichero.
+
 ## 3 · Menores
 
 - **m14 · el CONSUMO de la ley no estaba vigilado.** La ley sí (§B8 de la vuelta
@@ -124,9 +172,9 @@ nombre porque `nombreAntesDe` no saltaba la etiqueta, y la plantilla
 
 ---
 
-## 4 · Censo de mutación: 42 mutantes, 0 vivos, 0 no aplicados
+## 4 · Censo de mutación: 44 mutantes, 0 vivos, 0 no aplicados
 
-Los 35 anteriores más **M36–M42**: las tres familias de B9, el hueco de
+Los 35 anteriores más **M36–M44**: las tres familias de B9, el hueco de
 plantilla, el consumo de la ley (m14), la atadura de `conservacion.mjs` (m16) y
 el inerte de m15.
 
@@ -147,8 +195,8 @@ ignorando comillas, el cierre de la regex, y `abreRegex` siempre cierto.
 
 ```
 $ node scripts/gates/run.mjs               ->  gates: OK (0 offenders) · rc=0
-$ node --test test/gates/*.test.mjs        ->  203 tests · 203 pass · 0 fail
-$ node <scratchpad>/u269-mutar.mjs         ->  42 mutantes · 0 vivos · 0 no aplicados
+$ node --test test/gates/*.test.mjs        ->  206 tests · 206 pass · 0 fail
+$ node <scratchpad>/u269-mutar.mjs         ->  44 mutantes · 0 vivos · 0 no aplicados
 $ node <scratchpad>/u269-w-ley-hijo.mjs    ->  CORPUS=0 BATERIA=0/16
 $ node <scratchpad>/u269-w-ley-demo.mjs    ->  4 de 4 agujeros cazados a ciegas
 $ node <scratchpad>/u269-b1-cli.mjs        ->  0 de 8 formas se escapan
@@ -176,11 +224,14 @@ $ node <scratchpad>/u269-w-b9.mjs          ->  0 de 12 pierde vs main
    lado seguro (§4).
 4. **La ley no demuestra que los analizadores sean correctos**, sólo que no
    pierden entrada — y está medido que eso no produce regresión frente a `main`.
-5. **Markdown, `.env` y texto plano no se analizan**: **22 de los 93 están en
-   `.md`**. Los ficheros del WP aportan **15**.
-6. **Los 3 falsos positivos de §1**, frase de paso con espacios literales,
+5. **Markdown, `.env` y texto plano no se analizan**: **22 de los 98 están en
+   `.md`**. Los ficheros del WP aportan **20**.
+6. **La ligadura por nombre no alcanza** array, `??`, `||` ni ternario (§2.3),
+   y el `[` de apertura NO se cierra porque cuesta un falso positivo medido
+   (§2.2). La vía por FORMA y el suelo opaco siguen mirando esos ficheros.
+7. **Los 3 falsos positivos de §1**, frase de paso con espacios literales,
    `AUTHTOKEN` sin separador, ficheros >1 MiB, y el subconjunto de YAML.
-7. **Sigue sin haber entropía ni lista de excepciones.** Lo que el WP no toca, y
+8. **Sigue sin haber entropía ni lista de excepciones.** Lo que el WP no toca, y
    U231 ya declaraba: historial de git, tarball de npm, UTF-16, contextos de
    build que no sean el directorio de la receta ni la raíz.
 
@@ -193,5 +244,5 @@ $ node <scratchpad>/u269-w-b9.mjs          ->  0 de 12 pierde vs main
 | `scripts/gates/formatos.mjs` | analizadores de JSON, JSONL, YAML de bloque, Dockerfile y lexer de código; `NoEntiendo`, la retirada, los **diez** valores opacos, la contabilidad de claves consumidas y la invariante de las nueve ramas |
 | `scripts/gates/claves.mjs` | `hallazgosEstructurales`, encaminamiento con retirada, `esHuecoEstructural`, `esNombreDeIdentidad`, hueco de plantilla acotado a referencias |
 | `test/gates/conservacion.mjs` | la ley de conservación, fuera del test para que la demostración no use una copia |
-| `test/gates/formatos.test.mjs` | 43 tests: el censo de la invariante, los que matan a la ley, el que vigila su consumo y el que la ata a la suite |
+| `test/gates/formatos.test.mjs` | 46 tests: el censo de la invariante, los que matan a la ley, el que vigila su consumo y el que la ata a la suite |
 | `test/gates/claves.test.mjs` | cifras del léxico actualizadas |

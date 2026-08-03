@@ -814,6 +814,65 @@ test('B9: la division de verdad NO se convierte en falso positivo', () => {
   }
 });
 
+test('C1: la rama del numero liga a traves de un signo unario', () => {
+  // La celda «digito -> CAMPO» decia mas de lo que hacia el codigo: emitia
+  // CONDICIONALMENTE, y cuando `nombreAntesDe` no ligaba, la rama consumia el
+  // numero y no emitia nada. Cuatro formas perdian frente a `main`. El signo
+  // se cierra porque sale gratis; el corchete no (abajo).
+  const cierra = [
+    ['signo menos', `const api_key = -123456789012345678;\n`],
+    ['signo mas', `const api_key = +123456789012345678;\n`],
+    ['hexadecimal con signo', `const api_key = -0xDEADBEEFCAFE1234;\n`],
+    ['sin signo (control)', `const api_key = 123456789012345678;\n`]
+  ];
+  for (const [nombre, texto] of cierra) {
+    assert.equal(hallazgosDe(texto, 'x.mjs').length, 1, nombre);
+  }
+  // Y un `-` BINARIO no liga: lo que hay detras es un operando, no un `=`.
+  assert.deepEqual(hallazgosDe(`const x = a - 123456789012345678;\n`, 'x.mjs'), []);
+});
+
+test('LIMITE DECLARADO (C1/C2): `nombreAntesDe` liga SOLO por `:` o `=` inmediato', () => {
+  // LA REGLA, entera y no solo el caso `??` que declaro la 3a vuelta:
+  // `nombreAntesDe` liga a un nombre unicamente cuando el literal viene
+  // precedido por un `:` o un `=` inmediato (saltando blancos y signo unario).
+  // Un literal alcanzado DE OTRA FORMA no queda ligado, y por tanto la via de
+  // deteccion por NOMBRE no lo mira. Estas son las formas, medidas:
+  const noLigan = [
+    ['dentro de un array', `const api_key = [123456789012345678];\n`],
+    ['tras `??`', `const api_key = cfg.k ?? 123456789012345678;\n`],
+    ['tras `||`', `const api_key = cfg.k || 123456789012345678;\n`],
+    ['en un ternario', `const api_key = f ? 123456789012345678 : 0;\n`]
+  ];
+  for (const [nombre, texto] of noLigan) {
+    assert.deepEqual(hallazgosDe(texto, 'x.mjs'), [], `ha dejado de ser un limite: ${nombre}`);
+  }
+  // LO QUE NO SE PIERDE: el mismo valor como CADENA sigue cayendo por el suelo
+  // opaco, que no depende de la ligadura. La perdida es de la via por NOMBRE.
+  assert.equal(hallazgosDe(`const api_key = ['api_key=${MATERIAL}'];\n`, 'x.mjs').length, 1);
+});
+
+test('m17: el numero de ramas del lexer que dice el reporte es el que hay', () => {
+  // La tabla del reporte enumera la superficie del lexer, y su tesis es «la
+  // enumere entera». Si el numero y la lista no cuadran, la tesis no se
+  // sostiene. Aqui se cuenta sobre el fuente en vez de fiarse de que yo haya
+  // contado bien: OCHO ramas de primer nivel —siete `if` mas la caida final—
+  // con DIEZ desenlaces, porque dos se bifurcan (`/` en regex o division, y la
+  // corrida alfanumerica en numero o identificador).
+  const src = fs.readFileSync(path.resolve(AQUI, '../../scripts/gates/formatos.mjs'), 'utf8');
+  const ini = src.indexOf('  while (i < n) {', src.indexOf('export function camposDeCodigo'));
+  assert.ok(ini > 0, 'no se encuentra el bucle del lexer');
+  const fin = src.indexOf('  return campos;', ini);
+  const cuerpo = src.slice(ini, fin);
+  const ramas = cuerpo.split('\n').filter((l) => /^ {4}if \(/.test(l)).length;
+  assert.equal(
+    ramas,
+    7,
+    `el lexer tiene ${ramas} ramas de primer nivel con if, no 7: la tabla del ` +
+      'reporte (8 ramas, 10 desenlaces) ha dejado de cuadrar con el codigo'
+  );
+});
+
 test('la ley SIGUE ATADA a la suite: `conservacion.mjs` no casa con el glob de CI', () => {
   // m16. `npm run test:gates` glob-ea `test/gates/*.test.mjs`, y
   // `conservacion.mjs` NO casa: entra en CI solo porque este fichero la
