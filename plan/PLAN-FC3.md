@@ -15,12 +15,26 @@
 > | tip de `main` al corte | `fae7460` |
 >
 > **Y el paso 2 también, salvo la prueba de quiescencia que exige el propio plan.**
-> Estado al congelar: Z `fae7460` · V `7eecfd4` · hub `c1123ca` · skills `b86cc30`;
-> **cero salas, cero ramas `wp/*`, cero sucio y todo en remoto** en los cuatro.
-> `U270` y `V103` permanecen ⬜ como pide el alcance. El punto de restauración,
-> con el **censo de trampas de esta máquina**, está en
+> Al congelar: **cero salas, cero ramas `wp/*`, cero sucio y todo en remoto** en
+> los cuatro mundos. `U270` y `V103` permanecen ⬜ como pide el alcance. El punto
+> de restauración, con el **censo de trampas de esta máquina**, está en
 > `scriptorium/sincronia/FREEZE-2026-08-03.md` — **§3 ① es literalmente el
 > defecto que motiva el censo de procesos del paso 2**.
+>
+> ⚠ **DOS CORTES DISTINTOS, Y NO SE MEZCLAN** *(corregido 2026-08-03 tras la
+> revisión de la ventana FC3, que lo cazó — y el defecto era mío)*:
+>
+> - **Baseline de código al corte** = **`2c167dc`** en `z-sdk`. La campaña audita
+>   Z, así que **el baseline es uno solo y está congelado**. Es el único tip que
+>   esta cabecera fija.
+> - **Tips documentales** (hub, skills, V) **NO son baseline y SIGUEN MOVIÉNDOSE**
+>   — de hecho se movieron mientras se asentaban estos mismos documentos. **No se
+>   copian aquí a mano**: se leen de `FREEZE-2026-08-03.md §0`, que es su fuente
+>   única.
+>
+> *La primera versión de esta cabecera los mezcló en una tabla y dos caducaron en
+> veinte minutos. Es la regla de la casa —`L-H12 §13`, una cifra medida a mano
+> caduca— pisada dentro del documento que la transporta.*
 
 ## Plan: Matriz forense FC1→FC2 y fundamento FC3
 
