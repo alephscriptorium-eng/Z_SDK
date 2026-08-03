@@ -44,6 +44,12 @@ export default defineConfig({
       { text: 'Construir', link: '/guide/kits-foss' },
       { text: 'Guía', link: '/guide/getting-started' },
       { text: 'Proyecto', link: '/proyecto' },
+      {
+        text: 'Mapa',
+        link: '/package-map/index.html',
+        target: '_blank',
+        rel: 'noopener noreferrer'
+      },
       { text: 'Contratos', link: '/contracts/asyncapi' },
       { text: 'Playbook', link: '/playbook/' },
       {

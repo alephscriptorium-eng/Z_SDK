@@ -13,11 +13,21 @@ on:
       - 'docs/**'
       - '.github/workflows/docs.yml'
       - 'package.json'
+      - 'package-lock.json'
+      - 'packages/**/package.json'
+      - 'packages/**/*.d.ts'
+      - 'packages/editor/package-map/**'
+      - 'scripts/docs-package-map.mjs'
   pull_request:
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'
       - 'package.json'
+      - 'package-lock.json'
+      - 'packages/**/package.json'
+      - 'packages/**/*.d.ts'
+      - 'packages/editor/package-map/**'
+      - 'scripts/docs-package-map.mjs'
   workflow_dispatch:
 
 concurrency:

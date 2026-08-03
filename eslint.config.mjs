@@ -63,6 +63,16 @@ export default [
     }
   },
   {
+    files: ['packages/editor/package-map/public/**'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser
+      }
+    }
+  },
+  {
     files: ['packages/mesh/webrtc-viewer/src/browser/**'],
     languageOptions: {
       ecmaVersion: 'latest',

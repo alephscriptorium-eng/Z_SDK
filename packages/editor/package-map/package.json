@@ -1,0 +1,19 @@
+{
+  "name": "@zeus/package-map",
+  "version": "0.1.0",
+  "description": "Interactive blueprint map of Zeus package public contracts",
+  "type": "module",
+  "main": "src/server.mjs",
+  "scripts": {
+    "start": "node src/server.mjs"
+  },
+  "license": "SEE LICENSE IN LICENSE.md",
+  "zeus": {
+    "role": "app",
+    "ui": "package-map"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "private": true
+}

@@ -51,6 +51,7 @@ VOLUMES/DISK_03/FORCES/cotas/sima/**
 VOLUMES/DISK_01/
 VOLUMES/DISK_04/
 docs/public/api/
+docs/public/package-map/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 .vitepress/cache

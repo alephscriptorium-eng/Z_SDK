@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101417">
+    <title>Zeus Package Map</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">Z</span>
+        <div>
+          <p>ZEUS / CARTOGRAFIA PUBLICA</p>
+          <h1>Mapa de paquetes</h1>
+        </div>
+      </div>
+
+      <nav id="wave-switcher" class="wave-switcher" aria-label="Capas de olas">
+        <label class="wave-toggle wave-1" for="wave-1">
+          <input id="wave-1" type="checkbox" value="1" checked>
+          <span class="wave-index">01</span>
+          <span><b>Nucleo</b><small>13 paquetes</small></span>
+        </label>
+        <label class="wave-toggle wave-2" for="wave-2">
+          <input id="wave-2" type="checkbox" value="2" checked>
+          <span class="wave-index">02</span>
+          <span><b>Capacidades</b><small>13 paquetes</small></span>
+        </label>
+        <label class="wave-toggle wave-3" for="wave-3">
+          <input id="wave-3" type="checkbox" value="3" checked>
+          <span class="wave-index">03</span>
+          <span><b>Mesh + apps</b><small>24 paquetes</small></span>
+        </label>
+      </nav>
+
+      <div class="scope-stamp">
+        <strong id="scope-label">3 OLAS ACTIVAS</strong>
+        <span id="scope-count">50 de 50 paquetes</span>
+      </div>
+    </header>
+
+    <main class="atlas">
+      <section class="stage" aria-label="Plano de relaciones entre paquetes">
+        <canvas id="package-canvas" tabindex="0">Mapa interactivo de paquetes Zeus.</canvas>
+
+        <div class="canvas-tools" aria-label="Controles del plano">
+          <button id="zoom-out" type="button" title="Alejar" aria-label="Alejar">-</button>
+          <output id="zoom-level" aria-live="polite">100%</output>
+          <button id="zoom-in" type="button" title="Acercar" aria-label="Acercar">+</button>
+          <button id="fit-map" class="fit-button" type="button">Ajustar</button>
+        </div>
+
+        <div class="filter-rack" aria-label="Filtros del mapa">
+          <label class="search-field" for="package-search">
+            <span>BUSCAR</span>
+            <input id="package-search" type="search" placeholder="paquete, simbolo o funcion" autocomplete="off">
+          </label>
+          <label class="focus-toggle">
+            <input id="focus-relations" type="checkbox">
+            <span>Solo vecindad</span>
+          </label>
+          <button id="clear-filters" type="button">Limpiar</button>
+        </div>
+
+        <div class="map-index" aria-hidden="true">
+          <span id="map-index-wave">E / 01+02+03</span>
+          <span id="map-index-count">50 NODOS / 131 ENLACES</span>
+        </div>
+
+        <div class="legend" aria-label="Leyenda del plano">
+          <div class="legend-title">FUNCIONES</div>
+          <div id="category-legend" class="legend-items"></div>
+          <div class="legend-relation"><i></i> depende de</div>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-live="polite">
+        <div class="inspector-head">
+          <span class="sheet-number">FICHA <b id="sheet-number">01</b></span>
+          <span id="package-category" class="category-pill">Contrato</span>
+        </div>
+
+        <label class="package-picker" for="package-select">
+          Paquete
+          <select id="package-select"></select>
+        </label>
+
+        <div class="package-title">
+          <p id="package-namespace">@zeus</p>
+          <h2 id="package-name">protocol</h2>
+          <span id="package-role">ESPINA DE MENSAJES</span>
+        </div>
+
+        <p id="package-summary" class="summary"></p>
+
+        <dl class="package-meta">
+          <div><dt>Version</dt><dd id="package-version"></dd></div>
+          <div><dt>Grupo</dt><dd id="package-group"></dd></div>
+          <div><dt>Rol</dt><dd id="package-manifest-role"></dd></div>
+        </dl>
+
+        <section class="inspector-section">
+          <div class="section-heading">
+            <h3>Superficie publica</h3>
+            <span id="export-count">0 SIMBOLOS</span>
+          </div>
+          <p id="surface-status" class="surface-status"></p>
+          <ul id="package-exports" class="export-list"></ul>
+        </section>
+
+        <section class="inspector-section relation-section">
+          <div class="section-heading">
+            <h3>Conexiones</h3>
+            <span>PACKAGE.JSON</span>
+          </div>
+          <dl class="relations">
+            <div>
+              <dt>Depende de</dt>
+              <dd id="depends-on"></dd>
+            </div>
+            <div>
+              <dt>Consumido por</dt>
+              <dd id="used-by"></dd>
+            </div>
+          </dl>
+        </section>
+
+        <footer class="evidence">
+          <span>FUENTE</span>
+          <strong id="source-path"></strong>
+        </footer>
+      </aside>
+    </main>
+
+    <script type="module" src="./atlas.js"></script>
+  </body>
+</html>
