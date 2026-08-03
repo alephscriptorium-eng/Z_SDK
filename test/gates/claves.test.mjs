@@ -261,9 +261,12 @@ test('el léxico en castellano también caza POR EL GATE, sembrado en un volumen
 });
 
 test('`key` a secas sigue FUERA del léxico, y `clave` a secas DENTRO', () => {
-  // La asimetría es medida, no de gusto: sobre los 1741 ficheros trackeados,
-  // `clave` cuesta +17 hallazgos y `key` +196. Las cifras y su comando están en
-  // el reporte. Si alguien mete `key`, este test se lo recuerda.
+  // La asimetría es medida, no de gusto: RE-MEDIDA en WP-U269 sobre los 1759
+  // ficheros trackeados de hoy y con los analizadores puestos, `clave` cuesta
+  // +5 hallazgos y `key` +132 (con el barrido de U231 eran +17 y +196 sobre
+  // 1741 ficheros). Parsear bajó las tres cifras y no cambió la decisión. Las
+  // cifras y su comando están en el reporte. Si alguien mete `key`, este test
+  // se lo recuerda.
   assert.equal(hallazgosEnTexto('key: Xk29fJqLm4Tz8vBn1QwErTyU').length, 0, '`key` a secas volvió al léxico');
   assert.ok(hallazgosEnTexto('clave: Xk29fJqLm4Tz8vBn1QwErTyU').length > 0);
   // y los compuestos de `key` siguen dentro, que es lo que hace tolerable excluirla
