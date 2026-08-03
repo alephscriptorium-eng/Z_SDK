@@ -375,6 +375,41 @@ contraparte de G (4a) y el CA de canal limpio (U212).*
 
 Transversales heredadas del intake y **ratificadas**: `unknown` donde no haya garantía verificable (nunca `any` de escape) · changeset `patch` por paquete tocado · `npm pack --dry-run` confirma que `types/**` entra en el tarball · contrarrevisión independiente que intente refutar resolución de subpaths, exactitud de firmas y frontera del diff. **Publish sigue bajo GO explícito del custodio** (decisión ③: Marketplace DEFERRED, registry nuevo).
 
+#### ✎ ADDENDA H (2026-08-03) — evidencia de canal para esta cola, DPO-FC3-09 y U182/U185
+
+Aportada por el **mundo consumidor h-sdk** (vendor externo; aportes completos
+en `C:\S_META\F3\APORTE-H-FC3-*.md`, contrarrevisión adversarial: 1 aprobado,
+4 corregidos, 0 rechazados). **Nada de lo siguiente cambia estados de fichas:
+es evidencia para el merge del orquestador.**
+
+- **E1 · matriz `@zeus/*`×types contra el registry real** (33/33, re-muestreo
+  7/7 sin discrepancias — `h-sdk/plan/REPORTES/E1-MATRIZ-TYPES-ZEUS.md`):
+  `linea-kit@0.3.0`, `acta-kit@0.1.1`, `linea-system@0.1.1`,
+  `force-system@0.1.1` se sirven **sin types**. La obra de U245 existe en
+  `main` (50 declaraciones) pero **el canal no la sirve**; U246–U248 ⬜ con la
+  ventana `GD` abierta desde 2026-08-01. E1 es la **mitad** de la medida del
+  warning «probar desde registry limpio» (PLAN-FC3:215): estado de types en
+  canal; el probe de consumo limpio (PLAN-FC3:258) sigue pendiente.
+- **DPO-FC3-09**: el «posible huérfano» tiene evidencia nueva en contra —
+  consumidor interno `arg-player-mcp` (g-sdk `packages/delta/`, imports
+  reales en `room-bridge.mjs:7`/`server.mjs:5`/`logic.mjs:12-18`) ·
+  adopción del vendor h-sdk como asiento de M (decisión ③ del PO,
+  `h-sdk/plan/DECISIONES.md`) · dependencia declarada en `@zeus/ciudad@0.1.1`
+  publicado (arista «dependencia declarada, no import probado»).
+- **U182/U185 (tanda kits UI)**: los kits UI se sirven **tipados y sanos** en
+  canal (`game-engine`, `ui-3d-kit`, `view-kit`, `ui-kit`, `app-shell`,
+  `room-client-browser`); `operator-ui`/`threejs-ui-lib` medidos **rotos en
+  árbol** (sin `dist`, `node_modules` aislado sin `@zeus/*`, pin
+  `ui-3d-kit@^0.1.1` vs `0.1.4` en canal).
+- **Canal games** (clase presencia≠destino, aplicada al canal): `@zeus/pozo`
+  y `@zeus/solve-coagula` dan **E404** en el registry — el patrón «solo
+  importando engine» no es reproducible por terceros hoy.
+- El PO (2026-08-03) dio GO genérico a «implementar lo necesario fuera de H»
+  (con él se publicaron `skills-scriptorium@0.12.0` y
+  `ciudad`/`startpack-ciudad@0.1.1` con types). El release de U245 queda
+  **listo para cortar**; el gatillo se deja al orquestador FC3/custodio por
+  respeto a la decisión ③ (publish bajo GO explícito).
+
 ### Conteo y dependencias (edición F2-unificada)
 
 **73 WPs** · P0 **22** · P1 **35** · P2 **16** *(F2-unificada +11; 2026-07-31:
