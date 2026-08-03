@@ -1,5 +1,13 @@
 # @zeus/volumes-ops
 
+## 0.2.5
+
+### Patch Changes
+
+- Updated dependencies [897816c]
+- Updated dependencies [0257308]
+  - @zeus/linea-kit@0.4.0
+
 ## 0.2.4
 
 ### Patch Changes
